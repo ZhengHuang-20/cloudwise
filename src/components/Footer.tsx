@@ -11,7 +11,10 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
       <div className="layout-wide py-12 md:py-16">
         <div className="grid grid-cols-2 gap-x-6 gap-y-10 md:grid-cols-3">
           <div className="col-span-2 md:col-span-1">
-            <p className="text-body font-semibold">云端智荐</p>
+            <p className="flex items-center gap-2 text-body font-semibold">
+              <img src="/brand/logo-mark.png" alt="" className="h-7 w-auto" />
+              云端智荐
+            </p>
             <p className="mt-2 max-w-60 text-caption text-label-secondary">
               AI 出海售前支持系统与能力样板间。让海外买家找到你，让 AI 替你接住生意。
             </p>
