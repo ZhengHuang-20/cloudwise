@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Menu, Sparkles, User, X } from 'lucide-react';
+import { Menu, User, X } from 'lucide-react';
 import { NAV_GROUPS, NAV_ITEMS, TabId } from './navigation';
 
 interface HeaderProps {
@@ -51,7 +51,7 @@ export const Header: React.FC<HeaderProps> = ({
             className="flex shrink-0 items-center gap-2 text-label"
             aria-label="云端智荐首页"
           >
-            <Sparkles className="h-[18px] w-[18px]" />
+            <img src="/brand/logo-mark.png" alt="" className="h-7 w-auto" />
             <span className="text-body font-semibold">云端智荐</span>
           </button>
 
