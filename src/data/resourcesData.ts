@@ -1,3 +1,5 @@
+import { SHOW_FDE } from '../lib/features';
+
 export interface ResourceItem {
   id: string;
   type: 'template' | 'whitepaper' | 'checklist' | 'open_course';
@@ -11,7 +13,7 @@ export interface ResourceItem {
   fileSize: string;
 }
 
-export const RESOURCE_ITEMS: ResourceItem[] = [
+const ALL_RESOURCE_ITEMS: ResourceItem[] = [
   {
     id: 'res-buyer-persona',
     type: 'template',
@@ -65,7 +67,7 @@ export const RESOURCE_ITEMS: ResourceItem[] = [
     type: 'whitepaper',
     title: '《2026 中国出海企业 AI 售前全链路白皮书》',
     category: '出海战略',
-    description: '深度剖析出海获客五大断点治理、爱康医疗与泰宁科创实践全案、GEO 六步闭环与 FDE 三层建设。',
+    description: `深度剖析出海获客五大断点治理、爱康医疗与泰宁科创实践全案、GEO 六步闭环与${SHOW_FDE ? ' FDE 三层建设' : '系统对接落地'}。`,
     downloadCount: 4560,
     format: 'PDF',
     requiresLogin: true,
@@ -85,3 +87,5 @@ export const RESOURCE_ITEMS: ResourceItem[] = [
     fileSize: '750 KB'
   }
 ];
+
+export const RESOURCE_ITEMS: ResourceItem[] = SHOW_FDE ? ALL_RESOURCE_ITEMS : ALL_RESOURCE_ITEMS.filter((item) => item.id !== 'res-fde-needs-spec');

@@ -75,6 +75,7 @@ NODE_ENV=production bun run start   # 生产模式：Express 托管 dist/ 并做
 
 ## 其他注意事项
 
+- **FDE 暂不对外展示**：`src/lib/features.ts` 的 `SHOW_FDE`（当前为 `false`）同时控制前端与 `server.ts`。关闭时服务页、首页、课程 E、术语、资源、体验页、预算方案与 AI 顾问都不出现 FDE，“五项服务 / 五门课”随 `SERVICE_COUNT_CN` 变为“四”。新增涉及 FDE 或服务数量的文案也要走这个开关；`index.html` 的 description 读不到开关，需手动同步。
 - `vite.config.ts` 中 HMR 与文件监听由 `DISABLE_HMR` 控制，这是 AI Studio 环境需要的，注释要求不要修改。
 - 路径别名 `@/` 指向**仓库根目录**而不是 `src/`（`vite.config.ts` 与 `tsconfig.json` 一致）；现有代码均使用相对路径导入。
 - `bun run build` 会提示主 chunk 超过 500 kB，目前没有代码分割，属已知现象。

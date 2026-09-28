@@ -5,6 +5,7 @@ import { useApp } from '../context/AppContext';
 import { LessonModal } from '../components/LessonModal';
 import { PageHeader } from '../components/ui/PageHeader';
 import { SegmentedControl } from '../components/ui/SegmentedControl';
+import { SERVICE_COUNT_CN } from '../lib/features';
 
 interface AcademyViewProps {
   onGoToTool: (toolId: string) => void;
@@ -64,7 +65,7 @@ export const AcademyView: React.FC<AcademyViewProps> = ({ onGoToTool }) => {
     <div>
       <PageHeader
         eyebrow="出海学院"
-        title="五门专业课，全部公开"
+        title={`${SERVICE_COUNT_CN}门专业课，全部公开`}
         intro="凡是涉及海外采购标准的工程细节，都在这里说透。买家在站内自主学懂，销售见面前不必再做低效的基础说服。"
       >
         <div className="mx-auto flex max-w-xs items-center gap-3">

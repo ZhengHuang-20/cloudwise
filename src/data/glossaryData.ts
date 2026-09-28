@@ -1,3 +1,5 @@
+import { SHOW_FDE } from '../lib/features';
+
 export interface GlossaryTerm {
   id: string;
   term: string;
@@ -13,7 +15,7 @@ export interface GlossaryTerm {
   schemaType: 'DefinedTerm';
 }
 
-export const GLOSSARY_TERMS: GlossaryTerm[] = [
+const ALL_GLOSSARY_TERMS: GlossaryTerm[] = [
   {
     id: 'term-geo',
     term: 'GEO (生成式引擎优化)',
@@ -82,3 +84,5 @@ export const GLOSSARY_TERMS: GlossaryTerm[] = [
     schemaType: 'DefinedTerm'
   }
 ];
+
+export const GLOSSARY_TERMS: GlossaryTerm[] = SHOW_FDE ? ALL_GLOSSARY_TERMS : ALL_GLOSSARY_TERMS.filter((term) => term.id !== 'term-fde');

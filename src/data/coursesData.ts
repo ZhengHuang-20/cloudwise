@@ -1,3 +1,5 @@
+import { SERVICE_COUNT_CN, SHOW_FDE } from '../lib/features';
+
 export interface QuizQuestion {
   question: string;
   options: string[];
@@ -92,7 +94,7 @@ export interface RoleLearningPath {
   recommendedToolId: string;
 }
 
-export const COURSES: Course[] = [
+const ALL_COURSES: Course[] = [
   {
     id: 'course-a-global-site',
     code: 'A',
@@ -891,13 +893,16 @@ export const COURSES: Course[] = [
   }
 ];
 
-export const ROLE_LEARNING_PATHS: RoleLearningPath[] = [
+// 课程 E 对应 FDE 驻场服务，随 SHOW_FDE 一起隐藏
+export const COURSES: Course[] = SHOW_FDE ? ALL_COURSES : ALL_COURSES.filter((course) => course.code !== 'E');
+
+const ALL_ROLE_LEARNING_PATHS: RoleLearningPath[] = [
   {
     id: 'path-boss',
     title: '老板 60 分钟看懂 AI 出海',
     targetRole: '决策者（董事长、总经理、出海项目投资人）',
     durationText: '约 60 分钟',
-    description: '无需技术细节，聚焦五门课的“决策者篇”，摸清投入预算、交付周期、避坑防雷与验收标准。',
+    description: `无需技术细节，聚焦${SERVICE_COUNT_CN}门课的“决策者篇”，摸清投入预算、交付周期、避坑防雷与验收标准。`,
     endGoal: '清晰判断要不要做、做哪几项、花多少钱、如何考核团队与服务商',
     featuredLessonIds: ['lesson-a-1-4', 'lesson-b-1-3', 'lesson-c-10-2', 'lesson-d-9-2', 'lesson-e-8-1'],
     recommendedToolId: 'tool-frictions',
@@ -924,7 +929,7 @@ export const ROLE_LEARNING_PATHS: RoleLearningPath[] = [
   },
   {
     id: 'path-tech',
-    title: '技术评估与落地路径：底座、安全与 FDE',
+    title: SHOW_FDE ? '技术评估与落地路径：底座、安全与 FDE' : '技术评估与落地路径：底座、安全与系统对接',
     targetRole: 'IT 负责人、技术架构师、CIO',
     durationText: '约 2.5 小时深入',
     description: '全面评估独立站技术栈、Schema 结构化数据、多系统 API 对接、私有化部署与数据合规。',
@@ -933,3 +938,8 @@ export const ROLE_LEARNING_PATHS: RoleLearningPath[] = [
     recommendedToolId: 'tool-inquiry-flow',
   }
 ];
+
+export const ROLE_LEARNING_PATHS: RoleLearningPath[] = ALL_ROLE_LEARNING_PATHS.map((path) => ({
+  ...path,
+  featuredLessonIds: path.featuredLessonIds.filter((id) => COURSES.some((course) => course.modules.some((mod) => mod.lessons.some((lesson) => lesson.id === id)))),
+}));

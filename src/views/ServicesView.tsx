@@ -3,6 +3,7 @@ import { Check } from 'lucide-react';
 import { PageHeader } from '../components/ui/PageHeader';
 import { SERVICE_IDENTITY, ServiceKey } from '../components/ui/serviceIdentity';
 import { FdeBuildLayers } from '../components/FdeBuildLayers';
+import { SERVICE_COUNT_CN, SHOW_FDE } from '../lib/features';
 
 interface ServicesViewProps {
   onGoToCourse: (courseCode: string) => void;
@@ -15,7 +16,7 @@ export const ServicesView: React.FC<ServicesViewProps> = ({
   onGoToDiagnosis,
   onGoToConfigurator,
 }) => {
-  const subsystems: {
+  const allSubsystems: {
     key: ServiceKey;
     code: string;
     title: string;
@@ -125,6 +126,7 @@ export const ServicesView: React.FC<ServicesViewProps> = ({
       philosophicalNote: '没有标准化的智能化，只是把混乱自动化。AI 放大的永远是企业已有的秩序。'
     },
   ];
+  const subsystems = SHOW_FDE ? allSubsystems : allSubsystems.filter((svc) => svc.key !== 'fde');
 
   const scrollToService = (code: string) => {
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -134,9 +136,9 @@ export const ServicesView: React.FC<ServicesViewProps> = ({
   return (
     <div>
       <PageHeader
-        eyebrow="五项服务"
-        title="全球获客系统的五个子系统"
-        intro="一套知识资产，五个子系统协同工作，构筑符合欧美工程与合规审计标准的获客转化系统，终结海外订单的无序流失。"
+        eyebrow={`${SERVICE_COUNT_CN}项服务`}
+        title={`全球获客系统的${SERVICE_COUNT_CN}个子系统`}
+        intro={`一套知识资产，${SERVICE_COUNT_CN}个子系统协同工作，构筑符合欧美工程与合规审计标准的获客转化系统，终结海外订单的无序流失。`}
       >
         {/* 页内索引 */}
         <nav aria-label="子系统索引" className="flex flex-wrap justify-center gap-2">

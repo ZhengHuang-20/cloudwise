@@ -2,11 +2,12 @@ import React, { useState } from 'react';
 import { CheckCircle2 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { Dialog, DialogBody } from './ui/Dialog';
+import { SHOW_FDE } from '../lib/features';
 
 const MEETING_TYPES = [
   { id: 'quick', title: '快速诊断', duration: '30 分钟', desc: '线上 · 解读自评分数', target: '外贸总监' },
   { id: 'deep', title: '深度诊断', duration: '60 分钟', desc: '线上或上门 · 立项与方案定制', target: '老板 + 总监' },
-  { id: 'tech', title: '技术对接评估', duration: '60 分钟', desc: '线上 · 系统对接与 FDE', target: 'IT 负责人 + 业务' },
+  { id: 'tech', title: '技术对接评估', duration: '60 分钟', desc: SHOW_FDE ? '线上 · 系统对接与 FDE' : '线上 · 系统对接与数据打通', target: 'IT 负责人 + 业务' },
 ] as const;
 
 const TIME_SLOTS = [

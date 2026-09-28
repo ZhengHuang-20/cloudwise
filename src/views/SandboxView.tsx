@@ -4,16 +4,18 @@ import { useApp } from '../context/AppContext';
 import { PageHeader } from '../components/ui/PageHeader';
 import { SegmentedControl } from '../components/ui/SegmentedControl';
 import { FDE_WEEK_EXAMPLE, FDE_WEEK_OUTPUTS } from '../data/fdeData';
+import { SHOW_FDE } from '../lib/features';
 
 type DemoId = 'sandbox' | 'custom_data' | 'geo_compare' | 'analytics' | 'fde_week';
 
-const DEMOS: { id: DemoId; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
+const ALL_DEMOS: { id: DemoId; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
   { id: 'sandbox', label: 'AI 客服沙盒', icon: Bot },
   { id: 'custom_data', label: '资料试跑', icon: FileUp },
   { id: 'geo_compare', label: 'GEO 前后对比', icon: SplitSquareVertical },
   { id: 'analytics', label: '独立站看板', icon: BarChart3 },
   { id: 'fde_week', label: 'FDE 的一周', icon: GitCommit },
 ];
+const DEMOS = SHOW_FDE ? ALL_DEMOS : ALL_DEMOS.filter((demo) => demo.id !== 'fde_week');
 
 const BUYER_ROLES: { id: 'us' | 'eu' | 'me'; label: string }[] = [
   { id: 'us', label: '美国采购总监' },
@@ -342,7 +344,7 @@ export const SandboxView: React.FC<{ onGoToConfigurator: () => void }> = ({ onGo
         )}
 
         {/* ================= DEMO 5: FDE 的一周 ================= */}
-        {activeDemo === 'fde_week' && (
+        {SHOW_FDE && activeDemo === 'fde_week' && (
           <section className="tile animate-fade-in" aria-labelledby="fde-title">
             <h2 id="fde-title" className="text-title-2">
               FDE 的一周：以询盘分级为例
