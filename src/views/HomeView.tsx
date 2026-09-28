@@ -5,7 +5,10 @@ import {
   CheckCircle2,
   ChevronRight,
   Globe,
+  ListChecks,
   Loader2,
+  Lock,
+  Radar,
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { TabId } from '../components/navigation';
@@ -80,7 +83,32 @@ const ALL_SERVICES: { key: ServiceKey; title: string; desc: string; link: string
 ];
 const SERVICES = SHOW_FDE ? ALL_SERVICES : ALL_SERVICES.filter((service) => service.key !== 'fde');
 
-const prefersReducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+// 售前工具：tab 为 'audit' 时滚动到首页的 AI 可见性测评，其余跳转到对应页面
+const TOOLS: { tab: TabId | 'audit'; icon: React.ComponentType<{ className?: string }>; title: string; desc: string; link: string }[] = [
+  {
+    tab: 'audit',
+    icon: Radar,
+    title: 'AI 可见性测评',
+    desc: '输入官网或品牌，看 ChatGPT、Perplexity 与 Google 是否找得到你，以及断点在哪里。',
+    link: '开始测评',
+  },
+  {
+    tab: 'configurator',
+    icon: ListChecks,
+    title: '方案组合与交付规划',
+    desc: `自由组合独立站、SEO、GEO${SHOW_FDE ? '、AI 客服与 FDE 驻场' : ' 与 AI 客服'}，实时得到交付周期、阶段排期与交付物清单。`,
+    link: '规划方案',
+  },
+  {
+    tab: 'deal-room',
+    icon: Lock,
+    title: '专属方案空间',
+    desc: '保存的方案自动生成共享空间，双方在这里推进行动计划、答疑讨论与在线签约。',
+    link: '进入方案空间',
+  },
+];
+
+const prefersReducedMotion =() => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 export const HomeView: React.FC<HomeViewProps> = ({ onNavigate, openBookingModal }) => {
   const { logLeadActivity, saveDiagnosis, showToast } = useApp();
@@ -497,6 +525,40 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate, openBookingModal
                 <p className="mt-3 flex-1 text-body text-label-secondary">{service.desc}</p>
                 <span className="link mt-6 text-body">
                   {service.link}
+                  <ChevronRight className="transition-transform duration-200 group-hover:translate-x-0.5" />
+                </span>
+              </button>
+            );
+          })}
+        </Reveal>
+      </section>
+
+      {/* ===================== 售前工具 ===================== */}
+      <section className="section layout-wide pt-0">
+        <Reveal className="mx-auto max-w-4xl text-center">
+          <p className="eyebrow">售前工具</p>
+          <h2 className="mt-3 text-headline">
+            <span className="inline-block">见销售之前，</span>
+            <span className="inline-block">先看清问题与方案。</span>
+          </h2>
+          <p className="mx-auto mt-5 max-w-2xl text-intro text-label-secondary">面向出海决策人的自助工具，免注册，打开即用。</p>
+        </Reveal>
+
+        <Reveal className="mt-12 grid grid-cols-1 gap-4 md:grid-cols-3 md:gap-5">
+          {TOOLS.map((tool) => {
+            const Icon = tool.icon;
+            return (
+              <button
+                key={tool.tab}
+                type="button"
+                onClick={() => (tool.tab === 'audit' ? scrollToAudit() : onNavigate(tool.tab))}
+                className="tile interactive group flex flex-col items-start"
+              >
+                <Icon className="h-8 w-8 text-label" />
+                <h3 className="mt-6 text-title-2">{tool.title}</h3>
+                <p className="mt-3 flex-1 text-body text-label-secondary">{tool.desc}</p>
+                <span className="link mt-6 text-body">
+                  {tool.link}
                   <ChevronRight className="transition-transform duration-200 group-hover:translate-x-0.5" />
                 </span>
               </button>

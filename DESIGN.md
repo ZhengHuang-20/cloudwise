@@ -369,7 +369,7 @@ PageHeader（eyebrow → h1 text-headline → intro → 分段控件 / 页内索
 
 ### 4.2 首页
 
-Hero（eyebrow、`text-display` 标语、导语、两个按钮）→ AI 可见性测评 tile → 五项服务 bento → 标杆案例 → 收尾行动区。营销章节用 `<Reveal>` 包裹，测评区不包。AI 可见性测评是站内唯一的自测工具，不单独成页。
+Hero（eyebrow、`text-display` 标语、导语、两个按钮）→ AI 可见性测评 tile → 五项服务 bento → 售前工具（AI 可见性测评 · 方案规划 · 方案空间）→ 标杆案例 → 收尾行动区。营销章节用 `<Reveal>` 包裹，测评区不包。AI 可见性测评是站内唯一的自测工具，不单独成页。
 
 ### 4.3 工具页（方案规划）
 
