@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import { Analytics } from '@vercel/analytics/react';
 import { AppProvider, useApp } from './context/AppContext';
 import { Header } from './components/Header';
 import { Footer } from './components/Footer';
@@ -164,6 +165,8 @@ export default function App() {
   return (
     <AppProvider>
       <MainApp />
+      {/* Vercel Web Analytics：只在部署到 Vercel 且项目开启 Web Analytics 后上报 */}
+      <Analytics />
     </AppProvider>
   );
 }

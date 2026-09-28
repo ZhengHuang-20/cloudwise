@@ -21,6 +21,7 @@ NODE_ENV=production bun run start   # 生产模式：Express 托管 dist/ 并做
 ```
 
 - 项目**没有测试框架和测试用例**；改动后用 `bun run lint` + `bun run build` 验证，涉及 API 时启动 dev 后 `curl localhost:3000/api/health`。UI 改动还应在 390px 与 1440px 两个宽度下截图检查（环境里有全局 Playwright，页面可直接用 `http://localhost:3000/#/<tab>` 打开）。
+- `bun.lock` 是 `lockfileVersion: 2`（bun 1.4+ 生成）。增删依赖要用 bun ≥ 1.4；旧版 bun（如 1.3）会把整个 lockfile 重写成旧格式，这种改动不要提交。
 - `start` 与 `dev` 是同一条命令，只有设置 `NODE_ENV=production` 才会走静态托管分支，且需先 `build`。
 - 不要单独用 `vite` / `vite preview` 调试 AI 功能：`/api/*` 路由只存在于 `server.ts`。
 - 环境变量：复制 `.env.example` 为 `.env`（`.env*` 已被 gitignore）。`GEMINI_API_KEY`、`APP_URL`、`VITE_SUPABASE_URL`、`VITE_SUPABASE_ANON_KEY`、`PORT` 均可缺省。
@@ -79,5 +80,6 @@ NODE_ENV=production bun run start   # 生产模式：Express 托管 dist/ 并做
 
 - **FDE 展示开关**：`src/lib/features.ts` 的 `SHOW_FDE`（当前为 `true`，对外展示）同时控制前端与 `server.ts`。关闭时服务页、首页、课程 E、术语、资源、方案规划与 AI 顾问都不出现 FDE，“五项服务 / 五门课”随 `SERVICE_COUNT_CN` 变为“四”。新增涉及 FDE 或服务数量的文案也要走这个开关；`index.html` 的 description 读不到开关，需手动同步。
 - `vite.config.ts` 中 HMR 与文件监听由 `DISABLE_HMR` 控制，这是 AI Studio 环境需要的，注释要求不要修改。
+- **Vercel Web Analytics**：`App.tsx` 根部渲染 `@vercel/analytics/react` 的 `<Analytics />`。这是 Vite + React 项目，不要用 `@vercel/analytics/next`。只有部署在 Vercel 且项目开启 Web Analytics 才会上报；本地与自托管环境下它只是加载失败，不影响页面。
 - 路径别名 `@/` 指向**仓库根目录**而不是 `src/`（`vite.config.ts` 与 `tsconfig.json` 一致）；现有代码均使用相对路径导入。
 - `bun run build` 会提示主 chunk 超过 500 kB，目前没有代码分割，属已知现象。
