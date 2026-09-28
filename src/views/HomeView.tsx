@@ -38,8 +38,21 @@ interface AuditResult {
   recommendation: string;
 }
 
-// 目标市场不让用户填写，由测评根据官网域名与品牌判断。
-// 首页测评目前是本地模拟：按域名后缀推断，识别不出时默认欧美核心市场。
+// 所属行业与目标市场都不让用户填写，由测评根据官网域名与品牌判断。
+// 首页测评目前是本地模拟：行业按关键词、市场按域名后缀推断，识别不出时给出通用默认值。
+const INDUSTRY_RULES: [RegExp, string][] = [
+  [/medical|health|ortho|implant|pharma|dental|bio|医|骨科|植入|耗材|药|生物/, '医疗器械与生物耗材'],
+  [/solar|energy|battery|inverter|光伏|储能|新能源|电池|逆变/, '新能源与光伏储能'],
+  [/water|pump|valve|drain|rain|environ|水务|环保|排水|雨水|海绵|泵|阀/, '环保工程与水务装备'],
+  [/auto|vehicle|truck|machinery|excavat|crane|汽车|零部件|工程机械|挖掘|起重/, '汽车零部件与工程机械'],
+  [/hardware|fastener|screw|bolt|metal|cnc|mould|mold|五金|紧固|螺丝|钣金|模具|机加工/, '精密五金与离散工业'],
+];
+
+const inferIndustry = (target: string) => {
+  const t = target.trim().toLowerCase();
+  return INDUSTRY_RULES.find(([pattern]) => pattern.test(t))?.[1] ?? '工业制造出海';
+};
+
 const inferRegion = (target: string) => {
   const t = target.trim().toLowerCase();
   if (/\.(de|fr|it|es|nl|eu|uk|pl|se|ch|at|be|dk|no|fi)(\/|:|$)/.test(t)) return '欧洲市场';
@@ -48,10 +61,8 @@ const inferRegion = (target: string) => {
   return '欧美核心市场（北美 + 欧洲）';
 };
 
-const INDUSTRIES = ['高端装备与智能制造', '医疗器械与生物耗材', '汽车零部件与工程机械', '精密五金与离散工业', '新能源与光伏储能', '其他工业制造出海品类'];
-
 const AUDIT_STEPS = [
-  '根据官网与品牌识别主要目标市场',
+  '根据官网与品牌识别所属行业与主要目标市场',
   '海外云端节点测速与 Schema 知识图谱提取',
   '向 ChatGPT / Perplexity 探查品牌在行业推荐中的权重与证据链',
   '检索目标市场 60 组 Google 外贸采购关键词位序',
@@ -125,7 +136,6 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate, openBookingModal
 
   // Instant GEO/SEO Evaluation Tool State
   const [inputUrl, setInputUrl] = useState('');
-  const [selectedIndustry, setSelectedIndustry] = useState(INDUSTRIES[0]);
   const [isAuditing, setIsAuditing] = useState(false);
   const [auditStep, setAuditStep] = useState(0);
   const [auditResult, setAuditResult] = useState<AuditResult | null>(null);
@@ -135,7 +145,6 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate, openBookingModal
     {
       name: '爱康医疗',
       url: 'www.ak-medical-global.com',
-      industry: '高端医疗器械与耗材',
       result: {
         target: '爱康医疗 (www.ak-medical-global.com)',
         region: '欧洲市场 (重点德国/英国)',
@@ -159,7 +168,6 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate, openBookingModal
     {
       name: '泰宁科创',
       url: 'www.tidelion.com',
-      industry: '环保工程与水务装备',
       result: {
         target: '泰宁科创 (www.tidelion.com)',
         region: '欧美核心市场 (北美+欧洲)',
@@ -183,7 +191,6 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate, openBookingModal
     {
       name: '典型五金出口企业',
       url: 'www.example-hardware.com',
-      industry: '离散制造与精密五金',
       result: {
         target: '某精密五金出口企业 (典型现状)',
         region: '北美市场',
@@ -227,7 +234,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate, openBookingModal
         const generatedResult: AuditResult = {
           target: targetName,
           region: inferRegion(inputUrl),
-          industry: selectedIndustry,
+          industry: inferIndustry(inputUrl),
           totalScore: 48,
           geoScore: 34,
           seoScore: 48,
@@ -294,7 +301,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate, openBookingModal
             <div>
               <h2 className="text-title-2">AI 可见性测评</h2>
               <p className="mt-2 text-body text-label-secondary">
-                输入英文官网或品牌名，探查海外大模型收录与 Google 搜索排位。目标市场由 AI 根据官网与品牌自动判断。
+                输入英文官网或品牌名，探查海外大模型收录与 Google 搜索排位。所属行业与目标市场由 AI 根据官网与品牌自动判断。
               </p>
             </div>
             <span className="badge shrink-0 bg-success/15 text-success">免费</span>
@@ -326,24 +333,6 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate, openBookingModal
               </div>
             </div>
 
-            <div>
-              <label htmlFor="audit-industry" className="field-label">
-                所属行业
-              </label>
-              <select
-                id="audit-industry"
-                value={selectedIndustry}
-                onChange={(e) => setSelectedIndustry(e.target.value)}
-                className="field"
-              >
-                {INDUSTRIES.map((industry) => (
-                  <option key={industry} value={industry}>
-                    {industry}
-                  </option>
-                ))}
-              </select>
-            </div>
-
             <div className="flex flex-wrap items-center gap-2">
               <span className="mr-1 text-caption text-label-secondary">试试示例</span>
               {PRESETS.map((item) => (
@@ -353,7 +342,6 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate, openBookingModal
                   disabled={isAuditing}
                   onClick={() => {
                     setInputUrl(item.url);
-                    setSelectedIndustry(item.industry);
                     handleStartAudit(item);
                   }}
                   className="chip disabled:opacity-40"
@@ -412,7 +400,9 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate, openBookingModal
                 <ScoreRing value={auditResult.totalScore} caption="/ 100" />
                 <div className="min-w-0">
                   <p className="text-caption text-label-secondary">{auditResult.target}</p>
-                  <p className="text-caption text-label-secondary">AI 判断目标市场：{auditResult.region}</p>
+                  <p className="text-caption text-label-secondary">
+                    AI 判断行业：{auditResult.industry} · 目标市场：{auditResult.region}
+                  </p>
                   <h3 className="mt-1 text-title-2">出海获客综合就绪度</h3>
                   <p className={`mt-1 text-body font-semibold ${TONE_TEXT[resultTone]}`}>{auditResult.level}</p>
                   <p className="mt-3 text-body text-label-secondary">
