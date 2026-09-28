@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Activity, Award, Check, FileText, GraduationCap, Sliders } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { COURSES } from '../data/coursesData';
+import { SERVICE_COUNT_CN } from '../lib/features';
 import { UserProfile } from '../lib/supabase';
 import { Dialog, DialogBody } from './ui/Dialog';
 import { SegmentedControl } from './ui/SegmentedControl';
@@ -104,7 +105,7 @@ export const MySpaceModal: React.FC<MySpaceModalProps> = ({ isOpen, onClose, ope
               ))}
             </dl>
 
-            <h3 className="mt-10 text-title-3">五门课程进度</h3>
+            <h3 className="mt-10 text-title-3">{SERVICE_COUNT_CN}门课程进度</h3>
             <ul className="mt-4 space-y-5">
               {COURSES.map((course) => {
                 const percent = getCourseProgressPercentage(course.id);

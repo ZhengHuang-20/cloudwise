@@ -1,3 +1,5 @@
+import { SERVICE_COUNT_CN, SHOW_FDE } from '../lib/features';
+
 /**
  * 全站导航的唯一数据源：Header、Footer、App 的地址同步都从这里取。
  * 顺序按买家旅程分组：了解 → 自测 → 决策（DESIGN.md §5.3）。
@@ -31,9 +33,14 @@ export const NAV_GROUPS: NavGroup[] = [
   {
     title: '了解',
     items: [
-      { id: 'services', label: '服务', fullLabel: '五项服务', desc: '独立站、SEO、GEO、AI 客服与 FDE 驻场' },
+      {
+        id: 'services',
+        label: '服务',
+        fullLabel: `${SERVICE_COUNT_CN}项服务`,
+        desc: SHOW_FDE ? '独立站、SEO、GEO、AI 客服与 FDE 驻场' : '独立站、SEO、GEO 与 AI 客服',
+      },
       { id: 'cases', label: '案例', fullLabel: '标杆案例', desc: '爱康医疗、泰宁科创实战拆解' },
-      { id: 'academy', label: '学院', fullLabel: '出海学院', desc: '五门专业课，按角色学习' },
+      { id: 'academy', label: '学院', fullLabel: '出海学院', desc: `${SERVICE_COUNT_CN}门专业课，按角色学习` },
       { id: 'resources', label: '资源', fullLabel: '模板与术语', desc: '实战模板、白皮书与术语百科' },
     ],
   },

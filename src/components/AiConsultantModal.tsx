@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { ArrowUp, Loader2, Sliders, Sparkles } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { Dialog } from './ui/Dialog';
+import { SERVICE_COUNT_CN, SHOW_FDE } from '../lib/features';
 
 const QUICK_PROMPTS = [
   '爱康医疗案例具体是怎么做的？',
@@ -45,11 +46,11 @@ export const AiConsultantModal: React.FC = () => {
     {
       id: 'welcome',
       sender: 'assistant',
-      text: '您好！我是云端智荐官方 AI 售前顾问。\n\n我们专为中国出海企业打通“独立站、SEO、GEO、AI 客服及 FDE 驻场”全链路获客断点。您可以向我询问技术方案、爱康医疗实战案例、预算费用估算，或告诉我您目前的出海痛点。',
+      text: `您好！我是云端智荐官方 AI 售前顾问。\n\n我们专为中国出海企业打通“独立站、SEO、GEO、AI 客服${SHOW_FDE ? '及 FDE 驻场' : '及系统对接'}”全链路获客断点。您可以向我询问技术方案、爱康医疗实战案例、预算费用估算，或告诉我您目前的出海痛点。`,
       timestamp: '刚刚',
       intent: 'LOW',
       intentReason: '初始系统接待',
-      sourceCitations: ['《云端智荐知识库 · 五项服务总则》'],
+      sourceCitations: [`《云端智荐知识库 · ${SERVICE_COUNT_CN}项服务总则》`],
       suggestedNextAction: '点击下方的快捷问题开始，或打开右上角的“CRM 透视”，看我如何实时提取采购意向。',
     }
   ]);

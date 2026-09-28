@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { CheckCircle2, Circle, Lock } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { SegmentedControl } from '../components/ui/SegmentedControl';
+import { SHOW_FDE } from '../lib/features';
 
 type DealTab = 'overview' | 'plan' | 'pricing' | 'qa' | 'contract';
 
@@ -22,7 +23,7 @@ const PRICE_ITEMS = [
 
 const TEAM = [
   { name: 'David Huang', initials: 'DH', role: '出海解决方案总监 · 负责方案' },
-  { name: 'Chen Wei', initials: 'CW', role: 'FDE 驻场交付工程师 · 负责落地' },
+  { name: 'Chen Wei', initials: 'CW', role: SHOW_FDE ? 'FDE 驻场工程师 · 负责三层建设落地' : '交付工程师 · 负责系统落地' },
 ];
 
 const formatRange = (min: number, max: number) => `${min.toFixed(1)} ~ ${max.toFixed(1)} 万元`;
@@ -36,7 +37,7 @@ export const DealRoomView: React.FC<{ onGoToBooking: () => void }> = ({ onGoToBo
     { id: 1, title: '提交现有官网技术与企业产品画册资料', owner: '客户方 (外贸总监)', due: '第 1 周', completed: true },
     { id: 2, title: '完成 4 类海外决策者意图建模与 30 组问题簇审定', owner: '双方联合架构组', due: '第 2 周', completed: false },
     { id: 3, title: '独立站三读者架构与英文内容白皮书初稿评审', owner: '云端智荐交付团队', due: '第 4 周', completed: false },
-    { id: 4, title: 'AI 智能客服沙盒内部测试与 CRM 接口联调', owner: '客户 IT 负责人 & FDE', due: '第 6 周', completed: false },
+    { id: 4, title: 'AI 智能客服沙盒内部测试与 CRM 接口联调', owner: SHOW_FDE ? '客户 IT 负责人 & FDE' : '客户 IT 负责人 & 交付工程师', due: '第 6 周', completed: false },
     { id: 5, title: '全站上线发布并开展首期 AI 可见性月度探针监测', owner: '云端智荐算法组', due: '第 8 周', completed: false },
   ]);
 
@@ -141,7 +142,7 @@ export const DealRoomView: React.FC<{ onGoToBooking: () => void }> = ({ onGoToBo
                   { label: '预算区间', value: activeProposal?.budgetRange || '26.0 ~ 36.0 万元' },
                   { label: '交付周期', value: activeProposal?.timeline || '8 ~ 12 周' },
                   { label: '协同架构师', value: 'David Huang' },
-                  { label: '交付模式', value: '敏捷驻场' },
+                  { label: '交付模式', value: SHOW_FDE ? '敏捷驻场' : '敏捷迭代' },
                 ].map((stat) => (
                   <div key={stat.label}>
                     <dt className="text-caption text-label-secondary">{stat.label}</dt>

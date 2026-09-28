@@ -16,6 +16,7 @@ import { Reveal } from '../components/ui/Reveal';
 import { ScoreRing } from '../components/ui/ScoreRing';
 import { SERVICE_IDENTITY, ServiceKey } from '../components/ui/serviceIdentity';
 import { scoreTone, TONE_BG, TONE_TEXT } from '../components/ui/tone';
+import { SERVICE_COUNT_CN, SHOW_FDE } from '../lib/features';
 
 interface HomeViewProps {
   onNavigate: (tab: TabId) => void;
@@ -48,7 +49,7 @@ const AUDIT_STEPS = [
   '测算北京时间夜间 8 小时海外买家跨时区流失概率',
 ];
 
-const SERVICES: { key: ServiceKey; title: string; desc: string; link: string }[] = [
+const ALL_SERVICES: { key: ServiceKey; title: string; desc: string; link: string }[] = [
   {
     key: 'site',
     title: '海外独立站建站',
@@ -76,10 +77,11 @@ const SERVICES: { key: ServiceKey; title: string; desc: string; link: string }[]
   {
     key: 'fde',
     title: 'FDE 驻场工程师',
-    desc: '资深工程师驻场打通 CRM 与 ERP，把买家站内行为编译为见面前的商业情报。源码与数据全归企业。',
-    link: '了解驻场模式',
+    desc: '带着 AI 驻场一线，把业务经验写成标准、装进系统、交给 AI 执行。源码、数据和会用的人都留给企业。',
+    link: '了解三层建设',
   },
 ];
+const SERVICES = SHOW_FDE ? ALL_SERVICES : ALL_SERVICES.filter((service) => service.key !== 'fde');
 
 const TOOLS: { tab: TabId; icon: React.ComponentType<{ className?: string }>; title: string; desc: string; link: string }[] = [
   {
@@ -93,7 +95,7 @@ const TOOLS: { tab: TabId; icon: React.ComponentType<{ className?: string }>; ti
     tab: 'configurator',
     icon: Calculator,
     title: '方案组合与预算配置',
-    desc: '自由组合独立站、SEO、GEO、AI 客服与 FDE 驻场，实时得到预算区间、排期与交付物清单。',
+    desc: `自由组合独立站、SEO、GEO${SHOW_FDE ? '、AI 客服与 FDE 驻场' : ' 与 AI 客服'}，实时得到预算区间、排期与交付物清单。`,
     link: '测算预算',
   },
   {
@@ -265,7 +267,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate, openBookingModal
           <span className="text-gradient-ai">让 AI 替你接住生意</span>
         </h1>
         <p className="mx-auto mt-6 max-w-2xl text-intro text-label-secondary">
-          独立站建站 · GEO · SEO · AI 智能客服及系统对接 · FDE 驻场工程师。
+          独立站建站 · GEO · SEO · AI 智能客服及系统对接{SHOW_FDE && ' · FDE 驻场工程师'}。
           为中国中型制造企业打通出海获客到售前转化的每一个环节。
         </p>
         <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
@@ -492,12 +494,12 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate, openBookingModal
         </div>
       </section>
 
-      {/* ===================== 五项服务 ===================== */}
+      {/* ===================== 核心服务 ===================== */}
       <section className="section layout-wide">
         <Reveal className="mx-auto max-w-4xl text-center">
           <p className="eyebrow">核心服务</p>
           <h2 className="mt-3 text-headline">
-            <span className="inline-block">五项服务，</span>
+            <span className="inline-block">{SERVICE_COUNT_CN}项服务，</span>
             <span className="inline-block">一套获客系统。</span>
           </h2>
           <p className="mx-auto mt-5 max-w-2xl text-intro text-label-secondary">
@@ -509,7 +511,13 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate, openBookingModal
           {SERVICES.map((service, index) => {
             const identity = SERVICE_IDENTITY[service.key];
             const Icon = identity.icon;
-            const span = index < 2 ? 'lg:col-span-3' : index === 4 ? 'md:col-span-2 lg:col-span-2' : 'lg:col-span-2';
+            // 五张：前两张各占 3 列、后三张各占 2 列；四张：2 × 2
+            const span =
+              index < 2 || SERVICES.length === 4
+                ? 'lg:col-span-3'
+                : index === 4
+                  ? 'md:col-span-2 lg:col-span-2'
+                  : 'lg:col-span-2';
             return (
               <button
                 key={service.key}

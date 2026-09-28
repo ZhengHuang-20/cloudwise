@@ -3,6 +3,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 import { GoogleGenAI } from '@google/genai';
+import { SERVICE_COUNT_CN, SHOW_FDE } from './src/lib/features';
 
 dotenv.config();
 
@@ -33,17 +34,24 @@ if (apiKey && apiKey !== 'MY_GEMINI_API_KEY') {
   }
 }
 
+// FDE 驻场服务的知识条目：SHOW_FDE 为 false 时不进入知识库，AI 顾问既不介绍也不推荐 FDE
+const FDE_KNOWLEDGE = `5. FDE 驻场工程师（解决“连不上”）：源自 Palantir 的前线部署工程模式，OpenAI、Anthropic 等 AI 公司也在用它推动企业 AI 落地。FDE 带着 AI 驻场业务一线，对业务结果负责，而不是对工时或需求文档负责。工作自下而上分三层：
+   - 标准化（把经验写成规则）：跟岗访谈业务骨干，用 AI 从历史邮件、报价单和聊天记录中归纳 SOP、产品参数主数据、报价规则与询盘分级标准，由业务负责人审定。
+   - 信息化（把规则装进系统）：用 AI 辅助数据清洗、字段映射和接口脚本，打通独立站表单、邮件、WhatsApp、CRM 与 ERP，配好权限、日志和管理看板。
+   - 智能化（让 AI 在系统上干活）：在规则和数据之上部署 AI 客服、询盘分级、报价助手与会前商业情报，每个场景配评测集和人工复核点，按周调优。
+   每周一轮“观察-原型-试用-沉淀”，从一个高价值场景切入，2 ~ 4 周跑通第一个闭环，按层验收。离场时源码、数据、文档归企业，并培养企业内部 AI 骨干。核心观点：没有标准化的智能化，只是把混乱自动化。`;
+
 // Enterprise Knowledge Base definition for Grounded Pre-Sales Consultant
 const SYSTEM_KNOWLEDGE_INSTRUCTION = `
 你是“云端智荐”的资深 AI 出海售前咨询顾问。
 云端智荐定位是“中国出海企业 AI 售前支持系统 + 能力样板间”。
 
-【五大核心服务与解决的五大断点】：
+【${SERVICE_COUNT_CN}大核心服务与解决的五大断点】：
 1. 海外独立站建站（解决“读不懂”）：针对海外买家、Google、AI 三类读者协同构建。解决传统画册型官网无人能懂的问题。
 2. 外贸 SEO 优化（解决“看不见”）：E-E-A-T 质量框架、关键词集群、让海外买家在 Google 首页找到你。
 3. 出海 GEO 优化（解决“不被信”）：生成式引擎优化，让 ChatGPT、Perplexity、Gemini 等 AI 答案直接推荐客户品牌。六步闭环：诊断、建模、内容、信源、口碑、监测。
-4. AI 智能客服及系统对接（解决“接不住”）：7×24小时跨时区接住海外询盘，多语种即时答复，结构化抽取需求，直连 CRM、企业微信与邮件。
-5. FDE 驻场工程师（解决“连不上”）：借鉴 Palantir 驻场工程理念，每周一轮“观察-原型-试用-修改”，把业务系统做成、接通、用起来。
+4. AI 智能客服及系统对接（解决“接不住”${SHOW_FDE ? '' : '与“连不上”'}）：7×24小时跨时区接住海外询盘，多语种即时答复，结构化抽取需求，直连 CRM、企业微信与邮件。
+${SHOW_FDE ? FDE_KNOWLEDGE : ''}
 
 【代表案例】：
 - 爱康医疗（港股上市，骨科植入物）：旧官网 AI 可见性评分 47 分，经 4 类海外决策者建模、全年 91 项英文权威内容规划与信源建设，新站可见性提升至 95 分，ChatGPT 连续数月带来真实引荐高意向访问。
@@ -51,14 +59,14 @@ const SYSTEM_KNOWLEDGE_INSTRUCTION = `
 
 【价格与预算规则】：
 - 基础诊断与自评工具完全免费提供。
-- 单项服务通常区间：独立站 8-20 万元；SEO 6-15 万元/年；GEO 12-30 万元/年；AI 客服 5-15 万元；FDE 驻场 20-50 万元。组合打包方案享有协同折扣（约 85 折至 9 折）。
+- 单项服务通常区间：独立站 8-20 万元；SEO 6-15 万元/年；GEO 12-30 万元/年；AI 客服 5-15 万元${SHOW_FDE ? '；FDE 驻场 20-50 万元' : ''}。组合打包方案享有协同折扣（约 85 折至 9 折）。
 - 绝不对任何未实测客户承诺“保证第一名”或虚假夸大。所有价格以诊断会后定制方案为准。
 
 【你的任务与风格】：
 1. 用专业、客观、严谨、有洞察力的语气回答外贸决策者（老板、外贸总监、IT 负责人）。
 2. 在回答最后，自然引导客户下一步行动（如：进行五断点自评、体验 AI 可见性测评、使用方案配置器、或预约 30 分钟线上诊断会）。
 3. 必须输出结构化的意向评估（提取：行业、官网、目标市场、意向等级 HIGH/MEDIUM/LOW、建议推荐服务与下一步动作）。
-`;
+${SHOW_FDE ? '' : '4. 不提及 FDE 或驻场工程师服务；客户问到驻场支持时，引导其预约 60 分钟技术对接评估会，沟通系统对接需求。\n'}`;
 
 // API: Check health & Gemini status
 app.get('/api/health', (req, res) => {
@@ -162,19 +170,19 @@ app.post('/api/gemini/chat', async (req, res) => {
     suggestedNextAction = '推荐体验“AI 客服沙盒”，模拟海外买家提问，实时透视 CRM 卡片生成过程。';
     citations.push('《凌晨三点询盘自动化流转标准》');
   } else if (lowerMsg.includes('多少钱') || lowerMsg.includes('价格') || lowerMsg.includes('费用') || lowerMsg.includes('预算')) {
-    answer = `云端智荐采用透明的模块化定价体系：\n- 独立站建站：8~20 万元（含英文内容重写、三读者架构）\n- 外贸 SEO 优化：6~15 万元/年\n- 出海 GEO 优化：12~30 万元/年（含全年多平台信源搭建与月度监测）\n- AI 智能客服：5~15 万元（含知识库切分、多语种与 CRM 对接）\n- FDE 驻场工程师：20~50 万元/周期\n\n多项组合采购可享协同折扣并共用同一套企业知识资产。`;
+    answer = `云端智荐采用透明的模块化定价体系：\n- 独立站建站：8~20 万元（含英文内容重写、三读者架构）\n- 外贸 SEO 优化：6~15 万元/年\n- 出海 GEO 优化：12~30 万元/年（含全年多平台信源搭建与月度监测）\n- AI 智能客服：5~15 万元（含知识库切分、多语种与 CRM 对接）${SHOW_FDE ? '\n- FDE 驻场工程师：20~50 万元/周期' : ''}\n\n多项组合采购可享协同折扣并共用同一套企业知识资产。`;
     intent = 'HIGH';
     intentReason = '深入询问商业报价与预算，进入高意向商务评估阶段';
-    recommendedServices.push('整体服务组合（五项全做）');
+    recommendedServices.push(`整体服务组合（${SERVICE_COUNT_CN}项全做）`);
     suggestedNextAction = '建议打开站内“方案配置器”，根据您的 SKU 数量与市场规模即时测算详细预算区间。';
-  } else if (lowerMsg.includes('fde') || lowerMsg.includes('驻场') || lowerMsg.includes('工程师')) {
-    answer = `FDE（Forward Deployed Engineer，前线驻场工程师）模式源自 Palantir。传统外包给的是代码，SaaS 给的是账号，而 FDE 是直接深入您的外贸业务一线。\n\nFDE 每周通过“观察销售报价 - 现场做原型 - 一线试用 - 当周修改”的敏捷循环，确保无论是独立站、知识库还是 CRM 接口，不仅做成、接通，而且真正让外贸团队用得顺手。源代码与数据全部沉淀在企业本地。`;
+  } else if (SHOW_FDE && (lowerMsg.includes('fde') || lowerMsg.includes('驻场') || lowerMsg.includes('工程师'))) {
+    answer = `FDE（Forward Deployed Engineer，前线部署工程师）源自 Palantir，如今 OpenAI、Anthropic 等 AI 公司也在用它推动企业 AI 落地。咨询给的是建议，外包给的是代码，SaaS 给的是账号，而 FDE 带着 AI 驻场您的业务一线，对业务结果负责。\n\nFDE 的工作自下而上分三层：\n- 标准化：把老业务员的报价、询盘分级等经验写成规则\n- 信息化：把规则装进系统，打通独立站、邮件、WhatsApp、CRM 与 ERP\n- 智能化：在干净的数据上让 AI 客服、报价助手等场景真正干活\n\n每周一轮“观察-原型-试用-沉淀”，离场时源码、数据、文档和会用的人都留给企业。`;
     intent = 'MEDIUM';
     intentReason = '了解交付模式与技术落地保障';
     recommendedServices.push('FDE 驻场工程师服务');
     suggestedNextAction = '建议预约 60 分钟技术对接评估会，与我们的技术专家面对面梳理系统现状。';
   } else {
-    answer = `您好！我是云端智荐 AI 售前顾问。我们专注解决中国企业出海获客全链路的五大断点：看不见（SEO/GEO）、读不懂（独立站）、不被信（权威内容）、接不住（AI 客服）、连不上（系统对接与 FDE 驻场）。\n\n您可以告诉我您企业的主营产品和目前海外获客遇到的主要困扰，我将为您梳理最精准的破局路径。`;
+    answer = `您好！我是云端智荐 AI 售前顾问。我们专注解决中国企业出海获客全链路的五大断点：看不见（SEO/GEO）、读不懂（独立站）、不被信（权威内容）、接不住（AI 客服）、连不上（${SHOW_FDE ? '经验、系统与 AI 没打通，由 FDE 驻场解决' : '询盘与 CRM、ERP 系统没打通'}）。\n\n您可以告诉我您企业的主营产品和目前海外获客遇到的主要困扰，我将为您梳理最精准的破局路径。`;
     intent = 'LOW';
     intentReason = '初次探索交流';
     recommendedServices.push('五断点自评', '独立站建站');

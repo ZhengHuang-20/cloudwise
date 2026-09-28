@@ -16,6 +16,7 @@ import { SegmentedControl } from '../components/ui/SegmentedControl';
 import { Slider } from '../components/ui/Slider';
 import { ScoreRing } from '../components/ui/ScoreRing';
 import { scoreTone, TONE_BG, TONE_TEXT } from '../components/ui/tone';
+import { SHOW_FDE } from '../lib/features';
 
 interface DiagnosisCenterProps {
   onGoToConfigurator: (prefillData?: any) => void;
@@ -173,7 +174,7 @@ export const DiagnosisCenter: React.FC<DiagnosisCenterProps> = ({ onGoToConfigur
     const weakest = breakdown[0].name;
     let combo = '获客增长组合（独立站 + SEO + GEO）';
     if (missed < 40 || disconnected < 40) {
-      combo = '整体全案服务（获客 + AI 客服 + FDE 驻场）';
+      combo = SHOW_FDE ? '整体全案服务（获客 + AI 客服 + FDE 驻场）' : '整体全案服务（获客 + AI 客服 + 系统对接）';
     }
 
     const res = {
@@ -359,7 +360,7 @@ export const DiagnosisCenter: React.FC<DiagnosisCenterProps> = ({ onGoToConfigur
                       { label: '读不懂', desc: '独立站体验与速度', score: radarResult.scores.unreadable },
                       { label: '不被信', desc: '权威信源与证据链', score: radarResult.scores.untrusted },
                       { label: '接不住', desc: '夜间询盘即时响应', score: radarResult.scores.missed },
-                      { label: '连不上', desc: 'CRM 打通与 FDE', score: radarResult.scores.disconnected },
+                      { label: '连不上', desc: SHOW_FDE ? 'CRM 打通与 FDE' : 'CRM 与系统打通', score: radarResult.scores.disconnected },
                     ].map((item) => {
                       const tone = scoreTone(item.score);
                       return (
