@@ -13,9 +13,7 @@ import { isTabId, TabId, tabTitle } from './components/navigation';
 import { HomeView } from './views/HomeView';
 import { ServicesView } from './views/ServicesView';
 import { AcademyView } from './views/AcademyView';
-import { DiagnosisCenter } from './views/DiagnosisCenter';
 import { ConfiguratorView } from './views/ConfiguratorView';
-import { SandboxView } from './views/SandboxView';
 import { CasesView } from './views/CasesView';
 import { DealRoomView } from './views/DealRoomView';
 import { ResourcesView } from './views/ResourcesView';
@@ -70,6 +68,20 @@ function MainApp() {
 
   const openBooking = () => setIsBookingOpen(true);
 
+  // 站内唯一的自测工具是首页的 AI 可见性测评（#audit）
+  const goToAudit = () => {
+    navigate('home');
+    requestAnimationFrame(() => document.getElementById('audit')?.scrollIntoView({ block: 'start' }));
+  };
+
+  // 课程「下一步」与配套工具按目标分流
+  const handleCourseTarget = (targetId: string) => {
+    if (targetId === 'configurator') navigate('configurator');
+    else if (targetId === 'booking') openBooking();
+    else if (targetId.startsWith('resources')) navigate('resources');
+    else goToAudit();
+  };
+
   return (
     <div className="relative flex min-h-screen flex-col bg-canvas text-label">
       <button
@@ -95,17 +107,13 @@ function MainApp() {
         {currentTab === 'services' && (
           <ServicesView
             onGoToCourse={() => navigate('academy')}
-            onGoToDiagnosis={() => navigate('diagnosis')}
+            onGoToAudit={goToAudit}
             onGoToConfigurator={(combo) => handleNavigateToConfigurator({ packageType: combo })}
           />
         )}
 
         {currentTab === 'academy' && (
-          <AcademyView onGoToTool={() => navigate('diagnosis')} onGoToBooking={openBooking} />
-        )}
-
-        {currentTab === 'diagnosis' && (
-          <DiagnosisCenter onGoToConfigurator={handleNavigateToConfigurator} onGoToBooking={openBooking} />
+          <AcademyView onGoToTool={handleCourseTarget} onGoToBooking={openBooking} />
         )}
 
         {currentTab === 'configurator' && (
@@ -116,12 +124,8 @@ function MainApp() {
           />
         )}
 
-        {currentTab === 'sandbox' && (
-          <SandboxView onGoToConfigurator={() => handleNavigateToConfigurator({ packageType: 'package-single' })} />
-        )}
-
         {currentTab === 'cases' && (
-          <CasesView onGoToDiagnosis={() => navigate('diagnosis')} onGoToCourse={() => navigate('academy')} />
+          <CasesView onGoToAudit={goToAudit} onGoToCourse={() => navigate('academy')} />
         )}
 
         {currentTab === 'deal-room' && <DealRoomView onGoToBooking={openBooking} />}

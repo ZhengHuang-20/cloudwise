@@ -118,7 +118,7 @@ export const DealRoomView: React.FC<{ onGoToBooking: () => void }> = ({ onGoToBo
                   尊敬的 <span className="font-semibold text-label">{user?.companyName || '贵司团队'}</span> 决策层：
                 </p>
                 <p>
-                  综合五断点自评与 AI 可见性测试，贵司在海外采购市场的核心卡点集中在
+                  综合 AI 可见性测评与前期访谈，贵司在海外采购市场的核心卡点集中在
                   <span className="font-semibold text-label">“海外买家问 AI 时查无此人（GEO 不被信）”</span>与
                   <span className="font-semibold text-label">“跨时区夜间询盘延迟流失（接不住）”</span>。
                 </p>

@@ -2,7 +2,7 @@ import { SERVICE_COUNT_CN, SHOW_FDE } from '../lib/features';
 
 /**
  * 全站导航的唯一数据源：Header、Footer、App 的地址同步都从这里取。
- * 顺序按买家旅程分组：了解 → 自测 → 决策（DESIGN.md §5.3）。
+ * 顺序按买家旅程分组：了解 → 决策（DESIGN.md §4.5）。自测工具只有首页的 AI 可见性测评，不单独成页。
  */
 export type TabId =
   | 'home'
@@ -10,8 +10,6 @@ export type TabId =
   | 'cases'
   | 'academy'
   | 'resources'
-  | 'diagnosis'
-  | 'sandbox'
   | 'configurator'
   | 'deal-room';
 
@@ -42,13 +40,6 @@ export const NAV_GROUPS: NavGroup[] = [
       { id: 'cases', label: '案例', fullLabel: '标杆案例', desc: '爱康医疗、泰宁科创实战拆解' },
       { id: 'academy', label: '学院', fullLabel: '出海学院', desc: `${SERVICE_COUNT_CN}门专业课，按角色学习` },
       { id: 'resources', label: '资源', fullLabel: '模板与术语', desc: '实战模板、白皮书与术语百科' },
-    ],
-  },
-  {
-    title: '自测',
-    items: [
-      { id: 'diagnosis', label: '体检', fullLabel: '断点体检', desc: '12 项断点自测与 AI 可见性测评' },
-      { id: 'sandbox', label: '体验', fullLabel: '能力体验', desc: '亲手试用 AI 客服与数据看板' },
     ],
   },
   {

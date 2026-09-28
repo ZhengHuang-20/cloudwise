@@ -5,10 +5,7 @@ import {
   CheckCircle2,
   ChevronRight,
   Globe,
-  Laptop2,
-  ListChecks,
   Loader2,
-  Radar,
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { TabId } from '../components/navigation';
@@ -82,30 +79,6 @@ const ALL_SERVICES: { key: ServiceKey; title: string; desc: string; link: string
   },
 ];
 const SERVICES = SHOW_FDE ? ALL_SERVICES : ALL_SERVICES.filter((service) => service.key !== 'fde');
-
-const TOOLS: { tab: TabId; icon: React.ComponentType<{ className?: string }>; title: string; desc: string; link: string }[] = [
-  {
-    tab: 'diagnosis',
-    icon: Radar,
-    title: '五断点全量体检',
-    desc: '回答 12 道客观题，即刻看清企业在“看不见、读不懂、不被信、接不住、连不上”上的破损程度。',
-    link: '开始体检',
-  },
-  {
-    tab: 'configurator',
-    icon: ListChecks,
-    title: '方案组合与交付规划',
-    desc: `自由组合独立站、SEO、GEO${SHOW_FDE ? '、AI 客服与 FDE 驻场' : ' 与 AI 客服'}，实时得到交付周期、阶段排期与交付物清单。`,
-    link: '规划方案',
-  },
-  {
-    tab: 'sandbox',
-    icon: Laptop2,
-    title: '海外买家交互沙盒',
-    desc: '扮演德国工程师、美国分销商或中东医院代表，看 AI 客服如何在凌晨三点给出有据可查的回答。',
-    link: '进入体验',
-  },
-];
 
 const prefersReducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -241,7 +214,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate, openBookingModal
 
       // Log activity in CRM and notify user
       logLeadActivity(`完成了【${targetName}】官网/品牌 GEO & SEO 智能测评`, 20, { target: targetName });
-      saveDiagnosis('ai_visibility', '官网 GEO/SEO 即时评估', customPreset ? customPreset.result.totalScore : 48, '官网与品牌出海能力测绘', {});
+      saveDiagnosis('ai_visibility', 'AI 可见性测评', customPreset ? customPreset.result.totalScore : 48, '官网与品牌出海能力测绘', {});
       showToast('评估报告已生成');
     }, 2000);
   };
@@ -285,10 +258,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate, openBookingModal
         <div className="tile mx-auto max-w-3xl">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <h2 className="text-title-2">
-                <span className="inline-block">品牌与官网</span>
-                <span className="inline-block">出海就绪度评估</span>
-              </h2>
+              <h2 className="text-title-2">AI 可见性测评</h2>
               <p className="mt-2 text-body text-label-secondary">
                 输入英文官网或品牌名，探查海外大模型收录与 Google 搜索排位。
               </p>
@@ -480,9 +450,6 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate, openBookingModal
                   <button type="button" onClick={openBookingModal} className="btn btn-primary">
                     预约 45 分钟深度复盘
                   </button>
-                  <button type="button" onClick={() => onNavigate('diagnosis')} className="btn btn-secondary">
-                    完成 12 项完整体检
-                  </button>
                   <button type="button" onClick={() => onNavigate('configurator')} className="link justify-center px-2 py-2 text-body sm:justify-start">
                     规划服务方案
                     <ChevronRight />
@@ -530,40 +497,6 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate, openBookingModal
                 <p className="mt-3 flex-1 text-body text-label-secondary">{service.desc}</p>
                 <span className="link mt-6 text-body">
                   {service.link}
-                  <ChevronRight className="transition-transform duration-200 group-hover:translate-x-0.5" />
-                </span>
-              </button>
-            );
-          })}
-        </Reveal>
-      </section>
-
-      {/* ===================== 售前工具 ===================== */}
-      <section className="section layout-wide pt-0">
-        <Reveal className="mx-auto max-w-4xl text-center">
-          <p className="eyebrow">售前工具</p>
-          <h2 className="mt-3 text-headline">
-            <span className="inline-block">见销售之前，</span>
-            <span className="inline-block">先看清问题与方案。</span>
-          </h2>
-          <p className="mx-auto mt-5 max-w-2xl text-intro text-label-secondary">面向出海决策人的自助工具，免注册，打开即用。</p>
-        </Reveal>
-
-        <Reveal className="mt-12 grid grid-cols-1 gap-4 md:grid-cols-3 md:gap-5">
-          {TOOLS.map((tool) => {
-            const Icon = tool.icon;
-            return (
-              <button
-                key={tool.tab}
-                type="button"
-                onClick={() => onNavigate(tool.tab)}
-                className="tile interactive group flex flex-col items-start"
-              >
-                <Icon className="h-8 w-8 text-label" />
-                <h3 className="mt-6 text-title-2">{tool.title}</h3>
-                <p className="mt-3 flex-1 text-body text-label-secondary">{tool.desc}</p>
-                <span className="link mt-6 text-body">
-                  {tool.link}
                   <ChevronRight className="transition-transform duration-200 group-hover:translate-x-0.5" />
                 </span>
               </button>
@@ -641,11 +574,11 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate, openBookingModal
             <span className="inline-block">具备拿下海外大单的转化能力。</span>
           </h2>
           <p className="mx-auto mt-5 max-w-2xl text-intro text-label-secondary">
-            免费完成 12 项断点自测，或预约 45 分钟架构师闭门复盘，获取专属《出海 GEO & SEO 改善路线图》。
+            免费完成 AI 可见性测评，或预约 45 分钟架构师闭门复盘，获取专属《出海 GEO & SEO 改善路线图》。
           </p>
           <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
-            <button type="button" onClick={() => onNavigate('diagnosis')} className="btn btn-primary btn-lg">
-              开始 12 项体检
+            <button type="button" onClick={scrollToAudit} className="btn btn-primary btn-lg">
+              开始 AI 可见性测评
             </button>
             <button type="button" onClick={openBookingModal} className="btn btn-secondary btn-lg">
               预约 45 分钟诊断

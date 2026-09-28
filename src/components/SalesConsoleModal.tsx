@@ -15,11 +15,11 @@ export const SalesConsoleModal: React.FC<{ isOpen: boolean; onClose: () => void 
       text: '决策人已在站内完整阅读《出海认知破幻公理》与《GEO生成式权威信源》，已彻底破除“中文画册直译”与“买流量就有单”的语言幻觉，对三读者架构与第三方背调协议高度认同。',
     },
     {
-      title: '体检断点（已自测）',
+      title: '测评结果（已自测）',
       text:
         diagnoses.length > 0
           ? `已完成 ${diagnoses[0].toolName}，断点得分 ${diagnoses[0].score} 分，薄弱断点：${diagnoses[0].summary}。核心痛点为欧美工程采购看不见、深夜欧美技术质询接不住。`
-          : '已自测五断点，判定核心断损在“看不见（SEO/GEO缺席）”与“接不住（12小时时差流失）”，年均测算潜在线索损耗约 180~320 万元。',
+          : '已完成 AI 可见性测评，判定核心断损在“看不见（SEO/GEO缺席）”与“接不住（12小时时差流失）”，年均测算潜在线索损耗约 180~320 万元。',
     },
     {
       title: '方案偏好（已看方案）',
@@ -36,7 +36,7 @@ export const SalesConsoleModal: React.FC<{ isOpen: boolean; onClose: () => void 
       onClose={onClose}
       size="xl"
       title="售前商业情报"
-      description="销售见面前即可掌握：已被充分教育、已完成体检的高意向线索。"
+      description="销售见面前即可掌握：已被充分教育、已完成测评的高意向线索。"
     >
       <DialogBody>
         {/* 线索概要 */}

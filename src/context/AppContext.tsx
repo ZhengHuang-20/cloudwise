@@ -133,14 +133,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     return [
       {
         id: 'diag-demo-1',
-        toolType: 'five_frictions',
-        toolName: '出海五断点自评',
+        toolType: 'ai_visibility',
+        toolName: 'AI 可见性测评',
         score: 62,
         summary: '在“看不见”与“不被信”断点存在显著薄弱项，建议首选 SEO + GEO 获客组合。',
         date: new Date(Date.now() - 3600000 * 48).toLocaleDateString(),
-        details: {
-          scores: { invisible: 35, unreadable: 60, untrusted: 45, missed: 75, disconnected: 80 }
-        }
+        details: {}
       }
     ];
   });
@@ -179,7 +177,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
     return [
       { id: 'act-1', action: '完成课时：1.1 独立站与电子画册区别', scoreDelta: 1, timestamp: '1天前' },
-      { id: 'act-2', action: '完成五断点自评诊断', scoreDelta: 10, timestamp: '2天前' },
+      { id: 'act-2', action: '完成 AI 可见性测评', scoreDelta: 10, timestamp: '2天前' },
       { id: 'act-3', action: '配置获客组合方案草案', scoreDelta: 15, timestamp: '今天' }
     ];
   });
@@ -387,7 +385,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
     setDiagnoses((prev) => [newRecord, ...prev]);
     logLeadActivity(`完成诊断测试: ${toolName}`, 15, { score });
-    showToast(`体检完成：${score} 分，已存入“我的空间”`);
+    showToast(`测评完成：${score} 分，已存入“我的空间”`);
 
     // Async Supabase sync
     const client = getSupabase();

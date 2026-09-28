@@ -14,7 +14,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, openSalesConsoleModa
   return (
     <footer className="border-t border-separator bg-canvas">
       <div className="layout-wide py-12 md:py-16">
-        <div className="grid grid-cols-2 gap-x-6 gap-y-10 md:grid-cols-4">
+        <div className="grid grid-cols-2 gap-x-6 gap-y-10 md:grid-cols-3">
           <div className="col-span-2 md:col-span-1">
             <p className="text-body font-semibold">云端智荐</p>
             <p className="mt-2 max-w-60 text-caption text-label-secondary">

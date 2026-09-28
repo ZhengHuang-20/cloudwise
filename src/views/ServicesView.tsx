@@ -7,13 +7,13 @@ import { SERVICE_COUNT_CN, SHOW_FDE } from '../lib/features';
 
 interface ServicesViewProps {
   onGoToCourse: (courseCode: string) => void;
-  onGoToDiagnosis: (toolId: string) => void;
+  onGoToAudit: () => void;
   onGoToConfigurator: (combo: string) => void;
 }
 
 export const ServicesView: React.FC<ServicesViewProps> = ({
   onGoToCourse,
-  onGoToDiagnosis,
+  onGoToAudit,
   onGoToConfigurator,
 }) => {
   const allSubsystems: {
@@ -25,7 +25,6 @@ export const ServicesView: React.FC<ServicesViewProps> = ({
     desc: string;
     deliverables: string[];
     courseId: string;
-    toolId: string;
     caseName: string;
     philosophicalNote: string;
   }[] = [
@@ -43,8 +42,7 @@ export const ServicesView: React.FC<ServicesViewProps> = ({
         '行为探针与线索数据直连企业私有 CRM'
       ],
       courseId: 'A',
-      toolId: 'health',
-      caseName: '爱康医疗独立站就绪度自测 95 分',
+      caseName: '爱康医疗新建海外官网 GEO / SEO 评分 95 分',
       philosophicalNote: '命题的意义在于其逻辑结构。无法被海外工程师验证的技术指标，等同于无意义的噪音。'
     },
     {
@@ -61,7 +59,6 @@ export const ServicesView: React.FC<ServicesViewProps> = ({
         'GA4 全链路商机归因与转化漏洞监测'
       ],
       courseId: 'B',
-      toolId: 'frictions',
       caseName: '泰宁科创 60 组核心词覆盖欧美市政采购',
       philosophicalNote: '语言的界限即世界的界限。若企业未进入海外采购的词汇系统，在商业逻辑中便等于不存在。'
     },
@@ -79,7 +76,6 @@ export const ServicesView: React.FC<ServicesViewProps> = ({
         '月度主流 AI 平台推荐能见度探针与竞品对标月报'
       ],
       courseId: 'C',
-      toolId: 'visibility',
       caseName: '爱康医疗在 ChatGPT 骨科器械推荐中连续捕获真实意向',
       philosophicalNote: '信念需要证据支撑。缺乏第三方知识图谱背书的主张，在采购审计中必然被判定为伪。'
     },
@@ -97,7 +93,6 @@ export const ServicesView: React.FC<ServicesViewProps> = ({
         '高价值线索毫秒级推送企业微信与销售 CRM'
       ],
       courseId: 'D',
-      toolId: 'loss',
       caseName: '凌晨 03:12 欧美采购质询，03:14 自动沉淀商业档案',
       philosophicalNote: '时间是因果链的介质。响应的延迟必然导致交易因果链条的断裂。'
     },
@@ -115,7 +110,6 @@ export const ServicesView: React.FC<ServicesViewProps> = ({
         '源码、数据与文档归企业，同步培养内部 AI 骨干'
       ],
       courseId: 'E',
-      toolId: 'flow',
       caseName: '询盘分级：一周内从凭经验判断到 AI 按规则打标',
       philosophicalNote: '没有标准化的智能化，只是把混乱自动化。AI 放大的永远是企业已有的秩序。'
     },
@@ -201,14 +195,9 @@ export const ServicesView: React.FC<ServicesViewProps> = ({
                   <dt className="text-caption text-label-secondary">实战验证</dt>
                   <dd className="mt-1 text-body">{svc.caseName}</dd>
                 </dl>
-                <div className="mt-6 space-y-3">
-                  <button type="button" onClick={() => onGoToDiagnosis(svc.toolId)} className="btn btn-primary btn-block">
-                    体检这一环节
-                  </button>
-                  <button type="button" onClick={() => onGoToCourse(svc.courseId)} className="btn btn-secondary btn-block">
-                    学习课程 {svc.code}
-                  </button>
-                </div>
+                <button type="button" onClick={() => onGoToCourse(svc.courseId)} className="btn btn-secondary btn-block mt-6">
+                  学习课程 {svc.code}
+                </button>
               </aside>
             </article>
           );
@@ -230,8 +219,8 @@ export const ServicesView: React.FC<ServicesViewProps> = ({
             >
               配置获客组合
             </button>
-            <button type="button" onClick={() => onGoToDiagnosis('frictions')} className="btn btn-secondary btn-lg">
-              先做断点体检
+            <button type="button" onClick={onGoToAudit} className="btn btn-secondary btn-lg">
+              先做 AI 可见性测评
             </button>
           </div>
         </section>

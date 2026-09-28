@@ -83,7 +83,7 @@ CREATE TABLE IF NOT EXISTS public.saved_proposals (
       onClose={onClose}
       size="md"
       title="数据同步设置"
-      description="连接 Supabase 后，学习进度、体检档案与方案会同步到云端。"
+      description="连接 Supabase 后，学习进度、测评档案与方案会同步到云端。"
     >
       <div className="shrink-0 border-b border-separator px-6 py-3 sm:px-8">
         <SegmentedControl

@@ -5,7 +5,7 @@ import { PageHeader } from '../components/ui/PageHeader';
 import { SegmentedControl } from '../components/ui/SegmentedControl';
 
 interface CasesViewProps {
-  onGoToDiagnosis: () => void;
+  onGoToAudit: () => void;
   onGoToCourse: (courseCode: string) => void;
 }
 
@@ -15,7 +15,7 @@ const splitName = (name: string) => {
   return match ? { primary: match[1], secondary: match[2] } : { primary: name, secondary: '' };
 };
 
-export const CasesView: React.FC<CasesViewProps> = ({ onGoToDiagnosis }) => {
+export const CasesView: React.FC<CasesViewProps> = ({ onGoToAudit }) => {
   const [activeTab, setActiveTab] = useState<'cases' | 'solutions'>('cases');
   const [selectedCaseId, setSelectedCaseId] = useState<string>('case-ak-medical');
 
@@ -155,8 +155,8 @@ export const CasesView: React.FC<CasesViewProps> = ({ onGoToDiagnosis }) => {
 
               <div className="mt-10 flex flex-col gap-6 border-t border-separator pt-8 md:flex-row md:items-center md:justify-between">
                 <p className="max-w-2xl text-caption text-label-secondary">{currentCase.dataScopeStatement}</p>
-                <button type="button" onClick={onGoToDiagnosis} className="btn btn-primary shrink-0">
-                  为我的企业做同款体检
+                <button type="button" onClick={onGoToAudit} className="btn btn-primary shrink-0">
+                  为我的企业做同款测评
                 </button>
               </div>
             </article>

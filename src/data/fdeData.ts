@@ -1,5 +1,5 @@
 // FDE 驻场服务的方法论内容：三层建设、每周闭环与离场设计。
-// 服务页的三层图、体验页的「FDE 的一周」共用这里的数据；AI 顾问的知识库（server.ts）与课程 E、术语表中的同类表述需保持一致。
+// 服务页的三层图使用这里的数据；AI 顾问的知识库（server.ts）与课程 E、术语表中的同类表述需保持一致。
 
 export interface FdeLayer {
   step: 1 | 2 | 3;
@@ -46,34 +46,4 @@ export const FDE_LOOP: { name: string; desc: string }[] = [
   { name: '试用', desc: '业务员拿真实询盘试用' },
   { name: '沉淀', desc: '有效做法写回标准与系统' },
 ];
-
-/** 体验页示例：一个场景走完一轮闭环，三层各往前走一步 */
-export const FDE_WEEK_EXAMPLE: { loop: string; when: string; layer: string; desc: string }[] = [
-  {
-    loop: '观察',
-    when: '周一 ~ 周二',
-    layer: '标准化',
-    desc: '跟岗三位业务员，看他们怎样判断一封询盘值不值得跟；用 AI 从近三个月的询盘邮件里归纳出分级规则初稿。',
-  },
-  {
-    loop: '原型',
-    when: '周三',
-    layer: '信息化',
-    desc: '把分级规则变成 CRM 里的意向字段，接通独立站表单与询盘邮箱，新询盘自动入库。',
-  },
-  {
-    loop: '试用',
-    when: '周四',
-    layer: '智能化',
-    desc: 'AI 按规则给新询盘打上高、中、低意向，业务员逐条确认或纠正。',
-  },
-  {
-    loop: '沉淀',
-    when: '周五',
-    layer: '标准化',
-    desc: '把纠正过的案例写回规则和评测集，出一页周报，与业务负责人定下周的场景。',
-  },
-];
-
-export const FDE_WEEK_OUTPUTS = ['询盘分级规则第一版，写进 SOP', 'CRM 意向字段与询盘自动入库', 'AI 自动打标与首批评测样本'];
 

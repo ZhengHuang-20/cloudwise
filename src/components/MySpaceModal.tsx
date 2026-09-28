@@ -77,7 +77,7 @@ export const MySpaceModal: React.FC<MySpaceModalProps> = ({ isOpen, onClose, ope
           onChange={setActiveTab}
           options={[
             { id: 'progress', label: '学习进度', icon: GraduationCap },
-            { id: 'diagnoses', label: `体检档案 ${diagnoses.length}`, icon: Activity },
+            { id: 'diagnoses', label: `测评档案 ${diagnoses.length}`, icon: Activity },
             { id: 'proposals', label: `方案草案 ${savedProposals.length}`, icon: FileText },
             { id: 'certificate', label: '能力认证', icon: Award },
             { id: 'profile', label: '企业档案', icon: Sliders },
@@ -92,7 +92,7 @@ export const MySpaceModal: React.FC<MySpaceModalProps> = ({ isOpen, onClose, ope
               {[
                 { label: '已学完课时', value: totalCompletedLessons, unit: '节' },
                 { label: '课后自测', value: completedQuizzesCount, unit: '次' },
-                { label: '体检测试', value: diagnoses.length, unit: '项' },
+                { label: '可见性测评', value: diagnoses.length, unit: '次' },
                 { label: '方案草案', value: savedProposals.length, unit: '份' },
               ].map((stat) => (
                 <div key={stat.label} className="well">
@@ -129,7 +129,7 @@ export const MySpaceModal: React.FC<MySpaceModalProps> = ({ isOpen, onClose, ope
 
         {activeTab === 'diagnoses' &&
           (diagnoses.length === 0 ? (
-            <EmptyState text="还没有体检记录。完成任一体检工具后，结果会自动保存在这里。" />
+            <EmptyState text="还没有测评记录。在首页完成 AI 可见性测评后，结果会自动保存在这里。" />
           ) : (
             <ul className="divide-y divide-separator border-y border-separator animate-fade-in">
               {diagnoses.map((diag) => (
