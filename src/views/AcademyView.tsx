@@ -1,28 +1,35 @@
 import React, { useState } from 'react';
-import {
-  GraduationCap,
-  BookOpen,
-  CheckCircle2,
-  Clock,
-  Sparkles,
-  ArrowRight,
-  PlayCircle,
-  FileCheck,
-  Award,
-  ChevronDown,
-  ChevronRight,
-  Users
-} from 'lucide-react';
-import { COURSES, Course, Lesson, ROLE_LEARNING_PATHS } from '../data/coursesData';
+import { CheckCircle2, ChevronDown, ChevronRight, PlayCircle } from 'lucide-react';
+import { COURSES, Lesson, ROLE_LEARNING_PATHS } from '../data/coursesData';
 import { useApp } from '../context/AppContext';
 import { LessonModal } from '../components/LessonModal';
+import { PageHeader } from '../components/ui/PageHeader';
+import { SegmentedControl } from '../components/ui/SegmentedControl';
 
 interface AcademyViewProps {
   onGoToTool: (toolId: string) => void;
   onGoToBooking: () => void;
 }
 
-export const AcademyView: React.FC<AcademyViewProps> = ({ onGoToTool, onGoToBooking }) => {
+const TOTAL_LESSONS = COURSES.reduce((sum, course) => sum + course.totalLessons, 0);
+
+// 课程标题形如「GEO——让 AI 在答案里说出你的名字」
+const splitTitle = (title: string) => {
+  const [short, tagline] = title.split('——');
+  return { short, tagline: tagline || short };
+};
+
+const findLesson = (lessonId: string) => {
+  for (const course of COURSES) {
+    for (const mod of course.modules) {
+      const lesson = mod.lessons.find((l) => l.id === lessonId);
+      if (lesson) return { course, lesson };
+    }
+  }
+  return null;
+};
+
+export const AcademyView: React.FC<AcademyViewProps> = ({ onGoToTool }) => {
   const { isLessonCompleted, getCourseProgressPercentage, totalCompletedLessons } = useApp();
 
   const [activeCourseId, setActiveCourseId] = useState<string>('course-c-geo');
@@ -35,6 +42,8 @@ export const AcademyView: React.FC<AcademyViewProps> = ({ onGoToTool, onGoToBook
   });
 
   const currentCourse = COURSES.find((c) => c.id === activeCourseId) || COURSES[2];
+  const currentTitle = splitTitle(currentCourse.title);
+  const currentProgress = getCourseProgressPercentage(currentCourse.id);
 
   const toggleModule = (modIdx: number) => {
     setExpandedModules((prev) => ({
@@ -43,240 +52,202 @@ export const AcademyView: React.FC<AcademyViewProps> = ({ onGoToTool, onGoToBook
     }));
   };
 
-  const handleOpenLesson = (lesson: Lesson) => {
-    setActiveLesson(lesson);
+  const openLessonById = (lessonId: string) => {
+    const found = findLesson(lessonId);
+    if (found) {
+      setActiveCourseId(found.course.id);
+      setActiveLesson(found.lesson);
+    }
   };
 
   return (
-    <div className="py-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto text-[#f5f5f7]">
-      {/* Academy Hero */}
-      <div className="text-center max-w-3xl mx-auto mb-12 space-y-3">
-        <span className="apple-eyebrow">GLOBAL ACQUISITION ACADEMY</span>
-        <h1 className="apple-section-title">
-          出海认知实战学院 · 五门专业课全量开放
-        </h1>
-        <p className="text-sm sm:text-base text-[#86868b] leading-relaxed max-w-2xl mx-auto">
-          凡是涉及海外采购标准的工程细节，全量公开说透。<br />
-          买家在站内自主学懂，销售在见面前无需进行低效基础说服。
-        </p>
-
-        {/* Global Progress Bar - Apple minimal metric badge */}
-        <div className="pt-2">
-          <div className="inline-flex items-center gap-3 bg-white/[0.04] border border-white/[0.08] px-4 py-1.5 rounded-full text-xs">
-            <Award className="w-3.5 h-3.5 text-[#30d158]" />
-            <span className="text-[#a1a1a6]">认知重塑与学分已累计：</span>
-            <span className="font-mono font-medium text-white">{totalCompletedLessons} / 161 课时</span>
+    <div>
+      <PageHeader
+        eyebrow="出海学院"
+        title="五门专业课，全部公开"
+        intro="凡是涉及海外采购标准的工程细节，都在这里说透。买家在站内自主学懂，销售见面前不必再做低效的基础说服。"
+      >
+        <div className="mx-auto flex max-w-xs items-center gap-3">
+          <div className="meter flex-1" aria-hidden="true">
+            <span
+              className="bg-success"
+              style={{ width: `${Math.min(100, (totalCompletedLessons / TOTAL_LESSONS) * 100)}%` }}
+            />
           </div>
+          <span className="shrink-0 text-caption text-label-secondary">
+            已学 <span className="tabular-nums text-label">{totalCompletedLessons}</span> / {TOTAL_LESSONS} 课时
+          </span>
         </div>
-      </div>
+      </PageHeader>
 
-      {/* Role-based Learning Paths */}
-      <div className="mb-14 space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="space-y-1">
-            <h2 className="text-lg sm:text-xl font-bold text-white tracking-tight">按出海角色定制的快捷路径</h2>
-            <p className="text-xs text-[#86868b]">不同身份角色关注不同深度与交付指标</p>
+      <div className="layout-wide pb-[clamp(4.5rem,2.5rem+6vw,8.75rem)]">
+        {/* 角色路径 */}
+        <section aria-labelledby="paths-title">
+          <h2 id="paths-title" className="text-title-2">
+            按角色学习
+          </h2>
+          <p className="mt-2 text-body text-label-secondary">不同角色关注的深度与指标不同，从最适合你的一条路径开始。</p>
+
+          <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+            {ROLE_LEARNING_PATHS.map((path) => {
+              const isSelected = selectedRolePathId === path.id;
+              return (
+                <button
+                  key={path.id}
+                  type="button"
+                  aria-pressed={isSelected}
+                  onClick={() => {
+                    setSelectedRolePathId(isSelected ? null : path.id);
+                    openLessonById(path.featuredLessonIds[0]);
+                  }}
+                  className={`card interactive group flex flex-col items-start ${
+                    isSelected ? 'shadow-[inset_0_0_0_2px_var(--color-accent)]' : ''
+                  }`}
+                >
+                  <span className="text-caption text-label-secondary">
+                    {path.targetRole.split('（')[0].split('、')[0]} · {path.durationText}
+                  </span>
+                  <h3 className="mt-2 text-title-3">{path.title}</h3>
+                  <p className="mt-2 line-clamp-3 flex-1 text-body text-label-secondary">{path.description}</p>
+                  <span className="link mt-5 text-body">
+                    开始学习
+                    <ChevronRight className="transition-transform duration-200 group-hover:translate-x-0.5" />
+                  </span>
+                </button>
+              );
+            })}
           </div>
-        </div>
+        </section>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {ROLE_LEARNING_PATHS.map((path) => {
-            const isSelected = selectedRolePathId === path.id;
-            return (
-              <div
-                key={path.id}
-                onClick={() => {
-                  setSelectedRolePathId(isSelected ? null : path.id);
-                  const targetLessonId = path.featuredLessonIds[0];
-                  for (const c of COURSES) {
-                    for (const m of c.modules) {
-                      const found = m.lessons.find((l) => l.id === targetLessonId);
-                      if (found) {
-                        setActiveCourseId(c.id);
-                        setActiveLesson(found);
-                        return;
-                      }
-                    }
-                  }
-                }}
-                className={`p-6 rounded-3xl border transition-all cursor-pointer flex flex-col justify-between ${
-                  isSelected
-                    ? 'bg-white/[0.08] border-[#2997ff] shadow-xl'
-                    : 'apple-glass-card'
-                }`}
-              >
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="font-mono text-[#2997ff] font-medium">{path.durationText}</span>
-                    <span className="text-[11px] text-[#86868b]">{path.targetRole.split('（')[0]}</span>
-                  </div>
-                  <h3 className="text-base font-semibold text-white tracking-tight">{path.title}</h3>
-                  <p className="text-xs text-[#a1a1a6] leading-relaxed line-clamp-3 font-normal">
-                    {path.description}
-                  </p>
-                </div>
+        {/* 课程 */}
+        <section aria-labelledby="course-title" className="mt-[clamp(4rem,2.5rem+4vw,6rem)]">
+          <div className="flex justify-center">
+            <SegmentedControl
+              ariaLabel="选择课程"
+              size="lg"
+              value={activeCourseId}
+              onChange={setActiveCourseId}
+              options={COURSES.map((course) => ({
+                id: course.id,
+                label: `${course.code} · ${splitTitle(course.title).short}`,
+              }))}
+            />
+          </div>
 
-                <div className="pt-4 border-t border-white/[0.06] flex items-center justify-between text-xs text-[#2997ff] font-medium">
-                  <span>开始学习</span>
-                  <ChevronRight className="w-4 h-4" />
-                </div>
+          <div className="tile mt-8 animate-fade-in" key={currentCourse.id}>
+            <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between">
+              <div className="max-w-3xl">
+                <p className="text-caption text-label-secondary">
+                  课程 {currentCourse.code} · {currentTitle.short} · 攻克「{currentCourse.frictionPoint}」
+                </p>
+                <h2 id="course-title" className="mt-2 text-title-1">
+                  {currentTitle.tagline}
+                </h2>
+                <p className="mt-4 text-body text-label-secondary">{currentCourse.subtitle}</p>
+                <p className="mt-2 text-caption text-label-secondary">主案例：{currentCourse.heroCase}</p>
               </div>
-            );
-          })}
-        </div>
-      </div>
 
-      {/* 5 Courses Tabs - Apple Segmented Control */}
-      <div className="mb-10 flex justify-center">
-        <div className="flex items-center gap-1.5 p-1.5 bg-white/[0.04] border border-white/[0.08] rounded-full overflow-x-auto no-scrollbar max-w-full">
-          {COURSES.map((course) => {
-            const isActive = activeCourseId === course.id;
-            const progress = getCourseProgressPercentage(course.id);
-            return (
-              <button
-                key={course.id}
-                onClick={() => setActiveCourseId(course.id)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-medium whitespace-nowrap transition-all duration-200 ${
-                  isActive
-                    ? 'bg-white/15 text-white shadow-sm backdrop-blur-md'
-                    : 'text-[#86868b] hover:text-white hover:bg-white/[0.04]'
-                }`}
-              >
-                <span className="font-mono font-bold text-[11px] opacity-75">{course.code}</span>
-                <span>{course.title.split('——')[0]}</span>
-                <span className="font-mono text-[10px] text-[#2997ff]">{progress}%</span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Course Overview Banner */}
-      <div className="apple-glass rounded-3xl p-8 mb-8 space-y-6">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 text-xs text-[#86868b]">
-              <span className="font-mono text-[#2997ff] font-medium">课程 {currentCourse.code}</span>
-              <span>·</span>
-              <span>攻克断点：{currentCourse.frictionPoint}</span>
-              <span>·</span>
-              <span>主案例：{currentCourse.heroCase}</span>
+              <div className="w-full shrink-0 lg:w-64">
+                <div className="flex items-baseline justify-between">
+                  <span className="text-caption text-label-secondary">课程进度</span>
+                  <span className="text-body font-semibold tabular-nums">{currentProgress}%</span>
+                </div>
+                <div className="meter mt-2">
+                  <span className="bg-success" style={{ width: `${currentProgress}%` }} />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => onGoToTool(currentCourse.relatedTool.id)}
+                  className="btn btn-secondary btn-block mt-5 whitespace-normal"
+                >
+                  配套工具：{currentCourse.relatedTool.name}
+                </button>
+              </div>
             </div>
-            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
-              {currentCourse.title}
-            </h2>
-            <p className="text-xs sm:text-sm text-[#a1a1a6] max-w-2xl font-normal leading-relaxed">
-              {currentCourse.subtitle}
-            </p>
+
+            <blockquote className="mt-8 border-l-2 border-separator-strong pl-4 text-body text-label-secondary">
+              <span className="font-semibold text-label">决策者视点　</span>
+              {currentCourse.executiveModuleSummary}
+            </blockquote>
           </div>
 
-          <div className="shrink-0">
-            <button
-              onClick={() => onGoToTool(currentCourse.relatedTool.id)}
-              className="apple-secondary-btn px-5 py-2.5 text-xs flex items-center gap-1.5"
-            >
-              <span>配套工具：{currentCourse.relatedTool.name}</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        </div>
-
-        <div className="p-4 bg-white/[0.02] rounded-2xl border border-white/[0.06] text-xs text-[#a1a1a6] leading-relaxed">
-          <span className="font-semibold text-white mr-1.5">决策者视点：</span>
-          {currentCourse.executiveModuleSummary}
-        </div>
-      </div>
-
-      {/* Syllabus Modules & Lessons List */}
-      <div className="space-y-4">
-        {currentCourse.modules.map((mod) => {
-          const isExpanded = Boolean(expandedModules[mod.index]);
-          return (
-            <div key={mod.index} className="apple-glass rounded-2xl overflow-hidden transition-all">
-              <div
-                onClick={() => toggleModule(mod.index)}
-                className="px-6 py-4.5 bg-white/[0.02] border-b border-white/[0.06] flex items-center justify-between cursor-pointer hover:bg-white/[0.04] transition-colors"
-              >
-                <div>
-                  <h3 className="text-sm sm:text-base font-semibold text-white flex items-center gap-2">
-                    <span>{mod.name}</span>
-                    <span className="text-xs text-[#86868b] font-normal">({mod.lessons.length} 课时)</span>
-                  </h3>
-                  <p className="text-xs text-[#86868b] mt-0.5">{mod.description}</p>
-                </div>
-                {isExpanded ? <ChevronDown className="w-4 h-4 text-[#86868b]" /> : <ChevronRight className="w-4 h-4 text-[#86868b]" />}
-              </div>
-
-              {isExpanded && (
-                <div className="p-4 space-y-2">
-                  {mod.lessons.map((lesson) => {
-                    const completed = isLessonCompleted(lesson.id);
-                    return (
-                      <div
-                        key={lesson.id}
-                        onClick={() => handleOpenLesson(lesson)}
-                        className={`p-4 rounded-xl border transition-all cursor-pointer flex items-center justify-between group ${
-                          completed
-                            ? 'bg-white/[0.01] border-white/[0.04] text-[#86868b]'
-                            : 'bg-white/[0.03] border-white/[0.08] hover:border-white/20 text-[#f5f5f7]'
+          {/* 章节与课时 */}
+          <div className="mt-5 space-y-3">
+            {currentCourse.modules.map((mod) => {
+              const isExpanded = Boolean(expandedModules[mod.index]);
+              const panelId = `module-${currentCourse.id}-${mod.index}`;
+              return (
+                <div key={mod.index} className="card overflow-hidden p-0">
+                  <h3>
+                    <button
+                      type="button"
+                      onClick={() => toggleModule(mod.index)}
+                      aria-expanded={isExpanded}
+                      aria-controls={panelId}
+                      className="flex w-full items-center justify-between gap-4 px-6 py-5 text-left transition-colors hover:bg-surface-hover md:px-8"
+                    >
+                      <span className="min-w-0">
+                        <span className="block text-title-3">{mod.name}</span>
+                        <span className="mt-1 block text-caption text-label-secondary">
+                          {mod.description} · {mod.lessons.length} 课时
+                        </span>
+                      </span>
+                      <ChevronDown
+                        className={`h-5 w-5 shrink-0 text-label-secondary transition-transform duration-300 ${
+                          isExpanded ? 'rotate-180' : ''
                         }`}
-                      >
-                        <div className="flex items-center gap-3.5">
-                          <div
-                            className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 ${
-                              completed
-                                ? 'bg-[#30d158]/15 text-[#30d158] border border-[#30d158]/30'
-                                : 'bg-white/[0.06] text-[#2997ff]'
-                            }`}
-                          >
-                            {completed ? <CheckCircle2 className="w-4 h-4" /> : <PlayCircle className="w-4 h-4" />}
-                          </div>
+                      />
+                    </button>
+                  </h3>
 
-                          <div>
-                            <div className="flex items-center gap-2 text-xs sm:text-sm font-semibold tracking-tight">
-                              <span>{lesson.title}</span>
-                              <span className="text-[11px] text-[#86868b] font-mono font-normal">
-                                · {lesson.durationMinutes} 分钟
+                  {isExpanded && (
+                    <ul id={panelId} className="divide-y divide-separator border-t border-separator">
+                      {mod.lessons.map((lesson) => {
+                        const completed = isLessonCompleted(lesson.id);
+                        return (
+                          <li key={lesson.id}>
+                            <button
+                              type="button"
+                              onClick={() => setActiveLesson(lesson)}
+                              className="group flex w-full items-center gap-4 px-6 py-4 text-left transition-colors hover:bg-surface-hover md:px-8"
+                            >
+                              {completed ? (
+                                <CheckCircle2 className="h-6 w-6 shrink-0 text-success" aria-label="已学完" />
+                              ) : (
+                                <PlayCircle className="h-6 w-6 shrink-0 text-label-secondary" aria-label="未学" />
+                              )}
+                              <span className="min-w-0 flex-1">
+                                <span className={`block text-body ${completed ? 'text-label-secondary' : 'text-label'}`}>
+                                  {lesson.title}
+                                </span>
+                                <span className="mt-0.5 block truncate text-caption text-label-secondary">
+                                  {lesson.summary}
+                                </span>
                               </span>
-                            </div>
-                            <p className="text-xs text-[#86868b] truncate max-w-lg mt-0.5 font-normal">
-                              {lesson.summary}
-                            </p>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-1 text-xs text-[#2997ff] font-medium shrink-0 group-hover:translate-x-0.5 transition-transform">
-                          <span className="hidden sm:inline">学习</span>
-                          <ChevronRight className="w-4 h-4" />
-                        </div>
-                      </div>
-                    );
-                  })}
+                              <span className="hidden shrink-0 text-caption tabular-nums text-label-secondary sm:block">
+                                {lesson.durationMinutes} 分钟
+                              </span>
+                              <ChevronRight className="h-5 w-5 shrink-0 text-label-tertiary transition-transform duration-200 group-hover:translate-x-0.5" />
+                            </button>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  )}
                 </div>
-              )}
-            </div>
-          );
-        })}
+              );
+            })}
+          </div>
+        </section>
       </div>
 
-      {/* Lesson Modal View */}
       {activeLesson && (
         <LessonModal
+          key={activeLesson.id}
           lesson={activeLesson}
           course={currentCourse}
           onClose={() => setActiveLesson(null)}
-          onNavigateToNextLesson={(nextLessonId) => {
-            for (const c of COURSES) {
-              for (const m of c.modules) {
-                const found = m.lessons.find((l) => l.id === nextLessonId);
-                if (found) {
-                  setActiveCourseId(c.id);
-                  setActiveLesson(found);
-                  return;
-                }
-              }
-            }
-          }}
+          onNavigateToNextLesson={openLessonById}
           onNavigateToTool={(toolId) => {
             setActiveLesson(null);
             onGoToTool(toolId);

@@ -1,11 +1,13 @@
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { AppProvider, useApp } from './context/AppContext';
 import { Header } from './components/Header';
+import { Footer } from './components/Footer';
 import { AiConsultantModal } from './components/AiConsultantModal';
 import { BookingModal } from './components/BookingModal';
 import { MySpaceModal } from './components/MySpaceModal';
 import { SalesConsoleModal } from './components/SalesConsoleModal';
 import { SupabaseModal } from './components/SupabaseModal';
+import { isTabId, TabId, tabTitle } from './components/navigation';
 
 // Views
 import { HomeView } from './views/HomeView';
@@ -18,91 +20,98 @@ import { CasesView } from './views/CasesView';
 import { DealRoomView } from './views/DealRoomView';
 import { ResourcesView } from './views/ResourcesView';
 
-import { Bot, Sparkles, Sliders } from 'lucide-react';
+const SITE_TITLE = '云端智荐 - AI出海售前支持系统与能力样板间';
+
+// 当前页面与地址栏 hash 同步（#/services），支持浏览器前进后退与分享链接
+const readTabFromHash = (): TabId => {
+  const value = window.location.hash.replace(/^#\/?/, '');
+  return isTabId(value) ? value : 'home';
+};
 
 function MainApp() {
-  const { setAiAdvisorOpen, isAiAdvisorOpen, setIsInspectorMode, isInspectorMode, toastMessage } = useApp();
+  const { setAiAdvisorOpen, isAiAdvisorOpen, toastMessage } = useApp();
 
-  const [currentTab, setCurrentTab] = useState<string>('home');
+  const [currentTab, setCurrentTab] = useState<TabId>(readTabFromHash);
   const [isBookingOpen, setIsBookingOpen] = useState(false);
   const [isMySpaceOpen, setIsMySpaceOpen] = useState(false);
   const [isSalesConsoleOpen, setIsSalesConsoleOpen] = useState(false);
   const [isSupabaseOpen, setIsSupabaseOpen] = useState(false);
   const [configuratorPrefill, setConfiguratorPrefill] = useState<any>(null);
 
+  useEffect(() => {
+    const handlePopState = () => {
+      setCurrentTab(readTabFromHash());
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  useEffect(() => {
+    const title = tabTitle(currentTab);
+    document.title = title ? `${title} - 云端智荐` : SITE_TITLE;
+  }, [currentTab]);
+
+  const navigate = useCallback((tab: TabId) => {
+    const hash = tab === 'home' ? '' : `#/${tab}`;
+    if (window.location.hash !== hash) {
+      window.history.pushState(null, '', hash || window.location.pathname + window.location.search);
+    }
+    setCurrentTab(tab);
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }, []);
+
   const handleNavigateToConfigurator = (prefill?: any) => {
     if (prefill) {
       setConfiguratorPrefill(prefill);
     }
-    setCurrentTab('configurator');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    navigate('configurator');
   };
 
+  const openBooking = () => setIsBookingOpen(true);
+
   return (
-    <div className="min-h-screen bg-black text-[#f5f5f7] flex flex-col font-sans selection:bg-[#0071e3] selection:text-white relative">
-      {/* Header */}
+    <div className="relative flex min-h-screen flex-col bg-canvas text-label">
+      <button
+        type="button"
+        onClick={() => document.getElementById('main')?.focus()}
+        className="btn btn-primary btn-sm sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-3 focus:z-[70]"
+      >
+        跳到主要内容
+      </button>
+
       <Header
         currentTab={currentTab}
-        setCurrentTab={(tab) => {
-          setCurrentTab(tab);
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-        }}
-        openBookingModal={() => setIsBookingOpen(true)}
+        onNavigate={navigate}
+        openBookingModal={openBooking}
         openMySpaceModal={() => setIsMySpaceOpen(true)}
         openSalesConsoleModal={() => setIsSalesConsoleOpen(true)}
         openSupabaseModal={() => setIsSupabaseOpen(true)}
       />
 
-      {/* Main Content Area */}
-      <main className="flex-1 relative z-10">
-        {currentTab === 'home' && (
-          <HomeView
-            onNavigate={(tab) => {
-              setCurrentTab(tab);
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }}
-            openBookingModal={() => setIsBookingOpen(true)}
-          />
-        )}
+      <main id="main" tabIndex={-1} className="relative flex-1 outline-none">
+        {currentTab === 'home' && <HomeView onNavigate={navigate} openBookingModal={openBooking} />}
 
         {currentTab === 'services' && (
           <ServicesView
-            onGoToCourse={(code) => {
-              setCurrentTab('academy');
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }}
-            onGoToDiagnosis={(toolId) => {
-              setCurrentTab('diagnosis');
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }}
+            onGoToCourse={() => navigate('academy')}
+            onGoToDiagnosis={() => navigate('diagnosis')}
             onGoToConfigurator={(combo) => handleNavigateToConfigurator({ packageType: combo })}
           />
         )}
 
         {currentTab === 'academy' && (
-          <AcademyView
-            onGoToTool={(toolId) => {
-              setCurrentTab('diagnosis');
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }}
-            onGoToBooking={() => setIsBookingOpen(true)}
-          />
+          <AcademyView onGoToTool={() => navigate('diagnosis')} onGoToBooking={openBooking} />
         )}
 
         {currentTab === 'diagnosis' && (
-          <DiagnosisCenter
-            onGoToConfigurator={handleNavigateToConfigurator}
-            onGoToBooking={() => setIsBookingOpen(true)}
-          />
+          <DiagnosisCenter onGoToConfigurator={handleNavigateToConfigurator} onGoToBooking={openBooking} />
         )}
 
         {currentTab === 'configurator' && (
           <ConfiguratorView
-            onGoToDealRoom={() => {
-              setCurrentTab('deal-room');
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }}
-            onGoToBooking={() => setIsBookingOpen(true)}
+            onGoToDealRoom={() => navigate('deal-room')}
+            onGoToBooking={openBooking}
             initialParams={configuratorPrefill}
           />
         )}
@@ -112,88 +121,33 @@ function MainApp() {
         )}
 
         {currentTab === 'cases' && (
-          <CasesView
-            onGoToDiagnosis={() => {
-              setCurrentTab('diagnosis');
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }}
-            onGoToCourse={(code) => {
-              setCurrentTab('academy');
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }}
-          />
+          <CasesView onGoToDiagnosis={() => navigate('diagnosis')} onGoToCourse={() => navigate('academy')} />
         )}
 
-        {currentTab === 'deal-room' && (
-          <DealRoomView onGoToBooking={() => setIsBookingOpen(true)} />
-        )}
+        {currentTab === 'deal-room' && <DealRoomView onGoToBooking={openBooking} />}
 
-        {currentTab === 'resources' && (
-          <ResourcesView
-            onGoToLesson={(lessonId) => {
-              setCurrentTab('academy');
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }}
-          />
-        )}
+        {currentTab === 'resources' && <ResourcesView onGoToLesson={() => navigate('academy')} />}
       </main>
 
-      {/* Apple-style Refined Minimalist Footer */}
-      <footer className="bg-black border-t border-white/[0.08] text-[#86868b] py-12 px-4 sm:px-6 lg:px-8 text-xs relative z-10">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="flex flex-wrap items-center gap-3">
-            <span className="font-semibold text-white tracking-tight">云端智荐</span>
-            <span>·</span>
-            <span>AI 出海售前支持系统与能力样板间</span>
-            <span>·</span>
-            <span className="text-[#6e6e73] font-mono">Build 2026.09 Pro</span>
-          </div>
+      <Footer
+        onNavigate={navigate}
+        openSalesConsoleModal={() => setIsSalesConsoleOpen(true)}
+        openSupabaseModal={() => setIsSupabaseOpen(true)}
+      />
 
-          <div className="flex items-center gap-6 text-[#86868b]">
-            <button
-              onClick={() => setIsSalesConsoleOpen(true)}
-              className="hover:text-white transition-colors"
-            >
-              售前 CRM 工作台
-            </button>
-            <button
-              onClick={() => setIsSupabaseOpen(true)}
-              className="hover:text-white transition-colors"
-            >
-              Supabase 数据库设置
-            </button>
-            <span className="text-[#6e6e73]">苏ICP备20260928号-1</span>
-          </div>
-        </div>
-      </footer>
-
-      {/* Floating Apple Island Action Button */}
+      {/* AI 售前顾问入口：全站唯一的浮动按钮 */}
       {!isAiAdvisorOpen && (
-        <div className="fixed bottom-6 right-6 z-40 flex items-center gap-2">
-          <button
-            onClick={() => {
-              setIsInspectorMode(true);
-              setAiAdvisorOpen(true);
-            }}
-            className="hidden md:flex items-center gap-1.5 px-3.5 py-2 bg-white/[0.06] hover:bg-white/[0.12] border border-white/10 text-[#2997ff] rounded-full text-xs font-medium backdrop-blur-xl shadow-lg transition-all"
-            title="开启 AI 知识库与 CRM 探针透视"
-          >
-            <Sliders className="w-3.5 h-3.5" />
-            <span>CRM 探针透视</span>
-          </button>
-
-          <button
-            onClick={() => setAiAdvisorOpen(true)}
-            className="apple-glass hover:bg-white/[0.12] border border-white/15 px-4 py-2.5 text-white rounded-full font-medium text-xs sm:text-sm shadow-2xl flex items-center gap-2 transition-all hover:scale-105 active:scale-95"
-          >
-            <div className="w-2 h-2 rounded-full bg-[#30d158] animate-pulse" />
-            <Bot className="w-4 h-4 text-[#2997ff]" />
-            <span className="tracking-tight">AI 售前顾问</span>
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={() => setAiAdvisorOpen(true)}
+          className="material fixed bottom-[max(1.25rem,env(safe-area-inset-bottom))] right-5 z-40 inline-flex min-h-12 items-center gap-2.5 rounded-full border border-hairline px-5 text-body text-label shadow-[0_8px_32px_rgb(0_0_0/0.5)] transition-colors duration-200 hover:bg-surface-hover"
+        >
+          <span className="h-2 w-2 rounded-full bg-success" aria-hidden="true" />
+          AI 售前顾问
+        </button>
       )}
 
-      {/* Global Modals */}
+      {/* 全局弹窗 */}
       <AiConsultantModal />
       <BookingModal isOpen={isBookingOpen} onClose={() => setIsBookingOpen(false)} />
       <MySpaceModal
@@ -207,11 +161,14 @@ function MainApp() {
       <SalesConsoleModal isOpen={isSalesConsoleOpen} onClose={() => setIsSalesConsoleOpen(false)} />
       <SupabaseModal isOpen={isSupabaseOpen} onClose={() => setIsSupabaseOpen(false)} />
 
-      {/* Apple Dynamic Island Style Toast */}
+      {/* Toast：顶部居中的状态提示 */}
       {toastMessage && (
-        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 px-5 py-2.5 bg-black/85 border border-white/15 text-white text-xs font-medium rounded-full shadow-2xl backdrop-blur-2xl flex items-center gap-2.5 animate-in fade-in zoom-in-95 duration-200">
-          <Sparkles className="w-3.5 h-3.5 text-[#2997ff] shrink-0" />
-          <span className="tracking-tight">{toastMessage}</span>
+        <div
+          role="status"
+          aria-live="polite"
+          className="material fixed inset-x-0 top-16 z-[60] mx-auto w-fit max-w-[calc(100vw-2rem)] rounded-[1.375rem] border border-hairline px-5 py-2.5 text-center text-caption text-label shadow-[0_8px_32px_rgb(0_0_0/0.5)] animate-toast-in"
+        >
+          {toastMessage}
         </div>
       )}
     </div>

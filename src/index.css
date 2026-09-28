@@ -1,300 +1,732 @@
 @import "tailwindcss";
 
-@layer base {
-  :root {
-    /* Apple Human Interface Typography Stack */
-    --font-apple: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "SF Pro", "PingFang SC", "Hiragino Sans GB", "Plus Jakarta Sans", "Inter Tight", "Helvetica Neue", Arial, sans-serif;
-    --font-apple-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro", "PingFang SC", "Inter Tight", "Plus Jakarta Sans", sans-serif;
-    --font-mono: "SF Mono", "JetBrains Mono", Menlo, Monaco, Consolas, monospace;
-    
-    /* Apple Hardware Colors */
-    --apple-bg: #000000;
-    --apple-card: #161617;
-    --apple-card-hover: #1d1d1f;
-    --apple-border: rgba(255, 255, 255, 0.12);
-    --apple-border-strong: rgba(255, 255, 255, 0.22);
-    --apple-text-primary: #ffffff;
-    --apple-text-secondary: #d2d2d7;
-    --apple-text-tertiary: #a1a1a6;
-    --apple-blue: #2997ff;
-    --apple-blue-hover: #0077ed;
-  }
+/* =============================================================
+   云端智荐 Design System
+   所有 token 与组件类的用法、取值理由见仓库根目录 DESIGN.md。
+   新增样式前先查 DESIGN.md；不要在组件里硬编码 hex。
+   ============================================================= */
 
+@theme {
+  /* ---------- 字体 ---------- */
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro SC", "SF Pro Text", "SF Pro Display", "PingFang SC",
+    "Hiragino Sans GB", "Helvetica Neue", "Microsoft YaHei UI", "Microsoft YaHei", Arial, sans-serif;
+  --font-mono: "SF Mono", ui-monospace, Menlo, Consolas, monospace;
+
+  /* ---------- 字号阶梯（text-*，自带行高 / 字重 / 字距） ---------- */
+  --text-display: clamp(2.5rem, 1.25rem + 4.2vw, 5rem); /* 40 → 80 */
+  --text-display--line-height: 1.06;
+  --text-display--letter-spacing: -0.015em;
+  --text-display--font-weight: 600;
+
+  --text-headline: clamp(2rem, 1.25rem + 2.5vw, 3.5rem); /* 32 → 56 */
+  --text-headline--line-height: 1.1;
+  --text-headline--letter-spacing: -0.005em;
+  --text-headline--font-weight: 600;
+
+  --text-title-1: clamp(1.75rem, 1.4rem + 1.2vw, 2.5rem); /* 28 → 40 */
+  --text-title-1--line-height: 1.12;
+  --text-title-1--font-weight: 600;
+
+  --text-title-2: clamp(1.5rem, 1.35rem + 0.5vw, 1.75rem); /* 24 → 28 */
+  --text-title-2--line-height: 1.2;
+  --text-title-2--font-weight: 600;
+
+  --text-title-3: 1.3125rem; /* 21 */
+  --text-title-3--line-height: 1.3;
+  --text-title-3--font-weight: 600;
+
+  --text-intro: clamp(1.1875rem, 1.1rem + 0.3vw, 1.3125rem); /* 19 → 21 */
+  --text-intro--line-height: 1.52;
+
+  --text-body: 1.0625rem; /* 17 */
+  --text-body--line-height: 1.6;
+
+  --text-caption: 0.875rem; /* 14：全站最小字号 */
+  --text-caption--line-height: 1.45;
+
+  /* ---------- 颜色（仅深色） ---------- */
+  --color-canvas: #000000;
+  --color-surface: #1d1d1f;
+  --color-surface-hover: #242426;
+  --color-surface-raised: #2c2c2e;
+  --color-separator: #38383a;
+  --color-separator-strong: #48484a;
+  --color-hairline: rgb(255 255 255 / 0.1); /* 悬浮材质（导航、浮动按钮、Toast）的描边 */
+
+  --color-label: #f5f5f7;
+  --color-label-secondary: #a1a1a6;
+  --color-label-tertiary: #6e6e73;
+
+  --color-link: #2997ff;
+  --color-accent: #0071e3;
+  --color-accent-hover: #0077ed;
+  --color-accent-active: #006edb;
+
+  --color-fill: rgb(118 118 128 / 0.24);
+  --color-fill-hover: rgb(118 118 128 / 0.34);
+  --color-thumb: #636366;
+
+  --color-success: #30d158;
+  --color-warning: #ff9f0a;
+  --color-danger: #ff453a;
+
+  /* 五项服务识别色：只用于图标与小色点，不用于文字和大面积填充 */
+  --color-svc-site: #64d2ff;
+  --color-svc-seo: #7d7aff;
+  --color-svc-geo: #bf5af2;
+  --color-svc-chat: #30d158;
+  --color-svc-fde: #ff9f0a;
+
+  /* ---------- 圆角 ---------- */
+  --radius-tile: 1.75rem; /* 28：页面级大面板 */
+  --radius-card: 1.125rem; /* 18：卡片 / 面板内分组 */
+  --radius-control: 0.75rem; /* 12：输入框、选项、嵌套小块 */
+
+  /* ---------- 动效 ---------- */
+  --ease-apple: cubic-bezier(0.28, 0.11, 0.32, 1);
+
+  --animate-fade-in: fade-in 0.24s var(--ease-apple) both;
+  --animate-sheet-in: sheet-in 0.36s var(--ease-apple) both;
+  --animate-toast-in: toast-in 0.32s var(--ease-apple) both;
+  --animate-slide-in: slide-in 0.3s var(--ease-apple) both;
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  @keyframes sheet-in {
+    from {
+      opacity: 0;
+      transform: translateY(16px) scale(0.985);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  @keyframes toast-in {
+    from {
+      opacity: 0;
+      transform: translateY(-8px) scale(0.96);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  @keyframes slide-in {
+    from {
+      opacity: 0;
+      transform: translateX(12px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+}
+
+/* =============================================================
+   Base
+   ============================================================= */
+@layer base {
   html {
-    scroll-behavior: smooth;
     color-scheme: dark;
-    background-color: #000000;
+    background-color: var(--color-canvas);
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
   }
 
   body {
-    font-family: var(--font-apple);
+    font-family: var(--font-sans);
+    font-size: var(--text-body);
+    line-height: 1.6;
+    letter-spacing: 0;
+    color: var(--color-label);
+    background-color: var(--color-canvas);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
-    background-color: #000000;
-    color: #f5f5f7;
-    font-size: 1.0625rem; /* Exactly 17px Apple Body Baseline */
-    line-height: 1.375;   /* Apple 17px/1.375 ratio */
     overflow-x: hidden;
-    letter-spacing: -0.011em;
-    selection-background-color: #0071e3;
-    selection-color: #ffffff;
   }
 
-  /* Apple Restrained Typographic Scale & Optical Letter Spacing */
-  h1, h2, h3, h4, h5, h6 {
-    font-family: var(--font-apple-display);
-    letter-spacing: -0.016em; /* Restrained, natural kerning */
-    font-weight: 700;
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    color: var(--color-label);
+    font-weight: 600;
     text-wrap: balance;
-    color: #ffffff;
-    line-height: 1.2;
   }
 
   p {
-    font-size: 1.0625rem; /* 17px minimum for paragraphs */
-    line-height: 1.375;   /* 1.375 line-height */
-    letter-spacing: -0.011em;
-    color: #d2d2d7;
+    text-wrap: pretty;
   }
 
-  button, a, input, select, textarea {
-    font-family: var(--font-apple);
-    font-size: 1rem; /* 16px minimum to avoid mobile zoom and ensure legibility */
+  ::selection {
+    background-color: rgb(0 113 227 / 0.6);
+    color: #ffffff;
   }
 
-  /* ========================================================
-     Apple HIG Strict Rule: Zero Text Below 14px (0.875rem)
-     Hierarchy is created through CONTRAST, not tiny micro-fonts!
-     ======================================================== */
+  button,
+  [role="button"],
+  [role="tab"],
+  summary,
+  label[for] {
+    cursor: pointer;
+  }
+
+  button:disabled {
+    cursor: not-allowed;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-link);
+    outline-offset: 2px;
+  }
+
+  /* SF Symbols 的笔画更细，lucide 统一压到 1.75 */
+  svg.lucide {
+    stroke-width: 1.75;
+  }
+
+  /* 最小字号 14px 的兜底：即使误用这些类也不会更小（新代码请用 text-caption） */
   .text-xs,
   .text-\[10px\],
   .text-\[11px\],
   .text-\[12px\],
   .text-\[13px\] {
-    font-size: 0.875rem !important; /* 14px absolute floor */
-    line-height: 1.42857 !important;
+    font-size: 0.875rem !important;
+    line-height: 1.45 !important;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    ::before,
+    ::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
   }
 }
 
-/* ========================================================
-   Apple Design System Utilities
-   ======================================================== */
+/* =============================================================
+   Components
+   ============================================================= */
+@layer components {
+  /* ---------- 布局容器 ---------- */
+  .layout-wide,
+  .layout-text,
+  .layout-reading {
+    width: 100%;
+    margin-inline: auto;
+    padding-inline: 1.5rem;
+  }
+  .layout-wide {
+    max-width: 76rem; /* 1216 */
+  }
+  .layout-text {
+    max-width: 63rem; /* 1008 */
+  }
+  .layout-reading {
+    max-width: 47rem; /* 752 */
+  }
+  @media (min-width: 768px) {
+    .layout-wide,
+    .layout-text,
+    .layout-reading {
+      padding-inline: 2rem;
+    }
+  }
 
-/* Apple Hero Headline (Keynote & Product Launch style) */
-.apple-hero-title {
-  font-family: var(--font-apple-display);
-  font-size: clamp(2.5rem, 5.5vw, 4.5rem);
-  font-weight: 700;
-  line-height: 1.15;
-  letter-spacing: -0.018em; /* Restrained letter-spacing */
-  background: linear-gradient(180deg, #FFFFFF 0%, #F5F5F7 60%, rgba(255, 255, 255, 0.75) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  text-wrap: balance;
+  /* 章节节奏：72 → 140 */
+  .section {
+    padding-block: clamp(4.5rem, 2.5rem + 6vw, 8.75rem);
+  }
+
+  /* 页头：上 56 → 96，下 40 → 64 */
+  .page-header {
+    padding-top: clamp(3.5rem, 2rem + 4vw, 6rem);
+    padding-bottom: clamp(2.5rem, 1.5rem + 3vw, 4rem);
+  }
+
+  /* ---------- 文字 ---------- */
+  .eyebrow {
+    font-size: clamp(1.0625rem, 1rem + 0.3vw, 1.3125rem);
+    line-height: 1.25;
+    font-weight: 600;
+    color: var(--color-label-secondary);
+  }
+
+  /* 全站唯一的签名渐变，仅用于首页 Hero 中的 “AI” 句 */
+  .text-gradient-ai {
+    background: linear-gradient(90deg, #2997ff 0%, #a259ff 48%, #ff6b8b 82%, #ff9f0a 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.125rem;
+    color: var(--color-link);
+    text-underline-offset: 0.2em;
+  }
+  .link:hover {
+    text-decoration: underline;
+  }
+  .link > svg {
+    width: 1em;
+    height: 1em;
+    flex-shrink: 0;
+  }
+
+  /* ---------- 表面 ---------- */
+  .tile {
+    background-color: var(--color-surface);
+    border-radius: var(--radius-tile);
+    padding: clamp(1.5rem, 1rem + 2vw, 2.5rem);
+  }
+  .card {
+    background-color: var(--color-surface);
+    border-radius: var(--radius-card);
+    padding: 1.5rem;
+  }
+  .well {
+    background-color: var(--color-surface-raised);
+    border-radius: var(--radius-card);
+    padding: 1.25rem;
+  }
+  .interactive {
+    text-align: left;
+    transition: background-color 0.3s var(--ease-apple);
+  }
+  .tile.interactive:hover,
+  .card.interactive:hover {
+    background-color: var(--color-surface-hover);
+  }
+  .well.interactive:hover {
+    background-color: #333336;
+  }
+
+  /* 悬浮层材质：只给导航、浮动按钮、Toast、弹出层用 */
+  .material {
+    background-color: rgb(22 22 23 / 0.8);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    backdrop-filter: saturate(180%) blur(20px);
+  }
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .material {
+      background-color: rgb(22 22 23 / 0.97);
+    }
+  }
+
+  /* ---------- 按钮 ---------- */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.375rem;
+    min-height: 2.75rem;
+    padding: 0.625rem 1.375rem;
+    border: 1px solid transparent;
+    border-radius: 980px;
+    font-size: 1.0625rem;
+    line-height: 1.24;
+    font-weight: 400;
+    text-align: center;
+    white-space: nowrap;
+    transition:
+      background-color 0.2s var(--ease-apple),
+      border-color 0.2s var(--ease-apple),
+      color 0.2s var(--ease-apple),
+      opacity 0.2s var(--ease-apple);
+  }
+  .btn > svg {
+    width: 1em;
+    height: 1em;
+    flex-shrink: 0;
+  }
+  .btn:disabled,
+  .btn[aria-disabled="true"] {
+    opacity: 0.42;
+  }
+  .btn-sm {
+    min-height: 2.25rem;
+    padding: 0.375rem 1rem;
+    font-size: 0.875rem;
+  }
+  .btn-lg {
+    min-height: 3.25rem;
+    padding: 0.75rem 1.75rem;
+  }
+  .btn-block {
+    display: flex;
+    width: 100%;
+  }
+
+  .btn-primary {
+    background-color: var(--color-accent);
+    color: #ffffff;
+  }
+  .btn-primary:hover:not(:disabled) {
+    background-color: var(--color-accent-hover);
+  }
+  .btn-primary:active:not(:disabled) {
+    background-color: var(--color-accent-active);
+  }
+
+  .btn-secondary {
+    background-color: transparent;
+    border-color: var(--color-link);
+    color: var(--color-link);
+  }
+  .btn-secondary:hover:not(:disabled) {
+    background-color: var(--color-accent-hover);
+    border-color: var(--color-accent-hover);
+    color: #ffffff;
+  }
+
+  .btn-neutral {
+    background-color: var(--color-fill);
+    color: var(--color-label);
+  }
+  .btn-neutral:hover:not(:disabled) {
+    background-color: var(--color-fill-hover);
+  }
+
+  .btn-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    flex-shrink: 0;
+    border-radius: 9999px;
+    background-color: var(--color-fill);
+    color: var(--color-label-secondary);
+    transition:
+      background-color 0.2s var(--ease-apple),
+      color 0.2s var(--ease-apple);
+  }
+  .btn-icon:hover {
+    background-color: var(--color-fill-hover);
+    color: var(--color-label);
+  }
+  .btn-icon > svg {
+    width: 1.125rem;
+    height: 1.125rem;
+  }
+
+  /* ---------- 表单 ---------- */
+  .field-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-size: 0.875rem;
+    line-height: 1.45;
+    font-weight: 600;
+    color: var(--color-label);
+  }
+  .field {
+    width: 100%;
+    min-height: 3rem;
+    padding: 0.6875rem 1rem;
+    border: 1px solid var(--color-separator-strong);
+    border-radius: var(--radius-control);
+    background-color: rgb(118 118 128 / 0.12);
+    color: var(--color-label);
+    font-size: 1.0625rem;
+    line-height: 1.4;
+    transition:
+      border-color 0.2s var(--ease-apple),
+      box-shadow 0.2s var(--ease-apple);
+  }
+  .field::placeholder {
+    color: var(--color-label-tertiary);
+  }
+  .field:focus,
+  .field:focus-visible {
+    outline: none;
+    border-color: var(--color-link);
+    box-shadow: 0 0 0 3px rgb(41 151 255 / 0.3);
+  }
+  .field-lg {
+    min-height: 3.5rem;
+    font-size: 1.1875rem;
+  }
+  select.field {
+    appearance: none;
+    padding-right: 2.75rem;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23a1a1a6' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    background-size: 1rem;
+  }
+  textarea.field {
+    min-height: 8rem;
+    resize: vertical;
+  }
+
+  /* 滑块：用 style={{ '--fill': '40%' }} 驱动已填充轨道，见 ui/Slider.tsx */
+  .range {
+    --fill: 50%;
+    --range-color: var(--color-accent);
+    width: 100%;
+    height: 1.75rem;
+    appearance: none;
+    background: transparent;
+    cursor: pointer;
+  }
+  .range::-webkit-slider-runnable-track {
+    height: 4px;
+    border-radius: 9999px;
+    background: linear-gradient(
+      to right,
+      var(--range-color) 0 var(--fill),
+      var(--color-separator-strong) var(--fill) 100%
+    );
+  }
+  .range::-webkit-slider-thumb {
+    appearance: none;
+    width: 1.375rem;
+    height: 1.375rem;
+    margin-top: -0.5625rem;
+    border-radius: 9999px;
+    background: #ffffff;
+    box-shadow: 0 1px 4px rgb(0 0 0 / 0.45);
+    transition: box-shadow 0.2s var(--ease-apple);
+  }
+  .range::-moz-range-track {
+    height: 4px;
+    border-radius: 9999px;
+    background: var(--color-separator-strong);
+  }
+  .range::-moz-range-progress {
+    height: 4px;
+    border-radius: 9999px;
+    background: var(--range-color);
+  }
+  .range::-moz-range-thumb {
+    width: 1.375rem;
+    height: 1.375rem;
+    border: none;
+    border-radius: 9999px;
+    background: #ffffff;
+    box-shadow: 0 1px 4px rgb(0 0 0 / 0.45);
+  }
+  .range:focus-visible {
+    outline: none;
+  }
+  .range:focus-visible::-webkit-slider-thumb {
+    box-shadow: 0 0 0 4px rgb(41 151 255 / 0.45);
+  }
+  .range:focus-visible::-moz-range-thumb {
+    box-shadow: 0 0 0 4px rgb(41 151 255 / 0.45);
+  }
+
+  /* ---------- 选择控件 ---------- */
+  /* chip：筛选 / 多选标签，选中态反白 */
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    min-height: 2.25rem;
+    padding: 0.375rem 1rem;
+    border-radius: 9999px;
+    background-color: var(--color-fill);
+    color: var(--color-label);
+    font-size: 0.875rem;
+    line-height: 1.3;
+    white-space: nowrap;
+    transition:
+      background-color 0.2s var(--ease-apple),
+      color 0.2s var(--ease-apple);
+  }
+  .chip:hover {
+    background-color: var(--color-fill-hover);
+  }
+  .chip[aria-pressed="true"] {
+    background-color: var(--color-label);
+    color: #1d1d1f;
+  }
+  .chip > svg {
+    width: 1rem;
+    height: 1rem;
+  }
+
+  /* choice：单选 / 多选选项卡片，选中态为 2px 蓝色描边（Apple Store 选配样式） */
+  .choice {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.875rem 1.125rem;
+    border: 1px solid var(--color-separator-strong);
+    border-radius: var(--radius-control);
+    background-color: transparent;
+    color: var(--color-label);
+    font-size: 1.0625rem;
+    line-height: 1.4;
+    text-align: left;
+    transition:
+      border-color 0.2s var(--ease-apple),
+      box-shadow 0.2s var(--ease-apple),
+      background-color 0.2s var(--ease-apple);
+  }
+  .choice:hover {
+    border-color: var(--color-label-tertiary);
+  }
+  .choice[aria-pressed="true"],
+  .choice[aria-checked="true"] {
+    border-color: var(--color-accent);
+    box-shadow: inset 0 0 0 1px var(--color-accent);
+  }
+
+  /* segmented：分段控件，见 ui/SegmentedControl.tsx */
+  .segmented {
+    position: relative;
+    display: inline-flex;
+    max-width: 100%;
+    gap: 2px;
+    padding: 3px;
+    overflow-x: auto;
+    border-radius: 9999px;
+    background-color: var(--color-fill);
+    scrollbar-width: none;
+  }
+  .segmented::-webkit-scrollbar {
+    display: none;
+  }
+  .segmented-item {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    gap: 0.375rem;
+    min-height: 2.125rem;
+    padding: 0.375rem 1rem;
+    border-radius: 9999px;
+    color: var(--color-label-secondary);
+    font-size: 0.875rem;
+    line-height: 1.3;
+    white-space: nowrap;
+    transition:
+      background-color 0.24s var(--ease-apple),
+      color 0.24s var(--ease-apple);
+  }
+  .segmented-item:hover {
+    color: var(--color-label);
+  }
+  .segmented-item[aria-selected="true"] {
+    background-color: var(--color-thumb);
+    color: #ffffff;
+    box-shadow: 0 3px 8px rgb(0 0 0 / 0.16);
+  }
+  .segmented-lg .segmented-item {
+    min-height: 2.625rem;
+    padding-inline: 1.25rem;
+    font-size: 1.0625rem;
+  }
+
+  /* ---------- 徽标 ---------- */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.0625rem 0.625rem;
+    border-radius: 9999px;
+    background-color: var(--color-fill);
+    color: var(--color-label-secondary);
+    font-size: 0.875rem;
+    line-height: 1.45;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  /* ---------- 头像：字母组合，不使用图库人像 ---------- */
+  .avatar {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9999px;
+    background-image: linear-gradient(180deg, #8e8e93 0%, #5a5a5e 100%);
+    color: #ffffff;
+    font-weight: 600;
+    line-height: 1;
+  }
+
+  /* ---------- 进度条 ---------- */
+  .meter {
+    height: 6px;
+    overflow: hidden;
+    border-radius: 9999px;
+    background-color: var(--color-separator);
+  }
+  .meter > span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    transition: width 0.6s var(--ease-apple);
+  }
+
+  /* ---------- 滚动出现（ui/Reveal.tsx） ---------- */
+  .reveal {
+    opacity: 0;
+    transform: translateY(24px);
+    transition:
+      opacity 0.9s var(--ease-apple),
+      transform 0.9s var(--ease-apple);
+  }
+  .reveal.is-visible {
+    opacity: 1;
+    transform: none;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .reveal {
+      opacity: 1;
+      transform: none;
+    }
+  }
 }
 
-.apple-section-title {
-  font-family: var(--font-apple-display);
-  font-size: clamp(1.85rem, 3.5vw, 2.75rem);
-  font-weight: 700;
-  line-height: 1.2;
-  letter-spacing: -0.016em; /* Restrained letter-spacing */
-  background: linear-gradient(180deg, #FFFFFF 0%, rgba(255, 255, 255, 0.85) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-/* Apple Pro Eyebrow / Kicker */
-.apple-eyebrow {
-  font-family: var(--font-apple);
-  font-size: 0.875rem; /* 14px */
-  font-weight: 600;
-  letter-spacing: 0.04em; /* Restrained tracking */
-  text-transform: uppercase;
-  color: #2997ff;
-}
-
-/* Apple Titanium Metallic Gradients */
-.text-titanium {
-  background: linear-gradient(180deg, #FFFFFF 0%, #A1A1A6 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-.text-apple-blue {
-  color: #2997ff;
-}
-
-/* Apple Intelligence Rainbow Flare */
-.text-apple-intelligence {
-  background: linear-gradient(90deg, #FF6B8B 0%, #A259FF 50%, #2997FF 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-/* Apple Frosted Glass (macOS / iOS Liquid Glass) */
-.apple-header-glass {
-  background: rgba(0, 0, 0, 0.78);
-  backdrop-filter: blur(30px) saturate(190%);
-  -webkit-backdrop-filter: blur(30px) saturate(190%);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.apple-glass {
-  background: rgba(22, 22, 23, 0.72);
-  backdrop-filter: blur(32px) saturate(190%);
-  -webkit-backdrop-filter: blur(32px) saturate(190%);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.08), 0 24px 48px -12px rgba(0, 0, 0, 0.8);
-}
-
-/* Apple Bento Grid Card */
-.apple-glass-card {
-  position: relative;
-  background: radial-gradient(140% 140% at 50% 0%, rgba(255, 255, 255, 0.05) 0%, rgba(22, 22, 23, 0.85) 100%);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.09), 0 16px 36px -8px rgba(0, 0, 0, 0.65);
-  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-  overflow: hidden;
-}
-
-.apple-glass-card::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-  opacity: 0.7;
-}
-
-.apple-glass-card:hover {
-  border-color: rgba(255, 255, 255, 0.18);
-  transform: translateY(-2px);
-  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.16), 0 24px 52px -10px rgba(0, 0, 0, 0.85);
-}
-
-/* Apple Pro Buttons */
-.apple-blue-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background-color: #0071e3;
-  color: #ffffff;
-  border-radius: 9999px;
-  font-weight: 500;
-  letter-spacing: -0.015em;
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2);
-}
-
-.apple-blue-btn:hover {
-  background-color: #0077ed;
-  box-shadow: 0 0 24px rgba(0, 113, 227, 0.45);
-  transform: translateY(-1px);
-}
-
-.apple-blue-btn:active {
-  transform: scale(0.98);
-}
-
-.apple-secondary-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(255, 255, 255, 0.08);
-  color: #f5f5f7;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 9999px;
-  font-weight: 500;
-  letter-spacing: -0.015em;
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
-}
-
-.apple-secondary-btn:hover {
-  background: rgba(255, 255, 255, 0.14);
-  border-color: rgba(255, 255, 255, 0.22);
-  color: #ffffff;
-  transform: translateY(-1px);
-}
-
-.apple-secondary-btn:active {
-  transform: scale(0.98);
-}
-
-/* Apple Segmented Controls */
-.apple-segmented-track {
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 9999px;
-  padding: 4px;
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-}
-
-.apple-segmented-item-active {
-  background: rgba(255, 255, 255, 0.16);
-  color: #ffffff;
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.2);
-}
-
-/* Apple Ambient Glow Stage Background */
-.apple-stage-glow {
-  position: absolute;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 100%;
-  max-width: 1100px;
-  height: 500px;
-  background: radial-gradient(ellipse 65% 50% at 50% 0%, rgba(41, 151, 255, 0.14) 0%, rgba(162, 89, 255, 0.06) 45%, transparent 75%);
-  pointer-events: none;
-  z-index: 0;
-}
-
-/* Apple Hardware Spec Metric Styling */
-.apple-stat-number {
-  font-family: var(--font-apple-display);
-  font-feature-settings: "tnum" 1;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.04em;
-  font-weight: 700;
-}
-
-/* Minimal macOS Native Scrollbar */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.16);
-  border-radius: 9999px;
-  border: 2px solid transparent;
-  background-clip: content-box;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.28);
-}
-
+/* =============================================================
+   Utilities
+   ============================================================= */
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgb(255 255 255 / 0.16);
+  border: 2px solid transparent;
+  border-radius: 9999px;
+  background-clip: content-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgb(255 255 255 / 0.28);
+  background-clip: content-box;
 }

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react';
 import {
   UserProfile,
   LessonProgress,
@@ -191,9 +191,13 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [aiAdvisorInitialQuery, setAiAdvisorInitialQuery] = useState('');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
+  const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // 新 Toast 会替换旧的并重新计时，避免旧计时器提前关掉新消息
   const showToast = (msg: string) => {
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
     setToastMessage(msg);
-    setTimeout(() => setToastMessage(null), 3500);
+    toastTimerRef.current = setTimeout(() => setToastMessage(null), 3500);
   };
 
   // Sync to local storage
@@ -273,7 +277,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
     setUser(newUser);
     logLeadActivity(`用户登录/注册成功: ${newUser.name}`, 10);
-    showToast(`欢迎回来，${newUser.name}！已为您载入专属学习与体检空间。`);
+    showToast(`欢迎回来，${newUser.name}`);
 
     // If Supabase is connected, sync user profile
     if (client) {
@@ -296,7 +300,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   const logout = () => {
     setUser(null);
-    showToast('您已安全退出登录。');
+    showToast('已退出登录');
   };
 
   const updateUserProfile = (data: Partial<UserProfile>) => {
@@ -309,9 +313,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     const ok = updateSupabaseCredentials(url, key);
     if (ok) {
       setSupabaseStatus(getSupabaseStatus());
-      showToast('Supabase 云数据库连接成功！数据已开启远程多端同步。');
+      showToast('已连接 Supabase，数据将同步到云端');
     } else {
-      showToast('Supabase 配置参数格式有误，请检查 URL 与 Key。');
+      showToast('Supabase 配置有误，请检查 URL 与 Key');
     }
     return ok;
   };
@@ -333,7 +337,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     });
 
     logLeadActivity(`学完课时: ${lessonId}`, 3, { courseId, quizScore });
-    showToast('🎉 本课时已学完！学习进度已实时更新到您的出海档案。');
+    showToast('本课时已学完，进度已更新');
 
     // Async sync to Supabase
     const client = getSupabase();
@@ -384,7 +388,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
     setDiagnoses((prev) => [newRecord, ...prev]);
     logLeadActivity(`完成诊断测试: ${toolName}`, 15, { score });
-    showToast(`体检完成！已为您生成诊断书（得分 ${score} 分），已自动存入“我的空间”。`);
+    showToast(`体检完成：${score} 分，已存入“我的空间”`);
 
     // Async Supabase sync
     const client = getSupabase();
@@ -425,7 +429,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setSavedProposals((prev) => [newProposal, ...prev]);
     setActiveProposal(newProposal);
     logLeadActivity(`保存方案配置草案: ${title}`, 20, { budgetRange });
-    showToast('方案配置已保存！专属商机空间 (Deal Room) 已激活。');
+    showToast('方案已保存，方案空间已开启');
 
     // Async Supabase sync
     const client = getSupabase();
