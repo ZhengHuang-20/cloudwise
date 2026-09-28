@@ -11,7 +11,6 @@ import { scoreTone, TONE_TEXT } from './ui/tone';
 interface MySpaceModalProps {
   isOpen: boolean;
   onClose: () => void;
-  openSupabaseModal: () => void;
 }
 
 type SpaceTab = 'progress' | 'diagnoses' | 'proposals' | 'certificate' | 'profile';
@@ -22,7 +21,7 @@ const EmptyState: React.FC<{ text: string }> = ({ text }) => (
   <p className="py-16 text-center text-body text-label-secondary">{text}</p>
 );
 
-export const MySpaceModal: React.FC<MySpaceModalProps> = ({ isOpen, onClose, openSupabaseModal }) => {
+export const MySpaceModal: React.FC<MySpaceModalProps> = ({ isOpen, onClose }) => {
   const {
     user,
     logout,
@@ -32,7 +31,6 @@ export const MySpaceModal: React.FC<MySpaceModalProps> = ({ isOpen, onClose, ope
     getCourseProgressPercentage,
     diagnoses,
     savedProposals,
-    supabaseStatus,
     showToast
   } = useApp();
 
@@ -59,15 +57,6 @@ export const MySpaceModal: React.FC<MySpaceModalProps> = ({ isOpen, onClose, ope
         <span className="avatar h-10 w-10 text-body" aria-hidden="true">
           {user?.name?.slice(0, 1) || '我'}
         </span>
-      }
-      actions={
-        <button type="button" onClick={openSupabaseModal} className="chip hidden sm:inline-flex" title="数据同步设置">
-          <span
-            className={`h-1.5 w-1.5 rounded-full ${supabaseStatus.isConfigured ? 'bg-success' : 'bg-warning'}`}
-            aria-hidden="true"
-          />
-          {supabaseStatus.isConfigured ? '已云同步' : '仅本地'}
-        </button>
       }
     >
       <div className="shrink-0 border-b border-separator px-6 py-3 sm:px-8">
@@ -254,13 +243,6 @@ export const MySpaceModal: React.FC<MySpaceModalProps> = ({ isOpen, onClose, ope
                 保存档案
               </button>
             </div>
-            <button
-              type="button"
-              onClick={openSupabaseModal}
-              className="link text-body sm:hidden"
-            >
-              数据同步设置
-            </button>
           </form>
         )}
       </DialogBody>

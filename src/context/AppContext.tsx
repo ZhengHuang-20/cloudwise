@@ -5,8 +5,6 @@ import {
   DiagnosisRecord,
   SavedProposal,
   getSupabase,
-  getSupabaseStatus,
-  updateSupabaseCredentials,
 } from '../lib/supabase';
 import { COURSES } from '../data/coursesData';
 
@@ -27,10 +25,6 @@ interface AppContextType {
   updateUserProfile: (data: Partial<UserProfile>) => void;
   isAuthModalOpen: boolean;
   setAuthModalOpen: (open: boolean) => void;
-
-  // Supabase Status
-  supabaseStatus: { url: string; key: string; isConfigured: boolean };
-  saveSupabaseConfig: (url: string, key: string) => boolean;
 
   // Learning Progress
   learningProgress: Record<string, LessonProgress>;
@@ -102,7 +96,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   });
 
   const [isAuthModalOpen, setAuthModalOpen] = useState(false);
-  const [supabaseStatus, setSupabaseStatus] = useState(getSupabaseStatus());
 
   // Learning Progress state
   const [learningProgress, setLearningProgress] = useState<Record<string, LessonProgress>>(() => {
@@ -306,17 +299,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     showToast('个人档案与企业信息已更新');
   };
 
-  const saveSupabaseConfig = (url: string, key: string) => {
-    const ok = updateSupabaseCredentials(url, key);
-    if (ok) {
-      setSupabaseStatus(getSupabaseStatus());
-      showToast('已连接 Supabase，数据将同步到云端');
-    } else {
-      showToast('Supabase 配置有误，请检查 URL 与 Key');
-    }
-    return ok;
-  };
-
   const markLessonComplete = (courseId: string, lessonId: string, quizScore = 100, exerciseData?: any) => {
     setLearningProgress((prev) => {
       const updated = {
@@ -456,8 +438,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         updateUserProfile,
         isAuthModalOpen,
         setAuthModalOpen,
-        supabaseStatus,
-        saveSupabaseConfig,
         learningProgress,
         markLessonComplete,
         isLessonCompleted,

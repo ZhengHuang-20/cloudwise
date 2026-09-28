@@ -5,8 +5,6 @@ import { Footer } from './components/Footer';
 import { AiConsultantModal } from './components/AiConsultantModal';
 import { BookingModal } from './components/BookingModal';
 import { MySpaceModal } from './components/MySpaceModal';
-import { SalesConsoleModal } from './components/SalesConsoleModal';
-import { SupabaseModal } from './components/SupabaseModal';
 import { isTabId, TabId, tabTitle } from './components/navigation';
 
 // Views
@@ -32,8 +30,6 @@ function MainApp() {
   const [currentTab, setCurrentTab] = useState<TabId>(readTabFromHash);
   const [isBookingOpen, setIsBookingOpen] = useState(false);
   const [isMySpaceOpen, setIsMySpaceOpen] = useState(false);
-  const [isSalesConsoleOpen, setIsSalesConsoleOpen] = useState(false);
-  const [isSupabaseOpen, setIsSupabaseOpen] = useState(false);
   const [configuratorPrefill, setConfiguratorPrefill] = useState<any>(null);
 
   useEffect(() => {
@@ -97,8 +93,6 @@ function MainApp() {
         onNavigate={navigate}
         openBookingModal={openBooking}
         openMySpaceModal={() => setIsMySpaceOpen(true)}
-        openSalesConsoleModal={() => setIsSalesConsoleOpen(true)}
-        openSupabaseModal={() => setIsSupabaseOpen(true)}
       />
 
       <main id="main" tabIndex={-1} className="relative flex-1 outline-none">
@@ -133,11 +127,7 @@ function MainApp() {
         {currentTab === 'resources' && <ResourcesView onGoToLesson={() => navigate('academy')} />}
       </main>
 
-      <Footer
-        onNavigate={navigate}
-        openSalesConsoleModal={() => setIsSalesConsoleOpen(true)}
-        openSupabaseModal={() => setIsSupabaseOpen(true)}
-      />
+      <Footer onNavigate={navigate} />
 
       {/* AI 售前顾问入口：全站唯一的浮动按钮 */}
       {!isAiAdvisorOpen && (
@@ -154,16 +144,7 @@ function MainApp() {
       {/* 全局弹窗 */}
       <AiConsultantModal />
       <BookingModal isOpen={isBookingOpen} onClose={() => setIsBookingOpen(false)} />
-      <MySpaceModal
-        isOpen={isMySpaceOpen}
-        onClose={() => setIsMySpaceOpen(false)}
-        openSupabaseModal={() => {
-          setIsMySpaceOpen(false);
-          setIsSupabaseOpen(true);
-        }}
-      />
-      <SalesConsoleModal isOpen={isSalesConsoleOpen} onClose={() => setIsSalesConsoleOpen(false)} />
-      <SupabaseModal isOpen={isSupabaseOpen} onClose={() => setIsSupabaseOpen(false)} />
+      <MySpaceModal isOpen={isMySpaceOpen} onClose={() => setIsMySpaceOpen(false)} />
 
       {/* Toast：顶部居中的状态提示 */}
       {toastMessage && (

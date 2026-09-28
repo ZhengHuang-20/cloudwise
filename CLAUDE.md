@@ -52,13 +52,13 @@ NODE_ENV=production bun run start   # 生产模式：Express 托管 dist/ 并做
 
 - 单一 `AppProvider` / `useApp()` 管理用户、课程进度、诊断记录、方案草案、线索行为、toast 等全部共享状态。
 - **本地优先**：所有状态持久化到 `localStorage`（键前缀 `cw_`），首次访问时注入演示数据（访客用户、示例诊断和方案）。
-- **Supabase 仅作单向镜像**：写操作在 `getSupabase()` 返回 client 时以 fire-and-forget 方式 insert/upsert，失败只打 `console.warn`，从不从 Supabase 读回。凭据优先取 `localStorage` 的 `cw_supabase_url/key`（由 `SupabaseModal` 设置），其次取 `VITE_SUPABASE_*`；含占位域名时视为未配置。
+- **Supabase 仅作单向镜像**：写操作在 `getSupabase()` 返回 client 时以 fire-and-forget 方式 insert/upsert，失败只打 `console.warn`，从不从 Supabase 读回。凭据只取构建时的 `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY`，含占位域名时视为未配置。Supabase 对接不在页面上展示：没有配置入口、同步状态或 CRM 工作台界面。
 - 登录是本地模拟的（`login()` 生成 `usr-<timestamp>` 形式的 id，不走 Supabase Auth），而 `supabase_schema.sql` 中 `profiles.id` 为 UUID 且外键指向 `auth.users`，RLS 依赖 `auth.uid()`。所以按现有 schema，云同步写入会被拒绝，接入真实鉴权前这是已知限制。
 - 共享领域类型（`UserProfile`、`DiagnosisRecord`、`SavedProposal`、`LessonProgress`）定义在 `src/lib/supabase.ts`，没有单独的 types 文件。
 
 ### 线索评分漏斗
 
-`logLeadActivity(action, scoreDelta, meta?)` 是售前漏斗的埋点入口：各 view 在关键交互时调用（诊断、保存方案、预约、高意向对话等）。`leadScore = 25 + Σ scoreDelta`，`currentStage` 据此和诊断/方案数量推导（≥30 为 MQL，≥45 为 SQL，≥60 且有诊断和方案为「商机」），由 `Header` 与 `SalesConsoleModal` 展示。`saveDiagnosis`、`saveProposalDraft`、`markLessonComplete` 内部已自动记录行为，不要在调用方重复记录。
+`logLeadActivity(action, scoreDelta, meta?)` 是售前漏斗的埋点入口：各 view 在关键交互时调用（诊断、保存方案、预约、高意向对话等）。`leadScore = 25 + Σ scoreDelta`，`currentStage` 据此和诊断/方案数量推导（≥30 为 MQL，≥45 为 SQL，≥60 且有诊断和方案为「商机」），随行为记录同步写入 Supabase 的 `leads` 表，页面上不展示。`saveDiagnosis`、`saveProposalDraft`、`markLessonComplete` 内部已自动记录行为，不要在调用方重复记录。
 
 ### 静态内容
 

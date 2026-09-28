@@ -1,16 +1,11 @@
 import React from 'react';
-import { useApp } from '../context/AppContext';
 import { NAV_GROUPS, TabId } from './navigation';
 
 interface FooterProps {
   onNavigate: (tab: TabId) => void;
-  openSalesConsoleModal: () => void;
-  openSupabaseModal: () => void;
 }
 
-export const Footer: React.FC<FooterProps> = ({ onNavigate, openSalesConsoleModal, openSupabaseModal }) => {
-  const { supabaseStatus } = useApp();
-
+export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
   return (
     <footer className="border-t border-separator bg-canvas">
       <div className="layout-wide py-12 md:py-16">
@@ -44,23 +39,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, openSalesConsoleModa
 
         <div className="mt-12 flex flex-col gap-4 border-t border-separator pt-6 text-caption text-label-secondary md:flex-row md:items-center md:justify-between">
           <p>Copyright © 2026 云端智荐。保留所有权利。</p>
-          <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
-            <button type="button" onClick={openSalesConsoleModal} className="transition-colors hover:text-label">
-              售前 CRM 工作台
-            </button>
-            <button
-              type="button"
-              onClick={openSupabaseModal}
-              className="inline-flex items-center gap-1.5 transition-colors hover:text-label"
-            >
-              <span
-                className={`h-1.5 w-1.5 rounded-full ${supabaseStatus.isConfigured ? 'bg-success' : 'bg-warning'}`}
-                aria-hidden="true"
-              />
-              数据同步设置
-            </button>
-            <span>苏ICP备20260928号-1</span>
-          </div>
+          <span>苏ICP备20260928号-1</span>
         </div>
       </div>
     </footer>
