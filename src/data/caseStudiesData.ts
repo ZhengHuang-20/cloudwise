@@ -7,6 +7,12 @@ export interface CaseStudy {
   buyerRoles: string[];
   startingPointFriction: string;
   startingScore: number;
+  // 评分对比的口径：两个分数分别测的是哪个站点。缺省时页面显示「改造前 / 改造后」
+  scoreComparison?: {
+    metric: string;
+    beforeLabel: string;
+    afterLabel: string;
+  };
   whatWeDid: string[];
   results: {
     finalScore: number;
@@ -46,10 +52,15 @@ export const CASE_STUDIES: CaseStudy[] = [
     status: '港股上市公司 · 中国骨科关节龙头',
     targetMarket: '西欧、北美、拉美、东南亚主要公立与专科医疗机构',
     buyerRoles: ['骨科专科主刀医生', '医院医疗器械采购委员会主任', '海外区域医药器械分销商', '国家卫生注册审核工程师'],
-    startingPointFriction: '原海外官网 (ak-medical.net) 内容为中文画册机翻，未配置三读者技术架构与结构化知识，AI 可见性评分仅 47 分，海外知名度受阻。',
+    startingPointFriction: '现有国内官网 (ak-medical.net) 的英文内容为中文画册机翻，未配置三读者技术架构与结构化知识，GEO / SEO 评分仅 47 分，海外知名度受阻。',
     startingScore: 47,
+    scoreComparison: {
+      metric: 'GEO / SEO 评分对比',
+      beforeLabel: '现有国内官网',
+      afterLabel: '新建海外官网',
+    },
     whatWeDid: [
-      '重建全新英文独立站 (ak-medical-global.com)，搭建满足 Core Web Vitals 与多语种标准的海外主阵地',
+      '新建英文海外官网 (ak-medical-global.com)，搭建满足 Core Web Vitals 与多语种标准的海外主阵地',
       '针对四类海外医疗决策者进行深度意图建模，梳理 91 项年度英文高权重技术内容规划',
       '将中国 3D 打印多孔钛临床突破重塑为符合 FDA/CE 技术规范的双语参数对比指南与白皮书',
       '多平台信源权威铺设（学术索引、LinkedIn、行业展会官方目录）与月度探针监测'
@@ -57,13 +68,13 @@ export const CASE_STUDIES: CaseStudy[] = [
     results: {
       finalScore: 95,
       metrics: [
-        'AI 可见性综合评分从 47 分跃升至 95 分',
+        '新建海外官网 GEO / SEO 评分 95 分，现有国内官网为 47 分',
         'chatgpt.com、perplexity.ai 连续数月产生高粘性引荐访问（平均停留 4m35s）',
         '海外官网自然询盘量环比增长 320%'
       ],
       directOutcome: '在欧洲与拉美多次医院国际公开招投标调研中，被 ChatGPT 与 Perplexity 列入亚太前三推荐合格合规供应商！'
     },
-    dataScopeStatement: '注：47 分到 95 分为第三方评测工具 arobis.ai 基于全网站点信号、Schema 定义完整度与信源权重的客观就绪度评分；引荐流量与询盘来源于 Google Analytics 4 与 CRM 真实埋点。',
+    dataScopeStatement: '注：47 分是现有国内官网 (ak-medical.net)、95 分是新建海外官网 (ak-medical-global.com) 的 GEO / SEO 评分，是两个站点的对比，而非同一站点改造前后的变化；两者均由第三方评测工具 arobis.ai 按同一口径（全网站点信号、Schema 定义完整度与信源权重）测得；引荐流量与询盘来源于 Google Analytics 4 与 CRM 真实埋点。',
     relatedLessons: ['lesson-a-1-2', 'lesson-a-7-4', 'lesson-c-1-1', 'lesson-c-10-2'],
     reusableExperience: [
       '先建模再写内容：搞清海外买家究竟问 AI 什么问题，绝不闭门造车自说自话',

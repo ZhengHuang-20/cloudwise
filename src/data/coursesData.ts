@@ -286,8 +286,8 @@ const ALL_COURSES: Course[] = [
             conceptContent: `在画册第 6 页中，爱康医疗（AK Medical）全球站的后台仪表盘展现了极具代表性的数据结构：\n1. 引荐流量来源中，chatgpt.com、perplexity.ai 等生成式 AI 带来的访问占比逐步攀升至 18%，且这类访客的停留时长是普通访客的 2.4 倍。\n2. 受访高频页面不再是关于我们（About Us），而是带 3D 打印多孔钛参数表的技术白皮书页面。\n3. 询盘漏斗清晰映射：自测体检 -> 技术白皮书下载 -> 智能客服在线沟通 -> 业务员跟进。`,
             caseSnippet: {
               company: '爱康医疗 (港股上市)',
-              title: '新站评分从 47 跃升至 95，ChatGPT 带来持续真实询盘',
-              description: '通过爱康医疗旧官网 (ak-medical.net) 与新官网 (ak-medical-global.com) 对比，全面展现了三读者架构与 GEO 布局在海外医疗采购场景中的落地实效。'
+              title: '国内官网 47 分，新建海外官网 95 分，ChatGPT 带来持续真实询盘',
+              description: '通过爱康医疗国内官网 (ak-medical.net) 与新建海外官网 (ak-medical-global.com) 对比，全面展现了三读者架构与 GEO 布局在海外医疗采购场景中的落地实效。'
             },
             misconceptions: [
               '看数据只看 PV 和 UV，不看来源渠道质量与真实询盘转化率。'
@@ -594,10 +594,10 @@ const ALL_COURSES: Course[] = [
           {
             id: 'lesson-c-10-2',
             moduleIndex: 10,
-            title: '10.2 案例实战：爱康医疗从 47 分到 95 分的数据口径客观说明',
-            summary: '明确客观口径：47→95 分为第三方工具 arobis.ai 站点信号就绪度，结合真实来自 chatgpt.com 的高价值引荐访问，讲真话体现专业敬畏。',
+            title: '10.2 案例实战：爱康医疗 47 分与 95 分的数据口径客观说明',
+            summary: '明确客观口径：47 分与 95 分分别是国内官网与新建海外官网的 GEO / SEO 评分，由第三方工具 arobis.ai 按同一口径测得，结合真实来自 chatgpt.com 的高价值引荐访问，讲真话体现专业敬畏。',
             durationMinutes: 18,
-            conceptContent: `在画册中我们公开了爱康医疗的实战成果：从原官网的 47 分跨越到新站的 95 分。在向客户汇报时，必须主动讲清数据口径：\n- 47 分到 95 分，属于权威第三方评估平台 arobis.ai 基于网站内容结构、定义完整性与信源就绪度的客观估算。\n- 更加确凿的业务成果，是来自 Google Analytics 4 后台的真实记录：chatgpt.com、perplexity 等 AI 域名作为 Referral（引荐流量）来源，连续数月源源不断带来海外骨科医院器械采购科工程师的访问，且平均停留时间达 4 分 35 秒。\n\n主动讲清口径，不搞数字游戏，是云端智荐作为专业出海工程师团队的立身之本。`,
+            conceptContent: `在画册中我们公开了爱康医疗的实战成果：现有国内官网 (ak-medical.net) 的 GEO / SEO 评分为 47 分，我们新建的海外官网 (ak-medical-global.com) 为 95 分。在向客户汇报时，必须主动讲清数据口径：\n- 这是两个站点之间的对比，而不是同一站点改造前后的变化；两个分数都由权威第三方评估平台 arobis.ai 基于网站内容结构、定义完整性与信源就绪度，按同一口径客观估算。\n- 更加确凿的业务成果，是来自 Google Analytics 4 后台的真实记录：chatgpt.com、perplexity 等 AI 域名作为 Referral（引荐流量）来源，连续数月源源不断带来海外骨科医院器械采购科工程师的访问，且平均停留时间达 4 分 35 秒。\n\n主动讲清口径，不搞数字游戏，是云端智荐作为专业出海工程师团队的立身之本。`,
             caseSnippet: {
               company: '爱康医疗',
               title: '骨科 3D 打印龙头企业的全球化 GEO 样本',
@@ -608,7 +608,7 @@ const ALL_COURSES: Course[] = [
             ],
             executiveTakeaway: '合规做 GEO，建立真实增值的企业数字资产；拒绝黑帽刷量和信息投毒，长效享受 AI 出海红利。',
             notebookLmPodcast: {
-              title: '【NotebookLM 决策者专线】爱康医疗 47 到 95 分背后的真实故事与专业敬畏',
+              title: '【NotebookLM 决策者专线】爱康医疗国内官网 47 分与海外新站 95 分背后的真实故事与专业敬畏',
               audioDuration: '09:55',
               hosts: ['Alex', 'Sam'],
               transcript: [

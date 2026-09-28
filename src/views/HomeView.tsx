@@ -125,11 +125,11 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate, openBookingModal
   const PRESETS = [
     {
       name: '爱康医疗',
-      url: 'www.ak-medical.net',
+      url: 'www.ak-medical-global.com',
       industry: '高端医疗器械与耗材',
       region: '欧洲市场 (重点德国/英国)',
       result: {
-        target: '爱康医疗 (www.ak-medical.net)',
+        target: '爱康医疗 (www.ak-medical-global.com)',
         region: '欧洲市场 (重点德国/英国)',
         industry: '高端医疗器械与耗材',
         totalScore: 92,
@@ -593,7 +593,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate, openBookingModal
               name: '爱康医疗',
               stat: '47 → 95',
               statUnit: '分',
-              statLabel: 'AI 可见性就绪度',
+              statLabel: 'GEO / SEO 评分 · 国内官网 → 新建海外官网',
               desc: '告别画册式官网，针对 4 类海外医疗决策者精准建模，系统化注入 91 项技术文献与临床证据链。ChatGPT 连续数月带来真实的欧洲采购引荐。',
               pains: '看不见 · 不被信',
             },

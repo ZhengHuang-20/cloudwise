@@ -21,6 +21,7 @@ export const CasesView: React.FC<CasesViewProps> = ({ onGoToDiagnosis }) => {
 
   const currentCase = CASE_STUDIES.find((c) => c.id === selectedCaseId) || CASE_STUDIES[0];
   const caseName = splitName(currentCase.clientName);
+  const comparison = currentCase.scoreComparison;
 
   return (
     <div>
@@ -74,20 +75,23 @@ export const CasesView: React.FC<CasesViewProps> = ({ onGoToDiagnosis }) => {
                   </p>
                 </div>
 
-                <dl className="flex shrink-0 items-end gap-5">
-                  <div>
-                    <dt className="text-caption text-label-secondary">改造前</dt>
-                    <dd className="text-title-1 tabular-nums text-label-secondary">{currentCase.startingScore}</dd>
-                  </div>
-                  <ArrowRight className="mb-3 h-6 w-6 text-label-tertiary" aria-hidden="true" />
-                  <div>
-                    <dt className="text-caption text-label-secondary">改造后</dt>
-                    <dd className="text-headline tabular-nums text-success">
-                      {currentCase.results.finalScore}
-                      <span className="ml-1 text-title-3 text-label-secondary">分</span>
-                    </dd>
-                  </div>
-                </dl>
+                <div className="shrink-0">
+                  {comparison && <p className="mb-3 text-caption font-semibold">{comparison.metric}</p>}
+                  <dl className="flex items-end gap-5">
+                    <div>
+                      <dt className="text-caption text-label-secondary">{comparison?.beforeLabel ?? '改造前'}</dt>
+                      <dd className="text-title-1 tabular-nums text-label-secondary">{currentCase.startingScore}</dd>
+                    </div>
+                    <ArrowRight className="mb-3 h-6 w-6 text-label-tertiary" aria-hidden="true" />
+                    <div>
+                      <dt className="text-caption text-label-secondary">{comparison?.afterLabel ?? '改造后'}</dt>
+                      <dd className="text-headline tabular-nums text-success">
+                        {currentCase.results.finalScore}
+                        <span className="ml-1 text-title-3 text-label-secondary">分</span>
+                      </dd>
+                    </div>
+                  </dl>
+                </div>
               </div>
 
               {/* 起点 */}

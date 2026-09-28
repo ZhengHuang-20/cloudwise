@@ -54,7 +54,7 @@ const SYSTEM_KNOWLEDGE_INSTRUCTION = `
 ${SHOW_FDE ? FDE_KNOWLEDGE : ''}
 
 【代表案例】：
-- 爱康医疗（港股上市，骨科植入物）：旧官网 AI 可见性评分 47 分，经 4 类海外决策者建模、全年 91 项英文权威内容规划与信源建设，新站可见性提升至 95 分，ChatGPT 连续数月带来真实引荐高意向访问。
+- 爱康医疗（港股上市，骨科植入物）：现有国内官网 (ak-medical.net) 的 GEO / SEO 评分为 47 分；我们为其新建英文海外官网 (ak-medical-global.com)，经 4 类海外决策者建模、全年 91 项英文权威内容规划与信源建设，海外官网评分达到 95 分（两站同一口径对比，不是同一站点改造前后的分数），ChatGPT 连续数月带来真实引荐高意向访问。
 - 泰宁科创：60 组英文核心词库体系，英国 SuDS 规范合规指南，将国标参编转化为海外 AI 认可的权威工程佐证。
 
 【价格与预算规则】：
@@ -156,7 +156,7 @@ app.post('/api/gemini/chat', async (req, res) => {
   const citations = ['《云端智荐 AI 出海白皮书》', '《出海企业五大断点治理指南》'];
 
   if (lowerMsg.includes('geo') || lowerMsg.includes('chatgpt') || lowerMsg.includes('ai推荐') || lowerMsg.includes('可见性')) {
-    answer = `GEO（生成式引擎优化）是我们最具差异化的旗舰服务。不同于传统 SEO 仅在搜索结果列表排位，GEO 的核心是让 ChatGPT、Perplexity、Gemini 等主流 AI 在直接向海外采购商推荐供应商时，首选并权威引用您的品牌。\n\n我们通过六步闭环（诊断、建模、内容、信源、口碑、监测）建立权威证据链。以爱康医疗为例，其 AI 可见性评分从最初的 47 分跨越到 95 分，ChatGPT 连续数月带来真实高意向采购商访问。`;
+    answer = `GEO（生成式引擎优化）是我们最具差异化的旗舰服务。不同于传统 SEO 仅在搜索结果列表排位，GEO 的核心是让 ChatGPT、Perplexity、Gemini 等主流 AI 在直接向海外采购商推荐供应商时，首选并权威引用您的品牌。\n\n我们通过六步闭环（诊断、建模、内容、信源、口碑、监测）建立权威证据链。以爱康医疗为例，其现有国内官网的 GEO / SEO 评分仅 47 分，我们新建的海外官网达到 95 分，ChatGPT 连续数月带来真实高意向采购商访问。`;
     intent = 'HIGH';
     intentReason = '主动咨询最新 GEO 旗舰技术，具备强烈获客升级意向';
     recommendedServices.push('出海 GEO 优化', '外贸 SEO 优化');
