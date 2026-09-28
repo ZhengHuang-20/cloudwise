@@ -6,6 +6,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 「云端智荐」—— 面向中国出海企业的 AI 售前支持系统与能力样板间（独立站 / SEO / GEO / AI 客服 / FDE 驻场五项服务）。项目由 Google AI Studio 导出（见 `metadata.json`），技术栈：React 19 + TypeScript + Vite 8 + Tailwind CSS v4，后端为同进程的 Express（`server.ts`），AI 能力来自服务端调用的 Gemini（`@google/genai`），Supabase 为可选的云同步。界面文案全部为简体中文，新增文案请保持中文。
 
+**任何 UI 改动前先读 [`DESIGN.md`](./DESIGN.md)**（设计规范：token、组件、页面模板、文案与无障碍规则），改动后按其第 8 节评审清单自查。
+
 ## 常用命令
 
 仓库使用 `bun.lock`，用 bun 安装依赖（npm 也可运行 scripts）。
@@ -18,7 +20,7 @@ bun run build      # vite build → dist/
 NODE_ENV=production bun run start   # 生产模式：Express 托管 dist/ 并做 SPA 回退
 ```
 
-- 项目**没有测试框架和测试用例**；改动后用 `bun run lint` + `bun run build` 验证，涉及 API 时启动 dev 后 `curl localhost:3000/api/health`。
+- 项目**没有测试框架和测试用例**；改动后用 `bun run lint` + `bun run build` 验证，涉及 API 时启动 dev 后 `curl localhost:3000/api/health`。UI 改动还应在 390px 与 1440px 两个宽度下截图检查（环境里有全局 Playwright，页面可直接用 `http://localhost:3000/#/<tab>` 打开）。
 - `start` 与 `dev` 是同一条命令，只有设置 `NODE_ENV=production` 才会走静态托管分支，且需先 `build`。
 - 不要单独用 `vite` / `vite preview` 调试 AI 功能：`/api/*` 路由只存在于 `server.ts`。
 - 环境变量：复制 `.env.example` 为 `.env`（`.env*` 已被 gitignore）。`GEMINI_API_KEY`、`APP_URL`、`VITE_SUPABASE_URL`、`VITE_SUPABASE_ANON_KEY`、`PORT` 均可缺省。
@@ -37,10 +39,12 @@ NODE_ENV=production bun run start   # 生产模式：Express 托管 dist/ 并做
 
 ### 前端导航（无路由库）
 
-- `src/App.tsx` 用 `currentTab` 字符串状态条件渲染 `src/views/*`；tab id 与导航项定义在 `src/components/Header.tsx`。
+- `src/App.tsx` 用 `currentTab` 状态条件渲染 `src/views/*`，并与地址栏 hash 同步（`#/services`），支持浏览器前进后退与分享链接；切页时滚到顶部并更新 `document.title`。
+- `TabId` 类型、导航分组（了解 / 自测 / 决策）与短标签、全称都只定义在 `src/components/navigation.ts`，`Header`、`Footer` 与 App 的 hash 解析共用它。
 - 页面间跳转通过 App 下发的回调 props（`onGoToConfigurator`、`onGoToBooking` 等）完成；`handleNavigateToConfigurator(prefill)` 可向配置器传入初始参数。
-- 新增页面需同时改三处：新建 view、在 `App.tsx` 加渲染分支、在 `Header.tsx` 加导航项。
-- 全局弹窗都在 `App.tsx` 渲染：`AiConsultantModal` 由 context 控制（`setAiAdvisorOpen` / `triggerAiAdvisorWithQuery(query)` 可带预设问题打开），其余弹窗由 App 本地 state 控制。
+- 新增页面需同时改三处：新建 view（以 `PageHeader` 开头）、在 `App.tsx` 加渲染分支、在 `navigation.ts` 加导航项。
+- 全局弹窗都在 `App.tsx` 渲染，外壳统一用 `src/components/ui/Dialog.tsx`（Esc、焦点圈定、滚动锁定已内置）。`AiConsultantModal` 由 context 控制（`setAiAdvisorOpen` / `triggerAiAdvisorWithQuery(query)` 可带预设问题打开，CRM 透视开关在弹窗标题栏），其余弹窗由 App 本地 state 控制。
+- `Header` 的移动端菜单渲染在 `<header>` 之外：`backdrop-filter` 会让 header 成为 fixed 子元素的定位容器。
 
 ### 全局状态与持久化（`src/context/AppContext.tsx`）
 
@@ -58,12 +62,16 @@ NODE_ENV=production bun run start   # 生产模式：Express 托管 dist/ 并做
 
 课程、案例、术语、资源、套餐定价都是 `src/data/*.ts` 中的类型化常量。预算配置器的计算逻辑在 `pricingRules.ts` 的 `calculateProposalEstimate`。内容类改动优先改这些数据文件，不要改组件。
 
-## 样式约定
+## 样式约定（完整规范见 `DESIGN.md`）
 
-- Tailwind v4 通过 `@tailwindcss/vite` 引入，没有 `tailwind.config`；主题与自定义类都在 `src/index.css`。
-- 仅深色、Apple HIG 风格。优先复用 `index.css` 中的工具类：`apple-glass`、`apple-glass-card`、`apple-blue-btn`、`apple-secondary-btn`、`apple-segmented-track` / `apple-segmented-item-active`、`apple-hero-title`、`apple-section-title`、`apple-eyebrow`、`apple-stat-number` 等。颜色直接写 hex（如 `#2997ff`、`#0071e3`、`#86868b`、`#30d158`）。
-- `index.css` 用 `!important` 把 `.text-xs` 和 `.text-[10px]`～`.text-[13px]` 统一强制为 14px（「最小字号 14px」规则），这些类不会让文字变得更小，层级应通过颜色对比区分。
-- 图标统一用 `lucide-react`。
+- Tailwind v4 通过 `@tailwindcss/vite` 引入，没有 `tailwind.config`。设计 token 写在 `src/index.css` 的 `@theme` 中，会自动生成对应的工具类；组件类写在 `@layer components` 中。
+- **只用语义 token，不写 hex、不用 Tailwind 默认色板**：颜色用 `bg-canvas` / `bg-surface` / `bg-surface-raised`、`text-label` / `text-label-secondary`、`border-separator`、`text-link`、`bg-accent`、`text-success|warning|danger`；字号用 `text-display|headline|title-1|title-2|title-3|intro|body|caption`（自带行高与字重）；圆角用 `rounded-tile|card|control`；缓动用 `ease-apple`。
+- 组件类：`layout-wide|text|reading`、`section`、`page-header`、`eyebrow`、`tile` / `card` / `well`（加 `interactive` 可点击）、`btn` + `btn-primary|secondary|neutral` + `btn-sm|lg|block`、`btn-icon`、`link`、`field` / `field-label`、`chip`（`aria-pressed`）、`choice`（`aria-checked`）、`badge`、`meter`、`avatar`、`material`（仅悬浮层）。
+- React 基础组件在 `src/components/ui/`：`Dialog` / `DialogBody`、`SegmentedControl`、`PageHeader`、`Slider`、`ScoreRing`、`Reveal`；分数配色用 `tone.ts` 的 `scoreTone`，五项服务的图标与识别色用 `serviceIdentity.ts`。
+- 蓝色只用于可交互元素；卡片是平面纯色，不加描边、阴影、渐变和玻璃效果；数字用 `tabular-nums`，不用 `font-mono`；字重只用 400 / 600。
+- 最小字号 14px（`text-caption`）。`index.css` 仍保留把 `.text-xs`、`.text-[10px]`～`.text-[13px]` 强制为 14px 的兜底规则，但新代码不要使用这些类。
+- 不加载 Web 字体（Google Fonts 在国内不可用），字体栈为 SF Pro / 苹方 / 微软雅黑；`<html lang="zh-CN">`。
+- 图标统一用 `lucide-react`（全局笔画 1.75），不要把图标装进带底色的小方块。
 
 ## 其他注意事项
 

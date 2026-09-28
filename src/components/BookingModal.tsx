@@ -1,11 +1,20 @@
 import React, { useState } from 'react';
-import {
-  X,
-  Calendar,
-  CheckCircle2,
-  Sparkles
-} from 'lucide-react';
+import { CheckCircle2 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
+import { Dialog, DialogBody } from './ui/Dialog';
+
+const MEETING_TYPES = [
+  { id: 'quick', title: '快速诊断', duration: '30 分钟', desc: '线上 · 解读自评分数', target: '外贸总监' },
+  { id: 'deep', title: '深度诊断', duration: '60 分钟', desc: '线上或上门 · 立项与方案定制', target: '老板 + 总监' },
+  { id: 'tech', title: '技术对接评估', duration: '60 分钟', desc: '线上 · 系统对接与 FDE', target: 'IT 负责人 + 业务' },
+] as const;
+
+const TIME_SLOTS = [
+  { value: '10:00 ~ 11:00', label: '上午 10:00 ~ 11:00' },
+  { value: '14:30 ~ 15:30', label: '下午 14:30 ~ 15:30' },
+  { value: '16:00 ~ 17:00', label: '下午 16:00 ~ 17:00' },
+  { value: '19:30 ~ 20:30', label: '晚间 19:30 ~ 20:30' },
+];
 
 export const BookingModal: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen, onClose }) => {
   const { user, latestDiagnosis, activeProposal, logLeadActivity, showToast } = useApp();
@@ -16,10 +25,12 @@ export const BookingModal: React.FC<{ isOpen: boolean; onClose: () => void }> = 
   const [contactName, setContactName] = useState(user?.name || '');
   const [contactPhone, setContactPhone] = useState(user?.phone || '');
   const [companyName, setCompanyName] = useState(user?.companyName || '');
-  const [attendeeRoles, setAttendeeRoles] = useState('董事长/总经理 + 外贸总监');
   const [isBooked, setIsBooked] = useState(false);
 
-  if (!isOpen) return null;
+  const handleClose = () => {
+    onClose();
+    setIsBooked(false);
+  };
 
   const handleBookingSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,145 +40,145 @@ export const BookingModal: React.FC<{ isOpen: boolean; onClose: () => void }> = 
       contactName,
       companyName,
     });
-    showToast('诊断会预约成功！会前简报已自动同步至售前团队工作台。');
+    showToast('预约成功，会前简报已同步给售前团队');
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/75 backdrop-blur-xl animate-in fade-in duration-200">
-      <div className="apple-glass rounded-3xl shadow-2xl max-w-3xl w-full max-h-[90vh] flex flex-col overflow-hidden text-[#f5f5f7] border border-white/[0.12]">
-        {/* Header */}
-        <div className="px-8 py-5 bg-white/[0.02] border-b border-white/[0.06] flex items-center justify-between shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-[#2997ff]/15 text-[#2997ff] border border-[#2997ff]/25 flex items-center justify-center">
-              <Calendar className="w-4 h-4" />
-            </div>
-            <div>
-              <h2 className="text-base sm:text-lg font-bold text-white tracking-tight">预约 1 对 1 出海闭门诊断会</h2>
-              <p className="text-xs text-[#86868b]">带着报告进会议，直奔实质性解决方案</p>
-            </div>
-          </div>
-
-          <button onClick={onClose} className="p-1.5 text-[#86868b] hover:text-white rounded-full hover:bg-white/[0.06] transition-colors">
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-
-        {/* Content */}
-        <div className="flex-1 overflow-y-auto p-8 space-y-6">
-          {!isBooked ? (
-            <form onSubmit={handleBookingSubmit} className="space-y-6">
-              <div className="space-y-3">
-                <label className="text-xs font-semibold text-white block">选择诊断形式与深度：</label>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  {[
-                    { id: 'quick', title: '快速诊断 (30分钟)', desc: '线上 · 解读自评分数', target: '外贸总监' },
-                    { id: 'deep', title: '深度诊断 (60分钟)', desc: '线上/上门 · 立项与方案定制', target: '老板 + 总监' },
-                    { id: 'tech', title: '技术对接评估 (60分钟)', desc: '线上 · 系统对接与 FDE', target: 'IT 负责人 + 业务' },
-                  ].map((m) => (
-                    <div
-                      key={m.id}
-                      onClick={() => setMeetingType(m.id as any)}
-                      className={`p-4 rounded-2xl border cursor-pointer transition-all ${
-                        meetingType === m.id
-                          ? 'bg-white/15 border-white/30 text-white font-medium shadow-sm'
-                          : 'bg-white/[0.02] border-white/[0.06] text-[#86868b] hover:border-white/15'
-                      }`}
-                    >
-                      <h4 className="text-xs font-bold text-white mb-1">{m.title}</h4>
-                      <p className="text-[11px] text-[#86868b] leading-normal">{m.desc}</p>
-                      <span className="text-[10px] text-[#2997ff] font-mono mt-1 block">建议参会：{m.target}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="text-xs font-medium text-[#a1a1a6] block mb-1.5">选择预约日期</label>
-                  <input
-                    type="date"
-                    value={selectedDate}
-                    onChange={(e) => setSelectedDate(e.target.value)}
-                    className="w-full px-4 py-2.5 bg-black/50 border border-white/[0.1] rounded-xl text-xs text-white"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs font-medium text-[#a1a1a6] block mb-1.5">选择时间时段</label>
-                  <select
-                    value={selectedSlot}
-                    onChange={(e) => setSelectedSlot(e.target.value)}
-                    className="w-full px-4 py-2.5 bg-black/50 border border-white/[0.1] rounded-xl text-xs text-white"
+    <Dialog
+      open={isOpen}
+      onClose={handleClose}
+      size="lg"
+      title="预约 1 对 1 出海诊断会"
+      description="带着体检报告进会议，直奔实质方案。"
+    >
+      <DialogBody>
+        {!isBooked ? (
+          <form onSubmit={handleBookingSubmit} className="space-y-8">
+            <fieldset>
+              <legend className="field-label">诊断形式</legend>
+              <div role="radiogroup" className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                {MEETING_TYPES.map((m) => (
+                  <button
+                    key={m.id}
+                    type="button"
+                    role="radio"
+                    aria-checked={meetingType === m.id}
+                    onClick={() => setMeetingType(m.id)}
+                    className="choice flex-col items-start justify-start gap-1"
                   >
-                    <option value="10:00 ~ 11:00">上午 10:00 ~ 11:00</option>
-                    <option value="14:30 ~ 15:30">下午 14:30 ~ 15:30</option>
-                    <option value="16:00 ~ 17:00">下午 16:00 ~ 17:00</option>
-                    <option value="19:30 ~ 20:30">晚间 19:30 ~ 20:30</option>
-                  </select>
-                </div>
+                    <span className="text-body font-semibold">{m.title}</span>
+                    <span className="text-caption text-label-secondary">
+                      {m.duration} · {m.desc}
+                    </span>
+                    <span className="text-caption text-label-secondary">建议参会：{m.target}</span>
+                  </button>
+                ))}
               </div>
+            </fieldset>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="text-xs font-medium text-[#a1a1a6] block mb-1.5">您的称呼</label>
-                  <input
-                    type="text"
-                    value={contactName}
-                    onChange={(e) => setContactName(e.target.value)}
-                    placeholder="如：张总 / 李总监"
-                    className="w-full px-4 py-2.5 bg-black/50 border border-white/[0.1] rounded-xl text-xs text-white"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="text-xs font-medium text-[#a1a1a6] block mb-1.5">联系手机号</label>
-                  <input
-                    type="tel"
-                    value={contactPhone}
-                    onChange={(e) => setContactPhone(e.target.value)}
-                    placeholder="如：13800000000"
-                    className="w-full px-4 py-2.5 bg-black/50 border border-white/[0.1] rounded-xl text-xs text-white"
-                    required
-                  />
-                </div>
-                <div className="sm:col-span-2">
-                  <label className="text-xs font-medium text-[#a1a1a6] block mb-1.5">企业全称</label>
-                  <input
-                    type="text"
-                    value={companyName}
-                    onChange={(e) => setCompanyName(e.target.value)}
-                    placeholder="如：某医疗科技股份有限公司"
-                    className="w-full px-4 py-2.5 bg-black/50 border border-white/[0.1] rounded-xl text-xs text-white"
-                    required
-                  />
-                </div>
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+              <div>
+                <label htmlFor="booking-date" className="field-label">日期</label>
+                <input
+                  id="booking-date"
+                  type="date"
+                  value={selectedDate}
+                  onChange={(e) => setSelectedDate(e.target.value)}
+                  className="field"
+                  required
+                />
               </div>
-
-              <button
-                type="submit"
-                className="apple-blue-btn w-full py-3.5 text-xs sm:text-sm font-semibold shadow-lg shadow-blue-600/25"
-              >
-                确认预约诊断会并生成会前简报
-              </button>
-            </form>
-          ) : (
-            <div className="text-center py-12 space-y-4">
-              <div className="w-16 h-16 rounded-full bg-[#30d158]/15 text-[#30d158] border border-[#30d158]/30 mx-auto flex items-center justify-center">
-                <CheckCircle2 className="w-8 h-8" />
+              <div>
+                <label htmlFor="booking-slot" className="field-label">时段</label>
+                <select
+                  id="booking-slot"
+                  value={selectedSlot}
+                  onChange={(e) => setSelectedSlot(e.target.value)}
+                  className="field"
+                >
+                  {TIME_SLOTS.map((slot) => (
+                    <option key={slot.value} value={slot.value}>
+                      {slot.label}
+                    </option>
+                  ))}
+                </select>
               </div>
-              <h3 className="text-xl font-bold text-white tracking-tight">诊断会预约已确认！</h3>
-              <p className="text-xs sm:text-sm text-[#a1a1a6] max-w-md mx-auto leading-relaxed font-normal">
-                会议时间：{selectedDate} {selectedSlot}。会议链接已发送至您的手机号 {contactPhone}。
-              </p>
-              <button
-                onClick={onClose}
-                className="apple-secondary-btn px-8 py-2.5 text-xs font-medium"
-              >
-                完成并返回
-              </button>
+              <div>
+                <label htmlFor="booking-name" className="field-label">您的称呼</label>
+                <input
+                  id="booking-name"
+                  type="text"
+                  value={contactName}
+                  onChange={(e) => setContactName(e.target.value)}
+                  placeholder="如 张总 / 李总监"
+                  autoComplete="name"
+                  className="field"
+                  required
+                />
+              </div>
+              <div>
+                <label htmlFor="booking-phone" className="field-label">手机号</label>
+                <input
+                  id="booking-phone"
+                  type="tel"
+                  value={contactPhone}
+                  onChange={(e) => setContactPhone(e.target.value)}
+                  placeholder="如 13800000000"
+                  autoComplete="tel"
+                  className="field"
+                  required
+                />
+              </div>
+              <div className="sm:col-span-2">
+                <label htmlFor="booking-company" className="field-label">企业全称</label>
+                <input
+                  id="booking-company"
+                  type="text"
+                  value={companyName}
+                  onChange={(e) => setCompanyName(e.target.value)}
+                  placeholder="如 某医疗科技股份有限公司"
+                  autoComplete="organization"
+                  className="field"
+                  required
+                />
+              </div>
             </div>
-          )}
-        </div>
-      </div>
-    </div>
+
+            {(latestDiagnosis || activeProposal) && (
+              <div className="well">
+                <p className="text-body font-semibold">会前将同步给架构师</p>
+                <ul className="mt-2 space-y-1 text-caption text-label-secondary">
+                  {latestDiagnosis && (
+                    <li>
+                      最近一次体检：{latestDiagnosis.toolName} · {latestDiagnosis.score} 分
+                    </li>
+                  )}
+                  {activeProposal && (
+                    <li>
+                      方案草案：{activeProposal.title} · {activeProposal.budgetRange}
+                    </li>
+                  )}
+                </ul>
+              </div>
+            )}
+
+            <button type="submit" className="btn btn-primary btn-lg btn-block">
+              确认预约
+            </button>
+          </form>
+        ) : (
+          <div className="py-12 text-center animate-fade-in">
+            <CheckCircle2 className="mx-auto h-14 w-14 text-success" />
+            <h3 className="mt-5 text-title-2">预约已确认</h3>
+            <p className="mx-auto mt-3 max-w-md text-body text-label-secondary">
+              {selectedDate} {selectedSlot}。会议链接已发送至 {contactPhone}。
+            </p>
+            <button type="button" onClick={handleClose} className="btn btn-secondary mt-8">
+              完成
+            </button>
+          </div>
+        )}
+      </DialogBody>
+    </Dialog>
   );
 };

@@ -1,28 +1,36 @@
 import React, { useState } from 'react';
-import {
-  FileText,
-  ShieldCheck,
-  CheckSquare,
-  Square,
-  MessageSquare,
-  Calendar,
-  DollarSign,
-  Download,
-  Share2,
-  Users,
-  Video,
-  Clock,
-  Sparkles,
-  Send,
-  Lock,
-  ChevronRight
-} from 'lucide-react';
+import { CheckCircle2, Circle, Lock } from 'lucide-react';
 import { useApp } from '../context/AppContext';
+import { SegmentedControl } from '../components/ui/SegmentedControl';
+
+type DealTab = 'overview' | 'plan' | 'pricing' | 'qa' | 'contract';
+
+const TABS: { id: DealTab; label: string }[] = [
+  { id: 'overview', label: '诊断概要' },
+  { id: 'plan', label: '共同行动计划' },
+  { id: 'pricing', label: '分项报价' },
+  { id: 'qa', label: '答疑讨论' },
+  { id: 'contract', label: '在线签约' },
+];
+
+const PRICE_ITEMS = [
+  { item: '海外独立站三读者架构重构与多语种部署', min: 10, max: 12, ratio: '阶段一 · 30%' },
+  { item: '60 组外贸核心词体系建立与 Google SEO 布局', min: 6, max: 8, ratio: '阶段二 · 20%' },
+  { item: '海外决策者建模、91 项内容规划与 GEO 信源铺设', min: 8, max: 12, ratio: '阶段三 · 30%' },
+  { item: '7×24 小时 AI 智能客服部署与 CRM 直连', min: 4, max: 6, ratio: '阶段四 · 20%' },
+];
+
+const TEAM = [
+  { name: 'David Huang', initials: 'DH', role: '出海解决方案总监 · 负责方案' },
+  { name: 'Chen Wei', initials: 'CW', role: 'FDE 驻场交付工程师 · 负责落地' },
+];
+
+const formatRange = (min: number, max: number) => `${min.toFixed(1)} ~ ${max.toFixed(1)} 万元`;
 
 export const DealRoomView: React.FC<{ onGoToBooking: () => void }> = ({ onGoToBooking }) => {
   const { activeProposal, user, showToast } = useApp();
 
-  const [activeTab, setActiveTab] = useState<'overview' | 'plan' | 'pricing' | 'qa' | 'contract'>('overview');
+  const [activeTab, setActiveTab] = useState<DealTab>('overview');
 
   const [actionItems, setActionItems] = useState([
     { id: 1, title: '提交现有官网技术与企业产品画册资料', owner: '客户方 (外贸总监)', due: '第 1 周', completed: true },
@@ -62,288 +70,257 @@ export const DealRoomView: React.FC<{ onGoToBooking: () => void }> = ({ onGoToBo
       }
     ]);
     setNewQuestion('');
-    showToast('提问已发布！');
+    showToast('问题已发布');
   };
 
   const [isContractSigned, setIsContractSigned] = useState(false);
 
+  const completedCount = actionItems.filter((i) => i.completed).length;
+  const totalMin = PRICE_ITEMS.reduce((sum, p) => sum + p.min, 0);
+  const totalMax = PRICE_ITEMS.reduce((sum, p) => sum + p.max, 0);
+
   return (
-    <div className="py-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto text-[#f5f5f7]">
-      {/* Deal Room Header */}
-      <div className="apple-glass rounded-3xl p-8 mb-8 space-y-6">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2 text-xs font-mono text-[#2997ff]">
-              <Lock className="w-3.5 h-3.5" />
-              <span>客户专属方案空间 (Deal Room)</span>
-            </div>
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
-              {activeProposal?.title || '出海企业专属方案空间'}
-            </h1>
-            <p className="text-xs text-[#86868b]">
-              企业账户：{user?.companyName || '某外贸智造龙头'} · 方案状态：商务审阅中
+    <div>
+      {/* 工作区页头：左对齐 */}
+      <header className="page-header layout-wide">
+        <p className="flex items-center gap-2 text-caption text-label-secondary">
+          <Lock className="h-4 w-4" />
+          客户专属方案空间
+        </p>
+        <div className="mt-3 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+          <div className="min-w-0">
+            <h1 className="text-title-1">{activeProposal?.title || '出海企业专属方案空间'}</h1>
+            <p className="mt-3 text-body text-label-secondary">
+              {user?.companyName || '某外贸智造龙头'} · 方案状态：商务审阅中
             </p>
           </div>
-
-          <div className="flex items-center gap-2.5">
+          <div className="flex shrink-0 gap-3">
             <button
+              type="button"
               onClick={() => {
                 if (navigator.clipboard) {
                   navigator.clipboard.writeText(window.location.href);
-                  showToast('已复制专属空间安全直链，可一键发送给老板或内部协同！');
+                  showToast('空间链接已复制，可发给老板或团队协同');
                 }
               }}
-              className="apple-secondary-btn px-4 py-2 text-xs flex items-center gap-1.5"
+              className="btn btn-neutral"
             >
-              <Share2 className="w-3.5 h-3.5" />
-              <span>邀请团队协同</span>
+              邀请团队
             </button>
-            <button
-              onClick={onGoToBooking}
-              className="apple-blue-btn px-5 py-2 text-xs font-semibold"
-            >
-              召开方案推进会
+            <button type="button" onClick={onGoToBooking} className="btn btn-primary">
+              召开推进会
             </button>
           </div>
         </div>
 
-        {/* Tab selection - Apple Segmented Control */}
-        <div className="flex gap-1.5 p-1.5 bg-white/[0.04] border border-white/[0.08] rounded-full overflow-x-auto no-scrollbar max-w-full">
-          {[
-            { id: 'overview', label: '1. 诊断概要', icon: Video },
-            { id: 'plan', label: '2. 共同行动计划 (MAP)', icon: CheckSquare },
-            { id: 'pricing', label: '3. 分项报价单', icon: DollarSign },
-            { id: 'qa', label: '4. 答疑讨论区', icon: MessageSquare },
-            { id: 'contract', label: '5. 在线签署合同', icon: ShieldCheck },
-          ].map((tab) => {
-            const Icon = tab.icon;
-            const isActive = activeTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id as any)}
-                className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-medium whitespace-nowrap transition-all duration-200 ${
-                  isActive
-                    ? 'bg-white/15 text-white shadow-sm backdrop-blur-md'
-                    : 'text-[#86868b] hover:text-white'
-                }`}
-              >
-                <Icon className="w-3.5 h-3.5" />
-                <span>{tab.label}</span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
+        <SegmentedControl className="mt-10" ariaLabel="方案空间内容" value={activeTab} onChange={setActiveTab} options={TABS} />
+      </header>
 
-      {/* ================= TAB 1: OVERVIEW ================= */}
-      {activeTab === 'overview' && (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          <div className="lg:col-span-8 apple-glass rounded-3xl p-8 space-y-6">
-            <h2 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-[#2997ff]" />
-              <span>一页纸诊断结论与交付路线图</span>
-            </h2>
-
-            <div className="p-6 bg-white/[0.02] rounded-2xl border border-white/[0.06] space-y-3 text-xs sm:text-sm text-[#a1a1a6] leading-relaxed">
-              <p>
-                尊敬的 <strong className="text-white">{user?.companyName || '贵司团队'}</strong> 决策层：
-              </p>
-              <p>
-                综合五断点自评与 AI 可见性测试，贵司在海外采购市场的核心卡点主要集中在：
-                <strong className="text-white">“海外买家问 AI 时查无此人（GEO 不被信）”</strong> 以及
-                <strong className="text-white">“跨时区夜间询盘延迟流失（接不住）”</strong>。
-              </p>
-              <p>
-                双方团队将围绕共同行动计划按周推进，确保每一分投入都有可量化的业务指标产出。
-              </p>
-            </div>
-
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-              <div className="p-4 bg-white/[0.03] rounded-2xl border border-white/[0.08]">
-                <span className="text-[#86868b] block mb-1">预算区间</span>
-                <span className="font-mono text-white font-bold text-base">
-                  {activeProposal?.budgetRange || '26.0 ~ 36.0 万元'}
-                </span>
-              </div>
-              <div className="p-4 bg-white/[0.03] rounded-2xl border border-white/[0.08]">
-                <span className="text-[#86868b] block mb-1">交付周期</span>
-                <span className="font-mono text-white font-bold text-base">
-                  {activeProposal?.timeline || '8 ~ 12 周'}
-                </span>
-              </div>
-              <div className="p-4 bg-white/[0.03] rounded-2xl border border-white/[0.08]">
-                <span className="text-[#86868b] block mb-1">协同架构师</span>
-                <span className="text-white font-bold text-base">David Huang</span>
-              </div>
-              <div className="p-4 bg-white/[0.03] rounded-2xl border border-white/[0.08]">
-                <span className="text-[#86868b] block mb-1">交付模式</span>
-                <span className="text-[#30d158] font-bold text-base">敏捷驻场</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="lg:col-span-4 apple-glass rounded-3xl p-8 space-y-6">
-            <h3 className="text-base font-bold text-white tracking-tight flex items-center gap-2">
-              <Users className="w-4 h-4 text-[#2997ff]" />
-              <span>专属售前与交付团队</span>
-            </h3>
-
-            <div className="space-y-3 text-xs">
-              <div className="p-4 bg-white/[0.02] rounded-2xl border border-white/[0.06] flex items-center gap-3">
-                <img
-                  src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80"
-                  alt="David"
-                  className="w-10 h-10 rounded-full object-cover border border-white/20"
-                />
-                <div>
-                  <h4 className="font-bold text-white">David Huang</h4>
-                  <p className="text-[#86868b]">出海解决方案总监 · 负责方案</p>
-                </div>
-              </div>
-
-              <div className="p-4 bg-white/[0.02] rounded-2xl border border-white/[0.06] flex items-center gap-3">
-                <img
-                  src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80"
-                  alt="Chen"
-                  className="w-10 h-10 rounded-full object-cover border border-white/20"
-                />
-                <div>
-                  <h4 className="font-bold text-white">Chen Wei</h4>
-                  <p className="text-[#86868b]">FDE 驻场交付工程师 · 负责落地</p>
-                </div>
-              </div>
-            </div>
-
-            <button
-              onClick={onGoToBooking}
-              className="apple-blue-btn w-full py-3 text-xs font-semibold"
-            >
-              预约 30 分钟方案答疑会
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* ================= TAB 2: PLAN ================= */}
-      {activeTab === 'plan' && (
-        <div className="apple-glass rounded-3xl p-8 space-y-6">
-          <div className="flex items-center justify-between border-b border-white/[0.08] pb-4">
-            <div>
-              <h2 className="text-xl font-bold text-white tracking-tight">共同行动计划 (Mutual Action Plan)</h2>
-              <p className="text-xs text-[#86868b]">明确双方责任人与验收节点</p>
-            </div>
-            <span className="text-xs text-[#30d158] font-mono">
-              完成度：{actionItems.filter((i) => i.completed).length} / {actionItems.length}
-            </span>
-          </div>
-
-          <div className="space-y-3">
-            {actionItems.map((item) => (
-              <div
-                key={item.id}
-                onClick={() => toggleAction(item.id)}
-                className={`p-5 rounded-2xl border transition-all cursor-pointer flex items-center justify-between ${
-                  item.completed
-                    ? 'bg-white/[0.01] border-white/[0.04] text-[#86868b]'
-                    : 'bg-white/[0.03] border-white/[0.08] text-white hover:border-white/20'
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  {item.completed ? (
-                    <CheckSquare className="w-5 h-5 text-[#30d158] shrink-0" />
-                  ) : (
-                    <Square className="w-5 h-5 text-[#86868b] shrink-0" />
-                  )}
-                  <div>
-                    <h4 className={`text-xs sm:text-sm font-semibold ${item.completed ? 'line-through text-[#86868b]' : 'text-white'}`}>
-                      {item.title}
-                    </h4>
-                    <p className="text-[11px] text-[#86868b]">责任方：{item.owner}</p>
-                  </div>
-                </div>
-
-                <span className="font-mono text-xs text-[#2997ff]">{item.due}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* ================= TAB 3: PRICING ================= */}
-      {activeTab === 'pricing' && (
-        <div className="apple-glass rounded-3xl p-8 space-y-6">
-          <h2 className="text-xl font-bold text-white tracking-tight">分项报价清单与付款节点</h2>
-          <div className="space-y-3 text-xs">
-            {[
-              { item: '海外独立站三读者架构重构与多语种部署', range: '10.0 ~ 12.0 万元', ratio: '阶段一 (30%)' },
-              { item: '60 组外贸核心词体系建立与 Google SEO 布局', range: '6.0 ~ 8.0 万元', ratio: '阶段二 (20%)' },
-              { item: '海外决策者建模、91 项内容规划与 GEO 信源铺设', range: '8.0 ~ 12.0 万元', ratio: '阶段三 (30%)' },
-              { item: '7×24 小时 AI 智能客服部署与 CRM 直连', range: '4.0 ~ 6.0 万元', ratio: '阶段四 (20%)' },
-            ].map((p, idx) => (
-              <div key={idx} className="p-4 bg-white/[0.02] rounded-2xl border border-white/[0.06] flex items-center justify-between">
-                <div>
-                  <span className="font-semibold text-white block">{p.item}</span>
-                  <span className="text-[11px] text-[#86868b]">付款节点：{p.ratio}</span>
-                </div>
-                <span className="font-mono text-white font-bold text-sm">{p.range}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Fallback QA and Contract tabs */}
-      {activeTab === 'qa' && (
-        <div className="apple-glass rounded-3xl p-8 space-y-6">
-          <h2 className="text-xl font-bold text-white tracking-tight">在线讨论与答疑</h2>
-          <div className="space-y-3">
-            {qaList.map((qa, i) => (
-              <div key={i} className="p-4 bg-white/[0.02] rounded-2xl border border-white/[0.06] space-y-2 text-xs">
-                <div className="flex justify-between font-semibold text-white">
-                  <span>问：{qa.q}</span>
-                  <span className="text-[#86868b] text-[11px]">{qa.author}</span>
-                </div>
-                <p className="text-[#a1a1a6] leading-relaxed pl-2 border-l border-[#2997ff]">
-                  答：{qa.a}
+      <div className="layout-wide pb-[clamp(4.5rem,2.5rem+6vw,8.75rem)]">
+        {/* ================= 诊断概要 ================= */}
+        {activeTab === 'overview' && (
+          <div className="grid grid-cols-1 items-start gap-5 lg:grid-cols-12 animate-fade-in">
+            <section className="tile lg:col-span-8" aria-labelledby="overview-title">
+              <h2 id="overview-title" className="text-title-2">
+                一页纸诊断结论与交付路线
+              </h2>
+              <div className="mt-6 max-w-3xl space-y-4 text-body text-label-secondary">
+                <p>
+                  尊敬的 <span className="font-semibold text-label">{user?.companyName || '贵司团队'}</span> 决策层：
                 </p>
+                <p>
+                  综合五断点自评与 AI 可见性测试，贵司在海外采购市场的核心卡点集中在
+                  <span className="font-semibold text-label">“海外买家问 AI 时查无此人（GEO 不被信）”</span>与
+                  <span className="font-semibold text-label">“跨时区夜间询盘延迟流失（接不住）”</span>。
+                </p>
+                <p>双方团队将围绕共同行动计划按周推进，确保每一分投入都有可量化的业务指标产出。</p>
               </div>
-            ))}
-          </div>
-          <form onSubmit={handleAskQuestion} className="flex gap-2">
-            <input
-              type="text"
-              value={newQuestion}
-              onChange={(e) => setNewQuestion(e.target.value)}
-              placeholder="向架构师提问..."
-              className="flex-1 px-4 py-2.5 bg-black/50 border border-white/[0.1] rounded-full text-xs text-white"
-            />
-            <button type="submit" className="apple-blue-btn px-6 py-2.5 text-xs font-semibold">
-              提交
-            </button>
-          </form>
-        </div>
-      )}
 
-      {activeTab === 'contract' && (
-        <div className="apple-glass rounded-3xl p-8 space-y-6">
-          <h2 className="text-xl font-bold text-white tracking-tight">合同在线签署</h2>
-          <div className="p-6 bg-black/40 rounded-2xl border border-white/[0.08] text-xs font-mono text-[#a1a1a6] leading-relaxed space-y-2">
-            <p>第一条 知识产权归属：项目交付形成的所有独立站源码、结构化知识库归属于甲方所有。</p>
-            <p>第二条 数据保密条款：严格恪守保密义务，采用物理隔离存储，未经授权绝不对外披露。</p>
+              <dl className="mt-10 grid grid-cols-2 gap-6 border-t border-separator pt-8 sm:grid-cols-4">
+                {[
+                  { label: '预算区间', value: activeProposal?.budgetRange || '26.0 ~ 36.0 万元' },
+                  { label: '交付周期', value: activeProposal?.timeline || '8 ~ 12 周' },
+                  { label: '协同架构师', value: 'David Huang' },
+                  { label: '交付模式', value: '敏捷驻场' },
+                ].map((stat) => (
+                  <div key={stat.label}>
+                    <dt className="text-caption text-label-secondary">{stat.label}</dt>
+                    <dd className="mt-1 text-body font-semibold tabular-nums">{stat.value}</dd>
+                  </div>
+                ))}
+              </dl>
+            </section>
+
+            <section className="tile lg:col-span-4" aria-labelledby="team-title">
+              <h2 id="team-title" className="text-title-3">
+                专属售前与交付团队
+              </h2>
+              <ul className="mt-6 space-y-5">
+                {TEAM.map((member) => (
+                  <li key={member.name} className="flex items-center gap-4">
+                    <span
+                      aria-hidden="true"
+                      className="avatar h-11 w-11 text-caption"
+                    >
+                      {member.initials}
+                    </span>
+                    <div className="min-w-0">
+                      <p className="text-body font-semibold">{member.name}</p>
+                      <p className="text-caption text-label-secondary">{member.role}</p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+              <button type="button" onClick={onGoToBooking} className="btn btn-secondary btn-block mt-8">
+                预约 30 分钟方案答疑
+              </button>
+            </section>
           </div>
-          <button
-            onClick={() => {
-              setIsContractSigned(true);
-              showToast('🎉 合同签署成功！空间已自动升级为【项目交付空间】。');
-            }}
-            disabled={isContractSigned}
-            className="apple-blue-btn px-8 py-3 text-xs font-semibold disabled:opacity-50"
-          >
-            {isContractSigned ? '合同已生效 (已转项目空间)' : '在线确认并签署合同'}
-          </button>
-        </div>
-      )}
+        )}
+
+        {/* ================= 共同行动计划 ================= */}
+        {activeTab === 'plan' && (
+          <section className="tile animate-fade-in" aria-labelledby="plan-title">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <h2 id="plan-title" className="text-title-2">
+                  共同行动计划
+                </h2>
+                <p className="mt-1 text-body text-label-secondary">明确双方责任人与验收节点。点击事项可标记完成。</p>
+              </div>
+              <div className="w-full sm:w-48">
+                <p className="text-right text-caption text-label-secondary">
+                  已完成 <span className="tabular-nums text-label">{completedCount}</span> / {actionItems.length}
+                </p>
+                <div className="meter mt-2">
+                  <span className="bg-success" style={{ width: `${(completedCount / actionItems.length) * 100}%` }} />
+                </div>
+              </div>
+            </div>
+
+            <ul className="mt-8 divide-y divide-separator border-y border-separator">
+              {actionItems.map((item) => (
+                <li key={item.id}>
+                  <button
+                    type="button"
+                    role="checkbox"
+                    aria-checked={item.completed}
+                    onClick={() => toggleAction(item.id)}
+                    className="flex w-full items-center gap-4 py-4 text-left"
+                  >
+                    {item.completed ? (
+                      <CheckCircle2 className="h-6 w-6 shrink-0 text-success" />
+                    ) : (
+                      <Circle className="h-6 w-6 shrink-0 text-label-tertiary" />
+                    )}
+                    <span className="min-w-0 flex-1">
+                      <span className={`block text-body ${item.completed ? 'text-label-secondary line-through' : ''}`}>
+                        {item.title}
+                      </span>
+                      <span className="block text-caption text-label-secondary">责任方：{item.owner}</span>
+                    </span>
+                    <span className="shrink-0 text-caption tabular-nums text-label-secondary">{item.due}</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+        {/* ================= 分项报价 ================= */}
+        {activeTab === 'pricing' && (
+          <section className="tile animate-fade-in" aria-labelledby="pricing-title">
+            <h2 id="pricing-title" className="text-title-2">
+              分项报价与付款节点
+            </h2>
+            <dl className="mt-8 divide-y divide-separator border-y border-separator">
+              {PRICE_ITEMS.map((p) => (
+                <div key={p.item} className="flex flex-col gap-1 py-4 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
+                  <dt>
+                    <span className="block text-body">{p.item}</span>
+                    <span className="block text-caption text-label-secondary">付款节点：{p.ratio}</span>
+                  </dt>
+                  <dd className="shrink-0 text-body font-semibold tabular-nums">{formatRange(p.min, p.max)}</dd>
+                </div>
+              ))}
+            </dl>
+            <div className="mt-6 flex items-baseline justify-between gap-6">
+              <span className="text-body text-label-secondary">合计</span>
+              <span className="text-title-2 tabular-nums">{formatRange(totalMin, totalMax)}</span>
+            </div>
+          </section>
+        )}
+
+        {/* ================= 答疑讨论 ================= */}
+        {activeTab === 'qa' && (
+          <section className="tile animate-fade-in" aria-labelledby="qa-title">
+            <h2 id="qa-title" className="text-title-2">
+              答疑讨论
+            </h2>
+            <ul className="mt-8 divide-y divide-separator border-y border-separator">
+              {qaList.map((qa, i) => (
+                <li key={i} className="py-6">
+                  <p className="text-body font-semibold">{qa.q}</p>
+                  <p className="mt-1 text-caption text-label-secondary">
+                    {qa.author} · {qa.time}
+                  </p>
+                  <p className="mt-4 border-l-2 border-separator-strong pl-4 text-body text-label-secondary">{qa.a}</p>
+                </li>
+              ))}
+            </ul>
+            <form onSubmit={handleAskQuestion} className="mt-6 flex flex-col gap-3 sm:flex-row">
+              <input
+                type="text"
+                value={newQuestion}
+                onChange={(e) => setNewQuestion(e.target.value)}
+                placeholder="向架构师提问…"
+                aria-label="输入问题"
+                className="field"
+              />
+              <button type="submit" disabled={!newQuestion.trim()} className="btn btn-primary shrink-0">
+                提交问题
+              </button>
+            </form>
+          </section>
+        )}
+
+        {/* ================= 在线签约 ================= */}
+        {activeTab === 'contract' && (
+          <section className="tile animate-fade-in" aria-labelledby="contract-title">
+            <h2 id="contract-title" className="text-title-2">
+              合同在线签署
+            </h2>
+            <ol className="well mt-8 space-y-3 text-body text-label-secondary">
+              <li>
+                <span className="font-semibold text-label">第一条　知识产权归属　</span>
+                项目交付形成的所有独立站源码、结构化知识库归属于甲方所有。
+              </li>
+              <li>
+                <span className="font-semibold text-label">第二条　数据保密条款　</span>
+                严格恪守保密义务，采用物理隔离存储，未经授权绝不对外披露。
+              </li>
+            </ol>
+
+            {isContractSigned ? (
+              <p className="mt-8 flex items-center gap-3 text-body animate-fade-in">
+                <CheckCircle2 className="h-6 w-6 text-success" />
+                合同已生效，本空间已升级为项目交付空间。
+              </p>
+            ) : (
+              <button
+                type="button"
+                onClick={() => {
+                  setIsContractSigned(true);
+                  showToast('合同已签署，空间已升级为项目交付空间');
+                }}
+                className="btn btn-primary mt-8"
+              >
+                确认并签署合同
+              </button>
+            )}
+          </section>
+        )}
+      </div>
     </div>
   );
 };

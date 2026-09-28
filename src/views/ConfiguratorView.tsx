@@ -1,25 +1,18 @@
 import React, { useState } from 'react';
-import {
-  Calculator,
-  CheckCircle2,
-  Calendar,
-  Layers,
-  Sparkles,
-  ArrowRight,
-  Share2,
-  FileText,
-  Clock,
-  DollarSign,
-  Zap
-} from 'lucide-react';
+import { Check, CheckCircle2 } from 'lucide-react';
 import { SERVICE_PACKAGES, calculateProposalEstimate, ConfiguratorInput } from '../data/pricingRules';
 import { useApp } from '../context/AppContext';
+import { PageHeader } from '../components/ui/PageHeader';
+import { Slider } from '../components/ui/Slider';
 
 interface ConfiguratorViewProps {
   onGoToDealRoom: () => void;
   onGoToBooking: () => void;
   initialParams?: any;
 }
+
+const INQUIRY_CHANNELS = ['官网在线窗口', '海外官方邮件', 'WhatsApp 业务号', 'LinkedIn 私信'];
+const INTEGRATED_SYSTEMS = ['企业微信', '钉钉', '标准CRM/Excel', 'Salesforce', 'ERP'];
 
 export const ConfiguratorView: React.FC<ConfiguratorViewProps> = ({
   onGoToDealRoom,
@@ -41,7 +34,7 @@ export const ConfiguratorView: React.FC<ConfiguratorViewProps> = ({
     seoKeywordsGroups: 60,
     geoDecisionPersonas: 4,
     geoAnnualContentCount: 60,
-    inquiryChannels: ['官网在线客服', '海外邮件', 'WhatsApp'],
+    inquiryChannels: ['官网在线窗口', '海外官方邮件', 'WhatsApp 业务号'],
     integratedSystems: ['企业微信', '标准CRM/Excel'],
     needFdeOnsite: true,
     needPrivateDeploy: false,
@@ -52,9 +45,19 @@ export const ConfiguratorView: React.FC<ConfiguratorViewProps> = ({
     packageType: selectedPackage,
   });
 
+  const showAcquisitionParams = selectedPackage === 'package-acquisition' || selectedPackage === 'package-full';
+  const showConversionParams = selectedPackage === 'package-full';
+
   const handlePackageSelect = (pkgId: string) => {
     setSelectedPackage(pkgId);
     setConfig((prev) => ({ ...prev, packageType: pkgId }));
+  };
+
+  const toggleListValue = (key: 'inquiryChannels' | 'integratedSystems', value: string) => {
+    setConfig((prev) => ({
+      ...prev,
+      [key]: prev[key].includes(value) ? prev[key].filter((v) => v !== value) : [...prev[key], value],
+    }));
   };
 
   const handleSaveAndActivateDealRoom = () => {
@@ -77,276 +80,245 @@ export const ConfiguratorView: React.FC<ConfiguratorViewProps> = ({
   const handleShareLink = () => {
     if (navigator.clipboard) {
       navigator.clipboard.writeText(window.location.href);
-      showToast('方案只读分享链接已复制！可直接发送给老板或内部立项审批。');
+      showToast('只读链接已复制，可直接发给老板或用于内部立项');
     }
   };
 
   return (
-    <div className="py-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto text-[#f5f5f7]">
-      {/* Title */}
-      <div className="text-center max-w-3xl mx-auto mb-12 space-y-3">
-        <span className="apple-eyebrow">CONFIGURATOR & ESTIMATION</span>
-        <h1 className="apple-section-title">
-          交付方案配置与预算测算
-        </h1>
-        <p className="text-sm sm:text-base text-[#86868b] leading-relaxed max-w-2xl mx-auto">
-          将复杂的出海工程交付拆解为透明的预算区间、实施周期与阶段成果。
-        </p>
-      </div>
+    <div>
+      <PageHeader
+        eyebrow="预算测算"
+        title="组合方案，即刻看到预算"
+        intro="把复杂的出海工程拆解为透明的预算区间、实施周期与阶段成果。"
+      />
 
-      {/* Package Selection Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
-        {SERVICE_PACKAGES.map((pkg) => {
-          const isSelected = selectedPackage === pkg.id;
-          return (
-            <div
-              key={pkg.id}
-              onClick={() => handlePackageSelect(pkg.id)}
-              className={`relative cursor-pointer rounded-3xl p-6 border transition-all duration-200 flex flex-col justify-between ${
-                isSelected
-                  ? 'bg-white/[0.08] border-[#2997ff] shadow-xl'
-                  : 'apple-glass-card'
-              }`}
-            >
-              {pkg.isPopular && (
-                <span className="absolute -top-3 right-6 text-xs font-semibold bg-[#2997ff] text-white px-3 py-1 rounded-full shadow-md">
-                  推荐 · 获客旗舰
-                </span>
-              )}
-
-              <div className="space-y-3">
-                <h3 className="text-xl font-bold text-white tracking-tight">{pkg.name}</h3>
-                <p className="text-sm text-[#d2d2d7] min-h-[40px] font-normal leading-relaxed">{pkg.tagline}</p>
-                <div className="text-sm text-[#2997ff] font-medium">
-                  补齐断点：{pkg.solvesFrictions.join(' · ')}
-                </div>
-              </div>
-
-              <div className="pt-4 border-t border-white/[0.08] mt-4">
-                <span className="text-sm font-medium text-[#d2d2d7] block mb-1">参考预算区间</span>
-                <span className="text-2xl font-bold font-mono text-white block mb-4">
-                  {pkg.basePriceRange[0]} ~ {pkg.basePriceRange[1]} 万元
-                </span>
-                <div className={`w-full py-2.5 rounded-full text-sm font-semibold text-center transition-colors ${
-                  isSelected ? 'bg-[#0071e3] text-white shadow-md' : 'bg-white/[0.08] text-white hover:bg-white/[0.14]'
-                }`}>
-                  {isSelected ? '已选定此组合' : '选择配置'}
-                </div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Configuration Sliders & Parameters */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start mb-12">
-        <div className="lg:col-span-7 apple-glass rounded-3xl p-8 space-y-8">
-          <div className="border-b border-white/[0.08] pb-4 flex items-center justify-between">
-            <h3 className="text-base font-bold text-white flex items-center gap-2 tracking-tight">
-              <Layers className="w-4 h-4 text-[#2997ff]" />
-              <span>根据企业规模定制参数</span>
-            </h3>
-            <span className="text-xs text-[#86868b]">实时联动预算与交付周期</span>
+      <div className="layout-wide pb-[clamp(4.5rem,2.5rem+6vw,8.75rem)]">
+        {/* 1. 选择组合 */}
+        <section aria-labelledby="packages-title">
+          <h2 id="packages-title" className="text-title-2">
+            选择服务组合
+          </h2>
+          <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4" role="radiogroup" aria-labelledby="packages-title">
+            {SERVICE_PACKAGES.map((pkg) => {
+              const isSelected = selectedPackage === pkg.id;
+              return (
+                <button
+                  key={pkg.id}
+                  type="button"
+                  role="radio"
+                  aria-checked={isSelected}
+                  onClick={() => handlePackageSelect(pkg.id)}
+                  className="card interactive flex flex-col items-start aria-checked:shadow-[inset_0_0_0_2px_var(--color-accent)]"
+                >
+                  <div className="flex w-full items-start justify-between gap-3">
+                    {pkg.isPopular ? <span className="badge">最受欢迎</span> : <span />}
+                    {isSelected && <CheckCircle2 className="h-6 w-6 shrink-0 text-link" aria-hidden="true" />}
+                  </div>
+                  <h3 className="mt-3 text-title-3">{pkg.name}</h3>
+                  <p className="mt-2 flex-1 text-body text-label-secondary">{pkg.tagline}</p>
+                  <p className="mt-4 text-caption text-label-secondary">补齐断点：{pkg.solvesFrictions.join(' · ')}</p>
+                  <p className="mt-5 w-full border-t border-separator pt-4 text-title-2 tabular-nums">
+                    {pkg.basePriceRange[0]} ~ {pkg.basePriceRange[1]}
+                    <span className="ml-1 text-body font-normal text-label-secondary">万元</span>
+                  </p>
+                </button>
+              );
+            })}
           </div>
+        </section>
 
-          {/* Group 1: 独立站与多语种 */}
-          <div className="space-y-4">
-            <h4 className="text-xs font-mono font-medium text-[#2997ff] uppercase tracking-wider">
-              1. 独立站与多语种配置
-            </h4>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="mt-12 grid grid-cols-1 items-start gap-5 lg:grid-cols-12">
+          {/* 2. 参数 */}
+          <section className="tile lg:col-span-7" aria-labelledby="params-title">
+            <h2 id="params-title" className="text-title-2">
+              按企业规模调整
+            </h2>
+            <p className="mt-2 text-body text-label-secondary">参数变化会实时联动预算、周期与交付物。</p>
+
+            {!showAcquisitionParams && (
+              <p className="well mt-8 text-body text-label-secondary">
+                当前组合按固定范围报价，无需调整参数。选择“获客增长组合”或“整体全案服务”可按规模细化测算。
+              </p>
+            )}
+
+            {showAcquisitionParams && (
+              <div className="mt-8 space-y-10">
+                <fieldset>
+                  <legend className="text-title-3">独立站与多语种</legend>
+                  <div className="mt-5 grid grid-cols-1 gap-7 sm:grid-cols-2">
+                    <Slider
+                      label="产品 SKU 规模"
+                      value={config.siteSkus}
+                      min={20}
+                      max={300}
+                      step={20}
+                      onChange={(v) => setConfig({ ...config, siteSkus: v })}
+                      format={(v) => `${v} 款`}
+                    />
+                    <Slider
+                      label="外语语种"
+                      value={config.languagesCount}
+                      min={1}
+                      max={6}
+                      step={1}
+                      onChange={(v) => setConfig({ ...config, languagesCount: v })}
+                      format={(v) => `${v} 个`}
+                    />
+                  </div>
+                </fieldset>
+
+                <fieldset className="border-t border-separator pt-8">
+                  <legend className="float-left w-full text-title-3">Google 词库与 GEO 决策者建模</legend>
+                  <div className="clear-both grid grid-cols-1 gap-7 pt-5 sm:grid-cols-2">
+                    <Slider
+                      label="Google 核心关键词"
+                      value={config.seoKeywordsGroups}
+                      min={30}
+                      max={120}
+                      step={15}
+                      onChange={(v) => setConfig({ ...config, seoKeywordsGroups: v })}
+                      format={(v) => `${v} 组`}
+                    />
+                    <Slider
+                      label="GEO 决策者画像"
+                      value={config.geoDecisionPersonas}
+                      min={2}
+                      max={7}
+                      step={1}
+                      onChange={(v) => setConfig({ ...config, geoDecisionPersonas: v })}
+                      format={(v) => `${v} 类`}
+                    />
+                    <div className="sm:col-span-2">
+                      <Slider
+                        label="全年技术白皮书规划"
+                        value={config.geoAnnualContentCount}
+                        min={20}
+                        max={100}
+                        step={10}
+                        onChange={(v) => setConfig({ ...config, geoAnnualContentCount: v })}
+                        format={(v) => `${v} 项`}
+                      />
+                    </div>
+                  </div>
+                </fieldset>
+              </div>
+            )}
+
+            {showConversionParams && (
+              <fieldset className="mt-10 border-t border-separator pt-8">
+                <legend className="float-left w-full text-title-3">AI 客服渠道与系统打通</legend>
+                <div className="clear-both pt-5">
+                  <p className="text-body text-label-secondary">接入渠道</p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {INQUIRY_CHANNELS.map((ch) => (
+                      <button
+                        key={ch}
+                        type="button"
+                        aria-pressed={config.inquiryChannels.includes(ch)}
+                        onClick={() => toggleListValue('inquiryChannels', ch)}
+                        className="chip"
+                      >
+                        {ch}
+                      </button>
+                    ))}
+                  </div>
+
+                  <p className="mt-6 text-body text-label-secondary">打通的企业系统</p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {INTEGRATED_SYSTEMS.map((sys) => (
+                      <button
+                        key={sys}
+                        type="button"
+                        aria-pressed={config.integratedSystems.includes(sys)}
+                        onClick={() => toggleListValue('integratedSystems', sys)}
+                        className="chip"
+                      >
+                        {sys}
+                      </button>
+                    ))}
+                  </div>
+
+                  <label className="mt-8 flex cursor-pointer items-center justify-between gap-4 border-t border-separator pt-6">
+                    <span>
+                      <span className="block text-body">私有化部署</span>
+                      <span className="block text-caption text-label-secondary">知识库与数据部署在企业自有服务器</span>
+                    </span>
+                    <input
+                      type="checkbox"
+                      role="switch"
+                      checked={config.needPrivateDeploy}
+                      onChange={(e) => setConfig({ ...config, needPrivateDeploy: e.target.checked })}
+                      className="peer sr-only"
+                    />
+                    <span
+                      aria-hidden="true"
+                      className="relative h-[31px] w-[51px] shrink-0 rounded-full bg-fill transition-colors duration-200 peer-checked:bg-success peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-link after:absolute after:left-[2px] after:top-[2px] after:h-[27px] after:w-[27px] after:rounded-full after:bg-white after:shadow after:transition-transform after:duration-200 peer-checked:after:translate-x-5"
+                    />
+                  </label>
+                </div>
+              </fieldset>
+            )}
+          </section>
+
+          {/* 3. 结果 */}
+          <section
+            className="tile lg:sticky lg:top-20 lg:col-span-5"
+            aria-labelledby="estimate-title"
+            aria-live="polite"
+          >
+            <h2 id="estimate-title" className="text-title-3">
+              方案估算
+            </h2>
+
+            <dl className="mt-6 space-y-4">
               <div>
-                <div className="flex justify-between text-xs mb-1.5">
-                  <span className="text-[#f5f5f7]">产品 SKU 规模</span>
-                  <span className="font-mono text-white font-semibold">{config.siteSkus} 款</span>
-                </div>
-                <input
-                  type="range"
-                  min="20"
-                  max="300"
-                  step="20"
-                  value={config.siteSkus}
-                  onChange={(e) => setConfig({ ...config, siteSkus: Number(e.target.value) })}
-                  className="w-full h-1 bg-white/[0.1] rounded-lg appearance-none cursor-pointer accent-[#2997ff]"
-                />
+                <dt className="text-caption text-label-secondary">预算区间</dt>
+                <dd className="mt-1 text-title-1 tabular-nums">{estimate.budgetRange}</dd>
               </div>
-
               <div>
-                <div className="flex justify-between text-xs mb-1.5">
-                  <span className="text-[#f5f5f7]">外语语种数量</span>
-                  <span className="font-mono text-white font-semibold">{config.languagesCount} 个语种</span>
-                </div>
-                <input
-                  type="range"
-                  min="1"
-                  max="6"
-                  step="1"
-                  value={config.languagesCount}
-                  onChange={(e) => setConfig({ ...config, languagesCount: Number(e.target.value) })}
-                  className="w-full h-1 bg-white/[0.1] rounded-lg appearance-none cursor-pointer accent-[#2997ff]"
-                />
+                <dt className="text-caption text-label-secondary">交付周期</dt>
+                <dd className="mt-1 text-title-2 tabular-nums">{estimate.timelineWeeks}</dd>
               </div>
-            </div>
-          </div>
+            </dl>
+            <p className="mt-4 text-caption text-label-secondary">{estimate.savingsExplanation}</p>
 
-          {/* Group 2: SEO & GEO */}
-          <div className="space-y-4 pt-4 border-t border-white/[0.08]">
-            <h4 className="text-xs font-mono font-medium text-[#30d158] uppercase tracking-wider">
-              2. Google 词库与 GEO 决策者建模
-            </h4>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <div className="flex justify-between text-xs mb-1.5">
-                  <span className="text-[#f5f5f7]">Google 核心关键词组</span>
-                  <span className="font-mono text-white font-semibold">{config.seoKeywordsGroups} 组</span>
-                </div>
-                <input
-                  type="range"
-                  min="30"
-                  max="120"
-                  step="15"
-                  value={config.seoKeywordsGroups}
-                  onChange={(e) => setConfig({ ...config, seoKeywordsGroups: Number(e.target.value) })}
-                  className="w-full h-1 bg-white/[0.1] rounded-lg appearance-none cursor-pointer accent-[#2997ff]"
-                />
-              </div>
-
-              <div>
-                <div className="flex justify-between text-xs mb-1.5">
-                  <span className="text-[#f5f5f7]">GEO 决策者画像数</span>
-                  <span className="font-mono text-white font-semibold">{config.geoDecisionPersonas} 类角色</span>
-                </div>
-                <input
-                  type="range"
-                  min="2"
-                  max="7"
-                  step="1"
-                  value={config.geoDecisionPersonas}
-                  onChange={(e) => setConfig({ ...config, geoDecisionPersonas: Number(e.target.value) })}
-                  className="w-full h-1 bg-white/[0.1] rounded-lg appearance-none cursor-pointer accent-[#2997ff]"
-                />
-              </div>
-            </div>
-
-            <div>
-              <div className="flex justify-between text-xs mb-1.5">
-                <span className="text-[#f5f5f7]">全年高权重技术白皮书规划</span>
-                <span className="font-mono text-white font-semibold">{config.geoAnnualContentCount} 项</span>
-              </div>
-              <input
-                type="range"
-                min="20"
-                max="100"
-                step="10"
-                value={config.geoAnnualContentCount}
-                onChange={(e) => setConfig({ ...config, geoAnnualContentCount: Number(e.target.value) })}
-                className="w-full h-1 bg-white/[0.1] rounded-lg appearance-none cursor-pointer accent-[#2997ff]"
-              />
-            </div>
-          </div>
-
-          {/* Group 3: AI 客服与系统 */}
-          <div className="space-y-4 pt-4 border-t border-white/[0.08]">
-            <h4 className="text-xs font-mono font-medium text-[#ffd60a] uppercase tracking-wider">
-              3. AI 客服渠道与企业系统打通
-            </h4>
-            <div className="flex flex-wrap gap-2 text-xs">
-              {['官网在线窗口', '海外官方邮件', 'WhatsApp 业务号', 'LinkedIn 私信'].map((ch) => {
-                const checked = config.inquiryChannels.includes(ch);
-                return (
-                  <button
-                    key={ch}
-                    onClick={() => {
-                      const updated = checked
-                        ? config.inquiryChannels.filter((c) => c !== ch)
-                        : [...config.inquiryChannels, ch];
-                      setConfig({ ...config, inquiryChannels: updated });
-                    }}
-                    className={`px-3.5 py-1.5 rounded-full border transition-all ${
-                      checked
-                        ? 'bg-white/15 border-white/30 text-white font-medium'
-                        : 'bg-white/[0.02] border-white/[0.08] text-[#86868b]'
-                    }`}
-                  >
-                    {ch}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-
-        {/* Real-time Result Card */}
-        <div className="lg:col-span-5 apple-glass rounded-3xl p-8 space-y-6">
-          <div className="space-y-1">
-            <span className="text-xs font-mono text-[#2997ff] uppercase tracking-wider block">
-              Real-time Output
-            </span>
-            <h3 className="text-xl font-bold text-white tracking-tight">方案估算与交付清单</h3>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="p-5 bg-white/[0.03] rounded-2xl border border-white/[0.08]">
-              <span className="text-xs text-[#86868b] flex items-center gap-1 mb-1">
-                <DollarSign className="w-3.5 h-3.5 text-[#2997ff]" />
-                <span>预估预算区间</span>
-              </span>
-              <span className="text-2xl font-bold font-mono text-white">
-                {estimate.budgetRange}
-              </span>
-            </div>
-
-            <div className="p-5 bg-white/[0.03] rounded-2xl border border-white/[0.08]">
-              <span className="text-xs text-[#86868b] flex items-center gap-1 mb-1">
-                <Clock className="w-3.5 h-3.5 text-[#30d158]" />
-                <span>交付周期</span>
-              </span>
-              <span className="text-2xl font-bold font-mono text-white">
-                {estimate.timelineWeeks}
-              </span>
-            </div>
-          </div>
-
-          {/* Deliverables */}
-          <div className="space-y-2">
-            <h4 className="text-xs font-semibold text-white">交付物清单：</h4>
-            <div className="space-y-2 text-xs text-[#a1a1a6]">
-              {estimate.deliverables.map((d, i) => (
-                <div key={i} className="flex items-start gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-[#30d158] shrink-0 mt-0.5" />
-                  <span className="text-[#f5f5f7]">{d}</span>
-                </div>
+            <h3 className="mt-8 border-t border-separator pt-6 text-body font-semibold">交付物</h3>
+            <ul className="mt-3 space-y-2.5">
+              {estimate.deliverables.map((d) => (
+                <li key={d} className="flex gap-3 text-body">
+                  <Check className="mt-1 h-5 w-5 shrink-0 text-success" />
+                  <span>{d}</span>
+                </li>
               ))}
-            </div>
-          </div>
+            </ul>
 
-          {/* Action buttons */}
-          <div className="space-y-2.5 pt-4">
-            <button
-              onClick={handleSaveAndActivateDealRoom}
-              className="apple-blue-btn w-full py-3.5 text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 shadow-lg shadow-blue-600/25"
-            >
-              <FileText className="w-4 h-4" />
-              <span>保存方案并激活方案空间 (Deal Room)</span>
-            </button>
+            <h3 className="mt-8 border-t border-separator pt-6 text-body font-semibold">实施节奏</h3>
+            <ol className="mt-3 space-y-3">
+              {estimate.milestones.map((m) => (
+                <li key={m.week} className="grid grid-cols-[5.5rem_1fr] gap-3">
+                  <span className="text-caption tabular-nums text-label-secondary">{m.week}</span>
+                  <span className="text-caption">
+                    <span className="block text-body">{m.title}</span>
+                    <span className="text-label-secondary">{m.task}</span>
+                  </span>
+                </li>
+              ))}
+            </ol>
 
-            <div className="flex gap-2">
-              <button
-                onClick={handleShareLink}
-                className="apple-secondary-btn flex-1 py-2.5 text-xs flex items-center justify-center gap-1.5"
-              >
-                <Share2 className="w-3.5 h-3.5" />
-                <span>复制只读链接</span>
+            <div className="mt-8 space-y-3 border-t border-separator pt-6">
+              <button type="button" onClick={handleSaveAndActivateDealRoom} className="btn btn-primary btn-block">
+                保存并进入方案空间
               </button>
-              <button
-                onClick={onGoToBooking}
-                className="apple-secondary-btn flex-1 py-2.5 text-xs flex items-center justify-center gap-1.5 text-[#2997ff]"
-              >
-                <Calendar className="w-3.5 h-3.5" />
-                <span>预约确认方案</span>
-              </button>
+              <div className="grid grid-cols-2 gap-3">
+                <button type="button" onClick={handleShareLink} className="btn btn-neutral">
+                  复制链接
+                </button>
+                <button type="button" onClick={onGoToBooking} className="btn btn-secondary">
+                  预约确认
+                </button>
+              </div>
             </div>
-          </div>
+          </section>
         </div>
       </div>
     </div>

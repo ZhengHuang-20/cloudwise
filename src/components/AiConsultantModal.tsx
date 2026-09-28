@@ -1,16 +1,20 @@
 import React, { useState, useEffect, useRef } from 'react';
-import {
-  X,
-  Send,
-  Sparkles,
-  Bot,
-  User,
-  Sliders,
-  Database,
-  ArrowRight,
-  Loader2
-} from 'lucide-react';
+import { ArrowUp, Loader2, Sliders, Sparkles } from 'lucide-react';
 import { useApp } from '../context/AppContext';
+import { Dialog } from './ui/Dialog';
+
+const QUICK_PROMPTS = [
+  '爱康医疗案例具体是怎么做的？',
+  'GEO 和传统 SEO 有什么核心区别？',
+  '做一套整体方案大概花多少钱？',
+  '凌晨三点的海外询盘怎么接住？',
+];
+
+const INTENT_LABEL: Record<string, { text: string; className: string }> = {
+  HIGH: { text: '高意向', className: 'text-success' },
+  MEDIUM: { text: '中意向', className: 'text-warning' },
+  LOW: { text: '低意向', className: 'text-label-secondary' },
+};
 
 export const AiConsultantModal: React.FC = () => {
   const {
@@ -46,7 +50,7 @@ export const AiConsultantModal: React.FC = () => {
       intent: 'LOW',
       intentReason: '初始系统接待',
       sourceCitations: ['《云端智荐知识库 · 五项服务总则》'],
-      suggestedNextAction: '您可以点击下方快捷问题，或开启右上方【CRM 透视】查看我如何实时提取采购意向！',
+      suggestedNextAction: '点击下方的快捷问题开始，或打开右上角的“CRM 透视”，看我如何实时提取采购意向。',
     }
   ]);
 
@@ -54,13 +58,9 @@ export const AiConsultantModal: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
-
   useEffect(() => {
-    scrollToBottom();
-  }, [messages, isLoading]);
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }, [messages, isLoading, isAiAdvisorOpen]);
 
   useEffect(() => {
     if (aiAdvisorInitialQuery) {
@@ -127,7 +127,7 @@ export const AiConsultantModal: React.FC = () => {
         {
           id: `ai-err-${Date.now()}`,
           sender: 'assistant',
-          text: '建议直接预约与资深出海架构师进行 30 分钟闭门交流。',
+          text: '网络有些不稳定。建议直接预约资深出海架构师，进行 30 分钟闭门交流。',
           timestamp: '刚刚',
           intent: 'MEDIUM',
         },
@@ -143,205 +143,155 @@ export const AiConsultantModal: React.FC = () => {
   };
 
   const latestAiMessage = [...messages].reverse().find((m) => m.sender === 'assistant');
-
-  if (!isAiAdvisorOpen) return null;
+  const intent = INTENT_LABEL[latestAiMessage?.intent || 'MEDIUM'];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/75 backdrop-blur-xl animate-in fade-in duration-200">
-      <div className={`apple-glass rounded-3xl shadow-2xl w-full flex flex-col overflow-hidden transition-all duration-300 h-[86vh] border border-white/[0.12] ${
-        isInspectorMode ? 'max-w-5xl' : 'max-w-2xl'
-      }`}>
-        {/* Header - Apple Window Bar */}
-        <div className="px-6 py-4 bg-white/[0.02] border-b border-white/[0.06] flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-[#2997ff]/15 text-[#2997ff] border border-[#2997ff]/25 flex items-center justify-center">
-              <Sparkles className="w-4 h-4" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h3 className="text-sm font-semibold text-white">AI 售前顾问</h3>
-                <span className="text-[10px] font-mono text-[#30d158] bg-[#30d158]/10 px-2 py-0.5 rounded-full border border-[#30d158]/20">
-                  Gemini 3.8
-                </span>
-              </div>
-              <p className="text-[11px] text-[#86868b]">外贸智能客服样板间 · 7×24h 实时意向识别</p>
-            </div>
-          </div>
+    <Dialog
+      open={isAiAdvisorOpen}
+      onClose={() => setAiAdvisorOpen(false)}
+      size={isInspectorMode ? 'xl' : 'lg'}
+      panelClassName="h-[92dvh] sm:h-[82vh]"
+      title="AI 售前顾问"
+      description="外贸 AI 客服样板间 · 实时识别采购意向"
+      leading={
+        <span className="avatar h-10 w-10" aria-hidden="true">
+          <Sparkles className="h-5 w-5" />
+        </span>
+      }
+      actions={
+        <button
+          type="button"
+          aria-pressed={isInspectorMode}
+          onClick={() => setIsInspectorMode(!isInspectorMode)}
+          className="chip"
+        >
+          <Sliders />
+          CRM 透视
+        </button>
+      }
+    >
+      <div className="flex min-h-0 flex-1">
+        {/* 会话 */}
+        <div className={`min-w-0 flex-1 flex-col ${isInspectorMode ? 'hidden md:flex' : 'flex'}`}>
+          <div className="flex-1 space-y-6 overflow-y-auto px-6 py-6 sm:px-8" aria-live="polite">
+            {messages.map((msg) => {
+              const isUser = msg.sender === 'user';
+              return (
+                <div key={msg.id} className={`flex flex-col ${isUser ? 'items-end' : 'items-start'}`}>
+                  <p
+                    className={`max-w-[85%] whitespace-pre-wrap rounded-[1.25rem] px-4 py-3 text-body ${
+                      isUser ? 'rounded-br-md bg-accent text-white' : 'rounded-bl-md bg-surface-raised text-label'
+                    }`}
+                  >
+                    {msg.text}
+                  </p>
 
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setIsInspectorMode(!isInspectorMode)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-                isInspectorMode
-                  ? 'bg-white/20 text-white border border-white/25 shadow-sm'
-                  : 'bg-white/[0.05] text-[#a1a1a6] hover:text-white'
-              }`}
-            >
-              <Sliders className="w-3.5 h-3.5" />
-              <span>{isInspectorMode ? '关闭透视' : 'CRM 透视模式'}</span>
-            </button>
-
-            <button
-              onClick={() => setAiAdvisorOpen(false)}
-              className="p-1.5 text-[#86868b] hover:text-white rounded-full hover:bg-white/[0.06] transition-colors"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
-        </div>
-
-        {/* Body content */}
-        <div className="flex-1 flex overflow-hidden">
-          {/* Main Chat Stream */}
-          <div className="flex-1 flex flex-col overflow-hidden bg-black/30">
-            <div className="flex-1 overflow-y-auto p-6 space-y-4">
-              {messages.map((msg) => {
-                const isUser = msg.sender === 'user';
-                return (
-                  <div key={msg.id} className={`flex gap-3 ${isUser ? 'flex-row-reverse' : 'flex-row'}`}>
-                    <div
-                      className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 text-xs ${
-                        isUser ? 'bg-[#0071e3] text-white' : 'bg-white/[0.08] text-[#2997ff]'
-                      }`}
-                    >
-                      {isUser ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
-                    </div>
-
-                    <div className="max-w-[82%] space-y-2">
-                      <div
-                        className={`p-4 rounded-2xl text-xs sm:text-sm leading-relaxed whitespace-pre-wrap ${
-                          isUser
-                            ? 'bg-[#0071e3] text-white rounded-tr-sm shadow-sm'
-                            : 'bg-white/[0.06] text-[#f5f5f7] border border-white/[0.06] rounded-tl-sm'
-                        }`}
-                      >
-                        {msg.text}
-                      </div>
-
-                      {!isUser && msg.sourceCitations && msg.sourceCitations.length > 0 && (
-                        <div className="text-[11px] text-[#86868b] flex flex-wrap items-center gap-1.5 pl-1">
-                          <span>知识信源：</span>
-                          {msg.sourceCitations.map((cite, i) => (
-                            <span key={i} className="text-white/80 bg-white/[0.04] px-2 py-0.5 rounded-full border border-white/[0.06]">
-                              {cite}
-                            </span>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-
-              {isLoading && (
-                <div className="flex items-center gap-2 text-xs text-[#86868b] p-2 font-mono">
-                  <Loader2 className="w-4 h-4 animate-spin text-[#2997ff]" />
-                  <span>AI 顾问正在检索知识库...</span>
+                  {!isUser && msg.sourceCitations && msg.sourceCitations.length > 0 && (
+                    <p className="mt-2 max-w-[85%] text-caption text-label-secondary">
+                      信源：{msg.sourceCitations.join('、')}
+                    </p>
+                  )}
+                  {!isUser && msg.suggestedNextAction && (
+                    <p className="mt-1 max-w-[85%] text-caption text-label-secondary">{msg.suggestedNextAction}</p>
+                  )}
                 </div>
-              )}
-              <div ref={messagesEndRef} />
-            </div>
+              );
+            })}
 
-            {/* Quick Prompts */}
-            <div className="px-6 py-2.5 bg-black/40 border-t border-white/[0.06] flex items-center gap-2 overflow-x-auto no-scrollbar">
-              <span className="text-[11px] text-[#86868b] shrink-0 font-medium">快捷提问:</span>
-              {[
-                '爱康医疗案例具体是怎么做的？',
-                'GEO 和传统 SEO 有什么核心区别？',
-                '做一套整体方案大概花多少钱？',
-                '凌晨三点的海外询盘怎么接住？',
-              ].map((shortcut, idx) => (
+            {isLoading && (
+              <div className="flex items-center gap-2 text-caption text-label-secondary">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                正在检索知识库…
+              </div>
+            )}
+            <div ref={messagesEndRef} />
+          </div>
+
+          <div className="shrink-0 border-t border-separator px-6 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 sm:px-8">
+            <div className="flex gap-2 overflow-x-auto pb-3 no-scrollbar" aria-label="快捷提问">
+              {QUICK_PROMPTS.map((shortcut) => (
                 <button
-                  key={idx}
+                  key={shortcut}
+                  type="button"
                   onClick={() => sendMessage(shortcut)}
-                  className="px-3 py-1 text-xs whitespace-nowrap rounded-full bg-white/[0.05] hover:bg-white/[0.1] text-[#a1a1a6] hover:text-white transition-colors border border-white/[0.06]"
+                  disabled={isLoading}
+                  className="chip shrink-0 disabled:opacity-40"
                 >
                   {shortcut}
                 </button>
               ))}
             </div>
-
-            {/* Input Bar */}
-            <form onSubmit={handleFormSubmit} className="p-4 bg-black/60 border-t border-white/[0.08] flex gap-2">
+            <form onSubmit={handleFormSubmit} className="flex items-center gap-3">
               <input
                 type="text"
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
-                placeholder="输入您企业的品类或获客疑问..."
-                className="flex-1 px-4 py-2.5 bg-white/[0.05] border border-white/[0.1] rounded-full text-xs sm:text-sm text-white placeholder-[#86868b] focus:outline-none focus:border-[#2997ff] transition-colors"
+                placeholder="说说您的品类或获客疑问…"
+                aria-label="输入消息"
+                className="field rounded-full"
               />
               <button
                 type="submit"
                 disabled={isLoading || !inputValue.trim()}
-                className="apple-blue-btn px-5 py-2.5 text-xs sm:text-sm flex items-center gap-1.5 disabled:opacity-40"
+                className="btn-icon h-11 w-11 bg-accent text-white hover:bg-accent-hover hover:text-white disabled:opacity-40"
+                aria-label="发送"
               >
-                <Send className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">发送</span>
+                <ArrowUp />
               </button>
             </form>
           </div>
-
-          {/* Right Inspector Panel (CRM 透视模式) */}
-          {isInspectorMode && (
-            <div className="w-80 md:w-96 bg-black/60 border-l border-white/[0.08] flex flex-col p-6 overflow-y-auto space-y-4 animate-in slide-in-from-right duration-200">
-              <div className="flex items-center justify-between pb-3 border-b border-white/[0.08]">
-                <div className="flex items-center gap-2 text-xs font-semibold text-white">
-                  <Sliders className="w-4 h-4 text-[#2997ff]" />
-                  <span>CRM 意向与字段流转</span>
-                </div>
-                <span className="text-[10px] text-[#86868b] font-mono">LIVE</span>
-              </div>
-
-              {/* Intent Score */}
-              <div className="p-4 bg-white/[0.03] rounded-2xl border border-white/[0.08] space-y-1">
-                <span className="text-xs text-[#86868b] block">意向等级自动判定</span>
-                <div className="flex items-center justify-between">
-                  <span className={`text-xl font-bold font-mono ${
-                    latestAiMessage?.intent === 'HIGH' ? 'text-[#30d158]' :
-                    latestAiMessage?.intent === 'MEDIUM' ? 'text-[#ffd60a]' : 'text-[#86868b]'
-                  }`}>
-                    {latestAiMessage?.intent || 'MEDIUM'}
-                  </span>
-                  <span className="text-xs text-[#86868b]">{latestAiMessage?.intentReason || '自动推断'}</span>
-                </div>
-              </div>
-
-              {/* Extracted Fields */}
-              <div className="p-4 bg-white/[0.03] rounded-2xl border border-white/[0.08] space-y-2 text-xs">
-                <span className="font-semibold text-white block">CRM 字段提取结果</span>
-                <div className="space-y-1.5 text-[#86868b]">
-                  <div className="flex justify-between py-1 border-b border-white/[0.04]">
-                    <span>行业：</span>
-                    <span className="text-white">{latestAiMessage?.extractedFields?.industry || user?.industry || '待识别'}</span>
-                  </div>
-                  <div className="flex justify-between py-1 border-b border-white/[0.04]">
-                    <span>目标市场：</span>
-                    <span className="text-white">{latestAiMessage?.extractedFields?.targetMarkets || '欧美'}</span>
-                  </div>
-                  <div className="flex justify-between py-1">
-                    <span>预算意向：</span>
-                    <span className="text-white">{latestAiMessage?.extractedFields?.budgetSignal || '评估中'}</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* CRM Card Sample */}
-              <div className="p-4 bg-white/[0.03] rounded-2xl border border-white/[0.08] space-y-2">
-                <div className="flex items-center gap-1.5 text-xs font-semibold text-white">
-                  <Database className="w-3.5 h-3.5 text-[#2997ff]" />
-                  <span>自动生成的 CRM 线索预览</span>
-                </div>
-                <div className="p-3 bg-black/60 rounded-xl border border-white/[0.06] text-[11px] font-mono space-y-1 text-[#f5f5f7]">
-                  <p className="text-[#2997ff]">{`// 线索入库 #${Date.now().toString().slice(-4)}`}</p>
-                  <p><span className="text-[#86868b]">企业:</span> {user?.companyName || '未知企业'}</p>
-                  <p><span className="text-[#86868b]">阶段:</span> MQL 营销合格线索</p>
-                  <p><span className="text-[#86868b]">推荐服务:</span> {latestAiMessage?.recommendedServices?.join(' + ') || '出海 GEO 优化'}</p>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
+
+        {/* CRM 透视 */}
+        {isInspectorMode && (
+          <aside
+            className="w-full shrink-0 overflow-y-auto border-separator px-6 py-6 animate-slide-in md:w-96 md:border-l sm:px-8"
+            aria-label="CRM 意向与字段"
+          >
+            <h3 className="text-title-3">CRM 实时透视</h3>
+            <p className="mt-1 text-caption text-label-secondary">每一轮对话后自动更新</p>
+
+            <div className="well mt-6">
+              <p className="text-caption text-label-secondary">意向等级</p>
+              <p className={`mt-1 text-title-2 ${intent.className}`}>{intent.text}</p>
+              <p className="mt-1 text-caption text-label-secondary">{latestAiMessage?.intentReason || '自动推断'}</p>
+            </div>
+
+            <h4 className="mt-8 text-body font-semibold">字段提取</h4>
+            <dl className="mt-2 divide-y divide-separator border-y border-separator">
+              {[
+                ['行业', latestAiMessage?.extractedFields?.industry || user?.industry || '待识别'],
+                ['目标市场', latestAiMessage?.extractedFields?.targetMarkets || '欧美'],
+                ['预算意向', latestAiMessage?.extractedFields?.budgetSignal || '评估中'],
+              ].map(([label, value]) => (
+                <div key={label} className="flex justify-between gap-4 py-3 text-body">
+                  <dt className="text-label-secondary">{label}</dt>
+                  <dd className="text-right">{value}</dd>
+                </div>
+              ))}
+            </dl>
+
+            <h4 className="mt-8 text-body font-semibold">
+              线索预览
+              <span className="ml-2 text-caption font-normal tabular-nums text-label-secondary">
+                #{latestAiMessage?.id.replace(/\D/g, '').slice(-4) || '0001'}
+              </span>
+            </h4>
+            <dl className="mt-2 divide-y divide-separator border-y border-separator">
+              {[
+                ['企业', user?.companyName || '未知企业'],
+                ['阶段', 'MQL 营销合格线索'],
+                ['推荐服务', latestAiMessage?.recommendedServices?.join(' + ') || '出海 GEO 优化'],
+              ].map(([label, value]) => (
+                <div key={label} className="flex justify-between gap-4 py-3 text-body">
+                  <dt className="shrink-0 text-label-secondary">{label}</dt>
+                  <dd className="text-right">{value}</dd>
+                </div>
+              ))}
+            </dl>
+          </aside>
+        )}
       </div>
-    </div>
+    </Dialog>
   );
 };
