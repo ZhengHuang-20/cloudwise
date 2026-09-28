@@ -59,7 +59,7 @@ export const SERVICE_PACKAGES: ServicePackage[] = [
   {
     id: 'package-full',
     name: '整体全案服务（五项全做 + FDE 驻场）',
-    tagline: '从获客、转化到企业系统深度集成，由 FDE 驻场交付落地',
+    tagline: '从获客、转化到企业内部的标准化、信息化、智能化，由 FDE 驻场落地',
     solvesFrictions: ['看不见', '读不懂', '不被信', '接不住', '连不上'],
     basePriceRange: [42, 68],
     durationWeeks: [12, 16],
@@ -67,7 +67,7 @@ export const SERVICE_PACKAGES: ServicePackage[] = [
       '独立站 + SEO + GEO 获客三驾马车全量交付',
       '7×24 小时 AI 智能客服深度微调与企业私域知识库建设',
       '打通企业 CRM、ERP、邮件与企业微信/钉钉直连链路',
-      'FDE 驻场工程师全程现场敏捷迭代，源码与数据全部归企业所有'
+      'FDE 驻场推进三层建设，每周交付可用成果，源码与数据全部归企业所有'
     ],
     teamComposition: ['首席出海架构师 1 人', '全栈 FDE 驻场工程师 2 人', '内容与合规顾问 1 人', '交付项目总监 1 人']
   }
@@ -160,16 +160,16 @@ export const calculateProposalEstimate = (input: ConfiguratorInput) => {
       '全功能海外独立站 + SEO + GEO 获客三驾马车',
       `7×24 小时 AI 智能客服（支持接入 ${input.inquiryChannels.join('/')}）`,
       `企业现有系统打通（对接 ${input.integratedSystems.join('/')}）`,
-      'FDE 驻场工程师每周敏捷开发（观察-原型-试用-修改）',
+      'FDE 驻场三层建设：业务标准、系统打通与 AI 场景（每周“观察-原型-试用-沉淀”）',
       '源码、知识库与数据资产 100% 完整移交'
     );
 
     milestones.push(
-      { week: '第 1-2 周', title: '驻场观察与系统梳理', task: 'FDE 入驻现场，观察销售与客服报价链路，完成知识资产盘点' },
+      { week: '第 1-2 周', title: '驻场跟岗与标准梳理', task: 'FDE 跟岗销售与客服，用 AI 归纳报价与询盘分级规则，完成知识资产盘点' },
       { week: '第 3-6 周', title: '获客前端与原型验证', task: '同步启动独立站重构与 AI 客服沙盒测试，一线业务员试用' },
       { week: '第 7-10 周', title: '系统对接与知识库微调', task: '打通 CRM/ERP 接口，多语种客服上线并开展压力测试' },
       { week: '第 11-14 周', title: '全域联动与安全合规', task: 'GEO 权威内容铺设，私有化部署合规审计，全量业务切换' },
-      { week: '第 15-16 周', title: '团队交接与持续运维', task: '向企业管理员与业务员交付全套培训文档与源代码仓库' }
+      { week: '第 15-16 周', title: '能力移交与离场', task: '移交源码、数据与文档，内部 AI 骨干接手日常运营，FDE 转为顾问' }
     );
   } else {
     // Single

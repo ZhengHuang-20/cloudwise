@@ -76,8 +76,8 @@ const SERVICES: { key: ServiceKey; title: string; desc: string; link: string }[]
   {
     key: 'fde',
     title: 'FDE 驻场工程师',
-    desc: '资深工程师驻场打通 CRM 与 ERP，把买家站内行为编译为见面前的商业情报。源码与数据全归企业。',
-    link: '了解驻场模式',
+    desc: '带着 AI 驻场一线，把业务经验写成标准、装进系统、交给 AI 执行。源码、数据和会用的人都留给企业。',
+    link: '了解三层建设',
   },
 ];
 

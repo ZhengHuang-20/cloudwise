@@ -60,7 +60,7 @@ NODE_ENV=production bun run start   # 生产模式：Express 托管 dist/ 并做
 
 ### 静态内容
 
-课程、案例、术语、资源、套餐定价都是 `src/data/*.ts` 中的类型化常量。预算配置器的计算逻辑在 `pricingRules.ts` 的 `calculateProposalEstimate`。内容类改动优先改这些数据文件，不要改组件。
+课程、案例、术语、资源、套餐定价都是 `src/data/*.ts` 中的类型化常量。FDE 的方法论（标准化 → 信息化 → 智能化三层建设、每周“观察-原型-试用-沉淀”）集中在 `fdeData.ts`，服务页三层图与体验页「FDE 的一周」共用；课程 E、术语表和 `SYSTEM_KNOWLEDGE_INSTRUCTION` 中的同类表述要与之一致。预算配置器的计算逻辑在 `pricingRules.ts` 的 `calculateProposalEstimate`。内容类改动优先改这些数据文件，不要改组件。
 
 ## 样式约定（完整规范见 `DESIGN.md`）
 

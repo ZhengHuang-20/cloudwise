@@ -22,7 +22,7 @@ const PRICE_ITEMS = [
 
 const TEAM = [
   { name: 'David Huang', initials: 'DH', role: '出海解决方案总监 · 负责方案' },
-  { name: 'Chen Wei', initials: 'CW', role: 'FDE 驻场交付工程师 · 负责落地' },
+  { name: 'Chen Wei', initials: 'CW', role: 'FDE 驻场工程师 · 负责三层建设落地' },
 ];
 
 const formatRange = (min: number, max: number) => `${min.toFixed(1)} ~ ${max.toFixed(1)} 万元`;

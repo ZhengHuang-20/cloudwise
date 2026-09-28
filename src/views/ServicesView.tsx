@@ -2,6 +2,7 @@ import React from 'react';
 import { Check } from 'lucide-react';
 import { PageHeader } from '../components/ui/PageHeader';
 import { SERVICE_IDENTITY, ServiceKey } from '../components/ui/serviceIdentity';
+import { FdeBuildLayers } from '../components/FdeBuildLayers';
 
 interface ServicesViewProps {
   onGoToCourse: (courseCode: string) => void;
@@ -107,21 +108,21 @@ export const ServicesView: React.FC<ServicesViewProps> = ({
     {
       key: 'fde',
       code: 'E',
-      title: '现场驻场工程师（FDE）闭环落地',
-      friction: '连不上 · 协议断点',
-      oneLiner: '深入外贸业务一线，把站内行为直接编译为销售见面前的情报底牌',
-      desc: '汲取 Palantir 核心交付精髓。不卖空泛的 SaaS 账号，而是派遣资深技术与商业架构师深入企业一线，每周通过“观察-原型-试用-对齐”闭环，将前台买家“学懂、自测、看方案”的全量行为转化为高价值《会前商业情报》，源码与数据全归企业。',
+      title: 'AI 驱动的三层建设（FDE 驻场）',
+      friction: '连不上 · 落地断点',
+      oneLiner: '带着 AI 下到业务一线，把经验写成标准，把标准装进系统，再让 AI 在系统上干活',
+      desc: 'FDE（前线部署工程师）源自 Palantir，如今 OpenAI、Anthropic 也在用它跨越“演示惊艳、上线艰难”的鸿沟。多数外贸企业的流程写在老业务员的经验和微信里，直接上 AI 只能做出演示。FDE 驻场跟岗，用 AI 加速完成标准化、信息化、智能化三层建设，对业务结果负责，离场时把标准、系统、数据和会用的人一起留给企业。',
       deliverables: [
-        '每周现场敏捷迭代系统可用原型与转化闭环',
-        '打通企业内部 ERP、私有 CRM 与海外邮件系统',
-        '买家站内行为编译为 12 页《会前高净值商业情报档案》',
-        '完整源代码与海外数字资产无保留移交'
+        '从一个高价值场景切入，2 ~ 4 周跑通第一个闭环',
+        '每周一轮“观察-原型-试用-沉淀”，每周都有可用成果',
+        '按层验收：规则经业务审定、数据自动入库、AI 达到评测指标',
+        '源码、数据与文档归企业，同步培养内部 AI 骨干'
       ],
       courseId: 'E',
       toolId: 'flow',
-      caseName: '商业数据物理隔离，销售在见面前掌握买家体检明细',
+      caseName: '询盘分级：一周内从凭经验判断到 AI 按规则打标',
       budgetRange: '20 ~ 50 万元 / 周期',
-      philosophicalNote: '理论的最终检验是其在生活形式中的应用。脱离业务现场的系统无异于数字墓碑。'
+      philosophicalNote: '没有标准化的智能化，只是把混乱自动化。AI 放大的永远是企业已有的秩序。'
     },
   ];
 
@@ -160,7 +161,7 @@ export const ServicesView: React.FC<ServicesViewProps> = ({
               key={svc.code}
               id={`service-${svc.code}`}
               aria-labelledby={`service-${svc.code}-title`}
-              className="tile grid scroll-mt-20 gap-10 lg:grid-cols-[minmax(0,1fr)_20rem] lg:gap-14"
+              className="tile grid scroll-mt-20 gap-10 lg:grid-flow-row-dense lg:grid-cols-[minmax(0,1fr)_20rem] lg:gap-14"
             >
               <div>
                 <div className="flex items-center gap-3">
@@ -170,7 +171,12 @@ export const ServicesView: React.FC<ServicesViewProps> = ({
                   </span>
                 </div>
                 <h2 id={`service-${svc.code}-title`} className="mt-5 text-title-1">
-                  {svc.title}
+                  {/* 在括注前断行，避免窄屏把词组拆开 */}
+                  {svc.title.split(/(?=（)/).map((part) => (
+                    <span key={part} className="inline-block">
+                      {part}
+                    </span>
+                  ))}
                 </h2>
                 <p className="mt-4 text-intro">{svc.oneLiner}</p>
                 <p className="mt-4 text-body text-label-secondary">{svc.desc}</p>
@@ -190,6 +196,9 @@ export const ServicesView: React.FC<ServicesViewProps> = ({
                   ))}
                 </ul>
               </div>
+
+              {/* FDE 需要讲清方法论：三层图横跨两栏，dense 排布让右侧投入栏回填第一行 */}
+              {svc.key === 'fde' && <FdeBuildLayers className="lg:col-span-2" />}
 
               <aside className="well self-start" aria-label={`${svc.title}：投入与下一步`}>
                 <dl>

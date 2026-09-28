@@ -727,55 +727,162 @@ export const COURSES: Course[] = [
   {
     id: 'course-e-fde',
     code: 'E',
-    title: 'FDE 驻场工程师——把系统做成、接通、用起来',
-    subtitle: '解密前线部署工程师：为什么比买软件或找外包更适合出海实体、企业如何敏捷配合。',
-    targetAudience: '出海企业决策者、CTO、信息总监、运营负责人',
+    title: 'FDE 驻场工程师——用 AI 做实标准化、信息化、智能化',
+    subtitle: '看懂前线部署工程师的来龙去脉，以及它如何带着 AI 把企业的经验变成标准、系统和生产力。',
+    targetAudience: '出海企业决策者、CIO、信息化负责人、运营负责人',
     totalModules: 8,
     totalLessons: 28,
     durationHours: 10,
     relatedService: 'FDE 驻场工程师',
     frictionPoint: '连不上',
-    heroCase: '每周敏捷迭代：观察-原型-试用-修改',
+    heroCase: '三层建设 · 每周“观察-原型-试用-沉淀”',
     relatedTool: {
       id: 'tool-inquiry-flow',
       name: '询盘与系统现状梳理',
       type: 'inquiry_flow',
     },
-    executiveModuleSummary: '软件买了一堆，用不起来等于废纸。FDE 工程师带着代码深入业务一线，当周做原型，当周让一线外贸业务员试用，彻底攻克“连不上”顽疾。',
+    executiveModuleSummary: '软件买了一堆却用不起来，AI 试了几次只停在演示，根子往往在于经验没写成标准、标准没装进系统。FDE 带着 AI 驻场一线，自下而上完成三层建设，对业务结果负责，离场时把能力留给企业。',
     modules: [
       {
         index: 1,
         name: 'M1 认知：什么是 FDE（前线部署工程师）',
-        description: '源自 Palantir 的工程文化，与传统外包及 SaaS 售前的本质区别',
+        description: '从 Palantir 到 AI 公司：FDE 的由来、三层建设方法，以及它与外包、SaaS、咨询的区别',
         lessons: [
           {
             id: 'lesson-e-1-1',
             moduleIndex: 1,
-            title: '1.1 前线部署工程师的由来与核心职责',
-            summary: 'FDE（Forward Deployed Engineer）既懂商业一线场景，又具备快速全栈编码能力，以解决具体业务结果为唯一交付目标。',
+            title: '1.1 FDE 从哪来，和外包、SaaS、咨询有什么不同',
+            summary: 'FDE 是驻场在客户业务一线、对业务结果负责的工程师：普通工程师把一个功能做给很多客户，FDE 为一个客户把很多能力做通。',
             durationMinutes: 18,
-            conceptContent: `传统企业出海搞数字化，往往面临尴尬两难：\n- 路线 1：买标准 SaaS。功能是现成的，但海外多语种支持生硬，无法对接企业已有的 ERP 和内部报关系统，最终员工嫌麻烦弃用。\n- 路线 2：找传统软件外包。写了一堆厚厚的“需求规格说明书”，外包人员完全不懂外贸业务，耗时半年交付的代码漏洞百出，谁也不敢动。\n\nFDE 模式打破了这种僵局：\n工程师直接驻场在客户外贸销售团队身边，坐下来看销售怎么给买家查库存、看客服怎么回邮件。发现阻碍后，当天用低代码或全栈脚本写出原型，第二天让业务员点一点，当周完成修改上线！这就是把技术做成、接通、用起来的唯一正解。`,
+            conceptContent: `FDE（Forward Deployed Engineer，前线部署工程师）诞生于 Palantir。Palantir 把驻场团队分成两类：Echo 懂行业，能说清一线的问题到底出在哪；Delta 写代码，能在信息不完整时快速交付可用的系统。两者合在一起，就是今天所说的 FDE。\n\n2024 年以后，OpenAI、Anthropic 等 AI 公司纷纷组建 FDE 团队。原因很朴素：模型越来越强，但企业里的 AI 项目大多停在试点。卡住它们的不是模型，而是模型进不了真实的流程、数据和系统。\n\n四种常见路线的区别：\n- 咨询公司：交付建议报告，停在 PPT，落地靠企业自己。\n- 软件外包：按需求文档交代码，外包人员不懂业务，需求一变就要加钱改。\n- 标准 SaaS：交付账号和标准功能，流程去适应软件，停止付费就停用。\n- FDE：交付业务结果。驻场跟岗、边看边做、每周迭代，离场时把标准、系统、数据和会用的人留给企业。`,
             misconceptions: [
-              '把 FDE 等同于普通的驻场外包劳务派遣。FDE 拥有系统架构与业务重构的高阶能力。'
+              '把 FDE 等同于驻场外包或人力派遣。FDE 对业务结果负责，而不是对工时或需求文档负责。',
+              '以为 FDE 只是来帮企业“接个 AI 接口”。真正耗时的往往是梳理流程、清洗数据和组织协同。'
             ],
-            executiveTakeaway: '数字化成功的前提是一线员工真正在用。FDE 交付的是可落地的业务成果，而不是静态的无用代码。',
+            executiveTakeaway: '评估 FDE 服务，不要只问“派几个人、驻多久”，要问“每周交付什么结果、离场后留下什么”。',
             notebookLmPodcast: {
-              title: '【NotebookLM 深度访谈】FDE 是什么？为什么大洋彼岸的 Palantir 靠它打赢所有硬仗？',
+              title: '【NotebookLM 深度访谈】从 Palantir 到 OpenAI：为什么 AI 公司都在抢 FDE？',
               audioDuration: '10:18',
               hosts: ['Alex', 'Sam'],
               transcript: [
                 {
                   speaker: 'Alex',
                   avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80',
-                  text: '真正的数字化从来不是闭门造车写出来的，而是在一线销售的办公桌旁边看出来的。FDE 的灵魂就在于“每周一轮的快速敏捷循环”。',
+                  text: '模型不缺，缺的是能把模型接进真实业务的人。FDE 的价值不在于驻场本身，而在于对结果负责。',
+                  highlight: true,
+                },
+                {
+                  speaker: 'Sam',
+                  avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80',
+                  text: '所以判断一个 FDE 团队，就看两件事：每周有没有交付能用的东西，离场后企业自己接不接得住。',
+                  highlight: false,
+                }
+              ]
+            },
+            quiz: [
+              {
+                question: 'FDE 与传统软件外包最本质的区别是什么？',
+                options: [
+                  'FDE 派的人更多、驻场时间更长',
+                  'FDE 对业务结果负责，驻场跟岗、每周迭代，并把能力留给企业',
+                  'FDE 只负责采购和安装 AI 软件',
+                  'FDE 不写代码，只出咨询报告'
+                ],
+                correctIndex: 1,
+                explanation: '外包对需求文档负责，咨询对建议负责，FDE 对业务结果负责：既写生产级代码，也要确保一线真正用起来，并在离场时把能力留给企业。'
+              }
+            ],
+            nextStep: {
+              label: '进入 1.2 三层建设',
+              actionType: 'lesson',
+              targetId: 'lesson-e-1-2'
+            }
+          },
+          {
+            id: 'lesson-e-1-2',
+            moduleIndex: 1,
+            title: '1.2 三层建设：标准化、信息化、智能化',
+            summary: 'AI 放大的是企业已有的秩序。FDE 自下而上推进三层：先把经验写成规则，再把规则装进系统，最后让 AI 在系统上干活。',
+            durationMinutes: 22,
+            conceptContent: `很多外贸企业上 AI 失败，不是模型不行，而是地基没打：报价靠老业务员心算，产品参数散在 PDF 和微信里，客户在 Excel，线索在个人邮箱。在这样的底子上接 AI，只能做出一场漂亮的演示。\n\nFDE 的工作因此分三层，自下而上：\n\n第 1 层 标准化：把经验写成规则\n跟岗访谈业务骨干，用 AI 转写录音，从历史邮件、报价单和聊天记录中归纳规则，生成 SOP、产品参数主数据、报价规则和询盘分级标准的初稿，再由业务负责人审定。\n\n第 2 层 信息化：把规则装进系统\n用 AI 辅助数据清洗、字段映射和接口脚本，把独立站表单、邮件、WhatsApp、CRM 与 ERP 接成一条线，配好权限和操作日志，让老板第一次看到完整的漏斗。\n\n第 3 层 智能化：让 AI 在系统上干活\n在清晰的规则和干净的数据之上，部署 AI 客服、询盘分级、报价助手和会前商业情报；每个场景都配评测集和人工复核点，上线后按周调优。\n\n三层不是三个先后立项的项目，而是每周都在推进：一个场景走完一轮“观察-原型-试用-沉淀”，三层就各往前走一步。`,
+            caseSnippet: {
+              company: '示例场景',
+              title: '询盘分级：一周走完三层',
+              description: '周一至周二跟岗，用 AI 从历史询盘中归纳分级规则（标准化）；周三把规则变成 CRM 意向字段，接通表单与询盘邮箱（信息化）；周四 AI 按规则自动打标，业务员逐条确认（智能化）；周五把纠正过的案例写回规则与评测集。'
+            },
+            misconceptions: [
+              '跳过前两层直接买 AI 工具。没有标准和数据，AI 答错了没人发现，也没人兜底。',
+              '把标准化理解为写一堆没人看的制度文件。这里的标准，是能被系统执行、被 AI 调用的规则和数据。'
+            ],
+            executiveTakeaway: '没有标准化的智能化，只是把混乱自动化。先问企业的经验有没有写下来、数据在不在系统里，再谈上什么 AI。',
+            notebookLmPodcast: {
+              title: '【NotebookLM 深度对谈】AI 落地为什么要先做“土活”：标准化与信息化',
+              audioDuration: '09:40',
+              hosts: ['Alex', 'Sam'],
+              transcript: [
+                {
+                  speaker: 'Sam',
+                  avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80',
+                  text: '老板常问能不能直接上 AI。FDE 的回答是能，但第一周会先带着 AI 去整理经验和数据，因为那才是 AI 能用的原料。',
+                  highlight: true,
+                }
+              ]
+            },
+            quiz: [
+              {
+                question: '外贸企业想用 AI 自动给询盘分级，FDE 通常先做哪一步？',
+                options: [
+                  '直接采购一款 AI 客服产品上线',
+                  '跟岗梳理业务员的判断经验，用 AI 归纳成可执行的分级规则',
+                  '先招一支算法团队自研大模型',
+                  '让 IT 部门独立写需求文档交给外包开发'
+                ],
+                correctIndex: 1,
+                explanation: '分级规则是 AI 执行的依据。先把一线经验标准化，再装进 CRM，最后让 AI 按规则打标，结果才可验证、可纠正。'
+              }
+            ],
+            nextStep: {
+              label: '进入 8.1 决策者篇',
+              actionType: 'lesson',
+              targetId: 'lesson-e-8-1'
+            }
+          }
+        ]
+      },
+      {
+        index: 8,
+        name: 'M8 决策者篇：切入、配合、验收与离场',
+        description: '从哪个场景开始、企业要出什么人、如何按层验收、FDE 离场后留下什么',
+        lessons: [
+          {
+            id: 'lesson-e-8-1',
+            moduleIndex: 8,
+            title: '8.1 决策者篇：从哪切入、怎么配合、怎么验收',
+            summary: '从一个高价值场景切入，2 ~ 4 周跑通第一个闭环；按三层分别验收；从第一周起就为离场做准备。',
+            durationMinutes: 15,
+            conceptContent: `老板引入 FDE，最该想清楚四件事：\n\n1. 从哪里切入：选一个高频、痛感强、结果可衡量的场景，例如“询盘到报价”。不要一上来就做全公司的数字化。\n\n2. 企业出什么人：一位能拍板的业务负责人，两三位愿意试用的一线业务员，一位 IT 对接人。FDE 能写代码，但替代不了业务方的判断。\n\n3. 怎么验收：按层验收，不按人天验收。标准化看规则是否经业务负责人审定并写进 SOP；信息化看线索与数据是否自动入库、看板是否可用；智能化看评测集准确率、人工纠正率和响应时效。\n\n4. 离场留下什么：源码、数据、文档与账号全部在企业名下；最小权限、开发与生产隔离、操作全程留痕；同步培养一两名内部 AI 业务骨干，离场后 FDE 转为顾问。\n\n参考投入：FDE 驻场通常为 20 ~ 50 万元 / 周期，取决于场景数量、系统复杂度以及是否需要私有化部署。`,
+            misconceptions: [
+              '指望 FDE 独立搞定一切，业务负责人不参与每周的试用与拍板。',
+              '用“驻了多少人天”来验收，而不是看每一层留下了什么。'
+            ],
+            executiveTakeaway: '好的 FDE 会让自己越来越不被需要：离场那天，标准在、系统在、数据在，会用的人也在。',
+            notebookLmPodcast: {
+              title: '【NotebookLM 决策者专线】引入 FDE 之前，老板要想清楚的四件事',
+              audioDuration: '07:45',
+              hosts: ['Alex', 'Sam'],
+              transcript: [
+                {
+                  speaker: 'Alex',
+                  avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80',
+                  text: '靠谱的 FDE 团队，第一周就会交付能用的东西，而且从第一天起就在规划怎么离场。',
                   highlight: true,
                 }
               ]
             },
             nextStep: {
-              label: '体验中心：浏览 FDE 的一周时间线',
+              label: '做一次询盘现状梳理',
               actionType: 'tool',
-              targetId: 'demo-fde'
+              targetId: 'tool-inquiry-flow'
             }
           }
         ]
@@ -792,7 +899,7 @@ export const ROLE_LEARNING_PATHS: RoleLearningPath[] = [
     durationText: '约 60 分钟',
     description: '无需技术细节，聚焦五门课的“决策者篇”，摸清投入预算、交付周期、避坑防雷与验收标准。',
     endGoal: '清晰判断要不要做、做哪几项、花多少钱、如何考核团队与服务商',
-    featuredLessonIds: ['lesson-a-1-4', 'lesson-b-1-3', 'lesson-c-10-2', 'lesson-d-9-2', 'lesson-e-1-1'],
+    featuredLessonIds: ['lesson-a-1-4', 'lesson-b-1-3', 'lesson-c-10-2', 'lesson-d-9-2', 'lesson-e-8-1'],
     recommendedToolId: 'tool-frictions',
   },
   {
@@ -822,7 +929,7 @@ export const ROLE_LEARNING_PATHS: RoleLearningPath[] = [
     durationText: '约 2.5 小时深入',
     description: '全面评估独立站技术栈、Schema 结构化数据、多系统 API 对接、私有化部署与数据合规。',
     endGoal: '输出清晰的内部技术对接规划与安全合规防范报告',
-    featuredLessonIds: ['lesson-a-1-2', 'lesson-e-1-1', 'lesson-c-3-1'],
+    featuredLessonIds: ['lesson-a-1-2', 'lesson-e-1-1', 'lesson-e-1-2', 'lesson-c-3-1'],
     recommendedToolId: 'tool-inquiry-flow',
   }
 ];

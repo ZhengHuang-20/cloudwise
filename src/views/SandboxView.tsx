@@ -1,8 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ArrowUp, BarChart3, Bot, FileUp, GitCommit, Moon, SplitSquareVertical } from 'lucide-react';
+import { ArrowUp, BarChart3, Bot, Check, FileUp, GitCommit, Moon, SplitSquareVertical } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { PageHeader } from '../components/ui/PageHeader';
 import { SegmentedControl } from '../components/ui/SegmentedControl';
+import { FDE_WEEK_EXAMPLE, FDE_WEEK_OUTPUTS } from '../data/fdeData';
 
 type DemoId = 'sandbox' | 'custom_data' | 'geo_compare' | 'analytics' | 'fde_week';
 
@@ -18,13 +19,6 @@ const BUYER_ROLES: { id: 'us' | 'eu' | 'me'; label: string }[] = [
   { id: 'us', label: '美国采购总监' },
   { id: 'eu', label: '德国骨科工程师' },
   { id: 'me', label: '迪拜医院代表' },
-];
-
-const FDE_WEEK = [
-  { title: '现场观察', when: '周一 ~ 周二', desc: '驻场观察销售与客服的真实报价链路' },
-  { title: '快速原型', when: '周三', desc: '当天做出可用原型，而不是写需求文档' },
-  { title: '一线试用', when: '周四', desc: '业务员用真实询盘试用并反馈' },
-  { title: '修改上线', when: '周五', desc: '按反馈修改并上线，下周继续迭代' },
 ];
 
 export const SandboxView: React.FC<{ onGoToConfigurator: () => void }> = ({ onGoToConfigurator }) => {
@@ -351,21 +345,38 @@ export const SandboxView: React.FC<{ onGoToConfigurator: () => void }> = ({ onGo
         {activeDemo === 'fde_week' && (
           <section className="tile animate-fade-in" aria-labelledby="fde-title">
             <h2 id="fde-title" className="text-title-2">
-              FDE 驻场工程师的一周
+              FDE 的一周：以询盘分级为例
             </h2>
-            <p className="mt-2 text-body text-label-secondary">每周一轮敏捷循环：观察、原型、试用、上线。</p>
-            <ol className="mt-8 grid grid-cols-1 gap-3 md:grid-cols-4">
-              {FDE_WEEK.map((step, idx) => (
-                <li key={step.title} className="well">
-                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-fill text-caption font-semibold tabular-nums">
-                    {idx + 1}
-                  </span>
-                  <h3 className="mt-4 text-title-3">{step.title}</h3>
+            <p className="mt-2 max-w-2xl text-body text-label-secondary">
+              每周一轮“观察-原型-试用-沉淀”。一个场景走完一轮，标准化、信息化、智能化三层各往前一步。以下为示例。
+            </p>
+            <ol className="mt-8 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
+              {FDE_WEEK_EXAMPLE.map((step, idx) => (
+                <li key={step.loop} className="well flex flex-col">
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="flex h-8 w-8 items-center justify-center rounded-full bg-fill text-caption font-semibold tabular-nums">
+                      {idx + 1}
+                    </span>
+                    <span className="badge">{step.layer}</span>
+                  </div>
+                  <h3 className="mt-4 text-title-3">{step.loop}</h3>
                   <p className="mt-1 text-caption text-label-secondary">{step.when}</p>
                   <p className="mt-3 text-body text-label-secondary">{step.desc}</p>
                 </li>
               ))}
             </ol>
+
+            <div className="mt-8 border-t border-separator pt-6">
+              <h3 className="text-body font-semibold">这一周留给企业</h3>
+              <ul className="mt-3 grid gap-x-8 gap-y-2 md:grid-cols-3">
+                {FDE_WEEK_OUTPUTS.map((output) => (
+                  <li key={output} className="flex gap-3 text-body">
+                    <Check className="mt-1 h-5 w-5 shrink-0 text-success" aria-hidden="true" />
+                    <span>{output}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </section>
         )}
       </div>
