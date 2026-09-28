@@ -47,7 +47,7 @@ interface AppContextType {
 
   // Saved Proposals & Deal Room
   savedProposals: SavedProposal[];
-  saveProposalDraft: (title: string, services: string[], budgetRange: string, timeline: string, details: any) => SavedProposal;
+  saveProposalDraft: (title: string, services: string[], timeline: string, details: any) => SavedProposal;
   activeProposal: SavedProposal | null;
   setActiveProposal: (p: SavedProposal | null) => void;
 
@@ -158,7 +158,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         title: '某医疗智造企业 · 获客增长与 GEO 专项方案',
         date: new Date().toLocaleDateString(),
         services: ['海外独立站建站', '出海 GEO 优化', '外贸 SEO 优化'],
-        budgetRange: '26.0 ~ 38.0 万元',
         timeline: '10 ~ 12 周',
         shareId: 'ak-med-draft-2026',
         details: {
@@ -181,7 +180,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     return [
       { id: 'act-1', action: '完成课时：1.1 独立站与电子画册区别', scoreDelta: 1, timestamp: '1天前' },
       { id: 'act-2', action: '完成五断点自评诊断', scoreDelta: 10, timestamp: '2天前' },
-      { id: 'act-3', action: '配置获客组合预算草案', scoreDelta: 15, timestamp: '今天' }
+      { id: 'act-3', action: '配置获客组合方案草案', scoreDelta: 15, timestamp: '今天' }
     ];
   });
 
@@ -411,7 +410,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const saveProposalDraft = (
     title: string,
     services: string[],
-    budgetRange: string,
     timeline: string,
     details: any
   ): SavedProposal => {
@@ -420,7 +418,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       title,
       date: new Date().toLocaleDateString(),
       services,
-      budgetRange,
       timeline,
       shareId: `share-${Math.random().toString(36).substring(2, 8)}`,
       details,
@@ -428,7 +425,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
     setSavedProposals((prev) => [newProposal, ...prev]);
     setActiveProposal(newProposal);
-    logLeadActivity(`保存方案配置草案: ${title}`, 20, { budgetRange });
+    logLeadActivity(`保存方案配置草案: ${title}`, 20, { timeline });
     showToast('方案已保存，方案空间已开启');
 
     // Async Supabase sync
@@ -438,7 +435,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         user_id: user.id,
         title,
         services,
-        budget_range: budgetRange,
         timeline,
         details,
       }).then(() => {}, (e: any) => console.warn('Supabase proposal sync:', e));

@@ -1,12 +1,12 @@
 import React, { useRef, useState } from 'react';
 import {
   AlertTriangle,
-  Calculator,
   Check,
   CheckCircle2,
   ChevronRight,
   Globe,
   Laptop2,
+  ListChecks,
   Loader2,
   Radar,
 } from 'lucide-react';
@@ -93,10 +93,10 @@ const TOOLS: { tab: TabId; icon: React.ComponentType<{ className?: string }>; ti
   },
   {
     tab: 'configurator',
-    icon: Calculator,
-    title: '方案组合与预算配置',
-    desc: `自由组合独立站、SEO、GEO${SHOW_FDE ? '、AI 客服与 FDE 驻场' : ' 与 AI 客服'}，实时得到预算区间、排期与交付物清单。`,
-    link: '测算预算',
+    icon: ListChecks,
+    title: '方案组合与交付规划',
+    desc: `自由组合独立站、SEO、GEO${SHOW_FDE ? '、AI 客服与 FDE 驻场' : ' 与 AI 客服'}，实时得到交付周期、阶段排期与交付物清单。`,
+    link: '规划方案',
   },
   {
     tab: 'sandbox',
@@ -484,7 +484,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate, openBookingModal
                     完成 12 项完整体检
                   </button>
                   <button type="button" onClick={() => onNavigate('configurator')} className="link justify-center px-2 py-2 text-body sm:justify-start">
-                    测算方案预算
+                    规划服务方案
                     <ChevronRight />
                   </button>
                 </div>
@@ -544,7 +544,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate, openBookingModal
           <p className="eyebrow">售前工具</p>
           <h2 className="mt-3 text-headline">
             <span className="inline-block">见销售之前，</span>
-            <span className="inline-block">先看清问题与预算。</span>
+            <span className="inline-block">先看清问题与方案。</span>
           </h2>
           <p className="mx-auto mt-5 max-w-2xl text-intro text-label-secondary">面向出海决策人的自助工具，免注册，打开即用。</p>
         </Reveal>

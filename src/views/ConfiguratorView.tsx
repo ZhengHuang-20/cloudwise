@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Check, CheckCircle2 } from 'lucide-react';
-import { SERVICE_PACKAGES, calculateProposalEstimate, ConfiguratorInput } from '../data/pricingRules';
+import { SERVICE_PACKAGES, buildProposalPlan, ConfiguratorInput } from '../data/servicePackages';
 import { useApp } from '../context/AppContext';
 import { PageHeader } from '../components/ui/PageHeader';
 import { Slider } from '../components/ui/Slider';
@@ -40,7 +40,7 @@ export const ConfiguratorView: React.FC<ConfiguratorViewProps> = ({
     needPrivateDeploy: false,
   });
 
-  const estimate = calculateProposalEstimate({
+  const plan = buildProposalPlan({
     ...config,
     packageType: selectedPackage,
   });
@@ -63,15 +63,14 @@ export const ConfiguratorView: React.FC<ConfiguratorViewProps> = ({
   const handleSaveAndActivateDealRoom = () => {
     const pkg = SERVICE_PACKAGES.find((p) => p.id === selectedPackage);
     saveProposalDraft(
-      `${pkg?.name || '出海方案'} · 预算与交付规划`,
+      `${pkg?.name || '出海方案'} · 交付规划`,
       pkg?.solvesFrictions || ['获客增长'],
-      estimate.budgetRange,
-      estimate.timelineWeeks,
+      plan.timelineWeeks,
       {
         selectedPackage,
         config,
-        deliverables: estimate.deliverables,
-        milestones: estimate.milestones,
+        deliverables: plan.deliverables,
+        milestones: plan.milestones,
       }
     );
     onGoToDealRoom();
@@ -87,9 +86,9 @@ export const ConfiguratorView: React.FC<ConfiguratorViewProps> = ({
   return (
     <div>
       <PageHeader
-        eyebrow="预算测算"
-        title="组合方案，即刻看到预算"
-        intro="把复杂的出海工程拆解为透明的预算区间、实施周期与阶段成果。"
+        eyebrow="方案规划"
+        title="组合服务，即刻看到交付路线"
+        intro="把复杂的出海工程拆解为清晰的服务组合、实施周期与阶段成果。"
       />
 
       <div className="layout-wide pb-[clamp(4.5rem,2.5rem+6vw,8.75rem)]">
@@ -118,8 +117,8 @@ export const ConfiguratorView: React.FC<ConfiguratorViewProps> = ({
                   <p className="mt-2 flex-1 text-body text-label-secondary">{pkg.tagline}</p>
                   <p className="mt-4 text-caption text-label-secondary">补齐断点：{pkg.solvesFrictions.join(' · ')}</p>
                   <p className="mt-5 w-full border-t border-separator pt-4 text-title-2 tabular-nums">
-                    {pkg.basePriceRange[0]} ~ {pkg.basePriceRange[1]}
-                    <span className="ml-1 text-body font-normal text-label-secondary">万元</span>
+                    {pkg.durationWeeks[0]} ~ {pkg.durationWeeks[1]}
+                    <span className="ml-1 text-body font-normal text-label-secondary">周</span>
                   </p>
                 </button>
               );
@@ -133,11 +132,11 @@ export const ConfiguratorView: React.FC<ConfiguratorViewProps> = ({
             <h2 id="params-title" className="text-title-2">
               按企业规模调整
             </h2>
-            <p className="mt-2 text-body text-label-secondary">参数变化会实时联动预算、周期与交付物。</p>
+            <p className="mt-2 text-body text-label-secondary">参数变化会实时联动交付周期与交付物。</p>
 
             {!showAcquisitionParams && (
               <p className="well mt-8 text-body text-label-secondary">
-                当前组合按固定范围报价，无需调整参数。选择“获客增长组合”或“整体全案服务”可按规模细化测算。
+                当前组合按标准范围交付，无需调整参数。选择“获客增长组合”或“整体全案服务”可按规模细化交付物与周期。
               </p>
             )}
 
@@ -263,28 +262,22 @@ export const ConfiguratorView: React.FC<ConfiguratorViewProps> = ({
           {/* 3. 结果 */}
           <section
             className="tile lg:sticky lg:top-20 lg:col-span-5"
-            aria-labelledby="estimate-title"
+            aria-labelledby="plan-title"
             aria-live="polite"
           >
-            <h2 id="estimate-title" className="text-title-3">
-              方案估算
+            <h2 id="plan-title" className="text-title-3">
+              方案概览
             </h2>
 
-            <dl className="mt-6 space-y-4">
-              <div>
-                <dt className="text-caption text-label-secondary">预算区间</dt>
-                <dd className="mt-1 text-title-1 tabular-nums">{estimate.budgetRange}</dd>
-              </div>
-              <div>
-                <dt className="text-caption text-label-secondary">交付周期</dt>
-                <dd className="mt-1 text-title-2 tabular-nums">{estimate.timelineWeeks}</dd>
-              </div>
+            <dl className="mt-6">
+              <dt className="text-caption text-label-secondary">交付周期</dt>
+              <dd className="mt-1 text-title-1 tabular-nums">{plan.timelineWeeks}</dd>
             </dl>
-            <p className="mt-4 text-caption text-label-secondary">{estimate.savingsExplanation}</p>
+            <p className="mt-4 text-caption text-label-secondary">{plan.note}</p>
 
             <h3 className="mt-8 border-t border-separator pt-6 text-body font-semibold">交付物</h3>
             <ul className="mt-3 space-y-2.5">
-              {estimate.deliverables.map((d) => (
+              {plan.deliverables.map((d) => (
                 <li key={d} className="flex gap-3 text-body">
                   <Check className="mt-1 h-5 w-5 shrink-0 text-success" />
                   <span>{d}</span>
@@ -294,7 +287,7 @@ export const ConfiguratorView: React.FC<ConfiguratorViewProps> = ({
 
             <h3 className="mt-8 border-t border-separator pt-6 text-body font-semibold">实施节奏</h3>
             <ol className="mt-3 space-y-3">
-              {estimate.milestones.map((m) => (
+              {plan.milestones.map((m) => (
                 <li key={m.week} className="grid grid-cols-[5.5rem_1fr] gap-3">
                   <span className="text-caption tabular-nums text-label-secondary">{m.week}</span>
                   <span className="text-caption">

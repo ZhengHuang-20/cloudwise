@@ -27,7 +27,6 @@ export const ServicesView: React.FC<ServicesViewProps> = ({
     courseId: string;
     toolId: string;
     caseName: string;
-    budgetRange: string;
     philosophicalNote: string;
   }[] = [
     {
@@ -46,7 +45,6 @@ export const ServicesView: React.FC<ServicesViewProps> = ({
       courseId: 'A',
       toolId: 'health',
       caseName: '爱康医疗独立站就绪度自测 95 分',
-      budgetRange: '8 ~ 20 万元',
       philosophicalNote: '命题的意义在于其逻辑结构。无法被海外工程师验证的技术指标，等同于无意义的噪音。'
     },
     {
@@ -65,7 +63,6 @@ export const ServicesView: React.FC<ServicesViewProps> = ({
       courseId: 'B',
       toolId: 'frictions',
       caseName: '泰宁科创 60 组核心词覆盖欧美市政采购',
-      budgetRange: '6 ~ 15 万元 / 年',
       philosophicalNote: '语言的界限即世界的界限。若企业未进入海外采购的词汇系统，在商业逻辑中便等于不存在。'
     },
     {
@@ -84,7 +81,6 @@ export const ServicesView: React.FC<ServicesViewProps> = ({
       courseId: 'C',
       toolId: 'visibility',
       caseName: '爱康医疗在 ChatGPT 骨科器械推荐中连续捕获真实意向',
-      budgetRange: '12 ~ 30 万元 / 年',
       philosophicalNote: '信念需要证据支撑。缺乏第三方知识图谱背书的主张，在采购审计中必然被判定为伪。'
     },
     {
@@ -103,7 +99,6 @@ export const ServicesView: React.FC<ServicesViewProps> = ({
       courseId: 'D',
       toolId: 'loss',
       caseName: '凌晨 03:12 欧美采购质询，03:14 自动沉淀商业档案',
-      budgetRange: '5 ~ 15 万元',
       philosophicalNote: '时间是因果链的介质。响应的延迟必然导致交易因果链条的断裂。'
     },
     {
@@ -122,7 +117,6 @@ export const ServicesView: React.FC<ServicesViewProps> = ({
       courseId: 'E',
       toolId: 'flow',
       caseName: '询盘分级：一周内从凭经验判断到 AI 按规则打标',
-      budgetRange: '20 ~ 50 万元 / 周期',
       philosophicalNote: '没有标准化的智能化，只是把混乱自动化。AI 放大的永远是企业已有的秩序。'
     },
   ];
@@ -199,14 +193,12 @@ export const ServicesView: React.FC<ServicesViewProps> = ({
                 </ul>
               </div>
 
-              {/* FDE 需要讲清方法论：三层图横跨两栏，dense 排布让右侧投入栏回填第一行 */}
+              {/* FDE 需要讲清方法论：三层图横跨两栏，dense 排布让右侧栏回填第一行 */}
               {svc.key === 'fde' && <FdeBuildLayers className="lg:col-span-2" />}
 
-              <aside className="well self-start" aria-label={`${svc.title}：投入与下一步`}>
+              <aside className="well self-start" aria-label={`${svc.title}：实战验证与下一步`}>
                 <dl>
-                  <dt className="text-caption text-label-secondary">参考投入</dt>
-                  <dd className="mt-1 text-title-2 tabular-nums">{svc.budgetRange}</dd>
-                  <dt className="mt-5 border-t border-separator pt-5 text-caption text-label-secondary">实战验证</dt>
+                  <dt className="text-caption text-label-secondary">实战验证</dt>
                   <dd className="mt-1 text-body">{svc.caseName}</dd>
                 </dl>
                 <div className="mt-6 space-y-3">
@@ -228,7 +220,7 @@ export const ServicesView: React.FC<ServicesViewProps> = ({
             <span className="inline-block">不确定从哪一项开始？</span>
           </h2>
           <p className="mx-auto mt-5 max-w-2xl text-intro text-label-secondary">
-            大多数企业从“独立站 + SEO + GEO”获客组合起步。组合后即可看到预算区间、交付周期与交付物清单。
+            大多数企业从“独立站 + SEO + GEO”获客组合起步。组合后即可看到交付周期、阶段排期与交付物清单。
           </p>
           <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
             <button

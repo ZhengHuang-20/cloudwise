@@ -243,11 +243,11 @@ const ALL_COURSES: Course[] = [
             id: 'lesson-a-1-4',
             moduleIndex: 1,
             title: '1.4 决策者篇：投入、周期与验收',
-            summary: '搞懂外贸独立站的合理费用构成（8-20万元区间）、2-3个月的交付节奏与5大客观验收标准，老板花15分钟即可理性拍板。',
+            summary: '搞懂外贸独立站的投入构成、2-3个月的交付节奏与5大客观验收标准，老板花15分钟即可理性拍板。',
             durationMinutes: 12,
-            conceptContent: `老板做独立站最关心的三件事：\n1. 钱花在哪：专业建站费用通常在 8-20 万元区间。主要支出不在敲代码，而在“海外买家画像调研”、“英文行业母语级内容与技术文档改写”以及“Core Web Vitals 海外 CDN 架构部署”。\n2. 周期多久：标准交付周期为 8~12 周。前期 3 周做买家建模与内容梳理，中期 4 周做前后端开发与多语种部署，后期 3 周做技术 SEO 联调、AI 爬虫通道与表单打通。\n3. 如何验收：不要用主观的“好看不好看”验收，必须看客观指标：Google PageSpeed 评分 > 85、Schema 结构化校验零错误、海外主要节点加载 < 2.5 秒、表单自动入库 CRM。`,
+            conceptContent: `老板做独立站最关心的三件事：\n1. 投入花在哪：专业建站的主要投入不在敲代码，而在“海外买家画像调研”、“英文行业母语级内容与技术文档改写”以及“Core Web Vitals 海外 CDN 架构部署”。\n2. 周期多久：标准交付周期为 8~12 周。前期 3 周做买家建模与内容梳理，中期 4 周做前后端开发与多语种部署，后期 3 周做技术 SEO 联调、AI 爬虫通道与表单打通。\n3. 如何验收：不要用主观的“好看不好看”验收，必须看客观指标：Google PageSpeed 评分 > 85、Schema 结构化校验零错误、海外主要节点加载 < 2.5 秒、表单自动入库 CRM。`,
             misconceptions: [
-              '追求几千块的快速建站，结果交付的是漏洞百出的模板站，半年后收录仅个位数。',
+              '追求几天上线的快速建站，结果交付的是漏洞百出的模板站，半年后收录仅个位数。',
               '把验收标准完全寄托在老板个人的主观视觉审美上，忽视了海外采购商的阅读习惯。'
             ],
             executiveTakeaway: '以工程化、数据化的交付物指标进行验收，确保独立站上线当天即可开始被 Google 与 AI 有效抓取。',
@@ -265,7 +265,7 @@ const ALL_COURSES: Course[] = [
               ]
             },
             nextStep: {
-              label: '打开方案配置器计算建站预算',
+              label: '打开方案规划查看建站周期',
               actionType: 'configurator',
               targetId: 'configurator'
             }
@@ -375,7 +375,7 @@ const ALL_COURSES: Course[] = [
               {
                 question: '为什么说“SEO 是出海 GEO 的底层通道”？',
                 options: [
-                  '因为 SEO 价格比 GEO 贵很多',
+                  '因为 SEO 见效比 GEO 快很多',
                   '因为大模型进行实时联网检索（如 ChatGPT Search / Perplexity）高度依赖被主流搜索引擎收录的高权重网页',
                   '因为 Google 和 OpenAI 是同一家公司',
                   '因为外贸买家只在 Google 搜索，从不使用 AI'
@@ -902,8 +902,8 @@ const ALL_ROLE_LEARNING_PATHS: RoleLearningPath[] = [
     title: '老板 60 分钟看懂 AI 出海',
     targetRole: '决策者（董事长、总经理、出海项目投资人）',
     durationText: '约 60 分钟',
-    description: `无需技术细节，聚焦${SERVICE_COUNT_CN}门课的“决策者篇”，摸清投入预算、交付周期、避坑防雷与验收标准。`,
-    endGoal: '清晰判断要不要做、做哪几项、花多少钱、如何考核团队与服务商',
+    description: `无需技术细节，聚焦${SERVICE_COUNT_CN}门课的“决策者篇”，摸清投入构成、交付周期、避坑防雷与验收标准。`,
+    endGoal: '清晰判断要不要做、做哪几项、先做哪项、如何考核团队与服务商',
     featuredLessonIds: ['lesson-a-1-4', 'lesson-b-1-3', 'lesson-c-10-2', 'lesson-d-9-2', 'lesson-e-8-1'],
     recommendedToolId: 'tool-frictions',
   },

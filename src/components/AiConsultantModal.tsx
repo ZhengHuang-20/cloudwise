@@ -46,7 +46,7 @@ export const AiConsultantModal: React.FC = () => {
     {
       id: 'welcome',
       sender: 'assistant',
-      text: `您好！我是云端智荐官方 AI 售前顾问。\n\n我们专为中国出海企业打通“独立站、SEO、GEO、AI 客服${SHOW_FDE ? '及 FDE 驻场' : '及系统对接'}”全链路获客断点。您可以向我询问技术方案、爱康医疗实战案例、预算费用估算，或告诉我您目前的出海痛点。`,
+      text: `您好！我是云端智荐官方 AI 售前顾问。\n\n我们专为中国出海企业打通“独立站、SEO、GEO、AI 客服${SHOW_FDE ? '及 FDE 驻场' : '及系统对接'}”全链路获客断点。您可以向我询问技术方案、爱康医疗实战案例、交付周期与实施路径，或告诉我您目前的出海痛点。`,
       timestamp: '刚刚',
       intent: 'LOW',
       intentReason: '初始系统接待',

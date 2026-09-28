@@ -65,7 +65,6 @@ CREATE TABLE IF NOT EXISTS public.saved_proposals (
   user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
   title TEXT NOT NULL,
   services JSONB NOT NULL,
-  budget_range TEXT,
   timeline TEXT,
   details JSONB,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL

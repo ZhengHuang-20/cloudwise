@@ -148,18 +148,16 @@ export const MySpaceModal: React.FC<MySpaceModalProps> = ({ isOpen, onClose, ope
 
         {activeTab === 'proposals' &&
           (savedProposals.length === 0 ? (
-            <EmptyState text="还没有方案草案。在“预算测算”中保存方案后会出现在这里。" />
+            <EmptyState text="还没有方案草案。在“方案规划”中保存方案后会出现在这里。" />
           ) : (
             <ul className="divide-y divide-separator border-y border-separator animate-fade-in">
               {savedProposals.map((prop) => (
                 <li key={prop.id} className="py-4">
                   <div className="flex items-baseline justify-between gap-4">
                     <span className="text-body font-semibold">{prop.title}</span>
-                    <span className="shrink-0 text-body tabular-nums">{prop.budgetRange}</span>
+                    <span className="shrink-0 text-body tabular-nums">{prop.timeline}</span>
                   </div>
-                  <p className="mt-1 text-caption text-label-secondary">
-                    周期 {prop.timeline} · 保存于 {prop.date}
-                  </p>
+                  <p className="mt-1 text-caption text-label-secondary">保存于 {prop.date}</p>
                 </li>
               ))}
             </ul>

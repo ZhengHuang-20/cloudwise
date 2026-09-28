@@ -5,7 +5,6 @@ export interface ServicePackage {
   name: string;
   tagline: string;
   solvesFrictions: string[];
-  basePriceRange: [number, number]; // in 万 RMB
   durationWeeks: [number, number];
   isPopular?: boolean;
   coreDeliverables: string[];
@@ -18,7 +17,6 @@ export const SERVICE_PACKAGES: ServicePackage[] = [
     name: '起步深度诊断包',
     tagline: '摸清五大断点薄弱项，获得定制出海获客诊断书',
     solvesFrictions: ['全断点摸排'],
-    basePriceRange: [0, 0.98],
     durationWeeks: [1, 2],
     coreDeliverables: [
       '企业出海五断点深度雷达体检报告',
@@ -33,7 +31,6 @@ export const SERVICE_PACKAGES: ServicePackage[] = [
     name: '单项专项突破',
     tagline: '针对单一薄弱环节（如独立站重构或智能客服）专项攻坚',
     solvesFrictions: ['按选定服务定制'],
-    basePriceRange: [6, 20],
     durationWeeks: [4, 8],
     coreDeliverables: [
       '选定单项服务的完整工业级落地交付物',
@@ -47,7 +44,6 @@ export const SERVICE_PACKAGES: ServicePackage[] = [
     name: '获客增长组合（独立站 + SEO + GEO）',
     tagline: '打通“建站-搜索-AI推荐”全域公域流量，建立国际权威品牌',
     solvesFrictions: ['读不懂', '看不见', '不被信'],
-    basePriceRange: [22, 38],
     durationWeeks: [8, 12],
     isPopular: true,
     coreDeliverables: [
@@ -65,7 +61,6 @@ export const SERVICE_PACKAGES: ServicePackage[] = [
       ? '从获客、转化到企业内部的标准化、信息化、智能化，由 FDE 驻场落地'
       : '从获客、转化到企业 CRM、ERP 系统打通，一次做全',
     solvesFrictions: ['看不见', '读不懂', '不被信', '接不住', '连不上'],
-    basePriceRange: [42, 68],
     durationWeeks: [12, 16],
     coreDeliverables: [
       '独立站 + SEO + GEO 获客三驾马车全量交付',
@@ -97,17 +92,14 @@ export interface ConfiguratorInput {
   needPrivateDeploy: boolean;
 }
 
-export const calculateProposalEstimate = (input: ConfiguratorInput) => {
-  let minPrice = 0;
-  let maxPrice = 0;
+// 按所选组合与规模参数生成交付规划：周期、交付物与阶段排期。站点不展示任何价格，这里也不计算费用
+export const buildProposalPlan = (input: ConfiguratorInput) => {
   let minWeeks = 4;
   let maxWeeks = 8;
   const milestones: { week: string; title: string; task: string }[] = [];
   const deliverables: string[] = [];
 
   if (input.packageType === 'package-starter') {
-    minPrice = 0;
-    maxPrice = 0.98;
     minWeeks = 1;
     maxWeeks = 2;
     deliverables.push('五断点体检报告', 'AI 可见性探针明细', '技术 SEO 缺陷清单', '60分钟专家诊断会');
@@ -116,28 +108,15 @@ export const calculateProposalEstimate = (input: ConfiguratorInput) => {
       { week: '第 2 周', title: '专家解读会', task: '出具完整诊断书并召开 60 分钟闭门复盘会' }
     );
   } else if (input.packageType === 'package-acquisition') {
-    minPrice = 22;
-    maxPrice = 36;
     minWeeks = 8;
     maxWeeks = 12;
 
-    // Adjust by scale
-    if (input.siteSkus > 100) {
-      minPrice += 2;
-      maxPrice += 3;
-    }
-    if (input.languagesCount > 2) {
-      minPrice += 2 * (input.languagesCount - 1);
-      maxPrice += 3 * (input.languagesCount - 1);
-    }
     if (input.geoAnnualContentCount > 50) {
-      minPrice += 4;
-      maxPrice += 6;
       maxWeeks += 2;
     }
 
     deliverables.push(
-      `全新三读者架构高转化独立站（支持 ${input.languagesCount} 个语种）`,
+      `全新三读者架构高转化独立站（${input.siteSkus} 款产品、${input.languagesCount} 个语种）`,
       `覆盖 ${input.seoKeywordsGroups} 组核心外贸关键词的 Google 排名体系`,
       `针对 ${input.geoDecisionPersonas} 类海外决策者的权威建模与 ${input.geoAnnualContentCount} 项年度内容规划`,
       '多平台信源搭建与月度 AI 可见性探针跟踪看板'
@@ -150,21 +129,15 @@ export const calculateProposalEstimate = (input: ConfiguratorInput) => {
       { week: '第 11-12 周', title: '上线部署与月度 GEO 监测', task: '全站上线，开启跨平台 AI 推荐探针并出具首期月报' }
     );
   } else if (input.packageType === 'package-full') {
-    minPrice = 42;
-    maxPrice = 65;
     minWeeks = 12;
     maxWeeks = 16;
 
-    if (input.needPrivateDeploy) {
-      minPrice += 5;
-      maxPrice += 8;
-    }
-
     deliverables.push(
-      '全功能海外独立站 + SEO + GEO 获客三驾马车',
+      `全功能海外独立站（${input.siteSkus} 款产品、${input.languagesCount} 个语种）+ ${input.seoKeywordsGroups} 组 SEO 核心词 + ${input.geoDecisionPersonas} 类决策者 GEO 建模`,
       `7×24 小时 AI 智能客服（支持接入 ${input.inquiryChannels.join('/')}）`,
       `企业现有系统打通（对接 ${input.integratedSystems.join('/')}）`,
       ...(SHOW_FDE ? ['FDE 驻场三层建设：业务标准、系统打通与 AI 场景（每周“观察-原型-试用-沉淀”）'] : []),
+      ...(input.needPrivateDeploy ? ['知识库与业务数据私有化部署到企业自有服务器'] : []),
       '源码、知识库与数据资产 100% 完整移交'
     );
 
@@ -181,8 +154,6 @@ export const calculateProposalEstimate = (input: ConfiguratorInput) => {
     );
   } else {
     // Single
-    minPrice = 8;
-    maxPrice = 18;
     minWeeks = 4;
     maxWeeks = 8;
     deliverables.push('按需定制的单项服务专业交付物', '系统部署与培训移交');
@@ -194,12 +165,11 @@ export const calculateProposalEstimate = (input: ConfiguratorInput) => {
   }
 
   return {
-    budgetRange: `${minPrice.toFixed(1)} ~ ${maxPrice.toFixed(1)} 万元`,
     timelineWeeks: `${minWeeks} ~ ${maxWeeks} 周`,
     deliverables,
     milestones,
-    savingsExplanation: input.packageType === 'package-acquisition' || input.packageType === 'package-full'
-      ? '相比分别单独采购各项服务，组合方案可节省约 15%~22% 预算，且全站共用同一套高价值企业知识资产！'
+    note: input.packageType === 'package-acquisition' || input.packageType === 'package-full'
+      ? '组合方案全站共用同一套企业知识资产，独立站、SEO 与 GEO 的内容可以相互复用。'
       : '单项实施可精准解决当前最紧急断点，后续扩展可无缝接入组合方案。'
   };
 };

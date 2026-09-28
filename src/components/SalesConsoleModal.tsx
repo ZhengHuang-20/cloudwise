@@ -22,11 +22,11 @@ export const SalesConsoleModal: React.FC<{ isOpen: boolean; onClose: () => void 
           : '已自测五断点，判定核心断损在“看不见（SEO/GEO缺席）”与“接不住（12小时时差流失）”，年均测算潜在线索损耗约 180~320 万元。',
     },
     {
-      title: '方案偏好与预算信号（已看方案）',
+      title: '方案偏好（已看方案）',
       text:
         savedProposals.length > 0
-          ? `客户已在配置器中确认草案，预选架构：${savedProposals[0].services.join(' + ')}，测算预算区间：${savedProposals[0].budgetRange}，期望部署周期：6~8周。`
-          : '意向偏好【获客增长组合（独立站+SEO+GEO）】+【24h AI 转化引擎】，预期预算在 25~45 万元区间。',
+          ? `客户已在方案规划中确认草案，预选架构：${savedProposals[0].services.join(' + ')}，规划交付周期：${savedProposals[0].timeline}。`
+          : '意向偏好【获客增长组合（独立站+SEO+GEO）】+【24h AI 转化引擎】，已查看交付周期与阶段排期。',
     },
   ];
 

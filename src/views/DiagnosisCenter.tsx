@@ -799,7 +799,7 @@ export const DiagnosisCenter: React.FC<DiagnosisCenterProps> = ({ onGoToConfigur
                 onClick={() => onGoToConfigurator({ packageType: 'package-single' })}
                 className="btn btn-primary btn-block mt-8"
               >
-                配置 AI 客服预算
+                规划 AI 客服方案
               </button>
             </section>
           </div>

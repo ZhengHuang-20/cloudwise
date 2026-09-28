@@ -54,8 +54,8 @@ export const NAV_GROUPS: NavGroup[] = [
   {
     title: '决策',
     items: [
-      { id: 'configurator', label: '预算', fullLabel: '预算测算', desc: '组合方案，估算预算与周期' },
-      { id: 'deal-room', label: '方案空间', fullLabel: '方案空间', desc: '行动计划、报价与在线签约' },
+      { id: 'configurator', label: '规划', fullLabel: '方案规划', desc: '组合服务，查看周期与交付物' },
+      { id: 'deal-room', label: '方案空间', fullLabel: '方案空间', desc: '行动计划、答疑与在线签约' },
     ],
   },
 ];

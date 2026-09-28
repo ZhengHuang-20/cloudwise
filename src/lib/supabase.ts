@@ -86,7 +86,6 @@ export interface SavedProposal {
   title: string;
   date: string;
   services: string[];
-  budgetRange: string;
   timeline: string;
   shareId: string;
   details: any;

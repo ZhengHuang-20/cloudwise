@@ -142,7 +142,7 @@ canvas  #000000   页面画布
   ```tsx
   <h2 className="text-headline">
     <span className="inline-block">见销售之前，</span>
-    <span className="inline-block">先看清问题与预算。</span>
+    <span className="inline-block">先看清问题与方案。</span>
   </h2>
   ```
 
@@ -288,7 +288,7 @@ canvas  #000000   页面画布
 - 补充说明放在输入框下方：`mt-2 text-caption text-label-secondary`。
 - 必填项加 `required`，联系方式加 `autoComplete`。
 - 滑块一律用 `<Slider label value min max step onChange format />`，自带标签、读数和已填充轨道。只有数值本身带语义时（例如流失率），才改读数颜色和 `trackColor`。
-- 开关（switch）：`<input type="checkbox" role="switch" className="peer sr-only">` 加视觉轨道，写法参考预算页的“私有化部署”。
+- 开关（switch）：`<input type="checkbox" role="switch" className="peer sr-only">` 加视觉轨道，写法参考方案规划页的“私有化部署”。
 
 ### 3.5 选择控件：三种，别混用
 
@@ -371,7 +371,7 @@ PageHeader（eyebrow → h1 text-headline → intro → 分段控件 / 页内索
 
 Hero（eyebrow、`text-display` 标语、导语、两个按钮）→ 评估工具 tile → 五项服务 bento → 售前工具 → 标杆案例 → 收尾行动区。营销章节用 `<Reveal>` 包裹，工具区不包。
 
-### 4.3 工具页（体检、预算、体验）
+### 4.3 工具页（体检、方案规划、体验）
 
 - 左 7 右 5：左侧是输入，右侧是结果，结果栏在 `lg` 以上吸顶。
 - 结果面板加 `aria-live="polite"`。窄屏下生成结果后，主动把结果滚动到可见区域。
@@ -387,7 +387,7 @@ Hero（eyebrow、`text-display` 标语、导语、两个按钮）→ 评估工�
 | --- | --- |
 | 了解 | 服务 / 五项服务 · 案例 / 标杆案例 · 学院 / 出海学院 · 资源 / 模板与术语 |
 | 自测 | 体检 / 断点体检 · 体验 / 能力体验 |
-| 决策 | 预算 / 预算测算 · 方案空间 |
+| 决策 | 规划 / 方案规划 · 方案空间 |
 
 新增页面需要同时改动：`navigation.ts`（导航数据）、`App.tsx`（渲染分支）、新的 view 文件（以 `PageHeader` 开头）。
 

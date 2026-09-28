@@ -156,7 +156,7 @@ export const BookingModal: React.FC<{ isOpen: boolean; onClose: () => void }> = 
                   )}
                   {activeProposal && (
                     <li>
-                      方案草案：{activeProposal.title} · {activeProposal.budgetRange}
+                      方案草案：{activeProposal.title} · {activeProposal.timeline}
                     </li>
                   )}
                 </ul>
