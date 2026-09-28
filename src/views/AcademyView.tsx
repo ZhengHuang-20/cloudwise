@@ -156,13 +156,15 @@ export const AcademyView: React.FC<AcademyViewProps> = ({ onGoToTool }) => {
                 <div className="meter mt-2">
                   <span className="bg-success" style={{ width: `${currentProgress}%` }} />
                 </div>
-                <button
-                  type="button"
-                  onClick={() => onGoToTool(currentCourse.relatedTool.id)}
-                  className="btn btn-secondary btn-block mt-5 whitespace-normal"
-                >
-                  配套工具：{currentCourse.relatedTool.name}
-                </button>
+                {currentCourse.relatedTool && (
+                  <button
+                    type="button"
+                    onClick={() => onGoToTool(currentCourse.relatedTool!.id)}
+                    className="btn btn-secondary btn-block mt-5 whitespace-normal"
+                  >
+                    配套工具：{currentCourse.relatedTool.name}
+                  </button>
+                )}
               </div>
             </div>
 

@@ -4,29 +4,19 @@ import { useApp } from '../context/AppContext';
 import { SegmentedControl } from '../components/ui/SegmentedControl';
 import { SHOW_FDE } from '../lib/features';
 
-type DealTab = 'overview' | 'plan' | 'pricing' | 'qa' | 'contract';
+type DealTab = 'overview' | 'plan' | 'qa' | 'contract';
 
 const TABS: { id: DealTab; label: string }[] = [
   { id: 'overview', label: '诊断概要' },
   { id: 'plan', label: '共同行动计划' },
-  { id: 'pricing', label: '分项报价' },
   { id: 'qa', label: '答疑讨论' },
   { id: 'contract', label: '在线签约' },
-];
-
-const PRICE_ITEMS = [
-  { item: '海外独立站三读者架构重构与多语种部署', min: 10, max: 12, ratio: '阶段一 · 30%' },
-  { item: '60 组外贸核心词体系建立与 Google SEO 布局', min: 6, max: 8, ratio: '阶段二 · 20%' },
-  { item: '海外决策者建模、91 项内容规划与 GEO 信源铺设', min: 8, max: 12, ratio: '阶段三 · 30%' },
-  { item: '7×24 小时 AI 智能客服部署与 CRM 直连', min: 4, max: 6, ratio: '阶段四 · 20%' },
 ];
 
 const TEAM = [
   { name: 'David Huang', initials: 'DH', role: '出海解决方案总监 · 负责方案' },
   { name: 'Chen Wei', initials: 'CW', role: SHOW_FDE ? 'FDE 驻场工程师 · 负责三层建设落地' : '交付工程师 · 负责系统落地' },
 ];
-
-const formatRange = (min: number, max: number) => `${min.toFixed(1)} ~ ${max.toFixed(1)} 万元`;
 
 export const DealRoomView: React.FC<{ onGoToBooking: () => void }> = ({ onGoToBooking }) => {
   const { activeProposal, user, showToast } = useApp();
@@ -49,8 +39,8 @@ export const DealRoomView: React.FC<{ onGoToBooking: () => void }> = ({ onGoToBo
 
   const [qaList, setQaList] = useState([
     {
-      q: 'AI 智能客服如何防止大模型胡言乱语给客户承诺极低价格？',
-      a: '通过严格的系统级知识库隔离与防幻觉边界设置。AI 客服仅能依据后台录入的参数表与报价阶梯进行区间说明，一旦买家提出特殊折扣或合同条款，系统自动分流并触发销售人工接管。',
+      q: 'AI 智能客服如何避免对海外买家做出超出权限的承诺？',
+      a: '通过严格的系统级知识库隔离与防幻觉边界设置。AI 客服只依据后台录入的参数表、认证与交期规则作答，一旦买家提出合同条款或特殊商务条件，系统自动分流并触发销售人工接管。',
       author: '客户方技术总监',
       time: '昨天',
     }
@@ -77,8 +67,6 @@ export const DealRoomView: React.FC<{ onGoToBooking: () => void }> = ({ onGoToBo
   const [isContractSigned, setIsContractSigned] = useState(false);
 
   const completedCount = actionItems.filter((i) => i.completed).length;
-  const totalMin = PRICE_ITEMS.reduce((sum, p) => sum + p.min, 0);
-  const totalMax = PRICE_ITEMS.reduce((sum, p) => sum + p.max, 0);
 
   return (
     <div>
@@ -130,16 +118,15 @@ export const DealRoomView: React.FC<{ onGoToBooking: () => void }> = ({ onGoToBo
                   尊敬的 <span className="font-semibold text-label">{user?.companyName || '贵司团队'}</span> 决策层：
                 </p>
                 <p>
-                  综合五断点自评与 AI 可见性测试，贵司在海外采购市场的核心卡点集中在
+                  综合 AI 可见性测评与前期访谈，贵司在海外采购市场的核心卡点集中在
                   <span className="font-semibold text-label">“海外买家问 AI 时查无此人（GEO 不被信）”</span>与
                   <span className="font-semibold text-label">“跨时区夜间询盘延迟流失（接不住）”</span>。
                 </p>
-                <p>双方团队将围绕共同行动计划按周推进，确保每一分投入都有可量化的业务指标产出。</p>
+                <p>双方团队将围绕共同行动计划按周推进，确保每个阶段都有可量化的业务指标产出。</p>
               </div>
 
-              <dl className="mt-10 grid grid-cols-2 gap-6 border-t border-separator pt-8 sm:grid-cols-4">
+              <dl className="mt-10 grid grid-cols-2 gap-6 border-t border-separator pt-8 sm:grid-cols-3">
                 {[
-                  { label: '预算区间', value: activeProposal?.budgetRange || '26.0 ~ 36.0 万元' },
                   { label: '交付周期', value: activeProposal?.timeline || '8 ~ 12 周' },
                   { label: '协同架构师', value: 'David Huang' },
                   { label: '交付模式', value: SHOW_FDE ? '敏捷驻场' : '敏捷迭代' },
@@ -225,30 +212,6 @@ export const DealRoomView: React.FC<{ onGoToBooking: () => void }> = ({ onGoToBo
                 </li>
               ))}
             </ul>
-          </section>
-        )}
-
-        {/* ================= 分项报价 ================= */}
-        {activeTab === 'pricing' && (
-          <section className="tile animate-fade-in" aria-labelledby="pricing-title">
-            <h2 id="pricing-title" className="text-title-2">
-              分项报价与付款节点
-            </h2>
-            <dl className="mt-8 divide-y divide-separator border-y border-separator">
-              {PRICE_ITEMS.map((p) => (
-                <div key={p.item} className="flex flex-col gap-1 py-4 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
-                  <dt>
-                    <span className="block text-body">{p.item}</span>
-                    <span className="block text-caption text-label-secondary">付款节点：{p.ratio}</span>
-                  </dt>
-                  <dd className="shrink-0 text-body font-semibold tabular-nums">{formatRange(p.min, p.max)}</dd>
-                </div>
-              ))}
-            </dl>
-            <div className="mt-6 flex items-baseline justify-between gap-6">
-              <span className="text-body text-label-secondary">合计</span>
-              <span className="text-title-2 tabular-nums">{formatRange(totalMin, totalMax)}</span>
-            </div>
           </section>
         )}
 

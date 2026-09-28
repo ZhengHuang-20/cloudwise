@@ -11,7 +11,6 @@ import { scoreTone, TONE_TEXT } from './ui/tone';
 interface MySpaceModalProps {
   isOpen: boolean;
   onClose: () => void;
-  openSupabaseModal: () => void;
 }
 
 type SpaceTab = 'progress' | 'diagnoses' | 'proposals' | 'certificate' | 'profile';
@@ -22,7 +21,7 @@ const EmptyState: React.FC<{ text: string }> = ({ text }) => (
   <p className="py-16 text-center text-body text-label-secondary">{text}</p>
 );
 
-export const MySpaceModal: React.FC<MySpaceModalProps> = ({ isOpen, onClose, openSupabaseModal }) => {
+export const MySpaceModal: React.FC<MySpaceModalProps> = ({ isOpen, onClose }) => {
   const {
     user,
     logout,
@@ -32,7 +31,6 @@ export const MySpaceModal: React.FC<MySpaceModalProps> = ({ isOpen, onClose, ope
     getCourseProgressPercentage,
     diagnoses,
     savedProposals,
-    supabaseStatus,
     showToast
   } = useApp();
 
@@ -60,15 +58,6 @@ export const MySpaceModal: React.FC<MySpaceModalProps> = ({ isOpen, onClose, ope
           {user?.name?.slice(0, 1) || '我'}
         </span>
       }
-      actions={
-        <button type="button" onClick={openSupabaseModal} className="chip hidden sm:inline-flex" title="数据同步设置">
-          <span
-            className={`h-1.5 w-1.5 rounded-full ${supabaseStatus.isConfigured ? 'bg-success' : 'bg-warning'}`}
-            aria-hidden="true"
-          />
-          {supabaseStatus.isConfigured ? '已云同步' : '仅本地'}
-        </button>
-      }
     >
       <div className="shrink-0 border-b border-separator px-6 py-3 sm:px-8">
         <SegmentedControl
@@ -77,7 +66,7 @@ export const MySpaceModal: React.FC<MySpaceModalProps> = ({ isOpen, onClose, ope
           onChange={setActiveTab}
           options={[
             { id: 'progress', label: '学习进度', icon: GraduationCap },
-            { id: 'diagnoses', label: `体检档案 ${diagnoses.length}`, icon: Activity },
+            { id: 'diagnoses', label: `测评档案 ${diagnoses.length}`, icon: Activity },
             { id: 'proposals', label: `方案草案 ${savedProposals.length}`, icon: FileText },
             { id: 'certificate', label: '能力认证', icon: Award },
             { id: 'profile', label: '企业档案', icon: Sliders },
@@ -92,7 +81,7 @@ export const MySpaceModal: React.FC<MySpaceModalProps> = ({ isOpen, onClose, ope
               {[
                 { label: '已学完课时', value: totalCompletedLessons, unit: '节' },
                 { label: '课后自测', value: completedQuizzesCount, unit: '次' },
-                { label: '体检测试', value: diagnoses.length, unit: '项' },
+                { label: '可见性测评', value: diagnoses.length, unit: '次' },
                 { label: '方案草案', value: savedProposals.length, unit: '份' },
               ].map((stat) => (
                 <div key={stat.label} className="well">
@@ -129,7 +118,7 @@ export const MySpaceModal: React.FC<MySpaceModalProps> = ({ isOpen, onClose, ope
 
         {activeTab === 'diagnoses' &&
           (diagnoses.length === 0 ? (
-            <EmptyState text="还没有体检记录。完成任一体检工具后，结果会自动保存在这里。" />
+            <EmptyState text="还没有测评记录。在首页完成 AI 可见性测评后，结果会自动保存在这里。" />
           ) : (
             <ul className="divide-y divide-separator border-y border-separator animate-fade-in">
               {diagnoses.map((diag) => (
@@ -148,18 +137,16 @@ export const MySpaceModal: React.FC<MySpaceModalProps> = ({ isOpen, onClose, ope
 
         {activeTab === 'proposals' &&
           (savedProposals.length === 0 ? (
-            <EmptyState text="还没有方案草案。在“预算测算”中保存方案后会出现在这里。" />
+            <EmptyState text="还没有方案草案。在“方案规划”中保存方案后会出现在这里。" />
           ) : (
             <ul className="divide-y divide-separator border-y border-separator animate-fade-in">
               {savedProposals.map((prop) => (
                 <li key={prop.id} className="py-4">
                   <div className="flex items-baseline justify-between gap-4">
                     <span className="text-body font-semibold">{prop.title}</span>
-                    <span className="shrink-0 text-body tabular-nums">{prop.budgetRange}</span>
+                    <span className="shrink-0 text-body tabular-nums">{prop.timeline}</span>
                   </div>
-                  <p className="mt-1 text-caption text-label-secondary">
-                    周期 {prop.timeline} · 保存于 {prop.date}
-                  </p>
+                  <p className="mt-1 text-caption text-label-secondary">保存于 {prop.date}</p>
                 </li>
               ))}
             </ul>
@@ -256,13 +243,6 @@ export const MySpaceModal: React.FC<MySpaceModalProps> = ({ isOpen, onClose, ope
                 保存档案
               </button>
             </div>
-            <button
-              type="button"
-              onClick={openSupabaseModal}
-              className="link text-body sm:hidden"
-            >
-              数据同步设置
-            </button>
           </form>
         )}
       </DialogBody>

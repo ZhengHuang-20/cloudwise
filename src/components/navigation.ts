@@ -2,7 +2,7 @@ import { SERVICE_COUNT_CN, SHOW_FDE } from '../lib/features';
 
 /**
  * 全站导航的唯一数据源：Header、Footer、App 的地址同步都从这里取。
- * 顺序按买家旅程分组：了解 → 自测 → 决策（DESIGN.md §5.3）。
+ * 顺序按买家旅程分组：了解 → 决策（DESIGN.md §4.5）。自测工具只有首页的 AI 可见性测评，不单独成页。
  */
 export type TabId =
   | 'home'
@@ -10,8 +10,6 @@ export type TabId =
   | 'cases'
   | 'academy'
   | 'resources'
-  | 'diagnosis'
-  | 'sandbox'
   | 'configurator'
   | 'deal-room';
 
@@ -45,17 +43,10 @@ export const NAV_GROUPS: NavGroup[] = [
     ],
   },
   {
-    title: '自测',
-    items: [
-      { id: 'diagnosis', label: '体检', fullLabel: '断点体检', desc: '12 项断点自测与 AI 可见性测评' },
-      { id: 'sandbox', label: '体验', fullLabel: '能力体验', desc: '亲手试用 AI 客服与数据看板' },
-    ],
-  },
-  {
     title: '决策',
     items: [
-      { id: 'configurator', label: '预算', fullLabel: '预算测算', desc: '组合方案，估算预算与周期' },
-      { id: 'deal-room', label: '方案空间', fullLabel: '方案空间', desc: '行动计划、报价与在线签约' },
+      { id: 'configurator', label: '规划', fullLabel: '方案规划', desc: '组合服务，查看周期与交付物' },
+      { id: 'deal-room', label: '方案空间', fullLabel: '方案空间', desc: '行动计划、答疑与在线签约' },
     ],
   },
 ];

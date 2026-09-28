@@ -34,14 +34,16 @@ NODE_ENV=production bun run start   # 生产模式：Express 托管 dist/ 并做
 - `GET /api/health`、`POST /api/gemini/chat`（AI 售前顾问）、`POST /api/gemini/visibility-test`（AI 可见性 / GEO 测评）。
 - Gemini 只在服务端调用，API key 不暴露给前端。模型为 `gemini-3.8-flash`，使用 `responseMimeType: 'application/json'`，提示词中内嵌期望的 JSON 结构。
 - **每个 Gemini 接口都有确定性 fallback**：当 key 缺失或仍为占位值 `MY_GEMINI_API_KEY`、调用报错或 JSON 解析失败时，返回关键词匹配（chat）或固定 mock（visibility-test）的结果。因此不配 key 应用也能完整运行。
-- 修改接口响应字段时需同步三处：提示词里的 JSON 模板、fallback 返回对象、前端消费方（`src/components/AiConsultantModal.tsx` 的 `ChatMessage`、`src/views/DiagnosisCenter.tsx`）。
-- `SYSTEM_KNOWLEDGE_INSTRUCTION` 是 AI 顾问的「知识库」（服务、案例、价格区间、话术规则）。同样的业务事实还散落在 fallback 文案、`src/data/pricingRules.ts`、`src/data/caseStudiesData.ts` 和各 view 的文案中——改价格或案例时要一并更新。
+- 修改接口响应字段时需同步三处：提示词里的 JSON 模板、fallback 返回对象、前端消费方（`src/components/AiConsultantModal.tsx` 的 `ChatMessage`）。
+- `SYSTEM_KNOWLEDGE_INSTRUCTION` 是 AI 顾问的「知识库」（服务、案例、报价规则、话术规则）。同样的业务事实还散落在 fallback 文案、`src/data/servicePackages.ts`、`src/data/caseStudiesData.ts` 和各 view 的文案中——改服务或案例时要一并更新。
+- **站点不展示任何价格**：服务、套餐、方案空间、课程与 AI 顾问都不出现金额、预算区间、折扣或付款比例；知识库要求模型不报价，问到费用时引导到方案规划与诊断会。新增内容也不要写价格。
 
 ### 前端导航（无路由库）
 
 - `src/App.tsx` 用 `currentTab` 状态条件渲染 `src/views/*`，并与地址栏 hash 同步（`#/services`），支持浏览器前进后退与分享链接；切页时滚到顶部并更新 `document.title`。
-- `TabId` 类型、导航分组（了解 / 自测 / 决策）与短标签、全称都只定义在 `src/components/navigation.ts`，`Header`、`Footer` 与 App 的 hash 解析共用它。
-- 页面间跳转通过 App 下发的回调 props（`onGoToConfigurator`、`onGoToBooking` 等）完成；`handleNavigateToConfigurator(prefill)` 可向配置器传入初始参数。
+- `TabId` 类型、导航分组（了解 / 决策）与短标签、全称都只定义在 `src/components/navigation.ts`，`Header`、`Footer` 与 App 的 hash 解析共用它。
+- 页面间跳转通过 App 下发的回调 props（`onGoToConfigurator`、`onGoToAudit`、`onGoToBooking` 等）完成；`handleNavigateToConfigurator(prefill)` 可向配置器传入初始参数。
+- **站内唯一的自测工具是首页的 AI 可见性测评**（`HomeView` 的 `#audit` 区块，结果为本地模拟数据）；原「断点体检」「能力体验」页已删除。其他页面与课程要引导自测时，用 App 的 `goToAudit` 回到首页并滚动到测评区；课程「下一步」的目标由 App 的 `handleCourseTarget` 分流（方案规划 / 预约 / 资源 / 测评）。`/api/gemini/visibility-test` 接口仍保留，但前端目前没有调用。
 - 新增页面需同时改三处：新建 view（以 `PageHeader` 开头）、在 `App.tsx` 加渲染分支、在 `navigation.ts` 加导航项。
 - 全局弹窗都在 `App.tsx` 渲染，外壳统一用 `src/components/ui/Dialog.tsx`（Esc、焦点圈定、滚动锁定已内置）。`AiConsultantModal` 由 context 控制（`setAiAdvisorOpen` / `triggerAiAdvisorWithQuery(query)` 可带预设问题打开，CRM 透视开关在弹窗标题栏），其余弹窗由 App 本地 state 控制。
 - `Header` 的移动端菜单渲染在 `<header>` 之外：`backdrop-filter` 会让 header 成为 fixed 子元素的定位容器。
@@ -50,17 +52,17 @@ NODE_ENV=production bun run start   # 生产模式：Express 托管 dist/ 并做
 
 - 单一 `AppProvider` / `useApp()` 管理用户、课程进度、诊断记录、方案草案、线索行为、toast 等全部共享状态。
 - **本地优先**：所有状态持久化到 `localStorage`（键前缀 `cw_`），首次访问时注入演示数据（访客用户、示例诊断和方案）。
-- **Supabase 仅作单向镜像**：写操作在 `getSupabase()` 返回 client 时以 fire-and-forget 方式 insert/upsert，失败只打 `console.warn`，从不从 Supabase 读回。凭据优先取 `localStorage` 的 `cw_supabase_url/key`（由 `SupabaseModal` 设置），其次取 `VITE_SUPABASE_*`；含占位域名时视为未配置。
+- **Supabase 仅作单向镜像**：写操作在 `getSupabase()` 返回 client 时以 fire-and-forget 方式 insert/upsert，失败只打 `console.warn`，从不从 Supabase 读回。凭据只取构建时的 `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY`，含占位域名时视为未配置。Supabase 对接不在页面上展示：没有配置入口、同步状态或 CRM 工作台界面。
 - 登录是本地模拟的（`login()` 生成 `usr-<timestamp>` 形式的 id，不走 Supabase Auth），而 `supabase_schema.sql` 中 `profiles.id` 为 UUID 且外键指向 `auth.users`，RLS 依赖 `auth.uid()`。所以按现有 schema，云同步写入会被拒绝，接入真实鉴权前这是已知限制。
 - 共享领域类型（`UserProfile`、`DiagnosisRecord`、`SavedProposal`、`LessonProgress`）定义在 `src/lib/supabase.ts`，没有单独的 types 文件。
 
 ### 线索评分漏斗
 
-`logLeadActivity(action, scoreDelta, meta?)` 是售前漏斗的埋点入口：各 view 在关键交互时调用（诊断、保存方案、预约、高意向对话等）。`leadScore = 25 + Σ scoreDelta`，`currentStage` 据此和诊断/方案数量推导（≥30 为 MQL，≥45 为 SQL，≥60 且有诊断和方案为「商机」），由 `Header` 与 `SalesConsoleModal` 展示。`saveDiagnosis`、`saveProposalDraft`、`markLessonComplete` 内部已自动记录行为，不要在调用方重复记录。
+`logLeadActivity(action, scoreDelta, meta?)` 是售前漏斗的埋点入口：各 view 在关键交互时调用（诊断、保存方案、预约、高意向对话等）。`leadScore = 25 + Σ scoreDelta`，`currentStage` 据此和诊断/方案数量推导（≥30 为 MQL，≥45 为 SQL，≥60 且有诊断和方案为「商机」），随行为记录同步写入 Supabase 的 `leads` 表，页面上不展示。`saveDiagnosis`、`saveProposalDraft`、`markLessonComplete` 内部已自动记录行为，不要在调用方重复记录。
 
 ### 静态内容
 
-课程、案例、术语、资源、套餐定价都是 `src/data/*.ts` 中的类型化常量。FDE 的方法论（标准化 → 信息化 → 智能化三层建设、每周“观察-原型-试用-沉淀”）集中在 `fdeData.ts`，服务页三层图与体验页「FDE 的一周」共用；课程 E、术语表和 `SYSTEM_KNOWLEDGE_INSTRUCTION` 中的同类表述要与之一致。预算配置器的计算逻辑在 `pricingRules.ts` 的 `calculateProposalEstimate`。内容类改动优先改这些数据文件，不要改组件。
+课程、案例、术语、资源、服务组合都是 `src/data/*.ts` 中的类型化常量。FDE 的方法论（标准化 → 信息化 → 智能化三层建设、每周“观察-原型-试用-沉淀”）集中在 `fdeData.ts`，服务页三层图使用它；课程 E、术语表和 `SYSTEM_KNOWLEDGE_INSTRUCTION` 中的同类表述要与之一致。方案规划页（`#/configurator`）的周期、交付物与阶段排期由 `servicePackages.ts` 的 `buildProposalPlan` 生成。内容类改动优先改这些数据文件，不要改组件。
 
 ## 样式约定（完整规范见 `DESIGN.md`）
 
@@ -75,7 +77,7 @@ NODE_ENV=production bun run start   # 生产模式：Express 托管 dist/ 并做
 
 ## 其他注意事项
 
-- **FDE 暂不对外展示**：`src/lib/features.ts` 的 `SHOW_FDE`（当前为 `false`）同时控制前端与 `server.ts`。关闭时服务页、首页、课程 E、术语、资源、体验页、预算方案与 AI 顾问都不出现 FDE，“五项服务 / 五门课”随 `SERVICE_COUNT_CN` 变为“四”。新增涉及 FDE 或服务数量的文案也要走这个开关；`index.html` 的 description 读不到开关，需手动同步。
+- **FDE 展示开关**：`src/lib/features.ts` 的 `SHOW_FDE`（当前为 `true`，对外展示）同时控制前端与 `server.ts`。关闭时服务页、首页、课程 E、术语、资源、方案规划与 AI 顾问都不出现 FDE，“五项服务 / 五门课”随 `SERVICE_COUNT_CN` 变为“四”。新增涉及 FDE 或服务数量的文案也要走这个开关；`index.html` 的 description 读不到开关，需手动同步。
 - `vite.config.ts` 中 HMR 与文件监听由 `DISABLE_HMR` 控制，这是 AI Studio 环境需要的，注释要求不要修改。
 - 路径别名 `@/` 指向**仓库根目录**而不是 `src/`（`vite.config.ts` 与 `tsconfig.json` 一致）；现有代码均使用相对路径导入。
 - `bun run build` 会提示主 chunk 超过 500 kB，目前没有代码分割，属已知现象。

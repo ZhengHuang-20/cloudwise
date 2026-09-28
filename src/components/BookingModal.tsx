@@ -5,7 +5,7 @@ import { Dialog, DialogBody } from './ui/Dialog';
 import { SHOW_FDE } from '../lib/features';
 
 const MEETING_TYPES = [
-  { id: 'quick', title: '快速诊断', duration: '30 分钟', desc: '线上 · 解读自评分数', target: '外贸总监' },
+  { id: 'quick', title: '快速诊断', duration: '30 分钟', desc: '线上 · 解读测评分数', target: '外贸总监' },
   { id: 'deep', title: '深度诊断', duration: '60 分钟', desc: '线上或上门 · 立项与方案定制', target: '老板 + 总监' },
   { id: 'tech', title: '技术对接评估', duration: '60 分钟', desc: SHOW_FDE ? '线上 · 系统对接与 FDE' : '线上 · 系统对接与数据打通', target: 'IT 负责人 + 业务' },
 ] as const;
@@ -50,7 +50,7 @@ export const BookingModal: React.FC<{ isOpen: boolean; onClose: () => void }> = 
       onClose={handleClose}
       size="lg"
       title="预约 1 对 1 出海诊断会"
-      description="带着体检报告进会议，直奔实质方案。"
+      description="带着测评报告进会议，直奔实质方案。"
     >
       <DialogBody>
         {!isBooked ? (
@@ -151,12 +151,12 @@ export const BookingModal: React.FC<{ isOpen: boolean; onClose: () => void }> = 
                 <ul className="mt-2 space-y-1 text-caption text-label-secondary">
                   {latestDiagnosis && (
                     <li>
-                      最近一次体检：{latestDiagnosis.toolName} · {latestDiagnosis.score} 分
+                      最近一次测评：{latestDiagnosis.toolName} · {latestDiagnosis.score} 分
                     </li>
                   )}
                   {activeProposal && (
                     <li>
-                      方案草案：{activeProposal.title} · {activeProposal.budgetRange}
+                      方案草案：{activeProposal.title} · {activeProposal.timeline}
                     </li>
                   )}
                 </ul>

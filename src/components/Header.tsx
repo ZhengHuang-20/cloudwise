@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { Menu, Sparkles, User, X } from 'lucide-react';
-import { useApp } from '../context/AppContext';
 import { NAV_GROUPS, NAV_ITEMS, TabId } from './navigation';
 
 interface HeaderProps {
@@ -8,8 +7,6 @@ interface HeaderProps {
   onNavigate: (tab: TabId) => void;
   openBookingModal: () => void;
   openMySpaceModal: () => void;
-  openSalesConsoleModal: () => void;
-  openSupabaseModal: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -17,10 +14,7 @@ export const Header: React.FC<HeaderProps> = ({
   onNavigate,
   openBookingModal,
   openMySpaceModal,
-  openSalesConsoleModal,
-  openSupabaseModal,
 }) => {
-  const { leadScore, currentStage, supabaseStatus } = useApp();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   useEffect(() => {
@@ -85,17 +79,6 @@ export const Header: React.FC<HeaderProps> = ({
 
           {/* 右侧操作 */}
           <div className="ml-auto flex shrink-0 items-center gap-2 lg:ml-0">
-            <button
-              type="button"
-              onClick={openSalesConsoleModal}
-              className="hidden items-center gap-2 rounded-full px-3 py-1.5 text-caption text-label-secondary transition-colors hover:text-label xl:inline-flex"
-              title="打开售前 CRM 工作台"
-            >
-              <span className="h-1.5 w-1.5 rounded-full bg-success" aria-hidden="true" />
-              <span>{currentStage}</span>
-              <span className="tabular-nums text-label">{leadScore}</span>
-            </button>
-
             <button type="button" onClick={openBookingModal} className="btn btn-primary btn-sm">
               预约诊断
             </button>
@@ -180,28 +163,6 @@ export const Header: React.FC<HeaderProps> = ({
                 className="btn btn-neutral btn-lg btn-block"
               >
                 我的空间
-              </button>
-            </div>
-
-            <div className="mt-8 flex flex-wrap gap-x-6 gap-y-3 text-caption text-label-secondary">
-              <button
-                type="button"
-                onClick={runAndClose(openSalesConsoleModal)}
-                className="inline-flex items-center gap-2 hover:text-label"
-              >
-                <span className="h-1.5 w-1.5 rounded-full bg-success" aria-hidden="true" />
-                CRM 评级：{currentStage} · <span className="tabular-nums">{leadScore}</span> 分
-              </button>
-              <button
-                type="button"
-                onClick={runAndClose(openSupabaseModal)}
-                className="inline-flex items-center gap-2 hover:text-label"
-              >
-                <span
-                  className={`h-1.5 w-1.5 rounded-full ${supabaseStatus.isConfigured ? 'bg-success' : 'bg-warning'}`}
-                  aria-hidden="true"
-                />
-                数据同步：{supabaseStatus.isConfigured ? '已连接 Supabase' : '仅本地保存'}
               </button>
             </div>
           </nav>

@@ -142,7 +142,7 @@ canvas  #000000   页面画布
   ```tsx
   <h2 className="text-headline">
     <span className="inline-block">见销售之前，</span>
-    <span className="inline-block">先看清问题与预算。</span>
+    <span className="inline-block">先看清问题与方案。</span>
   </h2>
   ```
 
@@ -176,7 +176,7 @@ canvas  #000000   页面画布
 - 首页服务区用 6 列 bento：前两张各占 3 列，后三张各占 2 列；FDE 隐藏、只有四项服务时为 2 × 2。
 - 工具页左右分栏为 7 : 5，结果栏在 `lg` 以上 `sticky top-20`。
 
-**断点**：`sm` 640 · `md` 768 · `lg` 1024（桌面导航出现）· `xl` 1280（导航栏显示线索评分）。
+**断点**：`sm` 640 · `md` 768 · `lg` 1024（桌面导航出现）· `xl` 1280。
 
 ### 2.4 圆角
 
@@ -288,15 +288,15 @@ canvas  #000000   页面画布
 - 补充说明放在输入框下方：`mt-2 text-caption text-label-secondary`。
 - 必填项加 `required`，联系方式加 `autoComplete`。
 - 滑块一律用 `<Slider label value min max step onChange format />`，自带标签、读数和已填充轨道。只有数值本身带语义时（例如流失率），才改读数颜色和 `trackColor`。
-- 开关（switch）：`<input type="checkbox" role="switch" className="peer sr-only">` 加视觉轨道，写法参考预算页的“私有化部署”。
+- 开关（switch）：`<input type="checkbox" role="switch" className="peer sr-only">` 加视觉轨道，写法参考方案规划页的“私有化部署”。
 
 ### 3.5 选择控件：三种，别混用
 
 | 组件 | 外观 | 语义 | 用于 |
 | --- | --- | --- | --- |
-| `SegmentedControl` | 灰色轨道，选中项为浮起的灰色滑块 | `role="tablist"`，←/→ 键切换 | **切换视图**。页面级用 `size="lg"`（体检工具、学院课程、案例/方案），面板内用默认尺寸 |
+| `SegmentedControl` | 灰色轨道，选中项为浮起的灰色滑块 | `role="tablist"`，←/→ 键切换 | **切换视图**。页面级用 `size="lg"`（学院课程、案例/方案），面板内用默认尺寸 |
 | `chip` + `aria-pressed` | 灰色胶囊，选中后反白（白底黑字） | 切换按钮 | **筛选和多选**：术语分类、接入渠道、示例快捷试测、页内索引 |
-| `choice` + `role="radio"` + `aria-checked` | 描边卡片，选中后为 2px 蓝色描边（Apple Store 选配样式） | 单选组 | **有说明文字的单选项**：体检题目、诊断会形式、课后自测、套餐 |
+| `choice` + `role="radio"` + `aria-checked` | 描边卡片，选中后为 2px 蓝色描边（Apple Store 选配样式） | 单选组 | **有说明文字的单选项**：诊断会形式、课后自测、套餐 |
 
 选中态由 aria 属性驱动样式，不要另写 `isActive ? … : …` 的类名分支。
 
@@ -315,7 +315,7 @@ canvas  #000000   页面画布
 ### 3.8 弹窗 Dialog
 
 ```tsx
-<Dialog open={isOpen} onClose={onClose} size="lg" title="预约 1 对 1 出海诊断会" description="带着体检报告进会议，直奔实质方案。">
+<Dialog open={isOpen} onClose={onClose} size="lg" title="预约 1 对 1 出海诊断会" description="带着测评报告进会议，直奔实质方案。">
   <DialogBody>…</DialogBody>
 </Dialog>
 ```
@@ -328,9 +328,9 @@ canvas  #000000   页面画布
 
 ### 3.9 导航
 
-- **全局导航**：52px 高，毛玻璃。左侧品牌（点击回首页），中间 8 个 2–4 字的短标签，右侧依次为线索评分（xl 以上）、“预约诊断”小号主按钮、账户图标按钮。当前页的标签为白字，底部有 2px 白色指示条，并标注 `aria-current="page"`。
-- **移动端（< 1024px）**：汉堡按钮打开全屏菜单。菜单按“了解 / 自测 / 决策”分组，条目为 24px 标题加一行说明，底部是全宽的主按钮和中性按钮。Esc 可关闭，打开时锁定背景滚动。
-- **页脚**：品牌简介加三组站点地图，底部一行放版权、CRM 工作台、数据同步设置和备案号。
+- **全局导航**：52px 高，毛玻璃。左侧品牌（点击回首页），中间 6 个 2–4 字的短标签，右侧依次为“预约诊断”小号主按钮、账户图标按钮。当前页的标签为白字，底部有 2px 白色指示条，并标注 `aria-current="page"`。
+- **移动端（< 1024px）**：汉堡按钮打开全屏菜单。菜单按“了解 / 决策”分组，条目为 24px 标题加一行说明，底部是全宽的主按钮和中性按钮。Esc 可关闭，打开时锁定背景滚动。
+- **页脚**：品牌简介加两组站点地图，底部一行放版权和备案号。
 - **地址同步**：当前页写入 `#/tab`，所以浏览器前进后退、分享链接和“复制链接”都能用。切页时滚动到顶部，并更新 `document.title`。
 - 导航数据只维护在 `src/components/navigation.ts` 一处。
 
@@ -365,13 +365,13 @@ PageHeader（eyebrow → h1 text-headline → intro → 分段控件 / 页内索
 ```
 
 - 每个页面只有一个 H1，由 `PageHeader` 输出。
-- 眉标就是页面的中文名（“断点体检”“出海学院”），不写英文。
+- 眉标就是页面的中文名（“方案规划”“出海学院”），不写英文。
 
 ### 4.2 首页
 
-Hero（eyebrow、`text-display` 标语、导语、两个按钮）→ 评估工具 tile → 五项服务 bento → 售前工具 → 标杆案例 → 收尾行动区。营销章节用 `<Reveal>` 包裹，工具区不包。
+Hero（eyebrow、`text-display` 标语、导语、两个按钮）→ AI 可见性测评 tile → 五项服务 bento → 售前工具（AI 可见性测评 · 方案规划 · 方案空间）→ 标杆案例 → 收尾行动区。营销章节用 `<Reveal>` 包裹，测评区不包。AI 可见性测评是站内唯一的自测工具，不单独成页。
 
-### 4.3 工具页（体检、预算、体验）
+### 4.3 工具页（方案规划）
 
 - 左 7 右 5：左侧是输入，右侧是结果，结果栏在 `lg` 以上吸顶。
 - 结果面板加 `aria-live="polite"`。窄屏下生成结果后，主动把结果滚动到可见区域。
@@ -386,8 +386,7 @@ Hero（eyebrow、`text-display` 标语、导语、两个按钮）→ 评估工�
 | 分组 | 页面（短标签 / 全称） |
 | --- | --- |
 | 了解 | 服务 / 五项服务 · 案例 / 标杆案例 · 学院 / 出海学院 · 资源 / 模板与术语 |
-| 自测 | 体检 / 断点体检 · 体验 / 能力体验 |
-| 决策 | 预算 / 预算测算 · 方案空间 |
+| 决策 | 规划 / 方案规划 · 方案空间 |
 
 新增页面需要同时改动：`navigation.ts`（导航数据）、`App.tsx`（渲染分支）、新的 view 文件（以 `PageHeader` 开头）。
 

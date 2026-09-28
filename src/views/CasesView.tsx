@@ -5,7 +5,7 @@ import { PageHeader } from '../components/ui/PageHeader';
 import { SegmentedControl } from '../components/ui/SegmentedControl';
 
 interface CasesViewProps {
-  onGoToDiagnosis: () => void;
+  onGoToAudit: () => void;
   onGoToCourse: (courseCode: string) => void;
 }
 
@@ -15,12 +15,13 @@ const splitName = (name: string) => {
   return match ? { primary: match[1], secondary: match[2] } : { primary: name, secondary: '' };
 };
 
-export const CasesView: React.FC<CasesViewProps> = ({ onGoToDiagnosis }) => {
+export const CasesView: React.FC<CasesViewProps> = ({ onGoToAudit }) => {
   const [activeTab, setActiveTab] = useState<'cases' | 'solutions'>('cases');
   const [selectedCaseId, setSelectedCaseId] = useState<string>('case-ak-medical');
 
   const currentCase = CASE_STUDIES.find((c) => c.id === selectedCaseId) || CASE_STUDIES[0];
   const caseName = splitName(currentCase.clientName);
+  const comparison = currentCase.scoreComparison;
 
   return (
     <div>
@@ -74,20 +75,23 @@ export const CasesView: React.FC<CasesViewProps> = ({ onGoToDiagnosis }) => {
                   </p>
                 </div>
 
-                <dl className="flex shrink-0 items-end gap-5">
-                  <div>
-                    <dt className="text-caption text-label-secondary">改造前</dt>
-                    <dd className="text-title-1 tabular-nums text-label-secondary">{currentCase.startingScore}</dd>
-                  </div>
-                  <ArrowRight className="mb-3 h-6 w-6 text-label-tertiary" aria-hidden="true" />
-                  <div>
-                    <dt className="text-caption text-label-secondary">改造后</dt>
-                    <dd className="text-headline tabular-nums text-success">
-                      {currentCase.results.finalScore}
-                      <span className="ml-1 text-title-3 text-label-secondary">分</span>
-                    </dd>
-                  </div>
-                </dl>
+                <div className="shrink-0">
+                  {comparison && <p className="mb-3 text-caption font-semibold">{comparison.metric}</p>}
+                  <dl className="flex items-end gap-5">
+                    <div>
+                      <dt className="text-caption text-label-secondary">{comparison?.beforeLabel ?? '改造前'}</dt>
+                      <dd className="text-title-1 tabular-nums text-label-secondary">{currentCase.startingScore}</dd>
+                    </div>
+                    <ArrowRight className="mb-3 h-6 w-6 text-label-tertiary" aria-hidden="true" />
+                    <div>
+                      <dt className="text-caption text-label-secondary">{comparison?.afterLabel ?? '改造后'}</dt>
+                      <dd className="text-headline tabular-nums text-success">
+                        {currentCase.results.finalScore}
+                        <span className="ml-1 text-title-3 text-label-secondary">分</span>
+                      </dd>
+                    </div>
+                  </dl>
+                </div>
               </div>
 
               {/* 起点 */}
@@ -151,8 +155,8 @@ export const CasesView: React.FC<CasesViewProps> = ({ onGoToDiagnosis }) => {
 
               <div className="mt-10 flex flex-col gap-6 border-t border-separator pt-8 md:flex-row md:items-center md:justify-between">
                 <p className="max-w-2xl text-caption text-label-secondary">{currentCase.dataScopeStatement}</p>
-                <button type="button" onClick={onGoToDiagnosis} className="btn btn-primary shrink-0">
-                  为我的企业做同款体检
+                <button type="button" onClick={onGoToAudit} className="btn btn-primary shrink-0">
+                  为我的企业做同款测评
                 </button>
               </div>
             </article>

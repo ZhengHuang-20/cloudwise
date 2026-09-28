@@ -5,8 +5,6 @@ import {
   DiagnosisRecord,
   SavedProposal,
   getSupabase,
-  getSupabaseStatus,
-  updateSupabaseCredentials,
 } from '../lib/supabase';
 import { COURSES } from '../data/coursesData';
 
@@ -28,10 +26,6 @@ interface AppContextType {
   isAuthModalOpen: boolean;
   setAuthModalOpen: (open: boolean) => void;
 
-  // Supabase Status
-  supabaseStatus: { url: string; key: string; isConfigured: boolean };
-  saveSupabaseConfig: (url: string, key: string) => boolean;
-
   // Learning Progress
   learningProgress: Record<string, LessonProgress>;
   markLessonComplete: (courseId: string, lessonId: string, quizScore?: number, exerciseData?: any) => void;
@@ -47,7 +41,7 @@ interface AppContextType {
 
   // Saved Proposals & Deal Room
   savedProposals: SavedProposal[];
-  saveProposalDraft: (title: string, services: string[], budgetRange: string, timeline: string, details: any) => SavedProposal;
+  saveProposalDraft: (title: string, services: string[], timeline: string, details: any) => SavedProposal;
   activeProposal: SavedProposal | null;
   setActiveProposal: (p: SavedProposal | null) => void;
 
@@ -102,7 +96,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   });
 
   const [isAuthModalOpen, setAuthModalOpen] = useState(false);
-  const [supabaseStatus, setSupabaseStatus] = useState(getSupabaseStatus());
 
   // Learning Progress state
   const [learningProgress, setLearningProgress] = useState<Record<string, LessonProgress>>(() => {
@@ -133,14 +126,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     return [
       {
         id: 'diag-demo-1',
-        toolType: 'five_frictions',
-        toolName: '出海五断点自评',
+        toolType: 'ai_visibility',
+        toolName: 'AI 可见性测评',
         score: 62,
         summary: '在“看不见”与“不被信”断点存在显著薄弱项，建议首选 SEO + GEO 获客组合。',
         date: new Date(Date.now() - 3600000 * 48).toLocaleDateString(),
-        details: {
-          scores: { invisible: 35, unreadable: 60, untrusted: 45, missed: 75, disconnected: 80 }
-        }
+        details: {}
       }
     ];
   });
@@ -158,7 +149,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         title: '某医疗智造企业 · 获客增长与 GEO 专项方案',
         date: new Date().toLocaleDateString(),
         services: ['海外独立站建站', '出海 GEO 优化', '外贸 SEO 优化'],
-        budgetRange: '26.0 ~ 38.0 万元',
         timeline: '10 ~ 12 周',
         shareId: 'ak-med-draft-2026',
         details: {
@@ -180,8 +170,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
     return [
       { id: 'act-1', action: '完成课时：1.1 独立站与电子画册区别', scoreDelta: 1, timestamp: '1天前' },
-      { id: 'act-2', action: '完成五断点自评诊断', scoreDelta: 10, timestamp: '2天前' },
-      { id: 'act-3', action: '配置获客组合预算草案', scoreDelta: 15, timestamp: '今天' }
+      { id: 'act-2', action: '完成 AI 可见性测评', scoreDelta: 10, timestamp: '2天前' },
+      { id: 'act-3', action: '配置获客组合方案草案', scoreDelta: 15, timestamp: '今天' }
     ];
   });
 
@@ -309,17 +299,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     showToast('个人档案与企业信息已更新');
   };
 
-  const saveSupabaseConfig = (url: string, key: string) => {
-    const ok = updateSupabaseCredentials(url, key);
-    if (ok) {
-      setSupabaseStatus(getSupabaseStatus());
-      showToast('已连接 Supabase，数据将同步到云端');
-    } else {
-      showToast('Supabase 配置有误，请检查 URL 与 Key');
-    }
-    return ok;
-  };
-
   const markLessonComplete = (courseId: string, lessonId: string, quizScore = 100, exerciseData?: any) => {
     setLearningProgress((prev) => {
       const updated = {
@@ -388,7 +367,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
     setDiagnoses((prev) => [newRecord, ...prev]);
     logLeadActivity(`完成诊断测试: ${toolName}`, 15, { score });
-    showToast(`体检完成：${score} 分，已存入“我的空间”`);
+    showToast(`测评完成：${score} 分，已存入“我的空间”`);
 
     // Async Supabase sync
     const client = getSupabase();
@@ -411,7 +390,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const saveProposalDraft = (
     title: string,
     services: string[],
-    budgetRange: string,
     timeline: string,
     details: any
   ): SavedProposal => {
@@ -420,7 +398,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       title,
       date: new Date().toLocaleDateString(),
       services,
-      budgetRange,
       timeline,
       shareId: `share-${Math.random().toString(36).substring(2, 8)}`,
       details,
@@ -428,7 +405,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
     setSavedProposals((prev) => [newProposal, ...prev]);
     setActiveProposal(newProposal);
-    logLeadActivity(`保存方案配置草案: ${title}`, 20, { budgetRange });
+    logLeadActivity(`保存方案配置草案: ${title}`, 20, { timeline });
     showToast('方案已保存，方案空间已开启');
 
     // Async Supabase sync
@@ -438,7 +415,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         user_id: user.id,
         title,
         services,
-        budget_range: budgetRange,
         timeline,
         details,
       }).then(() => {}, (e: any) => console.warn('Supabase proposal sync:', e));
@@ -462,8 +438,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         updateUserProfile,
         isAuthModalOpen,
         setAuthModalOpen,
-        supabaseStatus,
-        saveSupabaseConfig,
         learningProgress,
         markLessonComplete,
         isLessonCompleted,

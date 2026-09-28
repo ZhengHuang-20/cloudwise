@@ -1,15 +1,9 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
-// Retrieve credentials from environment or user-configured localStorage
+// 凭据只从构建时环境变量读取（VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY），页面上不提供配置入口
 const getSupabaseConfig = () => {
-  const envUrl = import.meta.env.VITE_SUPABASE_URL || '';
-  const envKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
-  
-  const savedUrl = typeof window !== 'undefined' ? localStorage.getItem('cw_supabase_url') || '' : '';
-  const savedKey = typeof window !== 'undefined' ? localStorage.getItem('cw_supabase_key') || '' : '';
-
-  const url = savedUrl || envUrl;
-  const key = savedKey || envKey;
+  const url = import.meta.env.VITE_SUPABASE_URL || '';
+  const key = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
 
   return {
     url,
@@ -33,22 +27,6 @@ export const getSupabase = (): SupabaseClient | null => {
     }
   }
   return supabaseInstance;
-};
-
-export const updateSupabaseCredentials = (url: string, key: string) => {
-  localStorage.setItem('cw_supabase_url', url);
-  localStorage.setItem('cw_supabase_key', key);
-  try {
-    supabaseInstance = createClient(url, key);
-    return true;
-  } catch (err) {
-    console.error('Failed to update Supabase credentials:', err);
-    return false;
-  }
-};
-
-export const getSupabaseStatus = () => {
-  return getSupabaseConfig();
 };
 
 export interface UserProfile {
@@ -86,7 +64,6 @@ export interface SavedProposal {
   title: string;
   date: string;
   services: string[];
-  budgetRange: string;
   timeline: string;
   shareId: string;
   details: any;

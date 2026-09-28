@@ -74,7 +74,8 @@ export interface Course {
   relatedService: string;
   frictionPoint: '读不懂' | '看不见' | '不被信' | '接不住' | '连不上';
   heroCase: string;
-  relatedTool: {
+  // 配套工具：目前只有首页的 AI 可见性测评，没有合适工具的课程不设
+  relatedTool?: {
     id: string;
     name: string;
     type: string;
@@ -108,9 +109,9 @@ const ALL_COURSES: Course[] = [
     frictionPoint: '读不懂',
     heroCase: '爱康医疗海外新官网 (ak-medical-global.com)',
     relatedTool: {
-      id: 'tool-website-health',
-      name: '官网技术体检',
-      type: 'website_health',
+      id: 'tool-ai-visibility',
+      name: 'AI 可见性测评',
+      type: 'ai_visibility',
     },
     executiveModuleSummary: '建站不是套模板，而是海外获客的第一数据资产。三读者（买家、Google、AI）架构让网站上线即具备转化与索引能力。',
     modules: [
@@ -181,7 +182,7 @@ const ALL_COURSES: Course[] = [
               description: '输入您现有的官网网址或核心产品，评估属于“僵尸画册”还是“获客阵地”',
               inputPlaceholder: '例如：www.mycompany.com 或 医疗骨科植入耗材',
               outputKey: 'site_nature_evaluation',
-              actionLabel: '一键体检',
+              actionLabel: '一键评估',
             },
             nextStep: {
               label: '进入 1.2 为什么一个网站要写给三类读者',
@@ -234,20 +235,20 @@ const ALL_COURSES: Course[] = [
               }
             ],
             nextStep: {
-              label: '跳转：官网技术体检',
+              label: '免费评估官网出海就绪度',
               actionType: 'tool',
-              targetId: 'tool-website-health'
+              targetId: 'tool-ai-visibility'
             }
           },
           {
             id: 'lesson-a-1-4',
             moduleIndex: 1,
             title: '1.4 决策者篇：投入、周期与验收',
-            summary: '搞懂外贸独立站的合理费用构成（8-20万元区间）、2-3个月的交付节奏与5大客观验收标准，老板花15分钟即可理性拍板。',
+            summary: '搞懂外贸独立站的投入构成、2-3个月的交付节奏与5大客观验收标准，老板花15分钟即可理性拍板。',
             durationMinutes: 12,
-            conceptContent: `老板做独立站最关心的三件事：\n1. 钱花在哪：专业建站费用通常在 8-20 万元区间。主要支出不在敲代码，而在“海外买家画像调研”、“英文行业母语级内容与技术文档改写”以及“Core Web Vitals 海外 CDN 架构部署”。\n2. 周期多久：标准交付周期为 8~12 周。前期 3 周做买家建模与内容梳理，中期 4 周做前后端开发与多语种部署，后期 3 周做技术 SEO 联调、AI 爬虫通道与表单打通。\n3. 如何验收：不要用主观的“好看不好看”验收，必须看客观指标：Google PageSpeed 评分 > 85、Schema 结构化校验零错误、海外主要节点加载 < 2.5 秒、表单自动入库 CRM。`,
+            conceptContent: `老板做独立站最关心的三件事：\n1. 投入花在哪：专业建站的主要投入不在敲代码，而在“海外买家画像调研”、“英文行业母语级内容与技术文档改写”以及“Core Web Vitals 海外 CDN 架构部署”。\n2. 周期多久：标准交付周期为 8~12 周。前期 3 周做买家建模与内容梳理，中期 4 周做前后端开发与多语种部署，后期 3 周做技术 SEO 联调、AI 爬虫通道与表单打通。\n3. 如何验收：不要用主观的“好看不好看”验收，必须看客观指标：Google PageSpeed 评分 > 85、Schema 结构化校验零错误、海外主要节点加载 < 2.5 秒、表单自动入库 CRM。`,
             misconceptions: [
-              '追求几千块的快速建站，结果交付的是漏洞百出的模板站，半年后收录仅个位数。',
+              '追求几天上线的快速建站，结果交付的是漏洞百出的模板站，半年后收录仅个位数。',
               '把验收标准完全寄托在老板个人的主观视觉审美上，忽视了海外采购商的阅读习惯。'
             ],
             executiveTakeaway: '以工程化、数据化的交付物指标进行验收，确保独立站上线当天即可开始被 Google 与 AI 有效抓取。',
@@ -265,7 +266,7 @@ const ALL_COURSES: Course[] = [
               ]
             },
             nextStep: {
-              label: '打开方案配置器计算建站预算',
+              label: '打开方案规划查看建站周期',
               actionType: 'configurator',
               targetId: 'configurator'
             }
@@ -283,11 +284,11 @@ const ALL_COURSES: Course[] = [
             title: '7.4 案例：爱康医疗海外站一周数据看板实战解读',
             summary: '复刻爱康医疗全球官网实拍看板：看懂 Google 自然搜索、ChatGPT 引荐流量、高意向国家分布与询盘转化路径。',
             durationMinutes: 20,
-            conceptContent: `在画册第 6 页中，爱康医疗（AK Medical）全球站的后台仪表盘展现了极具代表性的数据结构：\n1. 引荐流量来源中，chatgpt.com、perplexity.ai 等生成式 AI 带来的访问占比逐步攀升至 18%，且这类访客的停留时长是普通访客的 2.4 倍。\n2. 受访高频页面不再是关于我们（About Us），而是带 3D 打印多孔钛参数表的技术白皮书页面。\n3. 询盘漏斗清晰映射：自测体检 -> 技术白皮书下载 -> 智能客服在线沟通 -> 业务员跟进。`,
+            conceptContent: `在画册第 6 页中，爱康医疗（AK Medical）全球站的后台仪表盘展现了极具代表性的数据结构：\n1. 引荐流量来源中，chatgpt.com、perplexity.ai 等生成式 AI 带来的访问占比逐步攀升至 18%，且这类访客的停留时长是普通访客的 2.4 倍。\n2. 受访高频页面不再是关于我们（About Us），而是带 3D 打印多孔钛参数表的技术白皮书页面。\n3. 询盘漏斗清晰映射：AI 可见性测评 -> 技术白皮书下载 -> 智能客服在线沟通 -> 业务员跟进。`,
             caseSnippet: {
               company: '爱康医疗 (港股上市)',
-              title: '新站评分从 47 跃升至 95，ChatGPT 带来持续真实询盘',
-              description: '通过爱康医疗旧官网 (ak-medical.net) 与新官网 (ak-medical-global.com) 对比，全面展现了三读者架构与 GEO 布局在海外医疗采购场景中的落地实效。'
+              title: '国内官网 47 分，新建海外官网 95 分，ChatGPT 带来持续真实询盘',
+              description: '通过爱康医疗国内官网 (ak-medical.net) 与新建海外官网 (ak-medical-global.com) 对比，全面展现了三读者架构与 GEO 布局在海外医疗采购场景中的落地实效。'
             },
             misconceptions: [
               '看数据只看 PV 和 UV，不看来源渠道质量与真实询盘转化率。'
@@ -301,15 +302,15 @@ const ALL_COURSES: Course[] = [
                 {
                   speaker: 'Alex',
                   avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80',
-                  text: '大家可以在体验中心看到这个看板的交互演示。非常神奇的是，许多来自欧洲的医院采购工程师，直接通过 ChatGPT 推荐的链接进入了爱康的新官网！',
+                  text: '非常神奇的是，许多来自欧洲的医院采购工程师，直接通过 ChatGPT 推荐的链接进入了爱康的新官网！',
                   highlight: true,
                 }
               ]
             },
             nextStep: {
-              label: '体验中心：查看数据看板交互演示',
-              actionType: 'tool',
-              targetId: 'demo-analytics'
+              label: '预约 30 分钟深度诊断会',
+              actionType: 'booking',
+              targetId: 'booking'
             }
           }
         ]
@@ -329,9 +330,9 @@ const ALL_COURSES: Course[] = [
     frictionPoint: '看不见',
     heroCase: '泰宁科创 60 组英文核心词库与 SuDS 英国规范',
     relatedTool: {
-      id: 'tool-frictions',
-      name: '五断点自评',
-      type: 'five_frictions',
+      id: 'tool-ai-visibility',
+      name: 'AI 可见性测评',
+      type: 'ai_visibility',
     },
     executiveModuleSummary: 'SEO 不只是排关键词，更是 GEO 的底层知识通道。通过 E-E-A-T 权威信号与主题内容集群，构筑长期不灭的自然获客壁垒。',
     modules: [
@@ -375,7 +376,7 @@ const ALL_COURSES: Course[] = [
               {
                 question: '为什么说“SEO 是出海 GEO 的底层通道”？',
                 options: [
-                  '因为 SEO 价格比 GEO 贵很多',
+                  '因为 SEO 见效比 GEO 快很多',
                   '因为大模型进行实时联网检索（如 ChatGPT Search / Perplexity）高度依赖被主流搜索引擎收录的高权重网页',
                   '因为 Google 和 OpenAI 是同一家公司',
                   '因为外贸买家只在 Google 搜索，从不使用 AI'
@@ -450,7 +451,7 @@ const ALL_COURSES: Course[] = [
     heroCase: '爱康医疗全年 91 项内容规划与 AI 推荐评分 95 分',
     relatedTool: {
       id: 'tool-ai-visibility',
-      name: 'AI 可见性测评 (旗舰工具)',
+      name: 'AI 可见性测评',
       type: 'ai_visibility',
     },
     executiveModuleSummary: '买家的第一站正在从搜索框迁移到 AI 对话框。做 GEO 就是让你在 ChatGPT、Perplexity 和 Gemini 给出的 3~5 个供应商名字中稳居第一梯队。',
@@ -511,7 +512,7 @@ const ALL_COURSES: Course[] = [
               }
             ],
             nextStep: {
-              label: '进入 AI 可见性测评（旗舰工具）',
+              label: '进入 AI 可见性测评',
               actionType: 'tool',
               targetId: 'tool-ai-visibility'
             }
@@ -579,9 +580,9 @@ const ALL_COURSES: Course[] = [
               ]
             },
             nextStep: {
-              label: '体验中心：GEO 优化前后效果对比',
+              label: '进入 AI 可见性测评',
               actionType: 'tool',
-              targetId: 'demo-geo'
+              targetId: 'tool-ai-visibility'
             }
           }
         ]
@@ -594,10 +595,10 @@ const ALL_COURSES: Course[] = [
           {
             id: 'lesson-c-10-2',
             moduleIndex: 10,
-            title: '10.2 案例实战：爱康医疗从 47 分到 95 分的数据口径客观说明',
-            summary: '明确客观口径：47→95 分为第三方工具 arobis.ai 站点信号就绪度，结合真实来自 chatgpt.com 的高价值引荐访问，讲真话体现专业敬畏。',
+            title: '10.2 案例实战：爱康医疗 47 分与 95 分的数据口径客观说明',
+            summary: '明确客观口径：47 分与 95 分分别是国内官网与新建海外官网的 GEO / SEO 评分，由第三方工具 arobis.ai 按同一口径测得，结合真实来自 chatgpt.com 的高价值引荐访问，讲真话体现专业敬畏。',
             durationMinutes: 18,
-            conceptContent: `在画册中我们公开了爱康医疗的实战成果：从原官网的 47 分跨越到新站的 95 分。在向客户汇报时，必须主动讲清数据口径：\n- 47 分到 95 分，属于权威第三方评估平台 arobis.ai 基于网站内容结构、定义完整性与信源就绪度的客观估算。\n- 更加确凿的业务成果，是来自 Google Analytics 4 后台的真实记录：chatgpt.com、perplexity 等 AI 域名作为 Referral（引荐流量）来源，连续数月源源不断带来海外骨科医院器械采购科工程师的访问，且平均停留时间达 4 分 35 秒。\n\n主动讲清口径，不搞数字游戏，是云端智荐作为专业出海工程师团队的立身之本。`,
+            conceptContent: `在画册中我们公开了爱康医疗的实战成果：现有国内官网 (ak-medical.net) 的 GEO / SEO 评分为 47 分，我们新建的海外官网 (ak-medical-global.com) 为 95 分。在向客户汇报时，必须主动讲清数据口径：\n- 这是两个站点之间的对比，而不是同一站点改造前后的变化；两个分数都由权威第三方评估平台 arobis.ai 基于网站内容结构、定义完整性与信源就绪度，按同一口径客观估算。\n- 更加确凿的业务成果，是来自 Google Analytics 4 后台的真实记录：chatgpt.com、perplexity 等 AI 域名作为 Referral（引荐流量）来源，连续数月源源不断带来海外骨科医院器械采购科工程师的访问，且平均停留时间达 4 分 35 秒。\n\n主动讲清口径，不搞数字游戏，是云端智荐作为专业出海工程师团队的立身之本。`,
             caseSnippet: {
               company: '爱康医疗',
               title: '骨科 3D 打印龙头企业的全球化 GEO 样本',
@@ -608,7 +609,7 @@ const ALL_COURSES: Course[] = [
             ],
             executiveTakeaway: '合规做 GEO，建立真实增值的企业数字资产；拒绝黑帽刷量和信息投毒，长效享受 AI 出海红利。',
             notebookLmPodcast: {
-              title: '【NotebookLM 决策者专线】爱康医疗 47 到 95 分背后的真实故事与专业敬畏',
+              title: '【NotebookLM 决策者专线】爱康医疗国内官网 47 分与海外新站 95 分背后的真实故事与专业敬畏',
               audioDuration: '09:55',
               hosts: ['Alex', 'Sam'],
               transcript: [
@@ -642,11 +643,6 @@ const ALL_COURSES: Course[] = [
     relatedService: 'AI 智能客服及系统对接',
     frictionPoint: '接不住',
     heroCase: '凌晨 03:12 美国客户询价，03:14 自动写入 CRM',
-    relatedTool: {
-      id: 'tool-loss-calc',
-      name: '询盘流失计算器',
-      type: 'loss_calc',
-    },
     executiveModuleSummary: '解决 12 小时跨时区时差痛点。AI 不是冷冰冰的关键词回复，而是基于企业知识库、能听懂专业术语、能分级高意向的 7×24 小时出海金牌销售助理。',
     modules: [
       {
@@ -680,9 +676,9 @@ const ALL_COURSES: Course[] = [
               ]
             },
             nextStep: {
-              label: '体验中心：AI 客服沙盒与凌晨三点模式',
-              actionType: 'tool',
-              targetId: 'demo-sandbox'
+              label: '规划 AI 客服方案',
+              actionType: 'configurator',
+              targetId: 'configurator'
             }
           }
         ]
@@ -717,9 +713,9 @@ const ALL_COURSES: Course[] = [
               ]
             },
             nextStep: {
-              label: '打开询盘流失计算器进行实测',
-              actionType: 'tool',
-              targetId: 'tool-loss-calc'
+              label: '预约 30 分钟深度诊断会',
+              actionType: 'booking',
+              targetId: 'booking'
             }
           }
         ]
@@ -738,11 +734,6 @@ const ALL_COURSES: Course[] = [
     relatedService: 'FDE 驻场工程师',
     frictionPoint: '连不上',
     heroCase: '三层建设 · 每周“观察-原型-试用-沉淀”',
-    relatedTool: {
-      id: 'tool-inquiry-flow',
-      name: '询盘与系统现状梳理',
-      type: 'inquiry_flow',
-    },
     executiveModuleSummary: '软件买了一堆却用不起来，AI 试了几次只停在演示，根子往往在于经验没写成标准、标准没装进系统。FDE 带着 AI 驻场一线，自下而上完成三层建设，对业务结果负责，离场时把能力留给企业。',
     modules: [
       {
@@ -882,9 +873,9 @@ const ALL_COURSES: Course[] = [
               ]
             },
             nextStep: {
-              label: '做一次询盘现状梳理',
-              actionType: 'tool',
-              targetId: 'tool-inquiry-flow'
+              label: '预约 60 分钟技术对接评估会',
+              actionType: 'booking',
+              targetId: 'booking'
             }
           }
         ]
@@ -902,8 +893,8 @@ const ALL_ROLE_LEARNING_PATHS: RoleLearningPath[] = [
     title: '老板 60 分钟看懂 AI 出海',
     targetRole: '决策者（董事长、总经理、出海项目投资人）',
     durationText: '约 60 分钟',
-    description: `无需技术细节，聚焦${SERVICE_COUNT_CN}门课的“决策者篇”，摸清投入预算、交付周期、避坑防雷与验收标准。`,
-    endGoal: '清晰判断要不要做、做哪几项、花多少钱、如何考核团队与服务商',
+    description: `无需技术细节，聚焦${SERVICE_COUNT_CN}门课的“决策者篇”，摸清投入构成、交付周期、避坑防雷与验收标准。`,
+    endGoal: '清晰判断要不要做、做哪几项、先做哪项、如何考核团队与服务商',
     featuredLessonIds: ['lesson-a-1-4', 'lesson-b-1-3', 'lesson-c-10-2', 'lesson-d-9-2', 'lesson-e-8-1'],
     recommendedToolId: 'tool-frictions',
   },

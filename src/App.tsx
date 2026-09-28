@@ -5,17 +5,13 @@ import { Footer } from './components/Footer';
 import { AiConsultantModal } from './components/AiConsultantModal';
 import { BookingModal } from './components/BookingModal';
 import { MySpaceModal } from './components/MySpaceModal';
-import { SalesConsoleModal } from './components/SalesConsoleModal';
-import { SupabaseModal } from './components/SupabaseModal';
 import { isTabId, TabId, tabTitle } from './components/navigation';
 
 // Views
 import { HomeView } from './views/HomeView';
 import { ServicesView } from './views/ServicesView';
 import { AcademyView } from './views/AcademyView';
-import { DiagnosisCenter } from './views/DiagnosisCenter';
 import { ConfiguratorView } from './views/ConfiguratorView';
-import { SandboxView } from './views/SandboxView';
 import { CasesView } from './views/CasesView';
 import { DealRoomView } from './views/DealRoomView';
 import { ResourcesView } from './views/ResourcesView';
@@ -34,8 +30,6 @@ function MainApp() {
   const [currentTab, setCurrentTab] = useState<TabId>(readTabFromHash);
   const [isBookingOpen, setIsBookingOpen] = useState(false);
   const [isMySpaceOpen, setIsMySpaceOpen] = useState(false);
-  const [isSalesConsoleOpen, setIsSalesConsoleOpen] = useState(false);
-  const [isSupabaseOpen, setIsSupabaseOpen] = useState(false);
   const [configuratorPrefill, setConfiguratorPrefill] = useState<any>(null);
 
   useEffect(() => {
@@ -70,6 +64,20 @@ function MainApp() {
 
   const openBooking = () => setIsBookingOpen(true);
 
+  // 站内唯一的自测工具是首页的 AI 可见性测评（#audit）
+  const goToAudit = () => {
+    navigate('home');
+    requestAnimationFrame(() => document.getElementById('audit')?.scrollIntoView({ block: 'start' }));
+  };
+
+  // 课程「下一步」与配套工具按目标分流
+  const handleCourseTarget = (targetId: string) => {
+    if (targetId === 'configurator') navigate('configurator');
+    else if (targetId === 'booking') openBooking();
+    else if (targetId.startsWith('resources')) navigate('resources');
+    else goToAudit();
+  };
+
   return (
     <div className="relative flex min-h-screen flex-col bg-canvas text-label">
       <button
@@ -85,8 +93,6 @@ function MainApp() {
         onNavigate={navigate}
         openBookingModal={openBooking}
         openMySpaceModal={() => setIsMySpaceOpen(true)}
-        openSalesConsoleModal={() => setIsSalesConsoleOpen(true)}
-        openSupabaseModal={() => setIsSupabaseOpen(true)}
       />
 
       <main id="main" tabIndex={-1} className="relative flex-1 outline-none">
@@ -95,17 +101,13 @@ function MainApp() {
         {currentTab === 'services' && (
           <ServicesView
             onGoToCourse={() => navigate('academy')}
-            onGoToDiagnosis={() => navigate('diagnosis')}
+            onGoToAudit={goToAudit}
             onGoToConfigurator={(combo) => handleNavigateToConfigurator({ packageType: combo })}
           />
         )}
 
         {currentTab === 'academy' && (
-          <AcademyView onGoToTool={() => navigate('diagnosis')} onGoToBooking={openBooking} />
-        )}
-
-        {currentTab === 'diagnosis' && (
-          <DiagnosisCenter onGoToConfigurator={handleNavigateToConfigurator} onGoToBooking={openBooking} />
+          <AcademyView onGoToTool={handleCourseTarget} onGoToBooking={openBooking} />
         )}
 
         {currentTab === 'configurator' && (
@@ -116,12 +118,8 @@ function MainApp() {
           />
         )}
 
-        {currentTab === 'sandbox' && (
-          <SandboxView onGoToConfigurator={() => handleNavigateToConfigurator({ packageType: 'package-single' })} />
-        )}
-
         {currentTab === 'cases' && (
-          <CasesView onGoToDiagnosis={() => navigate('diagnosis')} onGoToCourse={() => navigate('academy')} />
+          <CasesView onGoToAudit={goToAudit} onGoToCourse={() => navigate('academy')} />
         )}
 
         {currentTab === 'deal-room' && <DealRoomView onGoToBooking={openBooking} />}
@@ -129,11 +127,7 @@ function MainApp() {
         {currentTab === 'resources' && <ResourcesView onGoToLesson={() => navigate('academy')} />}
       </main>
 
-      <Footer
-        onNavigate={navigate}
-        openSalesConsoleModal={() => setIsSalesConsoleOpen(true)}
-        openSupabaseModal={() => setIsSupabaseOpen(true)}
-      />
+      <Footer onNavigate={navigate} />
 
       {/* AI 售前顾问入口：全站唯一的浮动按钮 */}
       {!isAiAdvisorOpen && (
@@ -150,16 +144,7 @@ function MainApp() {
       {/* 全局弹窗 */}
       <AiConsultantModal />
       <BookingModal isOpen={isBookingOpen} onClose={() => setIsBookingOpen(false)} />
-      <MySpaceModal
-        isOpen={isMySpaceOpen}
-        onClose={() => setIsMySpaceOpen(false)}
-        openSupabaseModal={() => {
-          setIsMySpaceOpen(false);
-          setIsSupabaseOpen(true);
-        }}
-      />
-      <SalesConsoleModal isOpen={isSalesConsoleOpen} onClose={() => setIsSalesConsoleOpen(false)} />
-      <SupabaseModal isOpen={isSupabaseOpen} onClose={() => setIsSupabaseOpen(false)} />
+      <MySpaceModal isOpen={isMySpaceOpen} onClose={() => setIsMySpaceOpen(false)} />
 
       {/* Toast：顶部居中的状态提示 */}
       {toastMessage && (

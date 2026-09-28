@@ -1,13 +1,13 @@
 import React, { useRef, useState } from 'react';
 import {
   AlertTriangle,
-  Calculator,
   Check,
   CheckCircle2,
   ChevronRight,
   Globe,
-  Laptop2,
+  ListChecks,
   Loader2,
+  Lock,
   Radar,
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
@@ -83,31 +83,32 @@ const ALL_SERVICES: { key: ServiceKey; title: string; desc: string; link: string
 ];
 const SERVICES = SHOW_FDE ? ALL_SERVICES : ALL_SERVICES.filter((service) => service.key !== 'fde');
 
-const TOOLS: { tab: TabId; icon: React.ComponentType<{ className?: string }>; title: string; desc: string; link: string }[] = [
+// 售前工具：tab 为 'audit' 时滚动到首页的 AI 可见性测评，其余跳转到对应页面
+const TOOLS: { tab: TabId | 'audit'; icon: React.ComponentType<{ className?: string }>; title: string; desc: string; link: string }[] = [
   {
-    tab: 'diagnosis',
+    tab: 'audit',
     icon: Radar,
-    title: '五断点全量体检',
-    desc: '回答 12 道客观题，即刻看清企业在“看不见、读不懂、不被信、接不住、连不上”上的破损程度。',
-    link: '开始体检',
+    title: 'AI 可见性测评',
+    desc: '输入官网或品牌，看 ChatGPT、Perplexity 与 Google 是否找得到你，以及断点在哪里。',
+    link: '开始测评',
   },
   {
     tab: 'configurator',
-    icon: Calculator,
-    title: '方案组合与预算配置',
-    desc: `自由组合独立站、SEO、GEO${SHOW_FDE ? '、AI 客服与 FDE 驻场' : ' 与 AI 客服'}，实时得到预算区间、排期与交付物清单。`,
-    link: '测算预算',
+    icon: ListChecks,
+    title: '方案组合与交付规划',
+    desc: `自由组合独立站、SEO、GEO${SHOW_FDE ? '、AI 客服与 FDE 驻场' : ' 与 AI 客服'}，实时得到交付周期、阶段排期与交付物清单。`,
+    link: '规划方案',
   },
   {
-    tab: 'sandbox',
-    icon: Laptop2,
-    title: '海外买家交互沙盒',
-    desc: '扮演德国工程师、美国分销商或中东医院代表，看 AI 客服如何在凌晨三点给出有据可查的回答。',
-    link: '进入体验',
+    tab: 'deal-room',
+    icon: Lock,
+    title: '专属方案空间',
+    desc: '保存的方案自动生成共享空间，双方在这里推进行动计划、答疑讨论与在线签约。',
+    link: '进入方案空间',
   },
 ];
 
-const prefersReducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const prefersReducedMotion =() => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 export const HomeView: React.FC<HomeViewProps> = ({ onNavigate, openBookingModal }) => {
   const { logLeadActivity, saveDiagnosis, showToast } = useApp();
@@ -125,11 +126,11 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate, openBookingModal
   const PRESETS = [
     {
       name: '爱康医疗',
-      url: 'www.ak-medical.net',
+      url: 'www.ak-medical-global.com',
       industry: '高端医疗器械与耗材',
       region: '欧洲市场 (重点德国/英国)',
       result: {
-        target: '爱康医疗 (www.ak-medical.net)',
+        target: '爱康医疗 (www.ak-medical-global.com)',
         region: '欧洲市场 (重点德国/英国)',
         industry: '高端医疗器械与耗材',
         totalScore: 92,
@@ -241,7 +242,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate, openBookingModal
 
       // Log activity in CRM and notify user
       logLeadActivity(`完成了【${targetName}】官网/品牌 GEO & SEO 智能测评`, 20, { target: targetName });
-      saveDiagnosis('ai_visibility', '官网 GEO/SEO 即时评估', customPreset ? customPreset.result.totalScore : 48, '官网与品牌出海能力测绘', {});
+      saveDiagnosis('ai_visibility', 'AI 可见性测评', customPreset ? customPreset.result.totalScore : 48, '官网与品牌出海能力测绘', {});
       showToast('评估报告已生成');
     }, 2000);
   };
@@ -285,10 +286,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate, openBookingModal
         <div className="tile mx-auto max-w-3xl">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <h2 className="text-title-2">
-                <span className="inline-block">品牌与官网</span>
-                <span className="inline-block">出海就绪度评估</span>
-              </h2>
+              <h2 className="text-title-2">AI 可见性测评</h2>
               <p className="mt-2 text-body text-label-secondary">
                 输入英文官网或品牌名，探查海外大模型收录与 Google 搜索排位。
               </p>
@@ -480,11 +478,8 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate, openBookingModal
                   <button type="button" onClick={openBookingModal} className="btn btn-primary">
                     预约 45 分钟深度复盘
                   </button>
-                  <button type="button" onClick={() => onNavigate('diagnosis')} className="btn btn-secondary">
-                    完成 12 项完整体检
-                  </button>
                   <button type="button" onClick={() => onNavigate('configurator')} className="link justify-center px-2 py-2 text-body sm:justify-start">
-                    测算方案预算
+                    规划服务方案
                     <ChevronRight />
                   </button>
                 </div>
@@ -544,7 +539,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate, openBookingModal
           <p className="eyebrow">售前工具</p>
           <h2 className="mt-3 text-headline">
             <span className="inline-block">见销售之前，</span>
-            <span className="inline-block">先看清问题与预算。</span>
+            <span className="inline-block">先看清问题与方案。</span>
           </h2>
           <p className="mx-auto mt-5 max-w-2xl text-intro text-label-secondary">面向出海决策人的自助工具，免注册，打开即用。</p>
         </Reveal>
@@ -556,7 +551,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate, openBookingModal
               <button
                 key={tool.tab}
                 type="button"
-                onClick={() => onNavigate(tool.tab)}
+                onClick={() => (tool.tab === 'audit' ? scrollToAudit() : onNavigate(tool.tab))}
                 className="tile interactive group flex flex-col items-start"
               >
                 <Icon className="h-8 w-8 text-label" />
@@ -593,7 +588,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate, openBookingModal
               name: '爱康医疗',
               stat: '47 → 95',
               statUnit: '分',
-              statLabel: 'AI 可见性就绪度',
+              statLabel: 'GEO / SEO 评分 · 国内官网 → 新建海外官网',
               desc: '告别画册式官网，针对 4 类海外医疗决策者精准建模，系统化注入 91 项技术文献与临床证据链。ChatGPT 连续数月带来真实的欧洲采购引荐。',
               pains: '看不见 · 不被信',
             },
@@ -641,11 +636,11 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate, openBookingModal
             <span className="inline-block">具备拿下海外大单的转化能力。</span>
           </h2>
           <p className="mx-auto mt-5 max-w-2xl text-intro text-label-secondary">
-            免费完成 12 项断点自测，或预约 45 分钟架构师闭门复盘，获取专属《出海 GEO & SEO 改善路线图》。
+            免费完成 AI 可见性测评，或预约 45 分钟架构师闭门复盘，获取专属《出海 GEO & SEO 改善路线图》。
           </p>
           <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
-            <button type="button" onClick={() => onNavigate('diagnosis')} className="btn btn-primary btn-lg">
-              开始 12 项体检
+            <button type="button" onClick={scrollToAudit} className="btn btn-primary btn-lg">
+              开始 AI 可见性测评
             </button>
             <button type="button" onClick={openBookingModal} className="btn btn-secondary btn-lg">
               预约 45 分钟诊断
