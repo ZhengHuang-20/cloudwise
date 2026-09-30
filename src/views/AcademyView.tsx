@@ -66,7 +66,7 @@ export const AcademyView: React.FC<AcademyViewProps> = ({ onGoToTool }) => {
       <PageHeader
         eyebrow="出海学院"
         title={`${SERVICE_COUNT_CN}门专业课，全部公开`}
-        intro="凡是涉及海外采购标准的工程细节，都在这里说透。买家在站内自主学懂，销售见面前不必再做低效的基础说服。"
+        intro="海外采购标准里的工程细节，这里都写明白。先自己学懂，见面沟通时就不必从头解释基础。"
       >
         <div className="mx-auto flex max-w-xs items-center gap-3">
           <div className="meter flex-1" aria-hidden="true">
@@ -139,7 +139,7 @@ export const AcademyView: React.FC<AcademyViewProps> = ({ onGoToTool }) => {
             <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between">
               <div className="max-w-3xl">
                 <p className="text-caption text-label-secondary">
-                  课程 {currentCourse.code} · {currentTitle.short} · 攻克「{currentCourse.frictionPoint}」
+                  课程 {currentCourse.code} · {currentTitle.short} · 对应卡点：{currentCourse.frictionPoint}
                 </p>
                 <h2 id="course-title" className="mt-2 text-title-1">
                   {currentTitle.tagline}

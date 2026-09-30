@@ -26,81 +26,81 @@ export const ServicesView: React.FC<ServicesViewProps> = ({
     deliverables: string[];
     courseId: string;
     caseName: string;
-    philosophicalNote: string;
+    judgement: string;
   }[] = [
     {
       key: 'site',
       code: 'A',
-      title: '认知图式海外独立站',
-      friction: '读不懂 · 语法断点',
-      oneLiner: '针对海外采购主管、技术总监与合规官三类读者的严密命题模型',
-      desc: '彻底清算“中文画册直译”的语言幻觉。工业级出海网站不是艺术品，而是实在的逻辑投影：将企业制造能力分解为参数公差范围、国际标准合规编号与可下载的工程白皮书，消除海外工程买家的阅读不信任。',
+      title: '海外独立站（三读者架构）',
+      friction: '读不懂',
+      oneLiner: '为采购主管、技术总监、合规官各自准备他们要找的页面。',
+      desc: '很多企业的英文站是中文画册直译，海外工程师找不到公差、标准编号和可下载的资料，也就无从判断你是否可靠。我们把制造能力整理成参数与公差范围、国际标准合规编号和可下载的工程白皮书，让每类读者一眼找到自己要的。',
       deliverables: [
-        '三读者决策层级架构（采购/技术/合规精准分流）',
-        '全球 Core Web Vitals 测速优化（海外节点 <1.8s 秒开）',
-        'Schema.org 工业知识图谱机器可读结构化元数据',
-        '行为探针与线索数据直连企业私有 CRM'
+        '按采购、技术、合规三类读者分流的页面结构',
+        'Core Web Vitals 优化，目标：海外主要地区 LCP ≤ 1.8 秒',
+        'Schema.org 结构化数据，便于搜索引擎与 AI 读取',
+        '访客行为与表单线索同步到企业自己的 CRM'
       ],
       courseId: 'A',
-      caseName: '爱康医疗新建海外官网 GEO / SEO 评分 95 分',
-      philosophicalNote: '命题的意义在于其逻辑结构。无法被海外工程师验证的技术指标，等同于无意义的噪音。'
+      caseName: '爱康医疗：新建海外官网 GEO / SEO 评分 95 分（国内官网为 47 分，是两个不同站点）',
+      judgement: '工程师核对不了的参数，不会被当作依据。所以先把能核对的东西摆出来：公差、标准编号、检测报告。'
     },
     {
       key: 'seo',
       code: 'B',
-      title: '采购级语义搜索基建（外贸 SEO）',
-      friction: '看不见 · 语义断点',
-      oneLiner: '直击欧美工业采购招标核心词库，建立前两页事实存在',
-      desc: '拒斥“堆砌泛词与买刷流量”的无效操作。严格遵循 Google Search Essentials 与 E-E-A-T 体系，搭建信息型、对比型、采购型 60 组外贸高商业价值核心词库，一词一页严密映射，让您的制造实体在欧美采购搜索中成为不可忽略的事实。',
+      title: '外贸 SEO：采购级核心词库',
+      friction: '看不见',
+      oneLiner: '买家搜什么词，你的页面就出现在那个词下面。',
+      desc: '不堆泛词，不买流量。遵循 Google Search Essentials 与 E-E-A-T，建立信息型、对比型、采购型共 60 组核心词，一个词对应一个页面，让欧美买家在采购搜索中有机会看到你。',
       deliverables: [
-        '60 组外贸核心采购词一词一页精准映射',
-        '深度技术白皮书与工程规格主题内容集群',
-        '欧美高权重行业协会与权威媒体数字公关外链',
-        'GA4 全链路商机归因与转化漏洞监测'
+        '60 组外贸核心采购词，一词一页',
+        '技术白皮书与工程规格主题内容',
+        '行业协会与专业媒体的外部链接（不买卖链接）',
+        '用 GA4 追踪询盘来源与转化流失的位置'
       ],
       courseId: 'B',
-      caseName: '泰宁科创 60 组核心词覆盖欧美市政采购',
-      philosophicalNote: '语言的界限即世界的界限。若企业未进入海外采购的词汇系统，在商业逻辑中便等于不存在。'
+      caseName: '泰宁科创：60 组英文核心词在 Google 欧美主要地区排名前两页',
+      judgement: '买家搜不到你，就不会知道你。所以先弄清他们搜什么词，再让页面对得上。'
     },
     {
       key: 'geo',
       code: 'C',
-      title: '生成式权威信源协议（出海 GEO）',
-      friction: '不被信 · 证据断点',
-      oneLiner: '将企业工程专利与合规卷宗，作为客观事实写入大模型推荐库',
-      desc: '大模型时代出海的先锋防御与截流基建。当海外买家向 ChatGPT、Perplexity 或 Google SGE 询问行业推荐供应商时，系统通过第三方学术索引、国际认证评测与真实地标工程证据链，确保 AI 直接调取并输出您的企业名录。',
+      title: '出海 GEO：让 AI 引用你的资料',
+      friction: '不被信',
+      oneLiner: '把企业的专利、认证与工程案例整理成 AI 能查证、愿意引用的公开资料。',
+      desc: '海外买家向 ChatGPT、Perplexity 或 Google AI 概览询问推荐供应商时，AI 会引用它能查到的公开资料。我们通过第三方学术索引、认证与评测机构、真实工程案例，整理你的证据链，提高被引用的机会。我们无法保证 AI 一定推荐你，所以每月用同一组问题复测并汇报。',
       deliverables: [
-        '海外决策者提问意图簇与大模型提示词挖掘',
-        '全年度高权重技术卷宗与第三方学术背书规划',
-        '欧美权威行业媒体与评测报告知识图谱注入',
-        '月度主流 AI 平台推荐能见度探针与竞品对标月报'
+        '整理海外决策者会问 AI 的问题（问题簇）',
+        '全年技术资料与第三方背书规划',
+        '在行业媒体与评测报告中建立可被引用的公开来源',
+        '每月用固定问题集测试主流 AI 平台，并与竞品对比的月报'
       ],
       courseId: 'C',
-      caseName: '爱康医疗在 ChatGPT 骨科器械推荐中连续捕获真实意向',
-      philosophicalNote: '信念需要证据支撑。缺乏第三方知识图谱背书的主张，在采购审计中必然被判定为伪。'
+      caseName: '爱康医疗：ChatGPT、Perplexity 数月持续带来引荐访问',
+      judgement: '没有出处的说法，AI 不会引用，采购方也不会采信。'
     },
     {
       key: 'chat',
       code: 'D',
-      title: '时态确定性 AI 转化引擎',
-      friction: '接不住 · 时态断点',
-      oneLiner: '跨越 12 小时时差黑洞，以零延迟因果反馈阻断商机湮灭',
-      desc: '彻底根除“欧美买家深夜来信、次日人工回复早已找了竞品”的致命时差损耗。基于企业专属技术参数库，2 秒内以多语种母语级精度解答公差、认证与交期质询，实时提取采购特征并判定意向等级。',
+      title: 'AI 智能客服与系统对接',
+      friction: '接不住',
+      oneLiner: '欧美买家深夜来信，也能在几秒内得到第一次回复。',
+      desc: '欧美买家在他们的工作时间来信，往往正是北京时间的深夜；等第二天人工回复，买家可能已经联系了别的供应商。AI 客服依据企业自己的技术参数库，用多语种回答公差、认证、交期等问题，提取采购信息并判断意向等级；超出资料范围的问题转给销售。',
       deliverables: [
-        '企业专属工程知识卷宗清洗与多语种微调',
-        '官网、邮件、WhatsApp 全渠道零时差接入',
-        '采购数量、交期、目标港等 12 维参数精准抽取',
-        '高价值线索毫秒级推送企业微信与销售 CRM'
+        '整理企业参数与资质资料，建立多语种知识库',
+        '官网、邮件、WhatsApp 等渠道接入',
+        '抽取采购数量、交期、目标港等 12 项询盘信息',
+        '高意向线索即时推送到企业微信与 CRM'
       ],
       courseId: 'D',
-      caseName: '凌晨 03:12 欧美采购质询，03:14 自动沉淀商业档案',
-      philosophicalNote: '时间是因果链的介质。响应的延迟必然导致交易因果链条的断裂。'
+      caseName: '示例：凌晨 03:12 收到欧美采购询问，03:14 完成回复并生成线索档案',
+      judgement: '买家等不到回复，就会去问别人。所以第一次回复要快，而且要答对。'
     },
     {
       key: 'fde',
       code: 'E',
       title: 'AI 驱动的三层建设（FDE 驻场）',
-      friction: '连不上 · 落地断点',
+      friction: '连不上',
       oneLiner: '带着 AI 下到业务一线，把经验写成标准，把标准装进系统，再让 AI 在系统上干活',
       desc: 'FDE（前线部署工程师）源自 Palantir，如今 OpenAI、Anthropic 也在用它跨越“演示惊艳、上线艰难”的鸿沟。多数外贸企业的流程写在老业务员的经验和微信里，直接上 AI 只能做出演示。FDE 驻场跟岗，用 AI 加速完成标准化、信息化、智能化三层建设，对业务结果负责，离场时把标准、系统、数据和会用的人一起留给企业。',
       deliverables: [
@@ -110,8 +110,8 @@ export const ServicesView: React.FC<ServicesViewProps> = ({
         '源码、数据与文档归企业，同步培养内部 AI 骨干'
       ],
       courseId: 'E',
-      caseName: '询盘分级：一周内从凭经验判断到 AI 按规则打标',
-      philosophicalNote: '没有标准化的智能化，只是把混乱自动化。AI 放大的永远是企业已有的秩序。'
+      caseName: '示例：一周内，询盘分级从凭经验判断变为 AI 按规则打标',
+      judgement: '没有标准化的智能化，只是把混乱自动化。AI 只会放大企业已有的秩序。'
     },
   ];
   const subsystems = SHOW_FDE ? allSubsystems : allSubsystems.filter((svc) => svc.key !== 'fde');
@@ -125,11 +125,11 @@ export const ServicesView: React.FC<ServicesViewProps> = ({
     <div>
       <PageHeader
         eyebrow={`${SERVICE_COUNT_CN}项服务`}
-        title={`全球获客系统的${SERVICE_COUNT_CN}个子系统`}
-        intro={`一套知识资产，${SERVICE_COUNT_CN}个子系统协同工作，构筑符合欧美工程与合规审计标准的获客转化系统，终结海外订单的无序流失。`}
+        title={`${SERVICE_COUNT_CN}项服务，各解决一个卡点`}
+        intro={`${SERVICE_COUNT_CN}项服务共用同一套企业资料：独立站、搜索、AI 推荐、客服和内部系统，各解决一个卡点，内容可以互相复用。`}
       >
         {/* 页内索引 */}
-        <nav aria-label="子系统索引" className="flex flex-wrap justify-center gap-2">
+        <nav aria-label="服务索引" className="flex flex-wrap justify-center gap-2">
           {subsystems.map((svc) => {
             const identity = SERVICE_IDENTITY[svc.key];
             return (
@@ -157,7 +157,7 @@ export const ServicesView: React.FC<ServicesViewProps> = ({
                 <div className="flex items-center gap-3">
                   <Icon className={`h-8 w-8 ${identity.text}`} />
                   <span className="text-caption text-label-secondary">
-                    子系统 {svc.code} · 破除「{svc.friction}」
+                    服务 {svc.code} · 对应卡点：{svc.friction}
                   </span>
                 </div>
                 <h2 id={`service-${svc.code}-title`} className="mt-5 text-title-1">
@@ -172,8 +172,8 @@ export const ServicesView: React.FC<ServicesViewProps> = ({
                 <p className="mt-4 text-body text-label-secondary">{svc.desc}</p>
 
                 <blockquote className="mt-6 border-l-2 border-separator-strong pl-4 text-body text-label-secondary">
-                  <span className="font-semibold text-label">核心商业事实　</span>
-                  {svc.philosophicalNote}
+                  <span className="font-semibold text-label">我们的判断　</span>
+                  {svc.judgement}
                 </blockquote>
 
                 <h3 className="mt-10 text-title-3">交付标准</h3>
@@ -190,9 +190,9 @@ export const ServicesView: React.FC<ServicesViewProps> = ({
               {/* FDE 需要讲清方法论：三层图横跨两栏，dense 排布让右侧栏回填第一行 */}
               {svc.key === 'fde' && <FdeBuildLayers className="lg:col-span-2" />}
 
-              <aside className="well self-start" aria-label={`${svc.title}：实战验证与下一步`}>
+              <aside className="well self-start" aria-label={`${svc.title}：案例与下一步`}>
                 <dl>
-                  <dt className="text-caption text-label-secondary">实战验证</dt>
+                  <dt className="text-caption text-label-secondary">案例</dt>
                   <dd className="mt-1 text-body">{svc.caseName}</dd>
                 </dl>
                 <button type="button" onClick={() => onGoToCourse(svc.courseId)} className="btn btn-secondary btn-block mt-6">
@@ -209,7 +209,7 @@ export const ServicesView: React.FC<ServicesViewProps> = ({
             <span className="inline-block">不确定从哪一项开始？</span>
           </h2>
           <p className="mx-auto mt-5 max-w-2xl text-intro text-label-secondary">
-            大多数企业从“独立站 + SEO + GEO”获客组合起步。组合后即可看到交付周期、阶段排期与交付物清单。
+            常见的起点是“独立站 + SEO + GEO”获客组合。组合后可以看到交付周期、阶段排期与交付物清单。
           </p>
           <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
             <button

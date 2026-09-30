@@ -51,7 +51,7 @@ export const MySpaceModal: React.FC<MySpaceModalProps> = ({ isOpen, onClose }) =
       open={isOpen}
       onClose={onClose}
       size="lg"
-      title={user?.name || '出海探索者'}
+      title={user?.name || '访客'}
       description={`${user?.role || '决策者'} · ${user?.companyName || '出海企业'}`}
       leading={
         <span className="avatar h-10 w-10 text-body" aria-hidden="true">
@@ -68,7 +68,7 @@ export const MySpaceModal: React.FC<MySpaceModalProps> = ({ isOpen, onClose }) =
             { id: 'progress', label: '学习进度', icon: GraduationCap },
             { id: 'diagnoses', label: `测评档案 ${diagnoses.length}`, icon: Activity },
             { id: 'proposals', label: `方案草案 ${savedProposals.length}`, icon: FileText },
-            { id: 'certificate', label: '能力认证', icon: Award },
+            { id: 'certificate', label: '学习证明', icon: Award },
             { id: 'profile', label: '企业档案', icon: Sliders },
           ]}
         />
@@ -157,18 +157,18 @@ export const MySpaceModal: React.FC<MySpaceModalProps> = ({ isOpen, onClose }) =
             <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-fill">
               <Award className="h-8 w-8" />
             </span>
-            <p className="mt-6 text-caption text-label-secondary">AI 出海实战能力结业证书</p>
-            <h3 className="mt-1 text-title-2">出海获客能力认证</h3>
+            <p className="mt-6 text-caption text-label-secondary">学习完成证明</p>
+            <h3 className="mt-1 text-title-2">已完成出海获客课程学习</h3>
             <p className="mt-2 text-body text-label-secondary">
               授予 {user?.name} · {user?.companyName}
             </p>
 
             <ul className="mt-8 space-y-3 text-left">
               {[
-                '掌握独立站三读者架构与 Core Web Vitals 技术规范',
-                '掌握 Google 60 组外贸核心词体系与 E-E-A-T 质量标准',
-                '掌握 GEO 六步闭环与海外 AI 大模型推荐机制',
-                '掌握 7×24 小时出海 AI 客服知识库建设与 CRM 直连',
+                '学习了独立站三读者架构与 Core Web Vitals 技术规范',
+                '学习了 Google 60 组外贸核心词体系与 E-E-A-T 质量标准',
+                '学习了 GEO 六步闭环与海外 AI 引用来源的机制',
+                '学习了 7×24 小时出海 AI 客服知识库建设与 CRM 对接',
               ].map((item) => (
                 <li key={item} className="flex gap-3 text-body">
                   <Check className="mt-1 h-5 w-5 shrink-0 text-success" />

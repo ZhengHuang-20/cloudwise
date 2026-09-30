@@ -54,7 +54,7 @@ func (a *App) handleChat(w http.ResponseWriter, r *http.Request) {
 - 职位/角色: %s
 - 企业名称: %s
 - 行业领域: %s
-- 已测断点: %s
+- 已测卡点: %s
 
 访客最新消息：
 "%s"
@@ -91,7 +91,7 @@ func (a *App) handleChat(w http.ResponseWriter, r *http.Request) {
 				"extractedFields":     map[string]any{},
 				"recommendedServices": []string{"出海GEO优化", "AI智能客服及系统对接"},
 				"suggestedNextAction": "建议在首页完成“AI 可见性测评”，免费查看品牌在 ChatGPT、Perplexity 与 Google 中的表现。",
-				"sourceCitations":     []string{"《云端智荐知识库 · 售前五大断点总览》"},
+				"sourceCitations":     []string{"《云端智荐知识库 · 售前五个卡点总览》"},
 			})
 			return
 		}
@@ -120,7 +120,7 @@ func (a *App) chatFallback(req chatRequest) map[string]any {
 	intentReason := "常规业务咨询"
 	services := []string{}
 	next := "建议在首页完成“AI 可见性测评”，再用“方案规划”匹配最适合的服务组合。"
-	citations := []string{"《云端智荐 AI 出海白皮书》", "《出海企业五大断点治理指南》"}
+	citations := []string{"《云端智荐 AI 出海白皮书》", "《出海企业五个卡点治理指南》"}
 
 	switch {
 	case has("geo", "chatgpt", "ai推荐", "可见性"):
@@ -157,7 +157,7 @@ func (a *App) chatFallback(req chatRequest) map[string]any {
 		if show {
 			connect = "经验、系统与 AI 没打通，由 FDE 驻场解决"
 		}
-		answer = fmt.Sprintf("您好！我是云端智荐 AI 售前顾问。我们专注解决中国企业出海获客全链路的五大断点：看不见（SEO/GEO）、读不懂（独立站）、不被信（权威内容）、接不住（AI 客服）、连不上（%s）。\n\n您可以告诉我您企业的主营产品和目前海外获客遇到的主要困扰，我将为您梳理最精准的破局路径。", connect)
+		answer = fmt.Sprintf("您好！我是云端智荐 AI 售前顾问。我们专注解决中国企业出海获客全链路的五个卡点：看不见（SEO/GEO）、读不懂（独立站）、不被信（权威内容）、接不住（AI 客服）、连不上（%s）。\n\n您可以告诉我您企业的主营产品和目前海外获客遇到的主要困扰，我将为您梳理最精准的破局路径。", connect)
 		intent = "LOW"
 		intentReason = "初次探索交流"
 		services = append(services, "AI 可见性测评", "独立站建站")
