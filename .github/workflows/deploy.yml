@@ -20,16 +20,48 @@ jobs:
     timeout-minutes: 20
 
     steps:
+      - name: 校验 Secrets 是否配置
+        run: |
+          MISSING=""
+          if [ -z "${{ secrets.DEPLOY_SSH_KEY }}" ]; then MISSING="$MISSING DEPLOY_SSH_KEY"; fi
+          if [ -z "${{ secrets.SSH_HOST }}" ];       then MISSING="$MISSING SSH_HOST"; fi
+          if [ -z "${{ secrets.SSH_USER }}" ];       then MISSING="$MISSING SSH_USER"; fi
+
+          if [ -n "$MISSING" ]; then
+            echo "::error::以下 Secret 未配置或值为空：$MISSING"
+            echo ""
+            echo "请在仓库 Settings → Secrets and variables → Actions 中补齐："
+            echo "  DEPLOY_SSH_KEY  部署私钥全文（必须含 BEGIN / END 两行）"
+            echo "  SSH_HOST        服务器公网 IP"
+            echo "  SSH_USER        SSH 登录用户名"
+            echo ""
+            echo "注意：要加在 Secrets 标签页，不是 Variables 标签页。"
+            exit 1
+          fi
+
+          echo "三个 Secret 均已配置"
+
       - name: 准备 SSH 密钥
         run: |
           mkdir -p ~/.ssh
           printf '%s\n' "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
+
+          if ! ssh-keygen -l -f ~/.ssh/deploy_key > /dev/null 2>&1; then
+            echo "::error::DEPLOY_SSH_KEY 不是有效的私钥。常见原因："
+            echo "  1. 复制时漏掉了 -----BEGIN/-----END 行"
+            echo "  2. 中间被换行截断或多了空格"
+            echo "  3. 误把 .pub 公钥粘贴进去了"
+            echo "私钥内容开头应为 -----BEGIN OPENSSH PRIVATE KEY-----"
+            exit 1
+          fi
+          echo "私钥指纹：$(ssh-keygen -lf ~/.ssh/deploy_key | awk '{print $2}')"
+
           ssh-keyscan -H "${{ secrets.SSH_HOST }}" >> ~/.ssh/known_hosts 2>/dev/null
+          echo "已记录主机密钥"
 
       - name: 触发远程部署
         run: |
-          # 手动触发时带 force，强制重建；push 触发则由服务器判断代码是否有变化
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             CMD="deploy force"
           else
@@ -59,7 +91,7 @@ jobs:
             fi
             sleep 5
           done
-          echo "健康检查未通过，请登录服务器执行 docker logs cloudwise 排查"
+          echo "::error::健康检查未通过，请登录服务器执行 docker logs cloudwise 排查"
           exit 1
 
       - name: 清理密钥
