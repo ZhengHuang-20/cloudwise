@@ -8,9 +8,13 @@ import { api, ApiError } from './api';
 export interface WebSource {
   title: string;
   uri: string;
+  /** 来源域名；P0 时期缓存的报告没有这个字段 */
+  domain?: string;
 }
 
 export interface AuditEvidence {
+  /** 平台名（ChatGPT / Perplexity / Gemini）；P0 时期的报告没有，均为 Gemini */
+  engine?: string;
   question: string;
   branded: boolean;
   answer: string;
@@ -41,6 +45,17 @@ export interface SiteCheck {
   score: number;
 }
 
+export interface AuditEngineResult {
+  id: string;
+  name: string;
+  answers: number;
+  failed: number;
+  mentionRate: number;
+  citationRate: number;
+  brandKnowledge: number;
+  avgPosition: number;
+}
+
 export interface AuditReport {
   id: string;
   domain: string;
@@ -65,7 +80,10 @@ export interface AuditReport {
     readability: number;
     avgPosition: number;
   };
+  /** 平台名，顿号分隔 */
   engine: string;
+  /** 各平台的统计；P0 时期的报告没有 */
+  engines?: AuditEngineResult[];
   questions: number;
   samples: number;
   answers: number;
@@ -82,6 +100,7 @@ export interface AuditJob {
   step: number;
   done: number;
   total: number;
+  engines: string[] | null;
   error: string;
   report: AuditReport | null;
 }
@@ -127,19 +146,25 @@ export const sampleReport = (domain: string): AuditReport => {
     },
     totalScore: 34,
     level: '待改进',
-    metrics: { mentionRate: 17, citationRate: 6, brandKnowledge: 50, readability: 58, avgPosition: 5 },
-    engine: 'Gemini（Google 搜索）',
+    metrics: { mentionRate: 17, citationRate: 6, brandKnowledge: 50, readability: 58, avgPosition: 4.5 },
+    engine: 'ChatGPT、Perplexity、Gemini',
+    engines: [
+      { id: 'openai', name: 'ChatGPT', answers: 16, failed: 0, mentionRate: 17, citationRate: 6, brandKnowledge: 50, avgPosition: 5 },
+      { id: 'perplexity', name: 'Perplexity', answers: 16, failed: 0, mentionRate: 33, citationRate: 13, brandKnowledge: 50, avgPosition: 4 },
+      { id: 'gemini', name: 'Gemini', answers: 16, failed: 0, mentionRate: 0, citationRate: 0, brandKnowledge: 50, avgPosition: 0 },
+    ],
     questions: 8,
     samples: 2,
-    answers: 16,
+    answers: 48,
     shareOfVoice: [
-      { name: '国际头部品牌 A', mentions: 10, isSelf: false },
-      { name: '欧洲品牌 B', mentions: 8, isSelf: false },
-      { name: '区域品牌 C', mentions: 5, isSelf: false },
-      { name: brand, mentions: 2, isSelf: true },
+      { name: '国际头部品牌 A', mentions: 28, isSelf: false },
+      { name: '欧洲品牌 B', mentions: 21, isSelf: false },
+      { name: '区域品牌 C', mentions: 12, isSelf: false },
+      { name: brand, mentions: 6, isSelf: true },
     ],
     evidence: [
       {
+        engine: 'ChatGPT',
         question: 'Who are the leading manufacturers of industrial products?',
         branded: false,
         answer:
@@ -153,7 +178,7 @@ export const sampleReport = (domain: string): AuditReport => {
     ],
     site: null,
     findings: [
-      `GEO：以海外买家身份提出 6 个不带品牌名的采购问题，12 次回答中有 17% 提到了 ${brand}，平均排在第 5.0 位`,
+      `GEO：以海外买家身份向 ChatGPT、Perplexity、Gemini 提出 6 个不带品牌名的采购问题（共 36 次回答），平均 17% 的回答提到了 ${brand}（ChatGPT 17%、Perplexity 33%、Gemini 0%），平均排在第 4.5 位`,
       '引用：AI 回答引用的网页里很少出现官网，AI 的判断依据主要来自第三方网站',
       `品牌认知：直接询问 ${brand} 时，AI 只能给出笼统介绍`,
     ],

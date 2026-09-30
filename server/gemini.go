@@ -48,10 +48,12 @@ func (g *Gemini) GenerateJSON(ctx context.Context, system, prompt string, temper
 	return res.text, err
 }
 
-// WebSource 是联网搜索回答引用的网页。Title 通常是来源域名，URI 是 Google 的跳转链接。
+// WebSource 是联网搜索回答引用的网页。Gemini 的 Title 是来源域名、URI 是 Google 的跳转链接；
+// 其他平台的 URI 是原始链接。Domain 统一为来源域名（不含 www.），用于展示与判断是否引用了官网。
 type WebSource struct {
-	Title string `json:"title"`
-	URI   string `json:"uri"`
+	Title  string `json:"title"`
+	URI    string `json:"uri"`
+	Domain string `json:"domain"`
 }
 
 // AskWithSearch 以普通用户的方式提问，开启 Google 搜索 grounding，返回回答原文与引用来源。

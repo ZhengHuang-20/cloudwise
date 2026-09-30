@@ -12,6 +12,7 @@ import (
 	"math"
 	"net/http"
 	"regexp"
+	"runtime/debug"
 	"sort"
 	"strings"
 	"sync"
@@ -19,17 +20,17 @@ import (
 )
 
 // AI 可见性测评：抓取官网做确定性检查 → 模型识别品牌与行业 → 生成海外买家问题 →
-// 用开启 Google 搜索的 Gemini 真实提问 → 统计提及、排位与引用，分数由代码按公式计算。
-// 一次测评要调用十几次模型，所以做成异步任务：POST 创建，GET 轮询进度与结果。
+// 向各探测平台（ChatGPT、Perplexity、Gemini，均开启联网搜索）真实提问 → 统计提及、排位与引用，
+// 分数由代码按公式计算。品牌识别、问题生成与结果分析统一用 Gemini，所以未配置 Gemini 时只有示例。
+// 一次测评要调用几十次模型，所以做成异步任务：POST 创建，GET 轮询进度与结果。
 
 const (
 	auditUnbranded   = 6                  // 不带品牌名的买家问题数
 	auditSamples     = 2                  // 每个问题问几次（AI 回答有随机性，按比例统计）
-	auditConcurrency = 4                  // 单个任务内同时提问数
+	auditConcurrency = 4                  // 单个任务内每个平台同时提问数
 	auditMaxRunning  = 3                  // 同时运行的任务数，其余排队
 	auditCacheTTL    = 7 * 24 * time.Hour // 同一域名 7 天内复用结果
 	auditMemTTL      = 24 * time.Hour     // 内存里保留已完成任务的时长
-	auditEngine      = "Gemini（Google 搜索）"
 )
 
 // ---------- 报告结构（前端 src/lib/audit.ts 的 AuditReport 与之对应） ----------
@@ -45,6 +46,7 @@ type auditEntity struct {
 }
 
 type auditEvidence struct {
+	Engine    string      `json:"engine"`
 	Question  string      `json:"question"`
 	Branded   bool        `json:"branded"`
 	Answer    string      `json:"answer"`
@@ -53,6 +55,18 @@ type auditEvidence struct {
 	Sentiment string      `json:"sentiment"`
 	OwnCited  bool        `json:"ownCited"`
 	Sources   []WebSource `json:"sources"`
+}
+
+// auditEngineResult 是单个平台的统计，口径与 auditMetrics 相同。
+type auditEngineResult struct {
+	ID             string  `json:"id"`
+	Name           string  `json:"name"`
+	Answers        int     `json:"answers"` // 有效回答数
+	Failed         int     `json:"failed"`  // 提问失败数
+	MentionRate    int     `json:"mentionRate"`
+	CitationRate   int     `json:"citationRate"`
+	BrandKnowledge int     `json:"brandKnowledge"`
+	AvgPosition    float64 `json:"avgPosition"`
 }
 
 type auditVoice struct {
@@ -75,19 +89,23 @@ type AuditReport struct {
 	Mode      string `json:"mode"` // live：真实探测；sample：未配置模型，AI 部分为示例；site_only：AI 探测失败，只有官网检查
 	CreatedAt string `json:"createdAt"`
 
-	Entity       auditEntity     `json:"entity"`
-	TotalScore   int             `json:"totalScore"`
-	Level        string          `json:"level"`
-	Metrics      auditMetrics    `json:"metrics"`
-	Engine       string          `json:"engine"`
-	Questions    int             `json:"questions"`
-	Samples      int             `json:"samples"`
-	Answers      int             `json:"answers"`
-	ShareOfVoice []auditVoice    `json:"shareOfVoice"`
-	Evidence     []auditEvidence `json:"evidence"`
-	Site         *SiteCheck      `json:"site"`
-	Findings     []string        `json:"findings"`
-	Advice       string          `json:"recommendation"`
+	Entity       auditEntity         `json:"entity"`
+	TotalScore   int                 `json:"totalScore"`
+	Level        string              `json:"level"`
+	Metrics      auditMetrics        `json:"metrics"`
+	Engine       string              `json:"engine"`    // 平台名，顿号分隔
+	EngineSet    string              `json:"engineSet"` // 平台签名，平台变化后不复用旧缓存
+	Engines      []auditEngineResult `json:"engines"`
+	Questions    int                 `json:"questions"`
+	Samples      int                 `json:"samples"`
+	Answers      int                 `json:"answers"`
+	ShareOfVoice []auditVoice        `json:"shareOfVoice"`
+	Evidence     []auditEvidence     `json:"evidence"`
+	Site         *SiteCheck          `json:"site"`
+	Findings     []string            `json:"findings"`
+	Advice       string              `json:"recommendation"`
+
+	unbrandedAnswers int // 不带品牌名问题的有效回答数，只用于生成文案
 }
 
 // ---------- 任务存储 ----------
@@ -99,6 +117,7 @@ type auditJob struct {
 	Step    int    // 1~5，对应前端进度
 	Done    int
 	Total   int
+	Engines []string // 本次提问的平台名，用于进度文案
 	Err     string
 	Report  *AuditReport
 	created time.Time
@@ -191,20 +210,21 @@ func (a *App) handleCreateAudit(w http.ResponseWriter, r *http.Request) {
 	}
 	key := strings.TrimPrefix(domain, "www.")
 	now := time.Now().UTC()
+	sig := engineSignature(a.activeEngines())
 	s := a.audits
 
 	// 7 天内测过的域名直接复用：先查内存，再查数据库。
 	s.mu.Lock()
 	s.prune(now)
 	if id, ok := s.byKey[key]; ok {
-		if j := s.jobs[id]; j != nil && j.Status == "done" && now.Sub(j.created) < auditCacheTTL {
+		if j := s.jobs[id]; j != nil && j.Status == "done" && now.Sub(j.created) < auditCacheTTL && j.Report.EngineSet == sig {
 			s.mu.Unlock()
 			writeJSON(w, http.StatusOK, map[string]any{"id": id, "cached": true})
 			return
 		}
 	}
 	s.mu.Unlock()
-	if rep := a.loadCachedAudit(r.Context(), key, now); rep != nil {
+	if rep := a.loadCachedAudit(r.Context(), key, sig, now); rep != nil {
 		s.mu.Lock()
 		created, _ := time.Parse(time.RFC3339, rep.CreatedAt)
 		s.jobs[rep.ID] = &auditJob{ID: rep.ID, Key: key, Status: "done", Step: 5, Report: rep, created: created}
@@ -252,13 +272,14 @@ func (a *App) handleGetAudit(w http.ResponseWriter, r *http.Request) {
 		j = auditJob{ID: id, Status: "done", Step: 5, Report: rep}
 	}
 	writeJSON(w, http.StatusOK, map[string]any{
-		"id":     j.ID,
-		"status": j.Status,
-		"step":   j.Step,
-		"done":   j.Done,
-		"total":  j.Total,
-		"error":  j.Err,
-		"report": j.Report,
+		"id":      j.ID,
+		"status":  j.Status,
+		"step":    j.Step,
+		"done":    j.Done,
+		"total":   j.Total,
+		"engines": j.Engines,
+		"error":   j.Err,
+		"report":  j.Report,
 	})
 }
 
@@ -296,14 +317,18 @@ func (a *App) scanAudit(row *sql.Row) *AuditReport {
 	return &rep
 }
 
-// loadCachedAudit 只复用真实探测（live）的结果，示例与失败结果不缓存。
-func (a *App) loadCachedAudit(ctx context.Context, key string, now time.Time) *AuditReport {
+// loadCachedAudit 只复用真实探测（live）且探测平台相同的结果，示例与失败结果不缓存。
+func (a *App) loadCachedAudit(ctx context.Context, key, sig string, now time.Time) *AuditReport {
 	if a.db == nil {
 		return nil
 	}
-	return a.scanAudit(a.db.QueryRowContext(ctx,
+	rep := a.scanAudit(a.db.QueryRowContext(ctx,
 		`SELECT result_json FROM audits WHERE target_key = ? AND mode = 'live' AND created_at > ? ORDER BY created_at DESC LIMIT 1`,
 		key, now.Add(-auditCacheTTL)))
+	if rep == nil || rep.EngineSet != sig {
+		return nil
+	}
+	return rep
 }
 
 func (a *App) loadAuditByID(ctx context.Context, id string) *AuditReport {
@@ -315,18 +340,34 @@ func (a *App) loadAuditByID(ctx context.Context, id string) *AuditReport {
 
 // ---------- 执行 ----------
 
+// activeEngines 是本次测评实际提问的平台。分析依赖 Gemini，未配置 Gemini 时返回空（只出示例）。
+func (a *App) activeEngines() []probeEngine {
+	if a.gemini == nil {
+		return nil
+	}
+	return a.probeEngines()
+}
+
+func (a *App) auditEngineIDs() []string {
+	ids := []string{}
+	for _, e := range a.activeEngines() {
+		ids = append(ids, e.ID())
+	}
+	return ids
+}
+
 func (a *App) runAudit(job *auditJob, domain string) {
 	s := a.audits
 	defer func() {
 		if p := recover(); p != nil {
-			log.Printf("测评任务异常: %v", p)
+			log.Printf("测评任务异常: %v\n%s", p, debug.Stack())
 			s.update(job, func(j *auditJob) { j.Status, j.Err = "failed", "测评失败，请稍后重试" })
 		}
 	}()
 	s.sem <- struct{}{}
 	defer func() { <-s.sem }()
 
-	ctx, cancel := context.WithTimeout(context.Background(), 4*time.Minute)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
 	defer cancel()
 	setStep := func(n int) { s.update(job, func(j *auditJob) { j.Status, j.Step = "running", n }) }
 
@@ -338,20 +379,28 @@ func (a *App) runAudit(job *auditJob, domain string) {
 	setStep(2)
 	entity := a.identifyEntity(ctx, domain, site)
 
-	rep := &AuditReport{ID: job.ID, Domain: domain, Entity: entity, Engine: auditEngine, Site: site,
-		CreatedAt: time.Now().UTC().Format(time.RFC3339), ShareOfVoice: []auditVoice{}, Evidence: []auditEvidence{}}
+	engines := a.activeEngines()
+	names := make([]string, len(engines))
+	for i, e := range engines {
+		names[i] = e.Name()
+	}
+	rep := &AuditReport{ID: job.ID, Domain: domain, Entity: entity, Site: site, Engine: strings.Join(names, "、"), EngineSet: engineSignature(engines),
+		Samples: auditSamples, CreatedAt: time.Now().UTC().Format(time.RFC3339), Engines: []auditEngineResult{},
+		ShareOfVoice: []auditVoice{}, Evidence: []auditEvidence{}}
 
-	if a.gemini == nil {
+	if len(engines) == 0 {
 		setStep(5)
 		fillSampleAI(rep)
 	} else {
 		// ③ 生成买家问题
 		setStep(3)
 		questions := a.buildQuestions(ctx, entity, domain)
+		rep.Questions = len(questions)
 
 		// ④ 真实提问
+		s.update(job, func(j *auditJob) { j.Engines = names })
 		setStep(4)
-		answers := a.probe(ctx, job, questions)
+		answers := a.probe(ctx, job, engines, questions)
 
 		// ⑤ 分析与评分
 		setStep(5)
@@ -365,7 +414,7 @@ func (a *App) runAudit(job *auditJob, domain string) {
 			rep.Mode = "site_only"
 		} else {
 			rep.Mode = "live"
-			a.analyze(ctx, rep, answers, domain)
+			a.analyze(ctx, rep, engines, answers, domain)
 		}
 	}
 	finishReport(rep)
@@ -547,37 +596,44 @@ Return JSON only: {"questions": ["..."]}`, auditUnbranded, e.MarketEn, e.Categor
 // ---------- ④ 提问 ----------
 
 type auditAnswer struct {
+	engine  probeEngine
 	q       auditQuestion
 	text    string
 	sources []WebSource
 	err     error
 }
 
-func (a *App) probe(ctx context.Context, job *auditJob, qs []auditQuestion) []auditAnswer {
-	total := len(qs) * auditSamples
+// probe 向每个平台提出全部问题，每题问 auditSamples 次。各平台单独限制并发，互不拖累。
+func (a *App) probe(ctx context.Context, job *auditJob, engines []probeEngine, qs []auditQuestion) []auditAnswer {
+	total := len(engines) * len(qs) * auditSamples
 	a.audits.update(job, func(j *auditJob) { j.Total, j.Done = total, 0 })
 	answers := make([]auditAnswer, total)
-	sem := make(chan struct{}, auditConcurrency)
 	var wg sync.WaitGroup
-	for i := 0; i < total; i++ {
-		wg.Add(1)
-		go func(i int) {
-			defer wg.Done()
-			sem <- struct{}{}
-			defer func() { <-sem }()
-			q := qs[i/auditSamples]
-			cctx, cancel := context.WithTimeout(ctx, 60*time.Second)
-			defer cancel()
-			text, sources, err := a.gemini.AskWithSearch(cctx, q.Text)
-			if err == nil && strings.TrimSpace(text) == "" {
-				err = errors.New("empty answer")
+	idx := 0
+	for _, eng := range engines {
+		sem := make(chan struct{}, auditConcurrency)
+		for _, q := range qs {
+			for s := 0; s < auditSamples; s++ {
+				wg.Add(1)
+				go func(i int, eng probeEngine, q auditQuestion) {
+					defer wg.Done()
+					sem <- struct{}{}
+					defer func() { <-sem }()
+					cctx, cancel := context.WithTimeout(ctx, 90*time.Second)
+					defer cancel()
+					text, sources, err := eng.Ask(cctx, q.Text)
+					if err == nil && strings.TrimSpace(text) == "" {
+						err = errors.New("empty answer")
+					}
+					if err != nil {
+						log.Printf("测评提问失败（%s）: %v", eng.ID(), err)
+					}
+					answers[i] = auditAnswer{engine: eng, q: q, text: text, sources: sources, err: err}
+					a.audits.update(job, func(j *auditJob) { j.Done++ })
+				}(idx, eng, q)
+				idx++
 			}
-			if err != nil {
-				log.Printf("测评提问失败: %v", err)
-			}
-			answers[i] = auditAnswer{q: q, text: text, sources: sources, err: err}
-			a.audits.update(job, func(j *auditJob) { j.Done++ })
-		}(i)
+		}
 	}
 	wg.Wait()
 	return answers
@@ -617,13 +673,17 @@ func containsAnyFold(s string, terms []string) bool {
 	return false
 }
 
-func (a *App) extractFacts(ctx context.Context, e auditEntity, domain string, answers []auditAnswer) map[int]answerFacts {
+// extractFacts 让模型从一组回答里抽取事实（不打分）。idx 是 answers 中要分析的下标，结果按下标返回。
+func (a *App) extractFacts(ctx context.Context, e auditEntity, domain string, answers []auditAnswer, idx []int) map[int]answerFacts {
+	out := map[int]answerFacts{}
 	var sb strings.Builder
-	for i, ans := range answers {
-		if ans.err != nil {
-			continue
+	for _, i := range idx {
+		if answers[i].err == nil {
+			fmt.Fprintf(&sb, "\n### ANSWER %d\nQuestion: %s\nAnswer:\n%s\n", i, answers[i].q.Text, clip(answers[i].text, 2500))
 		}
-		fmt.Fprintf(&sb, "\n### ANSWER %d\nQuestion: %s\nAnswer:\n%s\n", i, ans.q.Text, clip(ans.text, 2500))
+	}
+	if sb.Len() == 0 {
+		return out
 	}
 	prompt := fmt.Sprintf(`You are auditing how AI assistants talk about a company.
 Target company: %s (website %s; other names: %s)
@@ -633,7 +693,6 @@ For every answer below, extract facts. Return JSON only:
 %s`, e.Brand, domain, strings.Join(e.Aliases, ", "), sb.String())
 	cctx, cancel := context.WithTimeout(ctx, 60*time.Second)
 	defer cancel()
-	out := map[int]answerFacts{}
 	text, err := a.gemini.GenerateJSON(cctx, "", prompt, 0)
 	if err != nil {
 		log.Printf("测评结果分析失败: %v", err)
@@ -651,20 +710,63 @@ For every answer below, extract facts. Return JSON only:
 	return out
 }
 
-func (a *App) analyze(ctx context.Context, rep *AuditReport, answers []auditAnswer, domain string) {
+type engineTally struct {
+	unbranded, mentionedU, all, cited, branded, knows, posCount, failed int
+	posSum                                                              float64
+}
+
+func pct(n, d int) int {
+	if d == 0 {
+		return 0
+	}
+	return int(math.Round(100 * float64(n) / float64(d)))
+}
+
+func avgPos(sum float64, n int) float64 {
+	if n == 0 {
+		return 0
+	}
+	return math.Round(sum/float64(n)*10) / 10
+}
+
+func (a *App) analyze(ctx context.Context, rep *AuditReport, engines []probeEngine, answers []auditAnswer, domain string) {
 	e := rep.Entity
 	terms := brandTerms(e, domain)
-	facts := a.extractFacts(ctx, e, domain, answers)
 	root := strings.ToLower(strings.TrimPrefix(domain, "www."))
 
-	var unbranded, mentionedU, all, cited, branded, knows, posCount int
-	var posSum float64
+	// 按平台分组，各平台的分析并行进行，单次提示词不会过长。
+	groups := map[string][]int{}
+	for i, ans := range answers {
+		groups[ans.engine.ID()] = append(groups[ans.engine.ID()], i)
+	}
+	facts := map[int]answerFacts{}
+	var mu sync.Mutex
+	var wg sync.WaitGroup
+	for _, idx := range groups {
+		wg.Add(1)
+		go func(idx []int) {
+			defer wg.Done()
+			got := a.extractFacts(ctx, e, domain, answers, idx)
+			mu.Lock()
+			for k, v := range got {
+				facts[k] = v
+			}
+			mu.Unlock()
+		}(idx)
+	}
+	wg.Wait()
+
+	tallies := map[string]*engineTally{}
+	for _, eng := range engines {
+		tallies[eng.ID()] = &engineTally{}
+	}
+	var total engineTally
 	voice := map[string]*auditVoice{}
-	questions := map[string]bool{}
 
 	for i, ans := range answers {
-		questions[ans.q.Text] = true
+		t := tallies[ans.engine.ID()]
 		if ans.err != nil {
+			t.failed++
 			continue
 		}
 		f, analyzed := facts[i]
@@ -673,38 +775,42 @@ func (a *App) analyze(ctx context.Context, rep *AuditReport, answers []auditAnsw
 		sources := []WebSource{}
 		seenSrc := map[string]bool{}
 		for _, src := range ans.sources {
-			if strings.Contains(strings.ToLower(src.Title+" "+src.URI), root) {
+			if strings.Contains(strings.ToLower(src.Domain+" "+src.Title+" "+src.URI), root) {
 				ownCited = true
 			}
-			k := strings.ToLower(src.Title)
+			k := strings.ToLower(orDefault(src.Domain, src.Title))
 			if !seenSrc[k] && len(sources) < 6 {
 				seenSrc[k] = true
 				sources = append(sources, src)
 			}
 		}
-		all++
-		if ownCited {
-			cited++
-		}
 		pos := 0
 		if mentioned && f.Position > 0 {
 			pos = f.Position
 		}
-		if ans.q.Branded {
-			branded++
-			// 模型分析失败时，退化为「回答里出现了品牌名」。
-			if (analyzed && f.KnowsBrand) || (!analyzed && mentioned) {
-				knows++
+		for _, x := range []*engineTally{t, &total} {
+			x.all++
+			if ownCited {
+				x.cited++
 			}
-		} else {
-			unbranded++
-			if mentioned {
-				mentionedU++
-				if pos > 0 {
-					posSum += float64(pos)
-					posCount++
+			if ans.q.Branded {
+				x.branded++
+				// 模型分析失败时，退化为「回答里出现了品牌名」。
+				if (analyzed && f.KnowsBrand) || (!analyzed && mentioned) {
+					x.knows++
+				}
+			} else {
+				x.unbranded++
+				if mentioned {
+					x.mentionedU++
+					if pos > 0 {
+						x.posSum += float64(pos)
+						x.posCount++
+					}
 				}
 			}
+		}
+		if !ans.q.Branded {
 			seenBrand := map[string]bool{}
 			for _, b := range f.Brands {
 				b = clip(b, 60)
@@ -723,25 +829,32 @@ func (a *App) analyze(ctx context.Context, rep *AuditReport, answers []auditAnsw
 		if sentiment != "positive" && sentiment != "negative" {
 			sentiment = "neutral"
 		}
-		rep.Evidence = append(rep.Evidence, auditEvidence{Question: ans.q.Text, Branded: ans.q.Branded, Answer: clip(ans.text, 1500),
-			Mentioned: mentioned, Position: pos, Sentiment: sentiment, OwnCited: ownCited, Sources: sources})
+		rep.Evidence = append(rep.Evidence, auditEvidence{Engine: ans.engine.Name(), Question: ans.q.Text, Branded: ans.q.Branded,
+			Answer: clip(ans.text, 1500), Mentioned: mentioned, Position: pos, Sentiment: sentiment, OwnCited: ownCited, Sources: sources})
 	}
 
-	pct := func(n, d int) int {
-		if d == 0 {
-			return 0
+	// 各平台分别计算；总体指标取有效平台的平均值，让每个平台权重相同。
+	var sumM, sumC, sumK, n int
+	for _, eng := range engines {
+		t := tallies[eng.ID()]
+		r := auditEngineResult{ID: eng.ID(), Name: eng.Name(), Answers: t.all, Failed: t.failed}
+		if t.all > 0 {
+			r.MentionRate = pct(t.mentionedU, t.unbranded)
+			r.CitationRate = pct(t.cited, t.all)
+			r.BrandKnowledge = pct(t.knows, t.branded)
+			r.AvgPosition = avgPos(t.posSum, t.posCount)
+			sumM, sumC, sumK, n = sumM+r.MentionRate, sumC+r.CitationRate, sumK+r.BrandKnowledge, n+1
 		}
-		return int(math.Round(100 * float64(n) / float64(d)))
+		rep.Engines = append(rep.Engines, r)
 	}
-	rep.Questions = len(questions)
-	rep.Samples = auditSamples
-	rep.Answers = all
-	rep.Metrics.MentionRate = pct(mentionedU, unbranded)
-	rep.Metrics.CitationRate = pct(cited, all)
-	rep.Metrics.BrandKnowledge = pct(knows, branded)
-	if posCount > 0 {
-		rep.Metrics.AvgPosition = math.Round(posSum/float64(posCount)*10) / 10
+	if n > 0 {
+		rep.Metrics.MentionRate = int(math.Round(float64(sumM) / float64(n)))
+		rep.Metrics.CitationRate = int(math.Round(float64(sumC) / float64(n)))
+		rep.Metrics.BrandKnowledge = int(math.Round(float64(sumK) / float64(n)))
 	}
+	rep.Metrics.AvgPosition = avgPos(total.posSum, total.posCount)
+	rep.Answers = total.all
+	rep.unbrandedAnswers = total.unbranded
 
 	// 声量：只统计不带品牌名的问题，取被提及最多的竞品与自身对比。
 	list := make([]auditVoice, 0, len(voice))
@@ -757,11 +870,11 @@ func (a *App) analyze(ctx context.Context, rep *AuditReport, answers []auditAnsw
 	if len(list) > 6 {
 		list = list[:6]
 	}
-	list = append(list, auditVoice{Name: e.Brand, Mentions: mentionedU, IsSelf: true})
+	list = append(list, auditVoice{Name: e.Brand, Mentions: total.mentionedU, IsSelf: true})
 	sort.SliceStable(list, func(i, j int) bool { return list[i].Mentions > list[j].Mentions })
 	rep.ShareOfVoice = list
 
-	// 证据排序：先放提到品牌的回答，再放不带品牌名的问题。
+	// 证据排序：先放提到品牌的回答，再放不带品牌名的问题；同类保持平台顺序。
 	sort.SliceStable(rep.Evidence, func(i, j int) bool {
 		x, y := rep.Evidence[i], rep.Evidence[j]
 		if x.Mentioned != y.Mentioned {
@@ -774,19 +887,25 @@ func (a *App) analyze(ctx context.Context, rep *AuditReport, answers []auditAnsw
 // fillSampleAI：未配置模型时的确定性示例，前端会明确标注「示例数据」。
 func fillSampleAI(rep *AuditReport) {
 	rep.Mode = "sample"
-	rep.Questions, rep.Samples, rep.Answers = auditUnbranded+2, auditSamples, (auditUnbranded+2)*auditSamples
-	rep.Metrics.MentionRate = 17
-	rep.Metrics.CitationRate = 6
-	rep.Metrics.BrandKnowledge = 50
-	rep.Metrics.AvgPosition = 5
+	rep.Questions = auditUnbranded + 2
+	rep.Engines = []auditEngineResult{
+		{ID: "openai", Name: "ChatGPT", Answers: 16, MentionRate: 17, CitationRate: 6, BrandKnowledge: 50, AvgPosition: 5},
+		{ID: "perplexity", Name: "Perplexity", Answers: 16, MentionRate: 33, CitationRate: 13, BrandKnowledge: 50, AvgPosition: 4},
+		{ID: "gemini", Name: "Gemini", Answers: 16, MentionRate: 0, CitationRate: 0, BrandKnowledge: 50},
+	}
+	rep.Engine = "ChatGPT、Perplexity、Gemini"
+	rep.Answers = 48
+	rep.unbrandedAnswers = 36
+	rep.Metrics = auditMetrics{MentionRate: 17, CitationRate: 6, BrandKnowledge: 50, AvgPosition: 4.5}
 	rep.ShareOfVoice = []auditVoice{
-		{Name: "国际头部品牌 A", Mentions: 10},
-		{Name: "欧洲品牌 B", Mentions: 8},
-		{Name: "区域品牌 C", Mentions: 5},
-		{Name: rep.Entity.Brand, Mentions: 2, IsSelf: true},
+		{Name: "国际头部品牌 A", Mentions: 28},
+		{Name: "欧洲品牌 B", Mentions: 21},
+		{Name: "区域品牌 C", Mentions: 12},
+		{Name: rep.Entity.Brand, Mentions: 6, IsSelf: true},
 	}
 	q := fallbackQuestions(rep.Entity)[0]
 	rep.Evidence = []auditEvidence{{
+		Engine:    "ChatGPT",
 		Question:  q,
 		Answer:    "（示例）Leading manufacturers include several established global brands. Some Chinese suppliers are also active in export markets, but detailed technical documentation for them is limited in public sources.",
 		Sentiment: "neutral",
@@ -820,17 +939,17 @@ func finishReport(rep *AuditReport) {
 	brand := rep.Entity.Brand
 
 	if rep.Mode != "site_only" {
-		unbrandedAnswers := auditUnbranded * auditSamples
-		if rep.Mode == "live" {
-			unbrandedAnswers = 0
-			for _, ev := range rep.Evidence {
-				if !ev.Branded {
-					unbrandedAnswers++
+		line := fmt.Sprintf("GEO：以海外买家身份向 %s 提出 %d 个不带品牌名的采购问题（共 %d 次回答），平均 %d%% 的回答提到了 %s",
+			rep.Engine, auditUnbranded, rep.unbrandedAnswers, m.MentionRate, brand)
+		if len(rep.Engines) > 1 {
+			var parts []string
+			for _, e := range rep.Engines {
+				if e.Answers > 0 {
+					parts = append(parts, fmt.Sprintf("%s %d%%", e.Name, e.MentionRate))
 				}
 			}
+			line += "（" + strings.Join(parts, "、") + "）"
 		}
-		line := fmt.Sprintf("GEO：以海外买家身份提出 %d 个不带品牌名的采购问题，%d 次回答中有 %d%% 提到了 %s",
-			auditUnbranded, unbrandedAnswers, m.MentionRate, brand)
 		if m.AvgPosition > 0 {
 			line += fmt.Sprintf("，平均排在第 %.1f 位", m.AvgPosition)
 		}

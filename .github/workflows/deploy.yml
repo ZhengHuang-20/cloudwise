@@ -138,10 +138,17 @@ jobs:
       #   MYSQL_ADMIN_PASSWORD   （首次部署需要）其密码；初始化成功后可以删除这两个 Secret
       #   ADMIN_EMAIL            （可选）首个后台管理员邮箱，仅在该邮箱不存在时创建
       #   ADMIN_INITIAL_PASSWORD （可选）其初始密码（10 位以上），首次登录会被要求修改
-      #   GEMINI_API_KEY         （可选）不配则 AI 接口使用内置 fallback
+      #   GEMINI_API_KEY         （可选）不配则 AI 接口使用内置 fallback；AI 可见性测评的分析也依赖它
+      #   OPENAI_API_KEY         （可选）AI 可见性测评向 ChatGPT（Responses API + web_search）提问
+      #   PERPLEXITY_API_KEY     （可选）AI 可见性测评向 Perplexity（Sonar）提问
+      #   OPENAI_BASE_URL / PERPLEXITY_BASE_URL （可选）国内服务器直连不通时，填海外中转网关地址
       - name: 触发远程部署
         env:
           S_GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          S_OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          S_OPENAI_BASE_URL: ${{ secrets.OPENAI_BASE_URL }}
+          S_PERPLEXITY_API_KEY: ${{ secrets.PERPLEXITY_API_KEY }}
+          S_PERPLEXITY_BASE_URL: ${{ secrets.PERPLEXITY_BASE_URL }}
           S_MYSQL_APP_PASSWORD: ${{ secrets.MYSQL_APP_PASSWORD }}
           S_MYSQL_ADMIN_USER: ${{ secrets.MYSQL_ADMIN_USER }}
           S_MYSQL_ADMIN_PASSWORD: ${{ secrets.MYSQL_ADMIN_PASSWORD }}
@@ -166,6 +173,10 @@ jobs:
             BLOB="${BLOB}${2}=${v}"$'\n'
           }
           add S_GEMINI_API_KEY          GEMINI_API_KEY
+          add S_OPENAI_API_KEY          OPENAI_API_KEY
+          add S_OPENAI_BASE_URL         OPENAI_BASE_URL
+          add S_PERPLEXITY_API_KEY      PERPLEXITY_API_KEY
+          add S_PERPLEXITY_BASE_URL     PERPLEXITY_BASE_URL
           add S_MYSQL_APP_PASSWORD      MYSQL_PASSWORD
           add S_MYSQL_ADMIN_USER        MYSQL_ADMIN_USER
           add S_MYSQL_ADMIN_PASSWORD    MYSQL_ADMIN_PASSWORD
@@ -183,6 +194,8 @@ jobs:
           # 健康检查阶段据此判断是否要求数据库就绪
           if [ -n "$S_MYSQL_APP_PASSWORD" ]; then echo "EXPECT_DB=1" >> "$GITHUB_ENV"; fi
           if [ -n "$S_GEMINI_API_KEY" ]; then echo "EXPECT_GEMINI=1" >> "$GITHUB_ENV"; fi
+          if [ -n "$S_OPENAI_API_KEY" ]; then echo "EXPECT_OPENAI=1" >> "$GITHUB_ENV"; fi
+          if [ -n "$S_PERPLEXITY_API_KEY" ]; then echo "EXPECT_PERPLEXITY=1" >> "$GITHUB_ENV"; fi
 
           echo "远程指令：$CMD（携带 $(printf '%s' "$BLOB" | grep -c .) 项运行时配置）  目标：$SSH_USER@$SSH_HOST"
 
@@ -245,6 +258,15 @@ jobs:
               echo "::warning::已配置 GEMINI_API_KEY，但线上后端未读到 key（AI 接口正在使用 fallback）"
             fi
           fi
+          # 测评平台只在 Gemini 也可用时启用（分析依赖 Gemini），读不到时只告警不失败
+          ENGINES=$(printf '%s' "$BODY" | jq -r '(.auditEngines // []) | join(",")')
+          echo "AI 可见性测评平台：${ENGINES:-（无，测评只出示例）}"
+          for pair in "EXPECT_OPENAI:openai" "EXPECT_PERPLEXITY:perplexity"; do
+            flag="${pair%%:*}"; id="${pair##*:}"
+            if [ "${!flag:-}" = "1" ] && ! printf ',%s,' "$ENGINES" | grep -q ",$id,"; then
+              echo "::warning::已配置 ${id} 的 key，但线上测评未启用该平台（需同时配置 GEMINI_API_KEY）"
+            fi
+          done
 
       - name: 清理密钥
         if: always()

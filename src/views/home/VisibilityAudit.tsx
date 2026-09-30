@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { AlertTriangle, Check, CheckCircle2, ChevronRight, Globe, Loader2 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { ScoreRing } from '../../components/ui/ScoreRing';
+import { SegmentedControl } from '../../components/ui/SegmentedControl';
 import { scoreTone, TONE_BG, TONE_TEXT } from '../../components/ui/tone';
 import { ApiError } from '../../lib/api';
 import {
@@ -14,19 +15,22 @@ import {
   sampleReport,
   SiteCheck,
   startAudit,
+  WebSource,
 } from '../../lib/audit';
 
-// 与后端 runAudit 的五个步骤一一对应
-const AUDIT_STEPS = [
+// 与后端 runAudit 的五个步骤一一对应；第 4 步的平台名来自任务状态
+const auditSteps = (engines: string[] | null) => [
   '读取官网：页面内容、AI 爬虫权限与结构化数据',
   '识别品牌、所属行业与目标市场',
   '生成海外买家会向 AI 提出的采购问题',
-  '以买家身份向 Gemini（Google 搜索）提问',
+  `以买家身份向 ${engines && engines.length > 0 ? engines.join('、') : 'AI 搜索'} 提问（开启联网搜索）`,
   '统计品牌提及、推荐排位与引用来源',
 ];
 
+type JobProgress = Pick<AuditJob, 'status' | 'step' | 'done' | 'total' | 'engines'>;
+
 const POLL_MS = 1500;
-const POLL_LIMIT_MS = 5 * 60 * 1000;
+const POLL_LIMIT_MS = 7 * 60 * 1000;
 const EVIDENCE_PREVIEW = 3;
 const ANSWER_PREVIEW_CHARS = 280;
 
@@ -40,7 +44,7 @@ export const VisibilityAudit: React.FC<VisibilityAuditProps> = ({ inputRef, open
   const { logLeadActivity, saveDiagnosis, showToast } = useApp();
   const [input, setInput] = useState('');
   const [inputError, setInputError] = useState('');
-  const [job, setJob] = useState<Pick<AuditJob, 'status' | 'step' | 'done' | 'total'> | null>(null);
+  const [job, setJob] = useState<JobProgress | null>(null);
   const [report, setReport] = useState<AuditReport | null>(null);
   const alive = useRef(true);
 
@@ -82,7 +86,13 @@ export const VisibilityAudit: React.FC<VisibilityAuditProps> = ({ inputRef, open
       if (!alive.current) return;
       if (current.status === 'done' && current.report) return finish(current.report);
       if (current.status === 'failed') return fail(current.error || '测评失败，请稍后重试');
-      setJob({ status: current.status, step: current.step, done: current.done, total: current.total });
+      setJob({
+        status: current.status,
+        step: current.step,
+        done: current.done,
+        total: current.total,
+        engines: current.engines,
+      });
       await new Promise((resolve) => setTimeout(resolve, POLL_MS));
     }
   };
@@ -97,7 +107,7 @@ export const VisibilityAudit: React.FC<VisibilityAuditProps> = ({ inputRef, open
     }
     setInputError('');
     setReport(null);
-    setJob({ status: 'queued', step: 0, done: 0, total: 0 });
+    setJob({ status: 'queued', step: 0, done: 0, total: 0, engines: null });
     try {
       const { id } = await startAudit(domain);
       await poll(id, Date.now());
@@ -180,15 +190,15 @@ export const VisibilityAudit: React.FC<VisibilityAuditProps> = ({ inputRef, open
 
 // ---------- 进度 ----------
 
-const AuditProgress: React.FC<{ job: Pick<AuditJob, 'status' | 'step' | 'done' | 'total'> }> = ({ job }) => (
+const AuditProgress: React.FC<{ job: JobProgress }> = ({ job }) => (
   <div className="mt-8 border-t border-separator pt-8">
     <p className="text-caption text-label-secondary" aria-live="polite">
       {job.status === 'queued'
         ? '排队中，前面还有测评在进行…'
-        : '需要真实向 AI 提问十几次，通常 30 秒到 1 分钟完成，请不要关闭页面。'}
+        : '需要真实向多个 AI 平台提问几十次，通常 1 到 3 分钟完成，请不要关闭页面。'}
     </p>
     <ol className="mt-4 space-y-3" aria-label="测评进度">
-      {AUDIT_STEPS.map((step, index) => {
+      {auditSteps(job.engines).map((step, index) => {
         const stepNumber = index + 1;
         const isDone = job.step > stepNumber;
         const isCurrent = job.step === stepNumber;
@@ -234,10 +244,16 @@ interface AuditResultProps {
 
 const AuditResult: React.FC<AuditResultProps> = ({ report, openBookingModal, onGoToConfigurator }) => {
   const [showAllEvidence, setShowAllEvidence] = useState(false);
+  const [engineFilter, setEngineFilter] = useState('all');
   const tone = scoreTone(report.totalScore);
   const hasAI = report.mode !== 'site_only';
   const { metrics, entity } = report;
-  const evidence = showAllEvidence ? report.evidence : report.evidence.slice(0, EVIDENCE_PREVIEW);
+  const engines = report.engines ?? [];
+  const engineCount = engines.length;
+  const answeredEngines = engines.filter((e) => e.answers > 0);
+  const filtered =
+    engineFilter === 'all' ? report.evidence : report.evidence.filter((item) => item.engine === engineFilter);
+  const evidence = showAllEvidence ? filtered : filtered.slice(0, EVIDENCE_PREVIEW);
   const maxVoice = Math.max(1, ...report.shareOfVoice.map((v) => v.mentions));
 
   const tiles = [
@@ -281,8 +297,8 @@ const AuditResult: React.FC<AuditResultProps> = ({ report, openBookingModal, onG
           <p className={`mt-1 text-body font-semibold ${TONE_TEXT[tone]}`}>{report.level}</p>
           {hasAI && (
             <p className="mt-3 text-caption text-label-secondary">
-              向 {report.engine} 提出 {report.questions} 个问题，每题问 {report.samples} 次，共 {report.answers}{' '}
-              次有效回答。AI 的回答每次略有不同，结果按比例统计。
+              向 {report.engine} 提出 {report.questions} 个问题，每个平台每题问 {report.samples} 次，共 {report.answers}{' '}
+              次有效回答。AI 的回答每次略有不同，结果按比例统计{engineCount > 1 && '，总分按各平台平均'}。
             </p>
           )}
         </div>
@@ -307,6 +323,46 @@ const AuditResult: React.FC<AuditResultProps> = ({ report, openBookingModal, onG
           );
         })}
       </dl>
+
+      {hasAI && engineCount > 1 && (
+        <section className="mt-10" aria-labelledby="audit-engines">
+          <h4 id="audit-engines" className="text-title-3">
+            各平台表现
+          </h4>
+          <table className="mt-2 w-full text-body">
+            <thead>
+              <tr className="text-caption text-label-secondary">
+                <th scope="col" className="py-2 text-left font-normal">平台</th>
+                <th scope="col" className="py-2 text-right font-normal">提到你</th>
+                <th scope="col" className="py-2 text-right font-normal">引用官网</th>
+                <th scope="col" className="py-2 text-right font-normal">品牌认知</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-separator border-t border-separator">
+              {engines.map((engine) => (
+                <tr key={engine.id}>
+                  <th scope="row" className="py-3 text-left font-semibold">
+                    {engine.name}
+                    {engine.failed > 0 && (
+                      <span className="block text-caption font-normal text-label-secondary">
+                        {engine.answers === 0 ? '提问失败，未计入' : `${engine.failed} 次提问失败`}
+                      </span>
+                    )}
+                  </th>
+                  {[engine.mentionRate, engine.citationRate, engine.brandKnowledge].map((value, i) => (
+                    <td
+                      key={i}
+                      className={`py-3 text-right tabular-nums ${engine.answers > 0 ? TONE_TEXT[scoreTone(value)] : 'text-label-secondary'}`}
+                    >
+                      {engine.answers > 0 ? `${value}%` : '—'}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </section>
+      )}
 
       {hasAI && report.shareOfVoice.length > 1 && (
         <section className="mt-10" aria-labelledby="audit-voice">
@@ -340,19 +396,34 @@ const AuditResult: React.FC<AuditResultProps> = ({ report, openBookingModal, onG
             AI 的原话
           </h4>
           <p className="mt-1 text-caption text-label-secondary">以下是 AI 对买家问题的真实回答（英文原文节选）</p>
+          {answeredEngines.length > 1 && (
+            <SegmentedControl
+              className="mt-4"
+              ariaLabel="按平台筛选回答"
+              value={engineFilter}
+              onChange={(value) => {
+                setEngineFilter(value);
+                setShowAllEvidence(false);
+              }}
+              options={[
+                { id: 'all', label: '全部' },
+                ...answeredEngines.map((engine) => ({ id: engine.name, label: engine.name })),
+              ]}
+            />
+          )}
           <ul className="mt-2 divide-y divide-separator">
             {evidence.map((item, index) => (
               <EvidenceItem key={`${item.question}-${index}`} item={item} domain={report.domain} />
             ))}
           </ul>
-          {report.evidence.length > EVIDENCE_PREVIEW && (
+          {filtered.length > EVIDENCE_PREVIEW && (
             <button
               type="button"
               className="link mt-2 text-body"
               aria-expanded={showAllEvidence}
               onClick={() => setShowAllEvidence((v) => !v)}
             >
-              {showAllEvidence ? '收起' : `查看全部 ${report.evidence.length} 条回答`}
+              {showAllEvidence ? '收起' : `查看全部 ${filtered.length} 条回答`}
             </button>
           )}
         </section>
@@ -395,7 +466,7 @@ const AuditResult: React.FC<AuditResultProps> = ({ report, openBookingModal, onG
   );
 };
 
-const hostOf = (source: { title: string; uri: string }) => source.title || source.uri;
+const hostOf = (source: WebSource) => source.domain || source.title || source.uri;
 
 const EvidenceItem: React.FC<{ item: AuditEvidence; domain: string }> = ({ item, domain }) => {
   const [expanded, setExpanded] = useState(false);
@@ -404,6 +475,7 @@ const EvidenceItem: React.FC<{ item: AuditEvidence; domain: string }> = ({ item,
   return (
     <li className="py-4">
       <div className="flex flex-wrap items-center gap-2">
+        <span className="badge">{item.engine ?? 'Gemini'}</span>
         <span className="badge">{item.branded ? '带品牌名' : '不带品牌名'}</span>
         {item.mentioned ? (
           <span className="badge bg-success/15 text-success">

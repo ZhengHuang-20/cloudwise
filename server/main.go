@@ -17,10 +17,12 @@ import (
 
 type App struct {
 	cfg            Config
-	db             *sql.DB // 未配置 MySQL 时为 nil，AI 接口仍可用
-	gemini         *Gemini // 未配置 key 时为 nil，走确定性 fallback
-	dbState        string  // unconfigured | ok | failed
-	dbIssue        string  // 失败阶段与错误摘要（不含敏感信息）
+	db             *sql.DB     // 未配置 MySQL 时为 nil，AI 接口仍可用
+	gemini         *Gemini     // 未配置 key 时为 nil，走确定性 fallback
+	openai         *OpenAI     // 测评探测平台，未配置时为 nil
+	perplexity     *Perplexity // 同上
+	dbState        string      // unconfigured | ok | failed
+	dbIssue        string      // 失败阶段与错误摘要（不含敏感信息）
 	loginLimiter   *limiter
 	collectLimiter *limiter // 公开接口按 IP 限流
 	leadLimiter    *limiter
@@ -35,6 +37,7 @@ func (a *App) routes() http.Handler {
 		writeJSON(w, http.StatusOK, map[string]any{
 			"status":       "ok",
 			"hasGeminiKey": a.gemini != nil,
+			"auditEngines": a.auditEngineIDs(),
 			"hasDatabase":  a.db != nil,
 			"dbStatus":     a.dbState,
 			"dbIssue":      a.dbIssue,
@@ -233,7 +236,9 @@ func main() {
 
 	app := &App{cfg: cfg, gemini: NewGemini(cfg.GeminiKey, cfg.GeminiModel), loginLimiter: newLimiter(10, time.Minute),
 		collectLimiter: newLimiter(120, time.Minute), leadLimiter: newLimiter(10, time.Minute),
-		auditLimiter: newLimiter(6, time.Hour), audits: newAuditStore()}
+		auditLimiter: newLimiter(6, time.Hour), audits: newAuditStore(),
+		openai:     NewOpenAI(cfg.OpenAIKey, cfg.OpenAIModel, cfg.OpenAIBase),
+		perplexity: NewPerplexity(cfg.PerplexityKey, cfg.PerplexityModel, cfg.PerplexityBase)}
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
