@@ -73,25 +73,25 @@ const ALL_SERVICES: { key: ServiceKey; title: string; desc: string; link: string
   {
     key: 'site',
     title: '海外独立站建站',
-    desc: '专为欧美采购主管、技术总监与合规官设计的三读者架构独立站。海外节点秒开，满足严苛的技术卷宗与参数要求。',
+    desc: '为海外采购主管、技术总监、合规官三类读者设计的独立站：公差、认证编号、技术资料都能在页面上找到，海外访问打开快。',
     link: '了解建站方案',
   },
   {
     key: 'seo',
     title: '外贸 SEO 优化',
-    desc: '搭建 60 组采购级核心词库，遵循 Google Search Essentials 与 E-E-A-T，让海外买家在搜索第一屏找到你。',
+    desc: '按买家的真实搜索词，建 60 组采购相关的核心词库，一个词对应一个页面；目标是让买家搜索时能看到你。',
     link: '了解 SEO 词库策略',
   },
   {
     key: 'geo',
     title: '出海 GEO 优化',
-    desc: '海外采购商向 ChatGPT、Perplexity、Google SGE 询问推荐供应商时，让 AI 主动提及并推荐你的品牌。',
+    desc: '海外采购商向 ChatGPT、Perplexity、Google AI 概览询问供应商时，提高你的品牌被引用的机会，并每月复测给你看。',
     link: '了解 GEO 信源方案',
   },
   {
     key: 'chat',
     title: 'AI 智能客服与系统对接',
-    desc: '基于企业专属参数库，7×24 小时多语种解答公差、认证与交期，实时判定意向并同步 CRM。',
+    desc: '依据企业自己的参数库，全天候用多语种解答公差、认证与交期；超出资料范围的问题转给销售；识别询盘意向并同步到 CRM。',
     link: '了解 AI 客服',
   },
   {
@@ -109,7 +109,7 @@ const TOOLS: { tab: TabId | 'audit'; icon: React.ComponentType<{ className?: str
     tab: 'audit',
     icon: Radar,
     title: 'AI 可见性测评',
-    desc: '输入官网或品牌，看 ChatGPT、Perplexity 与 Google 是否找得到你，以及断点在哪里。',
+    desc: '输入官网或品牌，看看在 ChatGPT、Perplexity 与 Google 里能不能找到你，卡在哪一步。',
     link: '开始测评',
   },
   {
@@ -154,13 +154,13 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate, openBookingModal
         seoScore: 89,
         siteScore: 95,
         responseScore: 90,
-        level: '卓越标杆 · 高度自证就绪',
+        level: '表现良好 · 4 项达标',
         lostEstimate: '< 3 万美元 / 年 (流失控制极佳)',
         findings: [
           'ChatGPT / Perplexity 检索“骨科3D打印耗材”时，首屏直接引用该企业技术白皮书与认证卷宗',
-          'Google 欧美地区 18 组核心产品词稳定在前 3 名',
-          '欧洲 CDN 测速 1.2 秒秒开，具备完整 MDR CE 技术规格一键下载',
-          '7×24h 智能客服零时差解答海外合规提问并即时同步 CRM'
+          'Google 欧美地区 18 组核心产品词位于前 3 名',
+          '欧洲测速约 1.2 秒，提供完整 MDR CE 技术规格一键下载',
+          '7×24h 智能客服即时解答海外合规提问并同步 CRM'
         ],
         recommendation: '已具备成熟全球转化能力，建议持续拓展南美与中东多语种 GEO 信源注入。'
       }
@@ -177,12 +177,12 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate, openBookingModal
         seoScore: 93,
         siteScore: 85,
         responseScore: 88,
-        level: '卓越标杆 · 核心词前排覆盖',
+        level: '表现良好 · 核心词排位靠前',
         lostEstimate: '< 5 万美元 / 年',
         findings: [
-          'Google 欧美覆盖 60 组符合英国 SuDS 规范的核心英文词库',
-          '地标工程案例已转化为符合国际标准的权威第三方证据链',
-          '大模型在城市海绵水务工程问答中高频推荐为主要供应商',
+          'Google 欧美主要地区 60 组核心英文词排名前两页，词库对照英国 SuDS 规范',
+          '地标工程案例已整理成有第三方来源的英文资料',
+          '英国市政规划相关提问中被 Perplexity 引用为参考信源',
           '欧美采购询盘自动抽取技术参数并实时派发业务大区'
         ],
         recommendation: '建议加强 WhatsApp 海外即时接单引擎与移动端参数交互。'
@@ -192,7 +192,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate, openBookingModal
       name: '典型五金出口企业',
       url: 'www.example-hardware.com',
       result: {
-        target: '某精密五金出口企业 (典型现状)',
+        target: '典型五金出口企业（示例）',
         region: '北美市场',
         industry: '离散制造与精密五金',
         totalScore: 42,
@@ -200,15 +200,15 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate, openBookingModal
         seoScore: 45,
         siteScore: 58,
         responseScore: 36,
-        level: '严重流失 · 存在多重断点',
+        level: '待改进 · 4 项均低于 60 分',
         lostEstimate: '约 18 ~ 32 万美元 / 年',
         findings: [
-          'ChatGPT / Perplexity 推荐行业供应商时完全查无此人（0 权威引用）',
-          'Google 核心英文采购词全部排在第 3 页以后，被贸易商或印度同行截流',
-          '海外节点访问速度高达 5.8 秒，且充斥中文画册直译，缺少工程师需要的 CAD 公差表',
-          '北京时间凌晨 02:00 ~ 06:00 欧美采购询盘无即时应答，次日上班跟进时客户早已转投竞品'
+          'ChatGPT / Perplexity 推荐行业供应商时未被引用',
+          'Google 核心英文采购词全部排在第 3 页以后，位置被贸易商与同行占据',
+          '海外打开约 5.8 秒，英文多为中文画册直译，缺少工程师需要的 CAD 与公差表',
+          '北京时间凌晨 02:00 ~ 06:00 欧美采购询盘无即时应答，次日跟进时，客户可能已经联系了其他供应商'
         ],
-        recommendation: '核心破局组合：三读者架构独立站 + 60 组采购级外贸 SEO + GEO 权威知识图谱 + 24h AI 客服。'
+        recommendation: '建议组合：三读者架构独立站 + 60 组外贸 SEO 词库 + GEO + 24 小时 AI 客服。'
       }
     }
   ];
@@ -240,15 +240,15 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate, openBookingModal
           seoScore: 48,
           siteScore: 64,
           responseScore: 46,
-          level: '中危断点 · 获客链路存在明显跑冒滴漏',
+          level: '待改进 · 4 项均需处理',
           lostEstimate: '约 12 ~ 25 万美元 / 年',
           findings: [
-            'GEO 生成式收录：向 ChatGPT 与 Perplexity 询问该行业知名供应商时，未收录该品牌技术参数与资质',
-            'Google 外贸 SEO：目标市场前两页搜索结果中查无此人，被当地经销商与头部竞品占据',
-            '海外独立站架构：海外节点打开耗时 4.2 秒，缺少针对技术总监与合规官的专属卷宗下载',
-            '时差接单断点：夜间 8 小时无即时技术问答，海外买家跳出率高达 82%'
+            'GEO：向 ChatGPT、Perplexity 询问该行业的供应商时，未见该品牌的技术参数与资质被引用',
+            'SEO：目标市场前两页搜索结果中未见该品牌，位置被当地经销商与同行占据',
+            '独立站：海外打开约 4.2 秒，缺少面向技术与合规读者的资料下载',
+            '响应：欧美工作时间对应北京时间夜间，此时没有即时的技术答复'
           ],
-          recommendation: '建议配置【获客增长组合（独立站+SEO+GEO）】+【24h 智能客服】，优先修复目标市场的搜索可见性与夜间时差黑洞。'
+          recommendation: '建议先从「获客增长组合（独立站 + SEO + GEO）」入手，再加上 AI 客服，覆盖欧美工作时间的询盘。'
         };
         setAuditResult(generatedResult);
       }
@@ -281,15 +281,15 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate, openBookingModal
           <span className="text-gradient-ai">让 AI 替你接住生意</span>
         </h1>
         <p className="mx-auto mt-6 max-w-2xl text-intro text-label-secondary">
-          独立站建站 · GEO · SEO · AI 智能客服及系统对接{SHOW_FDE && ' · FDE 驻场工程师'}。
-          为中国中型制造企业打通出海获客到售前转化的每一个环节。
+          独立站、SEO、GEO、AI 客服与系统对接{SHOW_FDE && '，以及 FDE 驻场'}。
+          帮中国中型制造企业让海外买家找得到、读得懂、信得过，询盘来了有人接。
         </p>
         <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
           <button type="button" onClick={scrollToAudit} className="btn btn-primary btn-lg">
-            免费评估出海就绪度
+            免费做 AI 可见性测评
           </button>
           <button type="button" onClick={openBookingModal} className="btn btn-secondary btn-lg">
-            预约专家诊断
+            预约诊断会
           </button>
         </div>
       </section>
@@ -355,17 +355,17 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate, openBookingModal
               {isAuditing ? (
                 <>
                   <Loader2 className="animate-spin" />
-                  正在评估…
+                  正在测评…
                 </>
               ) : (
-                '开始评估'
+                '开始测评'
               )}
             </button>
           </form>
 
           {/* 评估进度 */}
           {isAuditing && (
-            <ol className="mt-8 space-y-3 border-t border-separator pt-8" aria-label="评估进度">
+            <ol className="mt-8 space-y-3 border-t border-separator pt-8" aria-label="测评进度">
               {AUDIT_STEPS.map((step, index) => {
                 const stepNumber = index + 1;
                 const isDone = auditStep > stepNumber;
@@ -413,10 +413,10 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate, openBookingModal
 
               <dl className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
                 {[
-                  { label: 'GEO 生成式推荐', score: auditResult.geoScore },
-                  { label: 'Google 外贸 SEO', score: auditResult.seoScore },
-                  { label: '独立站技术合规', score: auditResult.siteScore },
-                  { label: '跨时区夜间响应', score: auditResult.responseScore },
+                  { label: 'GEO 被 AI 推荐', score: auditResult.geoScore },
+                  { label: 'Google 搜索可见', score: auditResult.seoScore },
+                  { label: '独立站技术表现', score: auditResult.siteScore },
+                  { label: '夜间响应', score: auditResult.responseScore },
                 ].map((metric) => {
                   const tone = scoreTone(metric.score);
                   return (
@@ -453,7 +453,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate, openBookingModal
                 <p className="mt-2 text-body text-label-secondary">{auditResult.recommendation}</p>
                 <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
                   <button type="button" onClick={openBookingModal} className="btn btn-primary">
-                    预约 45 分钟深度复盘
+                    预约 30 分钟诊断会
                   </button>
                   <button type="button" onClick={() => onNavigate('configurator')} className="link justify-center px-2 py-2 text-body sm:justify-start">
                     规划服务方案
@@ -475,7 +475,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate, openBookingModal
             <span className="inline-block">一套获客系统。</span>
           </h2>
           <p className="mx-auto mt-5 max-w-2xl text-intro text-label-secondary">
-            针对中国中型制造企业的出海痛点，每一项服务都有确定的落地系统与交付标准。
+            每一项服务都写明：做什么、交什么、怎样验收。
           </p>
         </Reveal>
 
@@ -549,8 +549,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate, openBookingModal
         <Reveal className="mx-auto max-w-4xl text-center">
           <p className="eyebrow">标杆案例</p>
           <h2 className="mt-3 text-headline">
-            <span className="inline-block">看中大型制造企业</span>
-            <span className="inline-block">如何突围。</span>
+            <span className="inline-block">看制造企业怎样走向海外。</span>
           </h2>
           <button type="button" onClick={() => onNavigate('cases')} className="link mt-5 text-intro">
             查看全部案例
@@ -566,17 +565,17 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate, openBookingModal
               stat: '47 → 95',
               statUnit: '分',
               statLabel: 'GEO / SEO 评分 · 国内官网 → 新建海外官网',
-              desc: '告别画册式官网，针对 4 类海外医疗决策者精准建模，系统化注入 91 项技术文献与临床证据链。ChatGPT 连续数月带来真实的欧洲采购引荐。',
-              pains: '看不见 · 不被信',
+              desc: '新建英文海外官网，按 4 类海外医疗决策者的提问组织内容，规划 91 项年度技术内容。数月内，ChatGPT 与 Perplexity 持续带来引荐访问。',
+              pains: '读不懂 · 不被信',
             },
             {
               meta: '国家级专精特新“小巨人” · 环保水务',
               name: '泰宁科创',
               stat: '60',
               statUnit: '组',
-              statLabel: 'Google 欧美核心词首位',
-              desc: '将国内工程叙事重塑为 60 组符合英国 SuDS 规范的核心英文词库，把地标工程转化为国际认可的证据链，打入欧美千万级项目短名单。',
-              pains: '读不懂 · 连不上',
+              statLabel: '英文核心词 · Google 欧美排名前两页',
+              desc: '围绕英国 SuDS 规范建立 60 组英文核心词，编制英文合规指南，把国内地标工程整理成海外工程师能查证的资料；已进入中东某新城雨水调蓄项目的供应商短名单。',
+              pains: '看不见 · 接不住',
             },
           ].map((item) => (
             <button
@@ -594,7 +593,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate, openBookingModal
               <p className="mt-1 text-caption text-label-secondary">{item.statLabel}</p>
               <p className="mt-6 flex-1 text-body text-label-secondary">{item.desc}</p>
               <div className="mt-8 flex w-full flex-wrap items-center justify-between gap-3 border-t border-separator pt-5">
-                <span className="text-caption text-label-secondary">解决断点：{item.pains}</span>
+                <span className="text-caption text-label-secondary">对应卡点：{item.pains}</span>
                 <span className="link text-body">
                   阅读案例
                   <ChevronRight className="transition-transform duration-200 group-hover:translate-x-0.5" />
@@ -609,18 +608,18 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate, openBookingModal
       <section className="section layout-text pt-0 text-center">
         <Reveal>
           <h2 className="text-headline">
-            <span className="inline-block">让出海体系，</span>
-            <span className="inline-block">具备拿下海外大单的转化能力。</span>
+            <span className="inline-block">先看清现状，</span>
+            <span className="inline-block">再决定做什么。</span>
           </h2>
           <p className="mx-auto mt-5 max-w-2xl text-intro text-label-secondary">
-            免费完成 AI 可见性测评，或预约 45 分钟架构师闭门复盘，获取专属《出海 GEO & SEO 改善路线图》。
+            先做免费的 AI 可见性测评；想要人工解读，就预约 30 分钟诊断会，会后给出书面的改进清单。
           </p>
           <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
             <button type="button" onClick={scrollToAudit} className="btn btn-primary btn-lg">
               开始 AI 可见性测评
             </button>
             <button type="button" onClick={openBookingModal} className="btn btn-secondary btn-lg">
-              预约 45 分钟诊断
+              预约 30 分钟诊断会
             </button>
           </div>
         </Reveal>

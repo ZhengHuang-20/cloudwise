@@ -22,9 +22,9 @@ const ALL_GLOSSARY_TERMS: GlossaryTerm[] = [
     englishTerm: 'Generative Engine Optimization',
     category: 'SEO/GEO',
     questionTitle: '什么是出海 GEO（生成式引擎优化）？',
-    oneLineDefinition: 'GEO 是一种优化企业知识与权威信源的方法，旨在让 ChatGPT、Perplexity、Gemini 等 AI 在生成答案时，将您的企业作为优先供应商名字推荐给海外采购商。',
-    detailedExplanation: `不同于传统 SEO 仅关注关键词在搜索结果列表中的排序，GEO 面向的是具备自主综合与推理能力的生成式大语言模型。大模型在面对“推荐几家亚洲高质量骨科植入物供应商”等采购问题时，会基于训练数据及实时检索结果，抓取具备明确定义、可信数值表格与权威第三方引用的实体知识。GEO 就是通过决策者建模、技术白皮书、行业权威信源铺设与月度监测，让 AI 认同并推荐您的品牌。`,
-    realWorldExample: '爱康医疗通过 GEO 实施，在 ChatGPT 与 Perplexity 提问亚洲 3D 打印多孔钛骨科耗材时，从最初未被提及转变为稳居前三位推荐并直接附带技术指南信源。',
+    oneLineDefinition: 'GEO 是把企业资料整理成 AI 能查证、愿意引用的公开来源，提高 ChatGPT、Perplexity、Gemini 等在回答海外采购问题时提到你的机会。',
+    detailedExplanation: `不同于传统 SEO 仅关注关键词在搜索结果列表中的排序，GEO 面向的是能综合多个来源生成回答的大语言模型。大模型在面对“推荐几家亚洲高质量骨科植入物供应商”等采购问题时，会基于训练数据及实时检索结果，抓取具备明确定义、可信数值表格与权威第三方引用的实体知识。GEO 就是通过决策者建模、技术白皮书、行业权威信源铺设与月度监测，让 AI 在回答时引用你的资料。`,
+    realWorldExample: '爱康医疗通过 GEO 实施，在 ChatGPT 与 Perplexity 提问亚洲 3D 打印多孔钛骨科耗材时，从最初没有被提及，变为在多次测试中位于前三位，并附上技术指南链接。',
     commonPitfalls: [
       '误以为 GEO 是通过黑客手段给大模型“投毒”或刷单，合规的 GEO 必须建立在真实公开的权威技术证据链上。',
       '以为只要在官网用 AI 批量生成成百上千篇低质文章就能提升 GEO，实际上低质洗稿文章会被搜索引擎降权，AI 同样拒绝引用。'
@@ -57,9 +57,9 @@ const ALL_GLOSSARY_TERMS: GlossaryTerm[] = [
     englishTerm: 'Experience, Expertise, Authoritativeness, Trustworthiness',
     category: 'SEO/GEO',
     questionTitle: '什么是 Google E-E-A-T 质量评估框架？',
-    oneLineDefinition: 'Google 评估网页可信度与排名的核心标准，即：真实经验 (Experience)、专业水准 (Expertise)、行业权威度 (Authoritativeness) 与最高核心原则——可信赖度 (Trustworthiness)。',
-    detailedExplanation: `在出海 B2B 工业品与医疗领域，海外采购属于重大商业决策。Google 与 AI 爬虫极其严格地根据 E-E-A-T 信号筛选内容。企业必须在网站上展示具备真实手术经验或工程应用的项目照片、技术作者的认证背景、国际权威检测实验室的报告，以及严密的隐私与防伪政策。`,
-    realWorldExample: '泰宁科创将国内参编国标的行业地位，改写为符合英国工程标准的权威技术报告，显著提升了全站的 E-E-A-T 权威信号。',
+    oneLineDefinition: 'Google 质量评估指南里用来评价内容可信度的框架，即：真实经验 (Experience)、专业水准 (Expertise)、行业权威度 (Authoritativeness) 与最高核心原则——可信赖度 (Trustworthiness)。',
+    detailedExplanation: `在出海 B2B 工业品与医疗领域，海外采购属于重大商业决策。Google 的质量评估会参考 E-E-A-T 信号。企业必须在网站上展示具备真实手术经验或工程应用的项目照片、技术作者的认证背景、国际权威检测实验室的报告，以及严密的隐私与防伪政策。`,
+    realWorldExample: '泰宁科创将国内参编国标的行业地位，改写为符合英国工程标准的权威技术报告，补充了可核查的标准依据。',
     commonPitfalls: [
       '把纯宣传口号（如“世界领先、品质第一”）当成专业证据，缺乏可查验的第三方测试报告。'
     ],
@@ -74,8 +74,8 @@ const ALL_GLOSSARY_TERMS: GlossaryTerm[] = [
     category: '技术底座',
     questionTitle: '什么是 Core Web Vitals？为什么外贸站必须过关？',
     oneLineDefinition: 'Google 衡量网页用户体验的三大硬性技术指标，涵盖最大内容绘制时间 (LCP)、下一次交互延迟 (INP) 和累积布局偏移 (CLS)。',
-    detailedExplanation: `对于出海网站而言，买家分布在欧美、中东等不同大洲。如果服务器仅部署在国内或未经全球 CDN 优化，欧美买家打开网页常需 8-10 秒。Google 明确将 Core Web Vitals 作为核心排名算法因子，性能不合格的网站会被直接降权。`,
-    realWorldExample: '通过静态渲染与全球 Anycast CDN 边缘加速，将海外平均首屏 LCP 控制在 1.8 秒以内，跳出率直接下降 35%。',
+    detailedExplanation: `对于出海网站而言，买家分布在欧美、中东等不同大洲。如果服务器仅部署在国内或未经全球 CDN 优化，海外访问可能明显变慢。Google 把页面体验（含 Core Web Vitals）作为排名参考之一：速度差会影响体验，也可能影响排名，但不是唯一因素。`,
+    realWorldExample: '通过静态渲染与全球 Anycast CDN 边缘加速，将海外平均首屏 LCP 控制在 1.8 秒以内。',
     commonPitfalls: [
       '在首页堆砌未压缩的数十兆大尺寸高清轮播视频，导致移动端严重卡顿。'
     ],

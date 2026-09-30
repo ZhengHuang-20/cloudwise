@@ -34,8 +34,8 @@ export const ResourcesView: React.FC<{ onGoToLesson?: (lessonId: string) => void
     <div>
       <PageHeader
         eyebrow="资源"
-        title="实战模板与出海术语"
-        intro="模板与白皮书帮你落地执行；术语百科用问答写成，同时供全球搜索引擎与 AI 爬虫收录引用。"
+        title="模板、白皮书与术语"
+        intro="模板与白皮书帮你动手做；术语百科用一问一答写成，方便你查，也方便搜索引擎与 AI 引用。"
       >
         <SegmentedControl
           ariaLabel="资源类型"
@@ -60,9 +60,7 @@ export const ResourcesView: React.FC<{ onGoToLesson?: (lessonId: string) => void
                 <h2 className="mt-3 text-title-3">{item.title}</h2>
                 <p className="mt-2 flex-1 text-body text-label-secondary">{item.description}</p>
                 <div className="mt-6 flex items-center justify-between border-t border-separator pt-4">
-                  <span className="text-caption tabular-nums text-label-secondary">
-                    {item.downloadCount.toLocaleString()} 次下载
-                  </span>
+                  <span aria-hidden="true" />
                   <button type="button" onClick={() => handleDownload(item)} className="btn btn-neutral btn-sm">
                     <Download />
                     下载

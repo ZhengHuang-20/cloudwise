@@ -46,10 +46,10 @@ const SYSTEM_KNOWLEDGE_INSTRUCTION = `
 你是“云端智荐”的资深 AI 出海售前咨询顾问。
 云端智荐定位是“中国出海企业 AI 售前支持系统 + 能力样板间”。
 
-【${SERVICE_COUNT_CN}大核心服务与解决的五大断点】：
-1. 海外独立站建站（解决“读不懂”）：针对海外买家、Google、AI 三类读者协同构建。解决传统画册型官网无人能懂的问题。
-2. 外贸 SEO 优化（解决“看不见”）：E-E-A-T 质量框架、关键词集群、让海外买家在 Google 首页找到你。
-3. 出海 GEO 优化（解决“不被信”）：生成式引擎优化，让 ChatGPT、Perplexity、Gemini 等 AI 答案直接推荐客户品牌。六步闭环：诊断、建模、内容、信源、口碑、监测。
+【${SERVICE_COUNT_CN}大核心服务与解决的五个卡点】：
+1. 海外独立站建站（解决“读不懂”）：面向海外采购主管、技术总监、合规官三类读者构建，同时让搜索引擎与 AI 读得懂。解决传统画册型官网无人能懂的问题。
+2. 外贸 SEO 优化（解决“看不见”）：E-E-A-T 质量框架、关键词集群、让海外买家在 Google 搜索时更容易看到你。
+3. 出海 GEO 优化（解决“不被信”）：生成式引擎优化，提高 ChatGPT、Perplexity、Gemini 等 AI 在回答里引用客户品牌的机会。六步闭环：诊断、建模、内容、信源、口碑、监测。
 4. AI 智能客服及系统对接（解决“接不住”${SHOW_FDE ? '' : '与“连不上”'}）：7×24小时跨时区接住海外询盘，多语种即时答复，结构化抽取需求，直连 CRM、企业微信与邮件。
 ${SHOW_FDE ? FDE_KNOWLEDGE : ''}
 
@@ -60,7 +60,8 @@ ${SHOW_FDE ? FDE_KNOWLEDGE : ''}
 【报价规则】：
 - 首页的 AI 可见性测评免费提供。
 - 不公开任何服务价格、预算区间、折扣或付款比例，回答中不给出任何金额数字。客户问到费用时，说明投入取决于 SKU 规模、目标市场、语种与需要打通的系统，需在诊断会后由架构师出具定制方案。
-- 绝不对任何未实测客户承诺“保证第一名”或虚假夸大。
+- 绝不对任何未实测客户承诺“保证第一名”或虚假夸大；不使用“保证、确保、彻底、必然”等绝对化措辞。
+- 区分“已实测的案例数据”和“示例”；不知道的就说不知道，并引导到诊断会。
 
 【你的任务与风格】：
 1. 用专业、客观、严谨、有洞察力的语气回答外贸决策者（老板、外贸总监、IT 负责人）。
@@ -93,7 +94,7 @@ app.post('/api/gemini/chat', async (req, res) => {
 - 职位/角色: ${userContext.role || '未提供'}
 - 企业名称: ${userContext.company || '未提供'}
 - 行业领域: ${userContext.industry || '出海制造/科技'}
-- 已测断点: ${userContext.frictions?.join(', ') || '未测评'}
+- 已测卡点: ${userContext.frictions?.join(', ') || '未测评'}
 
 访客最新消息：
 "${message}"
@@ -137,7 +138,7 @@ app.post('/api/gemini/chat', async (req, res) => {
           extractedFields: {},
           recommendedServices: ['出海GEO优化', 'AI智能客服及系统对接'],
           suggestedNextAction: '建议在首页完成“AI 可见性测评”，免费查看品牌在 ChatGPT、Perplexity 与 Google 中的表现。',
-          sourceCitations: ['《云端智荐知识库 · 售前五大断点总览》'],
+          sourceCitations: ['《云端智荐知识库 · 售前五个卡点总览》'],
         });
       }
     } catch (err: any) {
@@ -153,7 +154,7 @@ app.post('/api/gemini/chat', async (req, res) => {
   let intentReason = '常规业务咨询';
   const recommendedServices: string[] = [];
   let suggestedNextAction = '建议在首页完成“AI 可见性测评”，再用“方案规划”匹配最适合的服务组合。';
-  const citations = ['《云端智荐 AI 出海白皮书》', '《出海企业五大断点治理指南》'];
+  const citations = ['《云端智荐 AI 出海白皮书》', '《出海企业五个卡点治理指南》'];
 
   if (lowerMsg.includes('geo') || lowerMsg.includes('chatgpt') || lowerMsg.includes('ai推荐') || lowerMsg.includes('可见性')) {
     answer = `GEO（生成式引擎优化）是我们最具差异化的旗舰服务。不同于传统 SEO 仅在搜索结果列表排位，GEO 的核心是让 ChatGPT、Perplexity、Gemini 等主流 AI 在直接向海外采购商推荐供应商时，首选并权威引用您的品牌。\n\n我们通过六步闭环（诊断、建模、内容、信源、口碑、监测）建立权威证据链。以爱康医疗为例，其现有国内官网的 GEO / SEO 评分仅 47 分，我们新建的海外官网达到 95 分，ChatGPT 连续数月带来真实高意向采购商访问。`;
@@ -182,7 +183,7 @@ app.post('/api/gemini/chat', async (req, res) => {
     recommendedServices.push('FDE 驻场工程师服务');
     suggestedNextAction = '建议预约 60 分钟技术对接评估会，与我们的技术专家面对面梳理系统现状。';
   } else {
-    answer = `您好！我是云端智荐 AI 售前顾问。我们专注解决中国企业出海获客全链路的五大断点：看不见（SEO/GEO）、读不懂（独立站）、不被信（权威内容）、接不住（AI 客服）、连不上（${SHOW_FDE ? '经验、系统与 AI 没打通，由 FDE 驻场解决' : '询盘与 CRM、ERP 系统没打通'}）。\n\n您可以告诉我您企业的主营产品和目前海外获客遇到的主要困扰，我将为您梳理最精准的破局路径。`;
+    answer = `您好！我是云端智荐 AI 售前顾问。我们专注解决中国企业出海获客全链路的五个卡点：看不见（SEO/GEO）、读不懂（独立站）、不被信（权威内容）、接不住（AI 客服）、连不上（${SHOW_FDE ? '经验、系统与 AI 没打通，由 FDE 驻场解决' : '询盘与 CRM、ERP 系统没打通'}）。\n\n您可以告诉我您企业的主营产品和目前海外获客遇到的主要困扰，我将为您梳理最精准的破局路径。`;
     intent = 'LOW';
     intentReason = '初次探索交流';
     recommendedServices.push('AI 可见性测评', '独立站建站');

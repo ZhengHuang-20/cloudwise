@@ -69,15 +69,15 @@ export const CASE_STUDIES: CaseStudy[] = [
       finalScore: 95,
       metrics: [
         '新建海外官网 GEO / SEO 评分 95 分，现有国内官网为 47 分',
-        'chatgpt.com、perplexity.ai 连续数月产生高粘性引荐访问（平均停留 4m35s）',
+        'chatgpt.com、perplexity.ai 数月持续产生引荐访问（平均停留 4 分 35 秒）',
         '海外官网自然询盘量环比增长 320%'
       ],
-      directOutcome: '在欧洲与拉美多次医院国际公开招投标调研中，被 ChatGPT 与 Perplexity 列入亚太前三推荐合格合规供应商！'
+      directOutcome: '在欧洲与拉美多次医院国际招投标的调研提问中，ChatGPT 与 Perplexity 将其列为亚太地区推荐供应商的前三位。'
     },
     dataScopeStatement: '注：47 分是现有国内官网 (ak-medical.net)、95 分是新建海外官网 (ak-medical-global.com) 的 GEO / SEO 评分，是两个站点的对比，而非同一站点改造前后的变化；两者均由第三方评测工具 arobis.ai 按同一口径（全网站点信号、Schema 定义完整度与信源权重）测得；引荐流量与询盘来源于 Google Analytics 4 与 CRM 真实埋点。',
     relatedLessons: ['lesson-a-1-2', 'lesson-a-7-4', 'lesson-c-1-1', 'lesson-c-10-2'],
     reusableExperience: [
-      '先建模再写内容：搞清海外买家究竟问 AI 什么问题，绝不闭门造车自说自话',
+      '先弄清海外买家会问 AI 什么，再写内容',
       '官网作为唯一信源中心：所有第三方媒体报道和 LinkedIn 均反向锚定官网的定义页',
       '专业严谨的口径说明：出海医疗企业更看重真实性，数据不掺水才能赢得国际信赖'
     ],
@@ -94,10 +94,10 @@ export const CASE_STUDIES: CaseStudy[] = [
     status: '国家级专精特新“小巨人”企业 · 参编数十项国家行业标准',
     targetMarket: '欧洲（英国、德国）、中东、东南亚市政基础设施总包与水务工程',
     buyerRoles: ['跨国企业 ESG 投资官', '欧洲市政雨水管网规划工程师', '海外水利设计院总工', '国际工程总承包商采购总监'],
-    startingPointFriction: '在国内拥有水立方、北京大兴机场等顶级标杆案例，但在海外 Google 与 AI 搜索中几乎“查无此人”，英文词系严重错位。',
+    startingPointFriction: '在国内拥有水立方、北京大兴机场等顶级标杆案例，但在海外 Google 与 AI 搜索中几乎看不到，英文关键词与海外工程师的用词对不上。',
     startingScore: 38,
     whatWeDid: [
-      '梳理覆盖 60 组高商业价值的英文核心词库，精准击穿信息型、对比型、采购型意图',
+      '梳理覆盖 60 组高商业价值的英文核心词库，覆盖信息型、对比型、采购型三类搜索意图',
       '对照英国 SuDS（可持续排水系统）规范，编制全套英文合规指南与选型计算手册',
       '发布《虹吸排水 vs 重力排水全生命周期成本对比》带交互数据表的技术文章',
       '部署 7×24 小时 AI 智能客服，多语种承接来自中东与欧洲的跨时区工程大宗询价'
@@ -107,16 +107,16 @@ export const CASE_STUDIES: CaseStudy[] = [
       metrics: [
         '60 组英文核心词在 Google 欧美主要地区排名前两页',
         '英国市政规划相关提问在 Perplexity 搜索中被直接引用为参考信源',
-        '非工作时间高价值工程询盘接住率达 100%'
+        '非工作时间收到的工程询盘，全部得到首次回复'
       ],
-      directOutcome: '成功进入中东大型新城雨水调蓄项目的国际供应商短名单，单笔意向采购超 80 万美元！'
+      directOutcome: '进入中东某新城雨水调蓄项目的国际供应商短名单，客户方给出的意向采购额超过 80 万美元。'
     },
     dataScopeStatement: '注：关键词排名通过 Google Search Console 实时监测；Perplexity 引用通过每月空白探针会话实测验证。',
     relatedLessons: ['lesson-b-1-3', 'lesson-b-3-5', 'lesson-d-1-2'],
     reusableExperience: [
       '将中文参编国标的威望，转化为欧美同业工程规范（如 SuDS / ASTM）的合规技术证据',
-      '一词一页精准映射，杜绝企业内部网页相互争抢排名权重',
-      'AI 客服即时锁定深夜提问的海外工程师，避免在方案初选期被竞品截流'
+      '一词一页精准映射，避免公司自己的多个页面争同一个词',
+      'AI 客服即时锁定深夜提问的海外工程师，避免在买家初选阶段错过他们的询问'
     ],
     testimonial: {
       quote: '“以前我们在海外参展发册子，展会一过就没声了。现在欧洲的总包工程师在搜 SuDS 解决方案时直接看到了我们的白皮书，这是我们做过最划算的出海投资。”',
@@ -131,7 +131,7 @@ export const INDUSTRY_SOLUTIONS: IndustrySolution[] = [
     id: 'solution-medical',
     name: '医疗器械与高端耗材出海方案',
     iconName: 'Activity',
-    description: '针对海外医院、采购委员会与药监合规的高信任度获客全套解决方案。',
+    description: '面向海外医院、采购委员会与药监合规的获客方案。',
     overseasDecisionMakers: [
       { role: '专科主治医生', focusPoints: ['临床实证数据', '生物相容性', '手术器械手感与操作便捷性'] },
       { role: '采购委员会主任', focusPoints: ['总采购成本', 'FDA/CE 认证编号', '批次稳定性与供应链交付'] },
@@ -154,7 +154,7 @@ export const INDUSTRY_SOLUTIONS: IndustrySolution[] = [
     id: 'solution-environmental',
     name: '环保科技与市政工程出海方案',
     iconName: 'ShieldCheck',
-    description: '击穿国际总承包商、海外市政规划院与水务机构的工程选型决策链。',
+    description: '帮助国际总承包商、海外市政规划院与水务机构在选型时找到你、信任你。',
     overseasDecisionMakers: [
       { role: '市政工程水务总工', focusPoints: ['暴雨重现期计算依据', '材质抗压等级', 'ASTM 检验报告'] },
       { role: '国际 EPC 总承包采购', focusPoints: ['装箱海运容积率', '现场拼装工时节约', '国际付款条件与质保'] },
@@ -167,7 +167,7 @@ export const INDUSTRY_SOLUTIONS: IndustrySolution[] = [
     ],
     recommendedContentFormat: [
       '符合当地规范的工程选型计算器与 CAD 节点图下载',
-      '水立方、机场等世界级地标项目英文施工与运行实测报告',
+      '水立方、大兴机场等地标项目的英文施工与运行实测报告',
       '抗压试验及使用寿命第三方检测实验室报告'
     ],
     complianceNotes: ['明确注明适用欧美当地工程标准（BS EN 17152-1, ASTM 等）'],

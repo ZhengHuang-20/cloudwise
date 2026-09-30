@@ -40,7 +40,7 @@ export const DealRoomView: React.FC<{ onGoToBooking: () => void }> = ({ onGoToBo
   const [qaList, setQaList] = useState([
     {
       q: 'AI 智能客服如何避免对海外买家做出超出权限的承诺？',
-      a: '通过严格的系统级知识库隔离与防幻觉边界设置。AI 客服只依据后台录入的参数表、认证与交期规则作答，一旦买家提出合同条款或特殊商务条件，系统自动分流并触发销售人工接管。',
+      a: 'AI 客服只依据后台录入的参数表、认证与交期规则作答，一旦买家提出合同条款或特殊商务条件，系统自动分流并触发销售人工接管。',
       author: '客户方技术总监',
       time: '昨天',
     }
@@ -80,8 +80,9 @@ export const DealRoomView: React.FC<{ onGoToBooking: () => void }> = ({ onGoToBo
           <div className="min-w-0">
             <h1 className="text-title-1">{activeProposal?.title || '出海企业专属方案空间'}</h1>
             <p className="mt-3 text-body text-label-secondary">
-              {user?.companyName || '某外贸智造龙头'} · 方案状态：商务审阅中
+              {user?.companyName || '贵司'} · 方案状态：商务审阅中
             </p>
+            <p className="mt-1 text-caption text-label-secondary">示例空间：以下为演示内容，不代表真实项目。</p>
           </div>
           <div className="flex shrink-0 gap-3">
             <button
@@ -115,14 +116,14 @@ export const DealRoomView: React.FC<{ onGoToBooking: () => void }> = ({ onGoToBo
               </h2>
               <div className="mt-6 max-w-3xl space-y-4 text-body text-label-secondary">
                 <p>
-                  尊敬的 <span className="font-semibold text-label">{user?.companyName || '贵司团队'}</span> 决策层：
+                  致 <span className="font-semibold text-label">{user?.companyName || '贵司'}</span>：
                 </p>
                 <p>
-                  综合 AI 可见性测评与前期访谈，贵司在海外采购市场的核心卡点集中在
-                  <span className="font-semibold text-label">“海外买家问 AI 时查无此人（GEO 不被信）”</span>与
-                  <span className="font-semibold text-label">“跨时区夜间询盘延迟流失（接不住）”</span>。
+                  根据 AI 可见性测评与前期沟通，目前最主要的两个卡点是：
+                  <span className="font-semibold text-label">“海外买家问 AI 时看不到贵司（不被信）”</span>和
+                  <span className="font-semibold text-label">“欧美工作时间的询盘无人及时回复（接不住）”</span>。
                 </p>
-                <p>双方团队将围绕共同行动计划按周推进，确保每个阶段都有可量化的业务指标产出。</p>
+                <p>双方按共同行动计划逐周推进，每个阶段都约定可以核对的成果与指标。</p>
               </div>
 
               <dl className="mt-10 grid grid-cols-2 gap-6 border-t border-separator pt-8 sm:grid-cols-3">
@@ -261,14 +262,14 @@ export const DealRoomView: React.FC<{ onGoToBooking: () => void }> = ({ onGoToBo
               </li>
               <li>
                 <span className="font-semibold text-label">第二条　数据保密条款　</span>
-                严格恪守保密义务，采用物理隔离存储，未经授权绝不对外披露。
+                乙方对项目资料承担保密义务，未经甲方书面同意不对外披露；存储方式以正式合同为准。
               </li>
             </ol>
 
             {isContractSigned ? (
               <p className="mt-8 flex items-center gap-3 text-body animate-fade-in">
                 <CheckCircle2 className="h-6 w-6 text-success" />
-                合同已生效，本空间已升级为项目交付空间。
+                示例：签署后，本空间将升级为项目交付空间。
               </p>
             ) : (
               <button

@@ -46,7 +46,7 @@ export const AiConsultantModal: React.FC = () => {
     {
       id: 'welcome',
       sender: 'assistant',
-      text: `您好！我是云端智荐官方 AI 售前顾问。\n\n我们专为中国出海企业打通“独立站、SEO、GEO、AI 客服${SHOW_FDE ? '及 FDE 驻场' : '及系统对接'}”全链路获客断点。您可以向我询问技术方案、爱康医疗实战案例、交付周期与实施路径，或告诉我您目前的出海痛点。`,
+      text: `您好！我是云端智荐官方 AI 售前顾问。\n\n我们专为中国出海企业打通“独立站、SEO、GEO、AI 客服${SHOW_FDE ? '及 FDE 驻场' : '及系统对接'}”，覆盖从获客到转化的各个环节。您可以向我询问技术方案、爱康医疗实战案例、交付周期与实施路径，或告诉我您目前的出海痛点。`,
       timestamp: '刚刚',
       intent: 'LOW',
       intentReason: '初始系统接待',
@@ -128,7 +128,7 @@ export const AiConsultantModal: React.FC = () => {
         {
           id: `ai-err-${Date.now()}`,
           sender: 'assistant',
-          text: '网络有些不稳定。建议直接预约资深出海架构师，进行 30 分钟闭门交流。',
+          text: '网络暂时不稳定，请稍后再试，或预约 30 分钟诊断会。',
           timestamp: '刚刚',
           intent: 'MEDIUM',
         },
@@ -263,7 +263,7 @@ export const AiConsultantModal: React.FC = () => {
               {[
                 ['行业', latestAiMessage?.extractedFields?.industry || user?.industry || '待识别'],
                 ['目标市场', latestAiMessage?.extractedFields?.targetMarkets || '欧美'],
-                ['预算意向', latestAiMessage?.extractedFields?.budgetSignal || '评估中'],
+                ['预算信号', latestAiMessage?.extractedFields?.budgetSignal || '未提及'],
               ].map(([label, value]) => (
                 <div key={label} className="flex justify-between gap-4 py-3 text-body">
                   <dt className="text-label-secondary">{label}</dt>
@@ -281,7 +281,7 @@ export const AiConsultantModal: React.FC = () => {
             <dl className="mt-2 divide-y divide-separator border-y border-separator">
               {[
                 ['企业', user?.companyName || '未知企业'],
-                ['阶段', 'MQL 营销合格线索'],
+                ['阶段', '待判定'],
                 ['推荐服务', latestAiMessage?.recommendedServices?.join(' + ') || '出海 GEO 优化'],
               ].map(([label, value]) => (
                 <div key={label} className="flex justify-between gap-4 py-3 text-body">

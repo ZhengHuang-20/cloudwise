@@ -129,7 +129,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         toolType: 'ai_visibility',
         toolName: 'AI 可见性测评',
         score: 62,
-        summary: '在“看不见”与“不被信”断点存在显著薄弱项，建议首选 SEO + GEO 获客组合。',
+        summary: '在“看不见”与“不被信”卡点存在显著薄弱项，建议首选 SEO + GEO 获客组合。',
         date: new Date(Date.now() - 3600000 * 48).toLocaleDateString(),
         details: {}
       }

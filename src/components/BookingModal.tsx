@@ -36,7 +36,7 @@ export const BookingModal: React.FC<{ isOpen: boolean; onClose: () => void }> = 
   const handleBookingSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setIsBooked(true);
-    logLeadActivity(`预约出海闭门诊断会 (${selectedDate} ${selectedSlot})`, 30, {
+    logLeadActivity(`预约出海诊断会 (${selectedDate} ${selectedSlot})`, 30, {
       meetingType,
       contactName,
       companyName,

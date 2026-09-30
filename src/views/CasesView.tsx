@@ -27,8 +27,8 @@ export const CasesView: React.FC<CasesViewProps> = ({ onGoToAudit }) => {
     <div>
       <PageHeader
         eyebrow="标杆案例"
-        title="标杆实战案例与行业方案"
-        intro="每个案例都用同一套字段呈现：痛点起点、实施动作、实测成果与可核验的口径说明。"
+        title="案例与行业方案"
+        intro="每个案例按同样的顺序写：起点、做了什么、结果，以及数据的口径。"
       >
         <SegmentedControl
           ariaLabel="案例内容"
@@ -101,7 +101,7 @@ export const CasesView: React.FC<CasesViewProps> = ({ onGoToAudit }) => {
                   <p className="mt-3 text-body text-label-secondary">{currentCase.startingPointFriction}</p>
                 </section>
                 <section>
-                  <h3 className="text-title-3">建模的海外决策者</h3>
+                  <h3 className="text-title-3">我们研究的海外决策者</h3>
                   <ul className="mt-4 flex flex-wrap gap-2">
                     {currentCase.buyerRoles.map((role) => (
                       <li key={role} className="badge font-normal text-label">
@@ -129,7 +129,7 @@ export const CasesView: React.FC<CasesViewProps> = ({ onGoToAudit }) => {
 
               {/* 成果 */}
               <section className="mt-10 border-t border-separator pt-10">
-                <h3 className="text-title-3">实测成果</h3>
+                <h3 className="text-title-3">结果</h3>
                 <ul className="mt-5 space-y-3">
                   {currentCase.results.metrics.map((metric) => (
                     <li key={metric} className="flex gap-3 text-body">
@@ -156,7 +156,7 @@ export const CasesView: React.FC<CasesViewProps> = ({ onGoToAudit }) => {
               <div className="mt-10 flex flex-col gap-6 border-t border-separator pt-8 md:flex-row md:items-center md:justify-between">
                 <p className="max-w-2xl text-caption text-label-secondary">{currentCase.dataScopeStatement}</p>
                 <button type="button" onClick={onGoToAudit} className="btn btn-primary shrink-0">
-                  为我的企业做同款测评
+                  给我的企业做同样的测评
                 </button>
               </div>
             </article>

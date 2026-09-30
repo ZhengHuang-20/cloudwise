@@ -87,7 +87,7 @@ export const ConfiguratorView: React.FC<ConfiguratorViewProps> = ({
     <div>
       <PageHeader
         eyebrow="方案规划"
-        title="组合服务，即刻看到交付路线"
+        title="组合服务，看到交付周期与步骤"
         intro="把复杂的出海工程拆解为清晰的服务组合、实施周期与阶段成果。"
       />
 
@@ -110,12 +110,12 @@ export const ConfiguratorView: React.FC<ConfiguratorViewProps> = ({
                   className="card interactive flex flex-col items-start aria-checked:shadow-[inset_0_0_0_2px_var(--color-accent)]"
                 >
                   <div className="flex w-full items-start justify-between gap-3">
-                    {pkg.isPopular ? <span className="badge">最受欢迎</span> : <span />}
+                    {pkg.isPopular ? <span className="badge">常见起点</span> : <span />}
                     {isSelected && <CheckCircle2 className="h-6 w-6 shrink-0 text-link" aria-hidden="true" />}
                   </div>
                   <h3 className="mt-3 text-title-3">{pkg.name}</h3>
                   <p className="mt-2 flex-1 text-body text-label-secondary">{pkg.tagline}</p>
-                  <p className="mt-4 text-caption text-label-secondary">补齐断点：{pkg.solvesFrictions.join(' · ')}</p>
+                  <p className="mt-4 text-caption text-label-secondary">解决的卡点：{pkg.solvesFrictions.join(' · ')}</p>
                   <p className="mt-5 w-full border-t border-separator pt-4 text-title-2 tabular-nums">
                     {pkg.durationWeeks[0]} ~ {pkg.durationWeeks[1]}
                     <span className="ml-1 text-body font-normal text-label-secondary">周</span>
@@ -307,7 +307,7 @@ export const ConfiguratorView: React.FC<ConfiguratorViewProps> = ({
                   复制链接
                 </button>
                 <button type="button" onClick={onGoToBooking} className="btn btn-secondary">
-                  预约确认
+                  预约诊断会
                 </button>
               </div>
             </div>
