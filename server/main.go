@@ -16,12 +16,14 @@ import (
 )
 
 type App struct {
-	cfg          Config
-	db           *sql.DB // 未配置 MySQL 时为 nil，AI 接口仍可用
-	gemini       *Gemini // 未配置 key 时为 nil，走确定性 fallback
-	dbState      string  // unconfigured | ok | failed
-	dbIssue      string  // 失败阶段与错误摘要（不含敏感信息）
-	loginLimiter *limiter
+	cfg            Config
+	db             *sql.DB // 未配置 MySQL 时为 nil，AI 接口仍可用
+	gemini         *Gemini // 未配置 key 时为 nil，走确定性 fallback
+	dbState        string  // unconfigured | ok | failed
+	dbIssue        string  // 失败阶段与错误摘要（不含敏感信息）
+	loginLimiter   *limiter
+	collectLimiter *limiter // 公开接口按 IP 限流
+	leadLimiter    *limiter
 }
 
 func (a *App) routes() http.Handler {
@@ -49,6 +51,16 @@ func (a *App) routes() http.Handler {
 
 	// 客户视角
 	mux.HandleFunc("GET /api/sites", a.authed(authOpts{}, a.mySites))
+	mux.HandleFunc("GET /api/sites/{id}/stats", a.authed(authOpts{}, a.withSite(a.siteStats)))
+	mux.HandleFunc("GET /api/sites/{id}/leads", a.authed(authOpts{}, a.withSite(a.siteLeads)))
+	mux.HandleFunc("GET /api/sites/{id}/leads.csv", a.authed(authOpts{}, a.withSite(a.exportLeads)))
+	mux.HandleFunc("PATCH /api/sites/{id}/leads/{leadId}", a.authed(authOpts{}, a.withSite(a.updateLead)))
+
+	// 对外公开接口：其他网站的采集脚本与表单调用，靠 site_key 识别站点
+	mux.HandleFunc("POST /api/public/collect", a.handleCollect)
+	mux.HandleFunc("POST /api/public/leads", a.handleSubmitLead)
+	mux.HandleFunc("OPTIONS /api/public/", publicPreflight)
+	mux.HandleFunc("GET /cw.js", a.handleScript)
 
 	// 管理员
 	mux.HandleFunc("GET /api/admin/organizations", a.authed(adminOnly, a.adminListOrgs))
@@ -214,7 +226,8 @@ func main() {
 		}
 	}
 
-	app := &App{cfg: cfg, gemini: NewGemini(cfg.GeminiKey, cfg.GeminiModel), loginLimiter: newLimiter(10, time.Minute)}
+	app := &App{cfg: cfg, gemini: NewGemini(cfg.GeminiKey, cfg.GeminiModel), loginLimiter: newLimiter(10, time.Minute),
+		collectLimiter: newLimiter(120, time.Minute), leadLimiter: newLimiter(10, time.Minute)}
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 

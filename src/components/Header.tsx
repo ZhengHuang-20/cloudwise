@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Menu, User, X } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 import { NAV_GROUPS, NAV_ITEMS, TabId } from './navigation';
 
 interface HeaderProps {
@@ -16,6 +17,7 @@ export const Header: React.FC<HeaderProps> = ({
   openMySpaceModal,
 }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { user } = useAuth();
 
   useEffect(() => {
     if (!isMenuOpen) return;
@@ -79,6 +81,15 @@ export const Header: React.FC<HeaderProps> = ({
 
           {/* 右侧操作 */}
           <div className="ml-auto flex shrink-0 items-center gap-2 lg:ml-0">
+            <button
+              type="button"
+              onClick={() => go(user ? 'console' : 'login')}
+              aria-current={currentTab === 'login' || currentTab === 'console' ? 'page' : undefined}
+              className="btn btn-neutral btn-sm hidden sm:inline-flex"
+            >
+              {user ? '客户后台' : '登录'}
+            </button>
+
             <button type="button" onClick={openBookingModal} className="btn btn-primary btn-sm">
               预约诊断
             </button>
@@ -163,6 +174,13 @@ export const Header: React.FC<HeaderProps> = ({
                 className="btn btn-neutral btn-lg btn-block"
               >
                 我的空间
+              </button>
+              <button
+                type="button"
+                onClick={() => go(user ? 'console' : 'login')}
+                className="btn btn-neutral btn-lg btn-block"
+              >
+                {user ? '客户后台' : '客户登录'}
               </button>
             </div>
           </nav>
