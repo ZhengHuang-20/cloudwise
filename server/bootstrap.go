@@ -14,6 +14,11 @@ import (
 	"github.com/go-sql-driver/mysql"
 )
 
+// configError 是配置校验失败（文案固定、不含敏感信息），会原样出现在 /api/health 的 dbIssue 里。
+type configError string
+
+func (e configError) Error() string { return string(e) }
+
 var (
 	identRe  = regexp.MustCompile(`^[A-Za-z0-9_]{1,32}$`)
 	appPwdRe = regexp.MustCompile(`^[A-Za-z0-9_.@#%+=-]{12,128}$`) // 拼进 SQL 文本，所以不允许引号与反斜杠
@@ -32,11 +37,11 @@ func bootstrapDB() error {
 	appPwd := os.Getenv("MYSQL_PASSWORD")
 	switch {
 	case !identRe.MatchString(dbName):
-		return errors.New("MYSQL_DATABASE 只能包含字母、数字和下划线")
+		return configError("MYSQL_DATABASE 只能包含字母、数字和下划线")
 	case !identRe.MatchString(appUser) || appUser == "root":
-		return errors.New("MYSQL_USER 必须是专用账号（字母、数字、下划线，且不能是 root）")
+		return configError("MYSQL_USER 必须是专用账号（字母、数字、下划线，且不能是 root）")
 	case !appPwdRe.MatchString(appPwd):
-		return errors.New("MYSQL_PASSWORD 需为 12 位以上，且只含字母、数字和 _.@#%+=-")
+		return configError("MYSQL_PASSWORD 需为 12 位以上，且只含字母、数字和 _.@#%+=-")
 	}
 
 	c := mysql.NewConfig()
@@ -104,6 +109,10 @@ func (a *App) seedAdmin(ctx context.Context) {
 
 // errSummary 只保留不含敏感信息的错误摘要，用于 /api/health 的排障字段。
 func errSummary(err error) string {
+	var ce configError
+	if errors.As(err, &ce) {
+		return string(ce)
+	}
 	var me *mysql.MySQLError
 	if errors.As(err, &me) {
 		return fmt.Sprintf("mysql error %d", me.Number)
