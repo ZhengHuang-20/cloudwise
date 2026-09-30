@@ -100,7 +100,9 @@ jobs:
           SCAN_OK=0
           for n in 1 2 3; do
             SCAN_OUT=$(ssh-keyscan -T 10 -H "$SSH_HOST" 2>&1) || true
-            if printf '%s' "$SCAN_OUT" | grep -q '^ssh-'; then
+            # -H 会把主机名哈希，密钥行以 "|1|" 开头而不是 "ssh-"；
+            # 只要存在非注释行（# 开头的是 banner）且含密钥类型，就算成功
+            if printf '%s' "$SCAN_OUT" | grep -Eq '^[^#].* (ssh-|ecdsa-|sk-)'; then
               SCAN_OK=1
               break
             fi
@@ -119,7 +121,7 @@ jobs:
             exit 1
           fi
 
-          printf '%s\n' "$SCAN_OUT" >> ~/.ssh/known_hosts
+          printf '%s\n' "$SCAN_OUT" | grep -v '^#' >> ~/.ssh/known_hosts
           echo "已记录主机密钥：$(grep -c . ~/.ssh/known_hosts) 条"
 
       # ── ③ 触发远程部署 ────────────────────────────────────────────────
