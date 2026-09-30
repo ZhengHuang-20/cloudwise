@@ -1,3 +1,7 @@
+# 【当前未启用】host 网络版 compose，仅保留作参考。
+# 首次启用后线上 502：原 docker-compose.yml 的容器在 Docker 网络里被反向代理按容器名访问，
+# 改成 host 网络后代理连不上。启用前需要先确认代理的上游地址（见 CLAUDE.md「部署」）。
+# 根目录没有 compose.yaml 时，服务器上的 deploy 脚本会使用服务器上原有的 docker-compose.yml。
 # 服务器上的 deploy 脚本会执行 `docker compose build` 与 `docker compose up -d --force-recreate`。
 services:
   cloudwise:
