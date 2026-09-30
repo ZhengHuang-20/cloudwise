@@ -62,7 +62,7 @@ jobs:
 
           SCAN_OUT=$(ssh-keyscan -T 10 -H "$HOST" 2>&1) || true
           if ! printf '%s' "$SCAN_OUT" | grep -q '^ssh-'; then
-            echo "::error::无法获取主机密钥，ssh-keyscan 输出为：${SCAN_OUT:-（空）}"
+            echo "::error::无法获取主机密钥｜SSH_HOST 长度=${#HOST} 首3位=${HOST:0:3} 末3位=${HOST: -3}｜ssh-keyscan 输出：${SCAN_OUT:-（空）}"
             echo "排查清单："
             echo "  1. SSH_HOST 必须是纯 IP，不能带 http:// 或 :22 或空格"
             echo "  2. 安全组需放行 22 端口"
