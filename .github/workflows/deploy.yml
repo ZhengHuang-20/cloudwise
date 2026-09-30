@@ -128,7 +128,7 @@ jobs:
       # 服务器上的 deploy 脚本是 SSH 强制命令，无法直接传文件；运行时配置（Gemini key、MySQL 密码等）
       # 改为：把 Secrets 编码成 hex 拼在命令后面（deploy CW_ENV=<hex>）。deploy 脚本运行在该 SSH 会话里，
       # SSH_ORIGINAL_COMMAND 会被 docker compose 继承；compose 文件里需要有 CW_DEPLOY_ENV: ${SSH_ORIGINAL_COMMAND:-}（见 deploy/compose.host.yaml，
-      目前线上的 compose 还没有这一行，所以密钥暂未生效）。后端启动时解出并保存到卷里。
+      # 目前线上的 compose 还没有这一行，所以密钥暂未生效）。后端启动时解出并保存到卷里。
       # 用 hex 而不是 base64：hex 里不会出现 "force" 这个词，不会误触发脚本对 force 的检测。
       # 注意：命令里含密钥，绝不能回显；编码后的值不会被 GitHub 自动打码，所以下面显式 add-mask。
       #
