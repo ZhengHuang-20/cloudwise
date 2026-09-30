@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { CheckCircle2, X, XCircle } from 'lucide-react';
 import { Lesson, Course } from '../data/coursesData';
 import { useApp } from '../context/AppContext';
-import { NotebookLmPlayer } from './NotebookLmPlayer';
+import { LessonVideo } from './LessonVideo';
 import { Dialog, DialogBody } from './ui/Dialog';
 
 interface LessonModalProps {
@@ -79,7 +79,7 @@ export const LessonModal: React.FC<LessonModalProps> = ({
           <p className="mt-2 text-intro font-semibold">{lesson.summary}</p>
 
           <div className="mt-8">
-            <NotebookLmPlayer podcast={lesson.notebookLmPodcast} lessonTitle={lesson.title} />
+            <LessonVideo src={lesson.videoUrl} title={lesson.title} />
           </div>
 
           <section className="mt-10">

@@ -27,19 +27,7 @@ export interface Lesson {
   };
   misconceptions: string[];
   executiveTakeaway: string; // 决策者要点
-  notebookLmPodcast: {
-    title: string;
-    audioDuration: string;
-    audioUrl?: string; // Optional audio mp3 or synthesized speech
-    hosts: string[];
-    transcript: {
-      speaker: 'Alex' | 'Sam';
-      avatar: string;
-      text: string;
-      highlight?: boolean;
-    }[];
-    videoUrl?: string;
-  };
+  videoUrl: string; // 课程视频，放在 public/videos/<课程字母>/ 下
   quiz?: QuizQuestion[];
   exercise?: {
     title: string;
@@ -133,38 +121,7 @@ const ALL_COURSES: Course[] = [
               '只看页面“好不好看”，忽视了加载速度、移动端体验和结构化代码。'
             ],
             executiveTakeaway: '外贸独立站是投资而非成本。它是企业出海所有流量（SEO、GEO、展会、广告）的唯一终局承接地。',
-            notebookLmPodcast: {
-              videoUrl: '/videos/a/a-1-1.mp4',
-              title: '【NotebookLM 深度解读】为什么你的外贸官网变成了“网络僵尸画册”？',
-              audioDuration: '08:45',
-              hosts: ['Alex (技术战略专家)', 'Sam (资深出海顾问)'],
-              transcript: [
-                {
-                  speaker: 'Alex',
-                  avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80',
-                  text: 'Sam，我们今天聊一个很多外贸老板心里的刺：为什么花了几万块建了个全英文官网，一年下来一条询盘都没有？',
-                  highlight: false,
-                },
-                {
-                  speaker: 'Sam',
-                  avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80',
-                  text: '哈哈，这个太典型了！因为他们做的是“电子画册”，根本不是给海外采购商看的，更不是给 Google 和 AI 爬虫准备的。',
-                  highlight: true,
-                },
-                {
-                  speaker: 'Alex',
-                  avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80',
-                  text: '没错。一个真正的出海主阵地，必须同时服务三类读者：人类采购决策者、搜索引擎蜘蛛、还有今天最关键的 AI 问答大模型！',
-                  highlight: true,
-                },
-                {
-                  speaker: 'Sam',
-                  avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80',
-                  text: '对，只要你把这三个读者的信息架构理顺，网站就会从“沉睡画册”变成 24 小时不间断获客的海外销售机器。',
-                  highlight: false,
-                }
-              ]
-            },
+            videoUrl: '/videos/a/a-1-1.mp4',
             quiz: [
               {
                 question: '现代海外外贸独立站的核心定位是什么？',
@@ -203,26 +160,7 @@ const ALL_COURSES: Course[] = [
               '只顾堆砌关键词骗搜索引擎，买家进来看不懂，跳出率高达 90% 以上。'
             ],
             executiveTakeaway: '在设计网站前，必须把三类读者的需求映射到每个模块：产品页给买家参数，代码底层给 Google 结构，定义与 FAQ 喂给 AI。',
-            notebookLmPodcast: {
-              videoUrl: '/videos/a/a-1-2.mp4',
-              title: '【NotebookLM 深度对谈】三读者架构：如何让 Google 抓得懂、AI 答得出、买家愿买单？',
-              audioDuration: '09:12',
-              hosts: ['Alex', 'Sam'],
-              transcript: [
-                {
-                  speaker: 'Alex',
-                  avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80',
-                  text: 'Sam，把一个网站同时写给三类读者，听起来很有道理，但很多人会觉得这难道不会冲突吗？',
-                  highlight: false,
-                },
-                {
-                  speaker: 'Sam',
-                  avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80',
-                  text: '不仅不冲突，反而是互相促进的！比如清晰的参数表格，买家看得舒服，Google 抽取 Featured Snippet，AI 抓取用于回答对比。一箭三雕！',
-                  highlight: true,
-                }
-              ]
-            },
+            videoUrl: '/videos/a/a-1-2.mp4',
             quiz: [
               {
                 question: 'AI 大模型（如 ChatGPT / Perplexity）在评估一个独立站时最青睐什么样的内容形态？',
@@ -254,20 +192,7 @@ const ALL_COURSES: Course[] = [
               '把验收标准完全寄托在老板个人的主观视觉审美上，忽视了海外采购商的阅读习惯。'
             ],
             executiveTakeaway: '以工程化、数据化的交付物指标进行验收，确保独立站上线当天即可开始被 Google 与 AI 有效抓取。',
-            notebookLmPodcast: {
-              videoUrl: '/videos/a/a-1-4.mp4',
-              title: '【NotebookLM 决策者专线】老板必听：外贸建站防坑与验收五项铁律',
-              audioDuration: '07:30',
-              hosts: ['Alex', 'Sam'],
-              transcript: [
-                {
-                  speaker: 'Sam',
-                  avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80',
-                  text: '老板们听建站方案最怕被忽悠一堆专业名词。其实就记住五个铁律：测速得分、结构化数据绿灯、表单直通CRM、海外节点秒开、英文专业术语合规。',
-                  highlight: true,
-                }
-              ]
-            },
+            videoUrl: '/videos/a/a-1-4.mp4',
             nextStep: {
               label: '打开方案规划查看建站周期',
               actionType: 'configurator',
@@ -297,20 +222,7 @@ const ALL_COURSES: Course[] = [
               '看数据只看 PV 和 UV，不看来源渠道质量与真实询盘转化率。'
             ],
             executiveTakeaway: '合格的外贸独立站必须自带数据透明看板，每一条来自 Google 或 ChatGPT 的访问都清晰可溯源。',
-            notebookLmPodcast: {
-              videoUrl: '/videos/a/a-7-4.mp4',
-              title: '【NotebookLM 深度拆解】爱康医疗实战看板：ChatGPT 是如何给他们带来海外买家的？',
-              audioDuration: '10:05',
-              hosts: ['Alex', 'Sam'],
-              transcript: [
-                {
-                  speaker: 'Alex',
-                  avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80',
-                  text: '非常神奇的是，许多来自欧洲的医院采购工程师，直接通过 ChatGPT 推荐的链接进入了爱康的新官网！',
-                  highlight: true,
-                }
-              ]
-            },
+            videoUrl: '/videos/a/a-7-4.mp4',
             nextStep: {
               label: '预约 30 分钟深度诊断会',
               actionType: 'booking',
@@ -357,26 +269,7 @@ const ALL_COURSES: Course[] = [
               '把 SEO 和 GEO 对立起来，不知道 SEO 的技术底座正是 GEO 的燃料。'
             ],
             executiveTakeaway: '把 SEO 预算视为数字固定资产投资，SEO 为全站建立被 Google 索引的通行证，直接支撑后续的 GEO 推荐。',
-            notebookLmPodcast: {
-              videoUrl: '/videos/b/b-1-3.mp4',
-              title: '【NotebookLM 精英课】广告 vs SEO vs GEO：出海企业的流量三角形怎么搭？',
-              audioDuration: '08:15',
-              hosts: ['Alex', 'Sam'],
-              transcript: [
-                {
-                  speaker: 'Sam',
-                  avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80',
-                  text: '很多老板跑来问我：Sam，既然现在 AI 这么火，我们是不是不需要做 Google SEO，直接搞 GEO 就行了？',
-                  highlight: false,
-                },
-                {
-                  speaker: 'Alex',
-                  avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80',
-                  text: '千万别！大模型不是凭空编出答案的，联网 AI 要回答“哪家供应商好”，第一步就是检索公开的高权重索引库。SEO 就是你的底层地基！',
-                  highlight: true,
-                }
-              ]
-            },
+            videoUrl: '/videos/b/b-1-3.mp4',
             quiz: [
               {
                 question: '为什么说“SEO 是出海 GEO 的底层通道”？',
@@ -419,20 +312,7 @@ const ALL_COURSES: Course[] = [
               '用机器翻译软件直接翻关键词，忽视了欧美工程师行业内部的标准技术代号。'
             ],
             executiveTakeaway: '关键词不是拍脑袋想的，必须来源于海外买家的真实采购意图与当地工程技术规范。',
-            notebookLmPodcast: {
-              videoUrl: '/videos/b/b-3-5.mp4',
-              title: '【NotebookLM 案例复盘】泰宁科创如何用 60 组专业词库打开海外市政工程大门？',
-              audioDuration: '09:40',
-              hosts: ['Alex', 'Sam'],
-              transcript: [
-                {
-                  speaker: 'Sam',
-                  avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80',
-                  text: '这个案例最精彩的地方在于，把中国参编国标的威望，重新包装成了英国工程界认可的 SuDS 技术白皮书，直接打中了核心采购人员。',
-                  highlight: true,
-                }
-              ]
-            },
+            videoUrl: '/videos/b/b-3-5.mp4',
             nextStep: {
               label: '下载泰宁科创关键词映射表模板',
               actionType: 'tool',
@@ -479,32 +359,7 @@ const ALL_COURSES: Course[] = [
               '以为在自己网站上挂几篇 AI 自动生成的洗稿文章就算是做了 GEO。'
             ],
             executiveTakeaway: 'GEO 是出海企业未来 3-5 年最大的结构性红利。越早建立在各大 AI 知识库中的权威信源引用，护城河越深。',
-            notebookLmPodcast: {
-              videoUrl: '/videos/c/c-1-1.mp4',
-              title: '【NotebookLM 旗舰课导读】海外采购商的第一站变了：你准备好被 AI 点名了吗？',
-              audioDuration: '11:20',
-              hosts: ['Alex', 'Sam'],
-              transcript: [
-                {
-                  speaker: 'Alex',
-                  avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80',
-                  text: 'Sam，很多传统外贸老牌企业很有实力，工厂几百亩，但他们在海外 AI 的回答里是完全“不存在”的。',
-                  highlight: false,
-                },
-                {
-                  speaker: 'Sam',
-                  avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80',
-                  text: '太真实了！因为大模型是基于全网信源的证据链来推断信誉的。你的产品再好，如果没有被高质量信源收录引用，AI 根本不敢推荐你。',
-                  highlight: true,
-                },
-                {
-                  speaker: 'Alex',
-                  avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80',
-                  text: '这就是为什么我们要提出 GEO 六步闭环。不仅要测出你的现状，更要用科学的方法，把你的名字写进 AI 的答案里！',
-                  highlight: true,
-                }
-              ]
-            },
+            videoUrl: '/videos/c/c-1-1.mp4',
             quiz: [
               {
                 question: '面对海外买家向 AI（如 ChatGPT / Perplexity）直接提问推荐供应商的趋势，出海企业最核心的应对策略是？',
@@ -536,20 +391,7 @@ const ALL_COURSES: Course[] = [
               '以为 GEO 可以保证 100% 每次提问都排第一，不了解大模型的温度随机性机制。'
             ],
             executiveTakeaway: '不要把预算押在单一渠道。用 SEO 保证公开透明的抓取通道，用 GEO 抢占下一代 AI 采购推荐高地。',
-            notebookLmPodcast: {
-              videoUrl: '/videos/c/c-1-2.mp4',
-              title: '【NotebookLM 深度对比】SEO vs GEO：一张图看清技术差异与收益模型',
-              audioDuration: '08:50',
-              hosts: ['Alex', 'Sam'],
-              transcript: [
-                {
-                  speaker: 'Sam',
-                  avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80',
-                  text: '我们团队做了一个很生动的比喻：SEO 是让你在货架上摆在显眼的位置，而 GEO 则是直接让最权威的行业专家在客户耳边推荐你的名字！',
-                  highlight: true,
-                }
-              ]
-            },
+            videoUrl: '/videos/c/c-1-2.mp4',
             nextStep: {
               label: '进入 3.1 GEO 六步闭环方法论',
               actionType: 'lesson',
@@ -574,20 +416,7 @@ const ALL_COURSES: Course[] = [
               '搞一次性突击，以为做完一次以后就再也不用管了。大模型知识库与联网索引是每月动态更新的。'
             ],
             executiveTakeaway: '六步闭环把虚无缥缈的“AI 推荐”变成了可排期、可量化、可月度验收的工程化项目。',
-            notebookLmPodcast: {
-              videoUrl: '/videos/c/c-3-1.mp4',
-              title: '【NotebookLM 核心方法论】GEO 六步闭环：我们是如何把玄学变成确定性工程的？',
-              audioDuration: '12:05',
-              hosts: ['Alex', 'Sam'],
-              transcript: [
-                {
-                  speaker: 'Alex',
-                  avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80',
-                  text: '这个六步闭环最牛的地方在于，客户每个月拿到的是实打实的可视化数据报表，看见自己的可见性从 30% 一步步爬升到 90% 以上。',
-                  highlight: true,
-                }
-              ]
-            },
+            videoUrl: '/videos/c/c-3-1.mp4',
             nextStep: {
               label: '进入 AI 可见性测评',
               actionType: 'tool',
@@ -617,20 +446,7 @@ const ALL_COURSES: Course[] = [
               '有些不正规的服务商声称“充钱就能在 ChatGPT 里置顶你的广告”，完全是欺骗不懂技术的老板。'
             ],
             executiveTakeaway: '合规做 GEO，建立真实增值的企业数字资产；拒绝黑帽刷量和信息投毒，长效享受 AI 出海红利。',
-            notebookLmPodcast: {
-              videoUrl: '/videos/c/c-10-2.mp4',
-              title: '【NotebookLM 决策者专线】爱康医疗国内官网 47 分与海外新站 95 分背后的真实故事与专业敬畏',
-              audioDuration: '09:55',
-              hosts: ['Alex', 'Sam'],
-              transcript: [
-                {
-                  speaker: 'Sam',
-                  avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80',
-                  text: '我非常赞赏云端智荐团队的一点：从来不吹神话，把数据口径说得一清二楚。老板们听得明白，心里踏实，合作自然会长久。',
-                  highlight: true,
-                }
-              ]
-            },
+            videoUrl: '/videos/c/c-10-2.mp4',
             nextStep: {
               label: '预约 30 分钟深度诊断会',
               actionType: 'booking',
@@ -672,20 +488,7 @@ const ALL_COURSES: Course[] = [
               '担心大模型会胡言乱语承诺低价或泄露商业底价。通过严格边界提示词与知识库隔离完全可控。'
             ],
             executiveTakeaway: '一条 5 万美元的工业品订单，往往就决定在买家深夜发问的头 5 分钟内。AI 客服是外贸转化的最强锁闭器。',
-            notebookLmPodcast: {
-              videoUrl: '/videos/d/d-1-2.mp4',
-              title: '【NotebookLM 场景复盘】凌晨三点的一条询盘：AI 如何帮你抢回 5 万美元订单？',
-              audioDuration: '08:40',
-              hosts: ['Alex', 'Sam'],
-              transcript: [
-                {
-                  speaker: 'Alex',
-                  avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80',
-                  text: '这个凌晨三点的案例太经典了。很多老板算账，总觉得自己没花钱雇夜班销售是省钱，其实每年因为夜间无人回复漏掉的利润，够建好几个独立站了！',
-                  highlight: true,
-                }
-              ]
-            },
+            videoUrl: '/videos/d/d-1-2.mp4',
             nextStep: {
               label: '规划 AI 客服方案',
               actionType: 'configurator',
@@ -710,20 +513,7 @@ const ALL_COURSES: Course[] = [
               '认为客户不急，等国内第二天上班再回邮件也来得及。海外采购商平均同时向 3 家询价，首个专业回复者胜率高出 70%。'
             ],
             executiveTakeaway: '不要再让辛辛苦苦花广告费买来的海外流量，在深夜的等待中付诸东流。',
-            notebookLmPodcast: {
-              videoUrl: '/videos/d/d-9-2.mp4',
-              title: '【NotebookLM 财务分析】算清一笔账：你的企业每年因为“回复慢”悄悄丢了多少钱？',
-              audioDuration: '07:55',
-              hosts: ['Alex', 'Sam'],
-              transcript: [
-                {
-                  speaker: 'Sam',
-                  avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80',
-                  text: '很多老板自己动手拉完这个流失计算器的滑块后，往往一身冷汗。算得清清楚楚的账，比任何销售推销都更有说服力。',
-                  highlight: true,
-                }
-              ]
-            },
+            videoUrl: '/videos/d/d-9-2.mp4',
             nextStep: {
               label: '预约 30 分钟深度诊断会',
               actionType: 'booking',
@@ -765,26 +555,7 @@ const ALL_COURSES: Course[] = [
               '以为 FDE 只是来帮企业“接个 AI 接口”。真正耗时的往往是梳理流程、清洗数据和组织协同。'
             ],
             executiveTakeaway: '评估 FDE 服务，不要只问“派几个人、驻多久”，要问“每周交付什么结果、离场后留下什么”。',
-            notebookLmPodcast: {
-              videoUrl: '/videos/e/e-1-1.mp4',
-              title: '【NotebookLM 深度访谈】从 Palantir 到 OpenAI：为什么 AI 公司都在抢 FDE？',
-              audioDuration: '10:18',
-              hosts: ['Alex', 'Sam'],
-              transcript: [
-                {
-                  speaker: 'Alex',
-                  avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80',
-                  text: '模型不缺，缺的是能把模型接进真实业务的人。FDE 的价值不在于驻场本身，而在于对结果负责。',
-                  highlight: true,
-                },
-                {
-                  speaker: 'Sam',
-                  avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80',
-                  text: '所以判断一个 FDE 团队，就看两件事：每周有没有交付能用的东西，离场后企业自己接不接得住。',
-                  highlight: false,
-                }
-              ]
-            },
+            videoUrl: '/videos/e/e-1-1.mp4',
             quiz: [
               {
                 question: 'FDE 与传统软件外包最本质的区别是什么？',
@@ -821,20 +592,7 @@ const ALL_COURSES: Course[] = [
               '把标准化理解为写一堆没人看的制度文件。这里的标准，是能被系统执行、被 AI 调用的规则和数据。'
             ],
             executiveTakeaway: '没有标准化的智能化，只是把混乱自动化。先问企业的经验有没有写下来、数据在不在系统里，再谈上什么 AI。',
-            notebookLmPodcast: {
-              videoUrl: '/videos/e/e-1-2.mp4',
-              title: '【NotebookLM 深度对谈】AI 落地为什么要先做“土活”：标准化与信息化',
-              audioDuration: '09:40',
-              hosts: ['Alex', 'Sam'],
-              transcript: [
-                {
-                  speaker: 'Sam',
-                  avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80',
-                  text: '老板常问能不能直接上 AI。FDE 的回答是能，但第一周会先带着 AI 去整理经验和数据，因为那才是 AI 能用的原料。',
-                  highlight: true,
-                }
-              ]
-            },
+            videoUrl: '/videos/e/e-1-2.mp4',
             quiz: [
               {
                 question: '外贸企业想用 AI 自动给询盘分级，FDE 通常先做哪一步？',
@@ -873,20 +631,7 @@ const ALL_COURSES: Course[] = [
               '用“驻了多少人天”来验收，而不是看每一层留下了什么。'
             ],
             executiveTakeaway: '好的 FDE 会让自己越来越不被需要：离场那天，标准在、系统在、数据在，会用的人也在。',
-            notebookLmPodcast: {
-              videoUrl: '/videos/e/e-8-1.mp4',
-              title: '【NotebookLM 决策者专线】引入 FDE 之前，老板要想清楚的四件事',
-              audioDuration: '07:45',
-              hosts: ['Alex', 'Sam'],
-              transcript: [
-                {
-                  speaker: 'Alex',
-                  avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80',
-                  text: '靠谱的 FDE 团队，第一周就会交付能用的东西，而且从第一天起就在规划怎么离场。',
-                  highlight: true,
-                }
-              ]
-            },
+            videoUrl: '/videos/e/e-8-1.mp4',
             nextStep: {
               label: '预约 60 分钟技术对接评估会',
               actionType: 'booking',
