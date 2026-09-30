@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"net/http"
@@ -110,7 +111,7 @@ func (a *App) adminListUsers(w http.ResponseWriter, r *http.Request, _ *authedUs
 }
 
 // createUser 写入账号并返回一次性展示的初始密码。
-func (a *App) createUser(r *http.Request, email, name, role string, orgID *int64, password string) (int64, string, error) {
+func (a *App) createUser(ctx context.Context, email, name, role string, orgID *int64, password string) (int64, string, error) {
 	if password == "" {
 		p, err := randomPassword()
 		if err != nil {
@@ -126,7 +127,7 @@ func (a *App) createUser(r *http.Request, email, name, role string, orgID *int64
 	if orgID != nil {
 		org = *orgID
 	}
-	res, err := a.db.ExecContext(r.Context(), `INSERT INTO users (email, password_hash, role, org_id, display_name, must_change_password, created_at)
+	res, err := a.db.ExecContext(ctx, `INSERT INTO users (email, password_hash, role, org_id, display_name, must_change_password, created_at)
 		VALUES (?, ?, ?, ?, ?, 1, ?)`, email, hash, role, org, name, time.Now().UTC())
 	if err != nil {
 		return 0, "", err
@@ -174,7 +175,7 @@ func (a *App) adminCreateUser(w http.ResponseWriter, r *http.Request, _ *authedU
 		writeError(w, http.StatusBadRequest, "bad_request", "姓名不超过 64 字")
 		return
 	}
-	id, pw, err := a.createUser(r, email, name, role, req.OrgID, req.Password)
+	id, pw, err := a.createUser(r.Context(), email, name, role, req.OrgID, req.Password)
 	switch {
 	case isDuplicate(err):
 		writeError(w, http.StatusConflict, "duplicate", "该邮箱已存在")

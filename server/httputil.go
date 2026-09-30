@@ -36,8 +36,9 @@ func decodeJSON(w http.ResponseWriter, r *http.Request, dst any) bool {
 func (a *App) clientIP(r *http.Request) string {
 	if a.cfg.TrustProxy {
 		if xff := r.Header.Get("X-Forwarded-For"); xff != "" {
-			first, _, _ := strings.Cut(xff, ",")
-			return strings.TrimSpace(first)
+			// 取最后一项：那是我们信任的反向代理追加的，前面的可被客户端伪造。
+			parts := strings.Split(xff, ",")
+			return strings.TrimSpace(parts[len(parts)-1])
 		}
 	}
 	host, _, err := net.SplitHostPort(r.RemoteAddr)

@@ -19,6 +19,8 @@ type App struct {
 	cfg          Config
 	db           *sql.DB // 未配置 MySQL 时为 nil，AI 接口仍可用
 	gemini       *Gemini // 未配置 key 时为 nil，走确定性 fallback
+	dbState      string  // unconfigured | ok | failed
+	dbIssue      string  // 失败阶段与错误摘要（不含敏感信息）
 	loginLimiter *limiter
 }
 
@@ -30,6 +32,8 @@ func (a *App) routes() http.Handler {
 			"status":       "ok",
 			"hasGeminiKey": a.gemini != nil,
 			"hasDatabase":  a.db != nil,
+			"dbStatus":     a.dbState,
+			"dbIssue":      a.dbIssue,
 			"timestamp":    time.Now().UTC().Format(time.RFC3339Nano),
 		})
 	})
@@ -125,8 +129,7 @@ func createAdmin(cfg Config, email string) error {
 	}
 	defer db.Close()
 	a := &App{cfg: cfg, db: db}
-	req, _ := http.NewRequest(http.MethodPost, "/", nil)
-	_, pw, err := a.createUser(req, email, "管理员", "admin", nil, "")
+	_, pw, err := a.createUser(context.Background(), email, "管理员", "admin", nil, "")
 	if isDuplicate(err) {
 		return errors.New("该邮箱已存在")
 	}
@@ -135,6 +138,54 @@ func createAdmin(cfg Config, email string) error {
 	}
 	fmt.Printf("管理员已创建\n邮箱: %s\n初始密码: %s\n首次登录后会被要求修改密码。\n", email, pw)
 	return nil
+}
+
+// initDB 依次执行：管理员建库建账号 → 迁移 → 连接 → 创建首个管理员。
+// 失败不会让进程退出：站点与 AI 接口照常提供，/api/health 的 dbStatus / dbIssue 会标明原因，
+// 避免数据库问题把整个站点带下线。
+func (a *App) initDB(ctx context.Context) {
+	if a.cfg.MySQLDSN == "" {
+		a.dbState = "unconfigured"
+		log.Println("未配置 MySQL：账号与后台接口不可用，AI 接口照常提供")
+		return
+	}
+	const attempts = 3
+	for i := 1; i <= attempts; i++ {
+		stage, err := a.tryInitDB(ctx)
+		if err == nil {
+			a.dbState, a.dbIssue = "ok", ""
+			break
+		}
+		a.dbState, a.dbIssue = "failed", stage+": "+errSummary(err)
+		log.Printf("数据库初始化失败（%s，第 %d/%d 次）: %v", stage, i, attempts, err)
+		if i < attempts {
+			select {
+			case <-time.After(2 * time.Second):
+			case <-ctx.Done():
+				return
+			}
+		}
+	}
+	// 管理员数据库账号只用于初始化，不留在运行时环境里。
+	os.Unsetenv("MYSQL_ADMIN_PASSWORD")
+	if a.db != nil {
+		a.seedAdmin(ctx)
+	}
+}
+
+func (a *App) tryInitDB(ctx context.Context) (stage string, err error) {
+	if err = bootstrapDB(); err != nil {
+		return "bootstrap", err
+	}
+	if err = migrate(a.cfg.MySQLDSN); err != nil {
+		return "migrate", err
+	}
+	db, err := openDB(a.cfg.MySQLDSN, false)
+	if err != nil {
+		return "connect", err
+	}
+	a.db = db
+	return "", nil
 }
 
 func main() {
@@ -167,26 +218,17 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
-	if cfg.MySQLDSN != "" {
-		if err := migrate(cfg.MySQLDSN); err != nil {
-			log.Fatalf("数据库迁移失败: %v", err)
-		}
-		db, err := openDB(cfg.MySQLDSN, false)
-		if err != nil {
-			log.Fatalf("连接 MySQL 失败: %v", err)
-		}
-		defer db.Close()
-		app.db = db
+	app.initDB(ctx)
+	if app.db != nil {
+		defer app.db.Close()
 		go app.cleanupSessions(ctx)
-	} else {
-		log.Println("未配置 MySQL：账号与后台接口不可用，AI 接口照常提供")
 	}
 	if app.gemini == nil {
 		log.Println("未配置 GEMINI_API_KEY：AI 接口使用确定性 fallback")
 	}
 
 	srv := &http.Server{
-		Addr:              "0.0.0.0:" + cfg.Port,
+		Addr:              cfg.ListenHost + ":" + cfg.Port,
 		Handler:           app.routes(),
 		ReadHeaderTimeout: 10 * time.Second,
 		ReadTimeout:       30 * time.Second,
@@ -199,7 +241,7 @@ func main() {
 		defer cancel()
 		srv.Shutdown(shutdown)
 	}()
-	log.Printf("云端智荐 API 运行于 http://0.0.0.0:%s（模型 %s，FDE 展示 %v）", cfg.Port, cfg.GeminiModel, cfg.ShowFDE)
+	log.Printf("云端智荐 API 运行于 http://%s:%s（模型 %s，FDE 展示 %v）", cfg.ListenHost, cfg.Port, cfg.GeminiModel, cfg.ShowFDE)
 	if err := srv.ListenAndServe(); !errors.Is(err, http.ErrServerClosed) {
 		log.Fatal(err)
 	}
