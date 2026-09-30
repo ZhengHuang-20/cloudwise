@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Analytics } from '@vercel/analytics/react';
 import { AppProvider, useApp } from './context/AppContext';
+import { AuthProvider } from './context/AuthContext';
 import { Header } from './components/Header';
 import { Footer } from './components/Footer';
 import { AiConsultantModal } from './components/AiConsultantModal';
@@ -16,6 +17,8 @@ import { ConfiguratorView } from './views/ConfiguratorView';
 import { CasesView } from './views/CasesView';
 import { DealRoomView } from './views/DealRoomView';
 import { ResourcesView } from './views/ResourcesView';
+import { LoginView } from './views/LoginView';
+import { ConsoleView } from './views/ConsoleView';
 
 const SITE_TITLE = '云端智荐 - AI出海售前支持系统与能力样板间';
 
@@ -126,6 +129,12 @@ function MainApp() {
         {currentTab === 'deal-room' && <DealRoomView onGoToBooking={openBooking} />}
 
         {currentTab === 'resources' && <ResourcesView onGoToLesson={() => navigate('academy')} />}
+
+        {currentTab === 'login' && (
+          <LoginView onLoggedIn={() => navigate('console')} onGoToBooking={openBooking} />
+        )}
+
+        {currentTab === 'console' && <ConsoleView onNavigate={navigate} />}
       </main>
 
       <Footer onNavigate={navigate} />
@@ -164,7 +173,9 @@ function MainApp() {
 export default function App() {
   return (
     <AppProvider>
-      <MainApp />
+      <AuthProvider>
+        <MainApp />
+      </AuthProvider>
       {/* Vercel Web Analytics：只在部署到 Vercel 且项目开启 Web Analytics 后上报 */}
       <Analytics />
     </AppProvider>

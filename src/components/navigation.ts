@@ -11,7 +11,9 @@ export type TabId =
   | 'academy'
   | 'resources'
   | 'configurator'
-  | 'deal-room';
+  | 'deal-room'
+  | 'login'
+  | 'console';
 
 export interface NavItem {
   id: TabId;
@@ -53,8 +55,11 @@ export const NAV_GROUPS: NavGroup[] = [
 
 export const NAV_ITEMS: NavItem[] = NAV_GROUPS.flatMap((group) => group.items);
 
-const TAB_IDS: string[] = ['home', ...NAV_ITEMS.map((item) => item.id)];
+// 账号相关页面不进导航，入口在 Header 右侧的「登录 / 客户后台」
+const HIDDEN_TITLES: Partial<Record<TabId, string>> = { login: '登录', console: '客户后台' };
+
+const TAB_IDS: string[] = ['home', ...NAV_ITEMS.map((item) => item.id), ...Object.keys(HIDDEN_TITLES)];
 
 export const isTabId = (value: string): value is TabId => TAB_IDS.includes(value);
 
-export const tabTitle = (tab: TabId) => NAV_ITEMS.find((item) => item.id === tab)?.fullLabel;
+export const tabTitle = (tab: TabId) => NAV_ITEMS.find((item) => item.id === tab)?.fullLabel ?? HIDDEN_TITLES[tab];
