@@ -1,0 +1,67 @@
+name: Deploy to Production
+
+# 触发方式：
+#   1. 推送到 main 分支 —— 自动部署
+#   2. Actions 页面手动点 Run workflow —— 强制重新部署（即使代码没变）
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# 同一时间只跑一个部署，避免连续 push 时并发构建打爆服务器
+concurrency:
+  group: deploy-cloudwise-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: 构建并部署到火山引擎
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: 准备 SSH 密钥
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H "${{ secrets.SSH_HOST }}" >> ~/.ssh/known_hosts 2>/dev/null
+
+      - name: 触发远程部署
+        run: |
+          # 手动触发时带 force，强制重建；push 触发则由服务器判断代码是否有变化
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            CMD="deploy force"
+          else
+            CMD="deploy"
+          fi
+          echo "远程指令：$CMD"
+
+          ssh -i ~/.ssh/deploy_key \
+              -o IdentitiesOnly=yes \
+              -o StrictHostKeyChecking=yes \
+              -o ConnectTimeout=15 \
+              -o ServerAliveInterval=30 \
+              "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" \
+              "$CMD"
+
+      - name: 部署后健康检查
+        run: |
+          sleep 3
+          for i in 1 2 3 4 5; do
+            CODE=$(curl -s -o /dev/null -w '%{http_code}' --max-time 15 \
+                   "http://${{ secrets.SSH_HOST }}/api/health" || echo 000)
+            echo "第 $i 次探测 /api/health -> HTTP $CODE"
+            if [ "$CODE" = "200" ]; then
+              echo "站点健康："
+              curl -s --max-time 15 "http://${{ secrets.SSH_HOST }}/api/health"
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "健康检查未通过，请登录服务器执行 docker logs cloudwise 排查"
+          exit 1
+
+      - name: 清理密钥
+        if: always()
+        run: rm -f ~/.ssh/deploy_key
