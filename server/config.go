@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/go-sql-driver/mysql"
@@ -22,6 +23,8 @@ type Config struct {
 	CookieSecure bool
 	TrustProxy   bool
 	ShowFDE      bool
+
+	AuditDailyLimit int // AI 可见性测评每日真实探测次数上限（控制模型费用）
 }
 
 var envKeyRe = regexp.MustCompile(`^[A-Z][A-Z0-9_]*$`)
@@ -119,6 +122,13 @@ func env(key, def string) string {
 	return def
 }
 
+func envInt(key string, def int) int {
+	if n, err := strconv.Atoi(os.Getenv(key)); err == nil && n >= 0 {
+		return n
+	}
+	return def
+}
+
 var showFDERe = regexp.MustCompile(`export const SHOW_FDE\s*=\s*(true|false)`)
 
 // resolveShowFDE：环境变量 SHOW_FDE 优先，其次读取前端 src/lib/features.ts（单一事实来源），默认 true。
@@ -172,5 +182,7 @@ func loadConfig() Config {
 		CookieSecure: os.Getenv("COOKIE_SECURE") == "true",
 		TrustProxy:   os.Getenv("TRUST_PROXY") == "true",
 		ShowFDE:      resolveShowFDE(),
+
+		AuditDailyLimit: envInt("GEMINI_AUDIT_DAILY_LIMIT", 100),
 	}
 }

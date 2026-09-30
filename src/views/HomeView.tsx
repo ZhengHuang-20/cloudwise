@@ -1,73 +1,15 @@
-import React, { useRef, useState } from 'react';
-import {
-  AlertTriangle,
-  Check,
-  CheckCircle2,
-  ChevronRight,
-  Globe,
-  ListChecks,
-  Loader2,
-  Lock,
-  Radar,
-} from 'lucide-react';
-import { useApp } from '../context/AppContext';
+import React, { useRef } from 'react';
+import { ChevronRight, ListChecks, Lock, Radar } from 'lucide-react';
 import { TabId } from '../components/navigation';
 import { Reveal } from '../components/ui/Reveal';
-import { ScoreRing } from '../components/ui/ScoreRing';
 import { SERVICE_IDENTITY, ServiceKey } from '../components/ui/serviceIdentity';
-import { scoreTone, TONE_BG, TONE_TEXT } from '../components/ui/tone';
 import { SERVICE_COUNT_CN, SHOW_FDE } from '../lib/features';
+import { VisibilityAudit } from './home/VisibilityAudit';
 
 interface HomeViewProps {
   onNavigate: (tab: TabId) => void;
   openBookingModal: () => void;
 }
-
-interface AuditResult {
-  target: string;
-  region: string;
-  industry: string;
-  totalScore: number;
-  geoScore: number;
-  seoScore: number;
-  siteScore: number;
-  responseScore: number;
-  level: string;
-  lostEstimate: string;
-  findings: string[];
-  recommendation: string;
-}
-
-// 所属行业与目标市场都不让用户填写，由测评根据官网域名与品牌判断。
-// 首页测评目前是本地模拟：行业按关键词、市场按域名后缀推断，识别不出时给出通用默认值。
-const INDUSTRY_RULES: [RegExp, string][] = [
-  [/medical|health|ortho|implant|pharma|dental|bio|医|骨科|植入|耗材|药|生物/, '医疗器械与生物耗材'],
-  [/solar|energy|battery|inverter|光伏|储能|新能源|电池|逆变/, '新能源与光伏储能'],
-  [/water|pump|valve|drain|rain|environ|水务|环保|排水|雨水|海绵|泵|阀/, '环保工程与水务装备'],
-  [/auto|vehicle|truck|machinery|excavat|crane|汽车|零部件|工程机械|挖掘|起重/, '汽车零部件与工程机械'],
-  [/hardware|fastener|screw|bolt|metal|cnc|mould|mold|五金|紧固|螺丝|钣金|模具|机加工/, '精密五金与离散工业'],
-];
-
-const inferIndustry = (target: string) => {
-  const t = target.trim().toLowerCase();
-  return INDUSTRY_RULES.find(([pattern]) => pattern.test(t))?.[1] ?? '工业制造出海';
-};
-
-const inferRegion = (target: string) => {
-  const t = target.trim().toLowerCase();
-  if (/\.(de|fr|it|es|nl|eu|uk|pl|se|ch|at|be|dk|no|fi)(\/|:|$)/.test(t)) return '欧洲市场';
-  if (/\.(us|ca)(\/|:|$)/.test(t)) return '北美市场';
-  if (/\.(sg|my|th|vn|id|ph|ae|sa|qa)(\/|:|$)/.test(t)) return '东南亚及中东市场';
-  return '欧美核心市场（北美 + 欧洲）';
-};
-
-const AUDIT_STEPS = [
-  '根据官网与品牌识别所属行业与主要目标市场',
-  '海外云端节点测速与 Schema 知识图谱提取',
-  '向 ChatGPT / Perplexity 探查品牌在行业推荐中的权重与证据链',
-  '检索目标市场 60 组 Google 外贸采购关键词位序',
-  '测算北京时间夜间 8 小时海外买家跨时区流失概率',
-];
 
 const ALL_SERVICES: { key: ServiceKey; title: string; desc: string; link: string }[] = [
   {
@@ -109,7 +51,7 @@ const TOOLS: { tab: TabId | 'audit'; icon: React.ComponentType<{ className?: str
     tab: 'audit',
     icon: Radar,
     title: 'AI 可见性测评',
-    desc: '输入官网或品牌，看看在 ChatGPT、Perplexity 与 Google 里能不能找到你，卡在哪一步。',
+    desc: '输入官网，我们以海外买家身份向 AI 搜索提问，看看你会不会被推荐、卡在哪一步。',
     link: '开始测评',
   },
   {
@@ -131,134 +73,7 @@ const TOOLS: { tab: TabId | 'audit'; icon: React.ComponentType<{ className?: str
 const prefersReducedMotion =() => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 export const HomeView: React.FC<HomeViewProps> = ({ onNavigate, openBookingModal }) => {
-  const { logLeadActivity, saveDiagnosis, showToast } = useApp();
   const auditInputRef = useRef<HTMLInputElement>(null);
-
-  // Instant GEO/SEO Evaluation Tool State
-  const [inputUrl, setInputUrl] = useState('');
-  const [isAuditing, setIsAuditing] = useState(false);
-  const [auditStep, setAuditStep] = useState(0);
-  const [auditResult, setAuditResult] = useState<AuditResult | null>(null);
-
-  // Quick preset test cases
-  const PRESETS = [
-    {
-      name: '爱康医疗',
-      url: 'www.ak-medical-global.com',
-      result: {
-        target: '爱康医疗 (www.ak-medical-global.com)',
-        region: '欧洲市场 (重点德国/英国)',
-        industry: '高端医疗器械与耗材',
-        totalScore: 92,
-        geoScore: 94,
-        seoScore: 89,
-        siteScore: 95,
-        responseScore: 90,
-        level: '表现良好 · 4 项达标',
-        lostEstimate: '< 3 万美元 / 年 (流失控制极佳)',
-        findings: [
-          'ChatGPT / Perplexity 检索“骨科3D打印耗材”时，首屏直接引用该企业技术白皮书与认证卷宗',
-          'Google 欧美地区 18 组核心产品词位于前 3 名',
-          '欧洲测速约 1.2 秒，提供完整 MDR CE 技术规格一键下载',
-          '7×24h 智能客服即时解答海外合规提问并同步 CRM'
-        ],
-        recommendation: '已具备成熟全球转化能力，建议持续拓展南美与中东多语种 GEO 信源注入。'
-      }
-    },
-    {
-      name: '泰宁科创',
-      url: 'www.tidelion.com',
-      result: {
-        target: '泰宁科创 (www.tidelion.com)',
-        region: '欧美核心市场 (北美+欧洲)',
-        industry: '环保工程与水务装备',
-        totalScore: 88,
-        geoScore: 86,
-        seoScore: 93,
-        siteScore: 85,
-        responseScore: 88,
-        level: '表现良好 · 核心词排位靠前',
-        lostEstimate: '< 5 万美元 / 年',
-        findings: [
-          'Google 欧美主要地区 60 组核心英文词排名前两页，词库对照英国 SuDS 规范',
-          '地标工程案例已整理成有第三方来源的英文资料',
-          '英国市政规划相关提问中被 Perplexity 引用为参考信源',
-          '欧美采购询盘自动抽取技术参数并实时派发业务大区'
-        ],
-        recommendation: '建议加强 WhatsApp 海外即时接单引擎与移动端参数交互。'
-      }
-    },
-    {
-      name: '典型五金出口企业',
-      url: 'www.example-hardware.com',
-      result: {
-        target: '典型五金出口企业（示例）',
-        region: '北美市场',
-        industry: '离散制造与精密五金',
-        totalScore: 42,
-        geoScore: 28,
-        seoScore: 45,
-        siteScore: 58,
-        responseScore: 36,
-        level: '待改进 · 4 项均低于 60 分',
-        lostEstimate: '约 18 ~ 32 万美元 / 年',
-        findings: [
-          'ChatGPT / Perplexity 推荐行业供应商时未被引用',
-          'Google 核心英文采购词全部排在第 3 页以后，位置被贸易商与同行占据',
-          '海外打开约 5.8 秒，英文多为中文画册直译，缺少工程师需要的 CAD 与公差表',
-          '北京时间凌晨 02:00 ~ 06:00 欧美采购询盘无即时应答，次日跟进时，客户可能已经联系了其他供应商'
-        ],
-        recommendation: '建议组合：三读者架构独立站 + 60 组外贸 SEO 词库 + GEO + 24 小时 AI 客服。'
-      }
-    }
-  ];
-
-  // Trigger evaluation
-  const handleStartAudit = (customPreset?: typeof PRESETS[0]) => {
-    const targetName = customPreset ? customPreset.result.target : (inputUrl.trim() || '某中型出海制造企业官网');
-    setIsAuditing(true);
-    setAuditStep(1);
-    setAuditResult(null);
-
-    // Simulate multi-step real-time audit probe
-    setTimeout(() => setAuditStep(2), 400);
-    setTimeout(() => setAuditStep(3), 800);
-    setTimeout(() => setAuditStep(4), 1200);
-    setTimeout(() => setAuditStep(5), 1600);
-    setTimeout(() => {
-      setIsAuditing(false);
-      if (customPreset) {
-        setAuditResult(customPreset.result);
-      } else {
-        // Compute realistic synthetic audit based on user input
-        const generatedResult: AuditResult = {
-          target: targetName,
-          region: inferRegion(inputUrl),
-          industry: inferIndustry(inputUrl),
-          totalScore: 48,
-          geoScore: 34,
-          seoScore: 48,
-          siteScore: 64,
-          responseScore: 46,
-          level: '待改进 · 4 项均需处理',
-          lostEstimate: '约 12 ~ 25 万美元 / 年',
-          findings: [
-            'GEO：向 ChatGPT、Perplexity 询问该行业的供应商时，未见该品牌的技术参数与资质被引用',
-            'SEO：目标市场前两页搜索结果中未见该品牌，位置被当地经销商与同行占据',
-            '独立站：海外打开约 4.2 秒，缺少面向技术与合规读者的资料下载',
-            '响应：欧美工作时间对应北京时间夜间，此时没有即时的技术答复'
-          ],
-          recommendation: '建议先从「获客增长组合（独立站 + SEO + GEO）」入手，再加上 AI 客服，覆盖欧美工作时间的询盘。'
-        };
-        setAuditResult(generatedResult);
-      }
-
-      // Log activity in CRM and notify user
-      logLeadActivity(`完成了【${targetName}】官网/品牌 GEO & SEO 智能测评`, 20, { target: targetName });
-      saveDiagnosis('ai_visibility', 'AI 可见性测评', customPreset ? customPreset.result.totalScore : 48, '官网与品牌出海能力测绘', {});
-      showToast('评估报告已生成');
-    }, 2000);
-  };
 
   const scrollToAudit = () => {
     document.getElementById('audit')?.scrollIntoView({
@@ -267,8 +82,6 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate, openBookingModal
     });
     auditInputRef.current?.focus({ preventScroll: true });
   };
-
-  const resultTone = auditResult ? scoreTone(auditResult.totalScore) : 'warning';
 
   return (
     <div>
@@ -296,174 +109,11 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate, openBookingModal
 
       {/* ===================== 即时评估工具 ===================== */}
       <section id="audit" className="layout-text scroll-mt-20 pt-16 md:pt-20">
-        <div className="tile mx-auto max-w-3xl">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <h2 className="text-title-2">AI 可见性测评</h2>
-              <p className="mt-2 text-body text-label-secondary">
-                输入英文官网或品牌名，探查海外大模型收录与 Google 搜索排位。所属行业与目标市场由 AI 根据官网与品牌自动判断。
-              </p>
-            </div>
-            <span className="badge shrink-0 bg-success/15 text-success">免费</span>
-          </div>
-
-          <form
-            className="mt-8 space-y-5"
-            onSubmit={(e) => {
-              e.preventDefault();
-              handleStartAudit();
-            }}
-          >
-            <div>
-              <label htmlFor="audit-target" className="field-label">
-                官网域名，或品牌 / 核心产品词
-              </label>
-              <div className="relative">
-                <Globe className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-label-secondary" />
-                <input
-                  ref={auditInputRef}
-                  id="audit-target"
-                  type="text"
-                  value={inputUrl}
-                  onChange={(e) => setInputUrl(e.target.value)}
-                  placeholder="例如 www.ak-medical.net 或 骨科植入物"
-                  className="field field-lg pl-12"
-                  autoComplete="off"
-                />
-              </div>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="mr-1 text-caption text-label-secondary">试试示例</span>
-              {PRESETS.map((item) => (
-                <button
-                  key={item.name}
-                  type="button"
-                  disabled={isAuditing}
-                  onClick={() => {
-                    setInputUrl(item.url);
-                    handleStartAudit(item);
-                  }}
-                  className="chip disabled:opacity-40"
-                >
-                  {item.name}
-                </button>
-              ))}
-            </div>
-
-            <button type="submit" disabled={isAuditing} className="btn btn-primary btn-lg btn-block">
-              {isAuditing ? (
-                <>
-                  <Loader2 className="animate-spin" />
-                  正在测评…
-                </>
-              ) : (
-                '开始测评'
-              )}
-            </button>
-          </form>
-
-          {/* 评估进度 */}
-          {isAuditing && (
-            <ol className="mt-8 space-y-3 border-t border-separator pt-8" aria-label="测评进度">
-              {AUDIT_STEPS.map((step, index) => {
-                const stepNumber = index + 1;
-                const isDone = auditStep > stepNumber;
-                const isCurrent = auditStep === stepNumber;
-                return (
-                  <li
-                    key={step}
-                    className={`flex items-center gap-3 text-body transition-colors ${
-                      isDone || isCurrent ? 'text-label' : 'text-label-tertiary'
-                    }`}
-                  >
-                    <span className="flex h-5 w-5 shrink-0 items-center justify-center">
-                      {isDone ? (
-                        <Check className="h-5 w-5 text-success" />
-                      ) : isCurrent ? (
-                        <Loader2 className="h-5 w-5 animate-spin text-link" />
-                      ) : (
-                        <span className="h-1.5 w-1.5 rounded-full bg-label-tertiary" />
-                      )}
-                    </span>
-                    {step}
-                  </li>
-                );
-              })}
-            </ol>
-          )}
-
-          {/* 评估结果 */}
-          {auditResult && !isAuditing && (
-            <div className="mt-8 border-t border-separator pt-8 animate-fade-in" aria-live="polite">
-              <div className="flex flex-col items-center gap-6 text-center sm:flex-row sm:text-left">
-                <ScoreRing value={auditResult.totalScore} caption="/ 100" />
-                <div className="min-w-0">
-                  <p className="text-caption text-label-secondary">{auditResult.target}</p>
-                  <p className="text-caption text-label-secondary">
-                    AI 判断行业：{auditResult.industry} · 目标市场：{auditResult.region}
-                  </p>
-                  <h3 className="mt-1 text-title-2">出海获客综合就绪度</h3>
-                  <p className={`mt-1 text-body font-semibold ${TONE_TEXT[resultTone]}`}>{auditResult.level}</p>
-                  <p className="mt-3 text-body text-label-secondary">
-                    估测年化商机流失 <span className="font-semibold text-label">{auditResult.lostEstimate}</span>
-                  </p>
-                </div>
-              </div>
-
-              <dl className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
-                {[
-                  { label: 'GEO 被 AI 推荐', score: auditResult.geoScore },
-                  { label: 'Google 搜索可见', score: auditResult.seoScore },
-                  { label: '独立站技术表现', score: auditResult.siteScore },
-                  { label: '夜间响应', score: auditResult.responseScore },
-                ].map((metric) => {
-                  const tone = scoreTone(metric.score);
-                  return (
-                    <div key={metric.label} className="well">
-                      <dt className="text-caption text-label-secondary">{metric.label}</dt>
-                      <dd className="mt-1 text-title-2 tabular-nums">
-                        {metric.score}
-                        <span className="text-caption font-normal text-label-secondary"> / 100</span>
-                      </dd>
-                      <div className="meter mt-3">
-                        <span className={TONE_BG[tone]} style={{ width: `${metric.score}%` }} />
-                      </div>
-                    </div>
-                  );
-                })}
-              </dl>
-
-              <h4 className="mt-10 text-title-3">核心发现</h4>
-              <ul className="mt-2 divide-y divide-separator">
-                {auditResult.findings.map((item) => (
-                  <li key={item} className="flex items-start gap-3 py-4 text-body">
-                    {resultTone === 'success' ? (
-                      <CheckCircle2 className="mt-1 h-5 w-5 shrink-0 text-success" />
-                    ) : (
-                      <AlertTriangle className="mt-1 h-5 w-5 shrink-0 text-warning" />
-                    )}
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
-
-              <div className="well mt-6">
-                <h4 className="text-body font-semibold">建议方案</h4>
-                <p className="mt-2 text-body text-label-secondary">{auditResult.recommendation}</p>
-                <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
-                  <button type="button" onClick={openBookingModal} className="btn btn-primary">
-                    预约 30 分钟诊断会
-                  </button>
-                  <button type="button" onClick={() => onNavigate('configurator')} className="link justify-center px-2 py-2 text-body sm:justify-start">
-                    规划服务方案
-                    <ChevronRight />
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
+        <VisibilityAudit
+          inputRef={auditInputRef}
+          openBookingModal={openBookingModal}
+          onGoToConfigurator={() => onNavigate('configurator')}
+        />
       </section>
 
       {/* ===================== 核心服务 ===================== */}

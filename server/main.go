@@ -24,6 +24,8 @@ type App struct {
 	loginLimiter   *limiter
 	collectLimiter *limiter // 公开接口按 IP 限流
 	leadLimiter    *limiter
+	auditLimiter   *limiter // AI 可见性测评按 IP 限流
+	audits         *auditStore
 }
 
 func (a *App) routes() http.Handler {
@@ -59,6 +61,9 @@ func (a *App) routes() http.Handler {
 	// 对外公开接口：其他网站的采集脚本与表单调用，靠 site_key 识别站点
 	mux.HandleFunc("POST /api/public/collect", a.handleCollect)
 	mux.HandleFunc("POST /api/public/leads", a.handleSubmitLead)
+	// AI 可见性测评（首页）：异步任务，POST 创建、GET 轮询
+	mux.HandleFunc("POST /api/public/audits", a.handleCreateAudit)
+	mux.HandleFunc("GET /api/public/audits/{id}", a.handleGetAudit)
 	mux.HandleFunc("OPTIONS /api/public/", publicPreflight)
 	mux.HandleFunc("GET /cw.js", a.handleScript)
 
@@ -227,7 +232,8 @@ func main() {
 	}
 
 	app := &App{cfg: cfg, gemini: NewGemini(cfg.GeminiKey, cfg.GeminiModel), loginLimiter: newLimiter(10, time.Minute),
-		collectLimiter: newLimiter(120, time.Minute), leadLimiter: newLimiter(10, time.Minute)}
+		collectLimiter: newLimiter(120, time.Minute), leadLimiter: newLimiter(10, time.Minute),
+		auditLimiter: newLimiter(6, time.Hour), audits: newAuditStore()}
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
