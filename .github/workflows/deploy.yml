@@ -125,14 +125,65 @@ jobs:
           echo "已记录主机密钥：$(grep -c . ~/.ssh/known_hosts) 条"
 
       # ── ③ 触发远程部署 ────────────────────────────────────────────────
+      # 服务器上的 deploy 脚本是 SSH 强制命令，无法直接传文件；运行时配置（Gemini key、MySQL 密码等）
+      # 改为：把 Secrets 编码成 hex 拼在命令后面（deploy CW_ENV=<hex>）。deploy 脚本运行在该 SSH 会话里，
+      # SSH_ORIGINAL_COMMAND 会被 docker compose 继承并交给容器（见 compose.yaml），后端启动时解出并保存到卷里。
+      # 用 hex 而不是 base64：hex 里不会出现 "force" 这个词，不会误触发脚本对 force 的检测。
+      # 注意：命令里含密钥，绝不能回显；编码后的值不会被 GitHub 自动打码，所以下面显式 add-mask。
+      #
+      # 需要的 Secrets（仓库 Settings → Secrets and variables → Actions → Secrets）：
+      #   MYSQL_APP_PASSWORD     应用专用账号 cloudwise 的密码（12 位以上，仅字母数字和 _.@#%+=-，不含引号）
+      #   MYSQL_ADMIN_USER       （首次部署需要）有建库/建用户权限的 MySQL 管理员账号，如 dba
+      #   MYSQL_ADMIN_PASSWORD   （首次部署需要）其密码；初始化成功后可以删除这两个 Secret
+      #   ADMIN_EMAIL            （可选）首个后台管理员邮箱，仅在该邮箱不存在时创建
+      #   ADMIN_INITIAL_PASSWORD （可选）其初始密码（10 位以上），首次登录会被要求修改
+      #   GEMINI_API_KEY         （可选）不配则 AI 接口使用内置 fallback
       - name: 触发远程部署
+        env:
+          S_GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          S_MYSQL_APP_PASSWORD: ${{ secrets.MYSQL_APP_PASSWORD }}
+          S_MYSQL_ADMIN_USER: ${{ secrets.MYSQL_ADMIN_USER }}
+          S_MYSQL_ADMIN_PASSWORD: ${{ secrets.MYSQL_ADMIN_PASSWORD }}
+          S_ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
+          S_ADMIN_INITIAL_PASSWORD: ${{ secrets.ADMIN_INITIAL_PASSWORD }}
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             CMD="deploy force"
           else
             CMD="deploy"
           fi
-          echo "远程指令：$CMD  目标：$SSH_USER@$SSH_HOST"
+
+          BLOB=""
+          # add 变量名 目标环境变量名：去掉首尾空白，含换行则报错，空值跳过
+          add() {
+            local v
+            v="$(printf '%s' "${!1}" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')"
+            [ -z "$v" ] && return 0
+            case "$v" in
+              *$'\n'*|*$'\r'*) echo "::error::Secret ${1#S_} 含有换行，请重新粘贴为单行"; exit 1 ;;
+            esac
+            BLOB="${BLOB}${2}=${v}"$'\n'
+          }
+          add S_GEMINI_API_KEY          GEMINI_API_KEY
+          add S_MYSQL_APP_PASSWORD      MYSQL_PASSWORD
+          add S_MYSQL_ADMIN_USER        MYSQL_ADMIN_USER
+          add S_MYSQL_ADMIN_PASSWORD    MYSQL_ADMIN_PASSWORD
+          add S_ADMIN_EMAIL             CW_ADMIN_EMAIL
+          add S_ADMIN_INITIAL_PASSWORD  CW_ADMIN_PASSWORD
+
+          if [ -n "$BLOB" ]; then
+            HEX="$(printf '%s' "$BLOB" | od -An -v -tx1 | tr -d ' \n')"
+            echo "::add-mask::$HEX"
+            REMOTE_CMD="$CMD CW_ENV=$HEX"
+          else
+            REMOTE_CMD="$CMD"
+          fi
+
+          # 健康检查阶段据此判断是否要求数据库就绪
+          if [ -n "$S_MYSQL_APP_PASSWORD" ]; then echo "EXPECT_DB=1" >> "$GITHUB_ENV"; fi
+          if [ -n "$S_GEMINI_API_KEY" ]; then echo "EXPECT_GEMINI=1" >> "$GITHUB_ENV"; fi
+
+          echo "远程指令：$CMD（携带 $(printf '%s' "$BLOB" | grep -c .) 项运行时配置）  目标：$SSH_USER@$SSH_HOST"
 
           set +e
           OUT=$(ssh -i ~/.ssh/deploy_key \
@@ -142,7 +193,7 @@ jobs:
               -o ConnectTimeout=15 \
               -o ServerAliveInterval=30 \
               "$SSH_USER@$SSH_HOST" \
-              "$CMD" 2>&1)
+              "$REMOTE_CMD" 2>&1)
           RC=$?
           set -e
 
@@ -155,22 +206,44 @@ jobs:
           fi
 
       # ── ④ 部署后健康检查 ──────────────────────────────────────────────
+      # 数据库初始化失败时服务不会下线（AI 接口与静态站点照常），但这里会让任务失败并打印原因，
+      # 原因取自 /api/health 的 dbIssue，不含敏感信息。
       - name: 部署后健康检查
         run: |
           sleep 3
+          BODY=""
           for i in 1 2 3 4 5; do
-            CODE=$(curl -s -o /dev/null -w '%{http_code}' --max-time 15 \
+            CODE=$(curl -s -o /tmp/health.json -w '%{http_code}' --max-time 15 \
                    "http://$SSH_HOST/api/health" || echo 000)
             echo "第 $i 次探测 /api/health -> HTTP $CODE"
             if [ "$CODE" = "200" ]; then
-              echo "站点健康："
-              curl -s --max-time 15 "http://$SSH_HOST/api/health"
-              exit 0
+              BODY=$(cat /tmp/health.json)
+              break
             fi
             sleep 5
           done
-          echo "::error::健康检查未通过，请登录服务器执行 docker logs cloudwise 排查"
-          exit 1
+          if [ -z "$BODY" ]; then
+            echo "::error::健康检查未通过，请登录服务器执行 docker logs cloudwise 排查"
+            exit 1
+          fi
+          echo "站点健康：$BODY"
+
+          if [ "${EXPECT_DB:-}" = "1" ]; then
+            DB_STATUS=$(printf '%s' "$BODY" | jq -r '.dbStatus // "unknown"')
+            if [ "$DB_STATUS" != "ok" ]; then
+              DB_ISSUE=$(printf '%s' "$BODY" | jq -r '.dbIssue // ""')
+              echo "::error::站点已上线，但数据库未就绪：dbStatus=$DB_STATUS dbIssue=$DB_ISSUE"
+              echo "  unknown = 线上还是旧版后端（不含数据库支持）；failed = 见 dbIssue 的阶段与 MySQL 错误码"
+              echo "  bootstrap/mysql error 1045 = 管理员账号或密码不对；migrate/connect = 专用账号密码与库里不一致"
+              exit 1
+            fi
+            echo "数据库就绪"
+          fi
+          if [ "${EXPECT_GEMINI:-}" = "1" ]; then
+            if [ "$(printf '%s' "$BODY" | jq -r '.hasGeminiKey // false')" != "true" ]; then
+              echo "::warning::已配置 GEMINI_API_KEY，但线上后端未读到 key（AI 接口正在使用 fallback）"
+            fi
+          fi
 
       - name: 清理密钥
         if: always()

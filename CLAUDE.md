@@ -39,6 +39,19 @@ NODE_ENV=production bun run start   # 生产模式：Express 托管 dist/ 并做
 - `SYSTEM_KNOWLEDGE_INSTRUCTION` 是 AI 顾问的「知识库」（服务、案例、报价规则、话术规则）。同样的业务事实还散落在 fallback 文案、`src/data/servicePackages.ts`、`src/data/caseStudiesData.ts` 和各 view 的文案中——改服务或案例时要一并更新。
 - **站点不展示任何价格**：服务、套餐、方案空间、课程与 AI 顾问都不出现金额、预算区间、折扣或付款比例；知识库要求模型不报价，问到费用时引导到方案规划与诊断会。新增内容也不要写价格。
 
+### Go 后端（`server/`，迁移中）
+
+正在把后端从 Node（`server.ts`）迁到 Go（标准库 `net/http` + MySQL 8.4），目标是同时承载售前站点与客户后台（访问量、留言）。迁移期间 `server.ts` 与 Go 服务并存，接口路径与响应格式保持一致；前端切换并验证后再删除 `server.ts` 与 Supabase。
+
+- 命令：`bun run dev:api`（Go，默认 `:8080`）、`bun run dev:web`（单独 vite，`/api` 代理到 Go）、`bun run build:api`（产物 `bin/cloudwise-server`）；`cd server && go run . create-admin <email>` 创建管理员并打印一次性初始密码，`go run . migrate` 只跑迁移。
+- 配置全走环境变量（见 `.env.example`）：模型统一 `gemini-3.1-flash-lite`（`GEMINI_MODEL` 可覆盖）；未配 `GEMINI_API_KEY` 走与 Node 版一致的确定性 fallback；未配 `MYSQL_DATABASE` 时只提供 AI 接口，账号/后台接口返回 503。`SHOW_FDE` 读环境变量，否则读取 `src/lib/features.ts`。
+- 知识库与 fallback 文案在 `server/knowledge.go`、`server/ai.go`，与 `server.ts` 是同一份业务事实，迁移期间改动要两边同步。
+- 数据库：迁移文件在 `server/migrations/`，按文件名顺序执行，时间一律 UTC 由 Go 传参。账号由管理员创建（不开放注册），密码 argon2id，会话为 HttpOnly cookie + `X-CSRF-Token`，首次登录必须改密，连续 5 次失败锁定 15 分钟。客户只能访问 `site_members` 授权的站点，所有站点数据查询都必须经过它。
+- **部署**：`.github/workflows/deploy.yml` 在 push 到 `main` 时 SSH 到服务器执行强制命令 `deploy`（服务器上的脚本：`git reset --hard origin/main` → `docker compose build` → `up -d --force-recreate` → 健康检查）。构建所需的 `Dockerfile`、`compose.yaml` 在仓库根目录，随 `git reset --hard` 落到服务器，**不需要登录服务器改任何文件**。`compose.yaml` 使用 `network_mode: host`，服务只监听 `127.0.0.1:3000`（反向代理转发），容器里的 `127.0.0.1:3306` 就是服务器上的 MySQL。
+- **运行时密钥的传递**：SSH 是强制命令，不能传文件，所以工作流把 GitHub Secrets 编码成 hex 拼在命令后面（`deploy CW_ENV=<hex>`）；服务器脚本运行在该 SSH 会话里，`SSH_ORIGINAL_COMMAND` 被 `docker compose` 继承，经 `compose.yaml` 的 `CW_DEPLOY_ENV` 交给容器，后端启动时解出并保存到 `/state` 卷（`server/config.go` 的 `loadDeployEnv`，仅接受 `GEMINI_` / `MYSQL_` / `CW_ADMIN_` / `COOKIE_` / `TRUST_` / `SHOW_FDE` 前缀）。手动在服务器上重新部署（命令不带密钥）时沿用卷里上次保存的配置。命令里含密钥，工作流和脚本都不能回显它。所需 Secrets 列在 `deploy.yml` 步骤③的注释里：`MYSQL_APP_PASSWORD`、（首次）`MYSQL_ADMIN_USER` / `MYSQL_ADMIN_PASSWORD`、可选 `ADMIN_EMAIL` / `ADMIN_INITIAL_PASSWORD` / `GEMINI_API_KEY`。
+- **数据库自动初始化**（`server/bootstrap.go`）：有管理员账号时幂等地建库、建专用账号（`cloudwise`，同时建在 `localhost` 与 `127.0.0.1`）并授权，然后跑迁移，再按 `CW_ADMIN_*` 创建首个管理员（只创建不修改）。管理员数据库账号与初始管理员密码只在本次启动生效，不写入 `/state`。初始化失败不会让进程退出：站点与 AI 接口照常提供，`/api/health` 的 `dbStatus` / `dbIssue`（阶段 + MySQL 错误码，不含敏感信息）说明原因，工作流的健康检查会据此让任务失败。
+- 已有接口：`/api/auth/*`（登录、登出、me、改密）、`/api/sites`（我的站点）、`/api/admin/*`（公司、账号、站点、授权）。站点访问统计采集（`/collect`）与留言是后续步骤。
+
 ### 前端导航（无路由库）
 
 - `src/App.tsx` 用 `currentTab` 状态条件渲染 `src/views/*`，并与地址栏 hash 同步（`#/services`），支持浏览器前进后退与分享链接；切页时滚到顶部并更新 `document.title`。

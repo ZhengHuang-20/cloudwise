@@ -1,0 +1,10 @@
+.git
+.github
+node_modules
+dist
+bin
+server/cloudwise-server
+.env*
+!.env.example
+*.log
+docs
