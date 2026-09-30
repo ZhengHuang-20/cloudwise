@@ -134,6 +134,7 @@ const ALL_COURSES: Course[] = [
             ],
             executiveTakeaway: '外贸独立站是投资而非成本。它是企业出海所有流量（SEO、GEO、展会、广告）的唯一终局承接地。',
             notebookLmPodcast: {
+              videoUrl: '/videos/a/a-1-1.mp4',
               title: '【NotebookLM 深度解读】为什么你的外贸官网变成了“网络僵尸画册”？',
               audioDuration: '08:45',
               hosts: ['Alex (技术战略专家)', 'Sam (资深出海顾问)'],
@@ -203,6 +204,7 @@ const ALL_COURSES: Course[] = [
             ],
             executiveTakeaway: '在设计网站前，必须把三类读者的需求映射到每个模块：产品页给买家参数，代码底层给 Google 结构，定义与 FAQ 喂给 AI。',
             notebookLmPodcast: {
+              videoUrl: '/videos/a/a-1-2.mp4',
               title: '【NotebookLM 深度对谈】三读者架构：如何让 Google 抓得懂、AI 答得出、买家愿买单？',
               audioDuration: '09:12',
               hosts: ['Alex', 'Sam'],
@@ -253,6 +255,7 @@ const ALL_COURSES: Course[] = [
             ],
             executiveTakeaway: '以工程化、数据化的交付物指标进行验收，确保独立站上线当天即可开始被 Google 与 AI 有效抓取。',
             notebookLmPodcast: {
+              videoUrl: '/videos/a/a-1-4.mp4',
               title: '【NotebookLM 决策者专线】老板必听：外贸建站防坑与验收五项铁律',
               audioDuration: '07:30',
               hosts: ['Alex', 'Sam'],
@@ -295,6 +298,7 @@ const ALL_COURSES: Course[] = [
             ],
             executiveTakeaway: '合格的外贸独立站必须自带数据透明看板，每一条来自 Google 或 ChatGPT 的访问都清晰可溯源。',
             notebookLmPodcast: {
+              videoUrl: '/videos/a/a-7-4.mp4',
               title: '【NotebookLM 深度拆解】爱康医疗实战看板：ChatGPT 是如何给他们带来海外买家的？',
               audioDuration: '10:05',
               hosts: ['Alex', 'Sam'],
@@ -354,6 +358,7 @@ const ALL_COURSES: Course[] = [
             ],
             executiveTakeaway: '把 SEO 预算视为数字固定资产投资，SEO 为全站建立被 Google 索引的通行证，直接支撑后续的 GEO 推荐。',
             notebookLmPodcast: {
+              videoUrl: '/videos/b/b-1-3.mp4',
               title: '【NotebookLM 精英课】广告 vs SEO vs GEO：出海企业的流量三角形怎么搭？',
               audioDuration: '08:15',
               hosts: ['Alex', 'Sam'],
@@ -415,6 +420,7 @@ const ALL_COURSES: Course[] = [
             ],
             executiveTakeaway: '关键词不是拍脑袋想的，必须来源于海外买家的真实采购意图与当地工程技术规范。',
             notebookLmPodcast: {
+              videoUrl: '/videos/b/b-3-5.mp4',
               title: '【NotebookLM 案例复盘】泰宁科创如何用 60 组专业词库打开海外市政工程大门？',
               audioDuration: '09:40',
               hosts: ['Alex', 'Sam'],
@@ -474,6 +480,7 @@ const ALL_COURSES: Course[] = [
             ],
             executiveTakeaway: 'GEO 是出海企业未来 3-5 年最大的结构性红利。越早建立在各大 AI 知识库中的权威信源引用，护城河越深。',
             notebookLmPodcast: {
+              videoUrl: '/videos/c/c-1-1.mp4',
               title: '【NotebookLM 旗舰课导读】海外采购商的第一站变了：你准备好被 AI 点名了吗？',
               audioDuration: '11:20',
               hosts: ['Alex', 'Sam'],
@@ -530,6 +537,7 @@ const ALL_COURSES: Course[] = [
             ],
             executiveTakeaway: '不要把预算押在单一渠道。用 SEO 保证公开透明的抓取通道，用 GEO 抢占下一代 AI 采购推荐高地。',
             notebookLmPodcast: {
+              videoUrl: '/videos/c/c-1-2.mp4',
               title: '【NotebookLM 深度对比】SEO vs GEO：一张图看清技术差异与收益模型',
               audioDuration: '08:50',
               hosts: ['Alex', 'Sam'],
@@ -567,6 +575,7 @@ const ALL_COURSES: Course[] = [
             ],
             executiveTakeaway: '六步闭环把虚无缥缈的“AI 推荐”变成了可排期、可量化、可月度验收的工程化项目。',
             notebookLmPodcast: {
+              videoUrl: '/videos/c/c-3-1.mp4',
               title: '【NotebookLM 核心方法论】GEO 六步闭环：我们是如何把玄学变成确定性工程的？',
               audioDuration: '12:05',
               hosts: ['Alex', 'Sam'],
@@ -609,6 +618,7 @@ const ALL_COURSES: Course[] = [
             ],
             executiveTakeaway: '合规做 GEO，建立真实增值的企业数字资产；拒绝黑帽刷量和信息投毒，长效享受 AI 出海红利。',
             notebookLmPodcast: {
+              videoUrl: '/videos/c/c-10-2.mp4',
               title: '【NotebookLM 决策者专线】爱康医疗国内官网 47 分与海外新站 95 分背后的真实故事与专业敬畏',
               audioDuration: '09:55',
               hosts: ['Alex', 'Sam'],
@@ -663,6 +673,7 @@ const ALL_COURSES: Course[] = [
             ],
             executiveTakeaway: '一条 5 万美元的工业品订单，往往就决定在买家深夜发问的头 5 分钟内。AI 客服是外贸转化的最强锁闭器。',
             notebookLmPodcast: {
+              videoUrl: '/videos/d/d-1-2.mp4',
               title: '【NotebookLM 场景复盘】凌晨三点的一条询盘：AI 如何帮你抢回 5 万美元订单？',
               audioDuration: '08:40',
               hosts: ['Alex', 'Sam'],
@@ -700,6 +711,7 @@ const ALL_COURSES: Course[] = [
             ],
             executiveTakeaway: '不要再让辛辛苦苦花广告费买来的海外流量，在深夜的等待中付诸东流。',
             notebookLmPodcast: {
+              videoUrl: '/videos/d/d-9-2.mp4',
               title: '【NotebookLM 财务分析】算清一笔账：你的企业每年因为“回复慢”悄悄丢了多少钱？',
               audioDuration: '07:55',
               hosts: ['Alex', 'Sam'],
@@ -754,6 +766,7 @@ const ALL_COURSES: Course[] = [
             ],
             executiveTakeaway: '评估 FDE 服务，不要只问“派几个人、驻多久”，要问“每周交付什么结果、离场后留下什么”。',
             notebookLmPodcast: {
+              videoUrl: '/videos/e/e-1-1.mp4',
               title: '【NotebookLM 深度访谈】从 Palantir 到 OpenAI：为什么 AI 公司都在抢 FDE？',
               audioDuration: '10:18',
               hosts: ['Alex', 'Sam'],
@@ -809,6 +822,7 @@ const ALL_COURSES: Course[] = [
             ],
             executiveTakeaway: '没有标准化的智能化，只是把混乱自动化。先问企业的经验有没有写下来、数据在不在系统里，再谈上什么 AI。',
             notebookLmPodcast: {
+              videoUrl: '/videos/e/e-1-2.mp4',
               title: '【NotebookLM 深度对谈】AI 落地为什么要先做“土活”：标准化与信息化',
               audioDuration: '09:40',
               hosts: ['Alex', 'Sam'],
@@ -860,6 +874,7 @@ const ALL_COURSES: Course[] = [
             ],
             executiveTakeaway: '好的 FDE 会让自己越来越不被需要：离场那天，标准在、系统在、数据在，会用的人也在。',
             notebookLmPodcast: {
+              videoUrl: '/videos/e/e-8-1.mp4',
               title: '【NotebookLM 决策者专线】引入 FDE 之前，老板要想清楚的四件事',
               audioDuration: '07:45',
               hosts: ['Alex', 'Sam'],

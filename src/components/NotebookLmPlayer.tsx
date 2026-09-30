@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Headphones, Pause, Play, RotateCcw, Video } from 'lucide-react';
 import { SegmentedControl } from './ui/SegmentedControl';
 
@@ -26,8 +26,10 @@ export const NotebookLmPlayer: React.FC<NotebookLmPlayerProps> = ({ podcast, les
   const [currentTimeSec, setCurrentTimeSec] = useState(0);
   const [activeTab, setActiveTab] = useState<'audio' | 'video'>('audio');
   const [currentLineIndex, setCurrentLineIndex] = useState(0);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   const totalDurationSec = 180;
+  const videoUrl = podcast.videoUrl;
 
   useEffect(() => {
     let interval: any;
@@ -51,6 +53,13 @@ export const NotebookLmPlayer: React.FC<NotebookLmPlayerProps> = ({ podcast, les
     }
     return () => clearInterval(interval);
   }, [isPlaying, playbackSpeed, podcast.transcript.length]);
+
+  // 切走视频标签时暂停播放，避免后台继续出声
+  useEffect(() => {
+    if (activeTab !== 'video' && videoRef.current) {
+      videoRef.current.pause();
+    }
+  }, [activeTab]);
 
   // 静态波形：高度只取决于位置，避免每次渲染抖动
   const bars = useMemo(
@@ -162,7 +171,26 @@ export const NotebookLmPlayer: React.FC<NotebookLmPlayerProps> = ({ podcast, les
             })}
           </ol>
         </div>
+      ) : videoUrl ? (
+        /* 有视频：渲染播放器 */
+        <div className="p-5">
+          <div className="overflow-hidden rounded-control border border-separator bg-black">
+            <video
+              ref={videoRef}
+              src={videoUrl}
+              controls
+              playsInline
+              preload="metadata"
+              controlsList="nodownload"
+              className="aspect-video w-full"
+            >
+              您的浏览器不支持视频播放。
+            </video>
+          </div>
+          <p className="mt-3 text-caption text-label-secondary">{lessonTitle} · 控制台实操录屏</p>
+        </div>
       ) : (
+        /* 无视频：保留占位提示 */
         <div className="flex min-h-[240px] flex-col items-center justify-center p-10 text-center">
           <Video className="h-10 w-10 text-label-tertiary" />
           <h4 className="mt-4 text-body font-semibold">{lessonTitle} · 实操视频</h4>
