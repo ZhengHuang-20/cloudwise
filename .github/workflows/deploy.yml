@@ -57,7 +57,20 @@ jobs:
           fi
           echo "私钥指纹：$(ssh-keygen -lf ~/.ssh/deploy_key | awk '{print $2}')"
 
-          ssh-keyscan -H "${{ secrets.SSH_HOST }}" >> ~/.ssh/known_hosts 2>/dev/null
+          HOST="${{ secrets.SSH_HOST }}"
+          echo "SSH_HOST 诊断：长度=${#HOST}  首3位=${HOST:0:3}  末3位=${HOST: -3}"
+
+          SCAN_OUT=$(ssh-keyscan -T 10 -H "$HOST" 2>&1) || true
+          if ! printf '%s' "$SCAN_OUT" | grep -q '^ssh-'; then
+            echo "::error::无法获取主机密钥，ssh-keyscan 输出为：${SCAN_OUT:-（空）}"
+            echo "排查清单："
+            echo "  1. SSH_HOST 必须是纯 IP，不能带 http:// 或 :22 或空格"
+            echo "  2. 安全组需放行 22 端口"
+            echo "  3. 服务器必须在运行中"
+            echo "  4. 服务器侧可能把 GitHub Runner 的 IP 封禁了"
+            exit 1
+          fi
+          printf '%s\n' "$SCAN_OUT" >> ~/.ssh/known_hosts
           echo "已记录主机密钥"
 
       - name: 触发远程部署
@@ -69,13 +82,25 @@ jobs:
           fi
           echo "远程指令：$CMD"
 
-          ssh -i ~/.ssh/deploy_key \
+          set +e
+          OUT=$(ssh -i ~/.ssh/deploy_key \
               -o IdentitiesOnly=yes \
+              -o BatchMode=yes \
               -o StrictHostKeyChecking=yes \
               -o ConnectTimeout=15 \
               -o ServerAliveInterval=30 \
               "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" \
-              "$CMD"
+              "$CMD" 2>&1)
+          RC=$?
+          set -e
+
+          printf '%s\n' "$OUT"
+
+          if [ "$RC" -ne 0 ]; then
+            SUMMARY=$(printf '%s' "$OUT" | tail -4 | tr '\n' ' ')
+            echo "::error::SSH 部署失败（退出码 $RC）。末尾输出：$SUMMARY"
+            exit "$RC"
+          fi
 
       - name: 部署后健康检查
         run: |
