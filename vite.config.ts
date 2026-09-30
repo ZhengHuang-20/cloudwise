@@ -17,6 +17,8 @@ export default defineConfig(() => {
       hmr: process.env.DISABLE_HMR !== 'true',
       // Disable file watching when DISABLE_HMR is true to save CPU during agent edits.
       watch: process.env.DISABLE_HMR === 'true' ? null : {},
+      // 仅 dev:web（单独跑 vite）时把 /api 转发给 Go 后端；tsx server.ts 模式不受影响。
+      proxy: process.env.API_PROXY ? {'/api': process.env.API_PROXY} : undefined,
     },
   };
 });
