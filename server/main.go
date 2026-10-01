@@ -17,13 +17,17 @@ import (
 
 type App struct {
 	cfg            Config
-	db             *sql.DB // 未配置 MySQL 时为 nil，AI 接口仍可用
-	gemini         *Gemini // 未配置 key 时为 nil，走确定性 fallback
-	dbState        string  // unconfigured | ok | failed
-	dbIssue        string  // 失败阶段与错误摘要（不含敏感信息）
+	db             *sql.DB     // 未配置 MySQL 时为 nil，AI 接口仍可用
+	gemini         *Gemini     // 未配置 key 时为 nil，走确定性 fallback
+	openai         *OpenAI     // 测评探测平台，未配置时为 nil
+	perplexity     *Perplexity // 同上
+	dbState        string      // unconfigured | ok | failed
+	dbIssue        string      // 失败阶段与错误摘要（不含敏感信息）
 	loginLimiter   *limiter
 	collectLimiter *limiter // 公开接口按 IP 限流
 	leadLimiter    *limiter
+	auditLimiter   *limiter // AI 可见性测评按 IP 限流
+	audits         *auditStore
 }
 
 func (a *App) routes() http.Handler {
@@ -33,6 +37,7 @@ func (a *App) routes() http.Handler {
 		writeJSON(w, http.StatusOK, map[string]any{
 			"status":       "ok",
 			"hasGeminiKey": a.gemini != nil,
+			"auditEngines": a.auditEngineIDs(),
 			"hasDatabase":  a.db != nil,
 			"dbStatus":     a.dbState,
 			"dbIssue":      a.dbIssue,
@@ -59,6 +64,9 @@ func (a *App) routes() http.Handler {
 	// 对外公开接口：其他网站的采集脚本与表单调用，靠 site_key 识别站点
 	mux.HandleFunc("POST /api/public/collect", a.handleCollect)
 	mux.HandleFunc("POST /api/public/leads", a.handleSubmitLead)
+	// AI 可见性测评（首页）：异步任务，POST 创建、GET 轮询
+	mux.HandleFunc("POST /api/public/audits", a.handleCreateAudit)
+	mux.HandleFunc("GET /api/public/audits/{id}", a.handleGetAudit)
 	mux.HandleFunc("OPTIONS /api/public/", publicPreflight)
 	mux.HandleFunc("GET /cw.js", a.handleScript)
 
@@ -227,7 +235,10 @@ func main() {
 	}
 
 	app := &App{cfg: cfg, gemini: NewGemini(cfg.GeminiKey, cfg.GeminiModel), loginLimiter: newLimiter(10, time.Minute),
-		collectLimiter: newLimiter(120, time.Minute), leadLimiter: newLimiter(10, time.Minute)}
+		collectLimiter: newLimiter(120, time.Minute), leadLimiter: newLimiter(10, time.Minute),
+		auditLimiter: newLimiter(6, time.Hour), audits: newAuditStore(),
+		openai:     NewOpenAI(cfg.OpenAIKey, cfg.OpenAIModel, cfg.OpenAIBase, cfg.OpenAIEffort),
+		perplexity: NewPerplexity(cfg.PerplexityKey, cfg.PerplexityModel, cfg.PerplexityBase)}
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 

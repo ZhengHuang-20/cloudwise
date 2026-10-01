@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/go-sql-driver/mysql"
@@ -22,6 +23,17 @@ type Config struct {
 	CookieSecure bool
 	TrustProxy   bool
 	ShowFDE      bool
+
+	AuditDailyLimit int // AI 可见性测评每日真实探测次数上限（控制模型费用）
+
+	// AI 可见性测评的其他探测平台，未配置 key 时不启用。BASE 可指向海外中转网关（国内服务器直连不通时）。
+	OpenAIKey       string
+	OpenAIModel     string
+	OpenAIEffort    string
+	OpenAIBase      string
+	PerplexityKey   string
+	PerplexityModel string
+	PerplexityBase  string
 }
 
 var envKeyRe = regexp.MustCompile(`^[A-Z][A-Z0-9_]*$`)
@@ -68,7 +80,7 @@ func loadDotEnv(path string) {
 // 的 CW_DEPLOY_ENV。只接受下列前缀的变量，避免被用来改写 PATH 之类的进程环境。
 var (
 	deployEnvRe        = regexp.MustCompile(`CW_ENV=([0-9a-fA-F]+)`)
-	deployEnvPrefixes  = []string{"GEMINI_", "MYSQL_", "CW_ADMIN_", "COOKIE_", "TRUST_", "SHOW_FDE"}
+	deployEnvPrefixes  = []string{"GEMINI_", "OPENAI_", "PERPLEXITY_", "MYSQL_", "CW_ADMIN_", "COOKIE_", "TRUST_", "SHOW_FDE"}
 	ephemeralEnvPrefix = []string{"MYSQL_ADMIN_", "CW_ADMIN_"} // 只在本次启动生效，不落盘
 )
 
@@ -115,6 +127,21 @@ func loadDeployEnv() {
 func env(key, def string) string {
 	if v := os.Getenv(key); v != "" {
 		return v
+	}
+	return def
+}
+
+// envAllowEmpty 与 env 不同：显式设为空字符串时返回空（用于关闭某个可选参数）。
+func envAllowEmpty(key, def string) string {
+	if v, ok := os.LookupEnv(key); ok {
+		return strings.TrimSpace(v)
+	}
+	return def
+}
+
+func envInt(key string, def int) int {
+	if n, err := strconv.Atoi(os.Getenv(key)); err == nil && n >= 0 {
+		return n
 	}
 	return def
 }
@@ -172,5 +199,14 @@ func loadConfig() Config {
 		CookieSecure: os.Getenv("COOKIE_SECURE") == "true",
 		TrustProxy:   os.Getenv("TRUST_PROXY") == "true",
 		ShowFDE:      resolveShowFDE(),
+
+		AuditDailyLimit: envInt("GEMINI_AUDIT_DAILY_LIMIT", 100),
+		OpenAIKey:       os.Getenv("OPENAI_API_KEY"),
+		OpenAIModel:     env("OPENAI_MODEL", "gpt-6-luna"),
+		OpenAIEffort:    envAllowEmpty("OPENAI_REASONING_EFFORT", "low"),
+		OpenAIBase:      env("OPENAI_BASE_URL", "https://api.openai.com"),
+		PerplexityKey:   os.Getenv("PERPLEXITY_API_KEY"),
+		PerplexityModel: env("PERPLEXITY_MODEL", "sonar"),
+		PerplexityBase:  env("PERPLEXITY_BASE_URL", "https://api.perplexity.ai"),
 	}
 }
