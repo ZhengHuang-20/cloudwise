@@ -29,6 +29,7 @@ type Config struct {
 	// AI 可见性测评的其他探测平台，未配置 key 时不启用。BASE 可指向海外中转网关（国内服务器直连不通时）。
 	OpenAIKey       string
 	OpenAIModel     string
+	OpenAIEffort    string
 	OpenAIBase      string
 	PerplexityKey   string
 	PerplexityModel string
@@ -130,6 +131,14 @@ func env(key, def string) string {
 	return def
 }
 
+// envAllowEmpty 与 env 不同：显式设为空字符串时返回空（用于关闭某个可选参数）。
+func envAllowEmpty(key, def string) string {
+	if v, ok := os.LookupEnv(key); ok {
+		return strings.TrimSpace(v)
+	}
+	return def
+}
+
 func envInt(key string, def int) int {
 	if n, err := strconv.Atoi(os.Getenv(key)); err == nil && n >= 0 {
 		return n
@@ -193,7 +202,8 @@ func loadConfig() Config {
 
 		AuditDailyLimit: envInt("GEMINI_AUDIT_DAILY_LIMIT", 100),
 		OpenAIKey:       os.Getenv("OPENAI_API_KEY"),
-		OpenAIModel:     env("OPENAI_MODEL", "gpt-5-mini"),
+		OpenAIModel:     env("OPENAI_MODEL", "gpt-6-luna"),
+		OpenAIEffort:    envAllowEmpty("OPENAI_REASONING_EFFORT", "low"),
 		OpenAIBase:      env("OPENAI_BASE_URL", "https://api.openai.com"),
 		PerplexityKey:   os.Getenv("PERPLEXITY_API_KEY"),
 		PerplexityModel: env("PERPLEXITY_MODEL", "sonar"),

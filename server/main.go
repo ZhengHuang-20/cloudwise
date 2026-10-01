@@ -237,7 +237,7 @@ func main() {
 	app := &App{cfg: cfg, gemini: NewGemini(cfg.GeminiKey, cfg.GeminiModel), loginLimiter: newLimiter(10, time.Minute),
 		collectLimiter: newLimiter(120, time.Minute), leadLimiter: newLimiter(10, time.Minute),
 		auditLimiter: newLimiter(6, time.Hour), audits: newAuditStore(),
-		openai:     NewOpenAI(cfg.OpenAIKey, cfg.OpenAIModel, cfg.OpenAIBase),
+		openai:     NewOpenAI(cfg.OpenAIKey, cfg.OpenAIModel, cfg.OpenAIBase, cfg.OpenAIEffort),
 		perplexity: NewPerplexity(cfg.PerplexityKey, cfg.PerplexityModel, cfg.PerplexityBase)}
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()

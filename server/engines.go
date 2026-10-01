@@ -109,14 +109,15 @@ func postJSON(ctx context.Context, c *http.Client, endpoint, bearer string, body
 
 type OpenAI struct {
 	key, model, base string
+	effort           string // 推理强度；为空时不传，兼容不支持 reasoning 参数的旧模型
 	client           *http.Client
 }
 
-func NewOpenAI(key, model, base string) *OpenAI {
+func NewOpenAI(key, model, base, effort string) *OpenAI {
 	if key == "" {
 		return nil
 	}
-	return &OpenAI{key: key, model: model, base: strings.TrimRight(base, "/"), client: &http.Client{Timeout: 90 * time.Second}}
+	return &OpenAI{key: key, model: model, base: strings.TrimRight(base, "/"), effort: effort, client: &http.Client{Timeout: 90 * time.Second}}
 }
 
 func (*OpenAI) ID() string   { return "openai" }
@@ -141,6 +142,9 @@ func (o *OpenAI) Ask(ctx context.Context, prompt string) (string, []WebSource, e
 		"model": o.model,
 		"input": prompt,
 		"tools": []any{map[string]any{"type": "web_search"}},
+	}
+	if o.effort != "" {
+		body["reasoning"] = map[string]any{"effort": o.effort}
 	}
 	if err := postJSON(ctx, o.client, o.base+"/v1/responses", o.key, body, &out); err != nil {
 		return "", nil, fmt.Errorf("openai: %w", err)
@@ -170,6 +174,8 @@ func (o *OpenAI) Ask(ctx context.Context, prompt string) (string, []WebSource, e
 }
 
 // ---------- Perplexity（Sonar，自带联网搜索） ----------
+// 可以直连 Perplexity，也可以经 OpenRouter 调用（PERPLEXITY_BASE_URL=https://openrouter.ai/api/v1，
+// key 填 OpenRouter 的）。两者都是 OpenAI 兼容的 /chat/completions，只是引用来源的字段不同。
 
 type Perplexity struct {
 	key, model, base string
@@ -180,7 +186,12 @@ func NewPerplexity(key, model, base string) *Perplexity {
 	if key == "" {
 		return nil
 	}
-	return &Perplexity{key: key, model: model, base: strings.TrimRight(base, "/"), client: &http.Client{Timeout: 90 * time.Second}}
+	base = strings.TrimRight(base, "/")
+	// OpenRouter 的模型名带厂商前缀（perplexity/sonar），这里自动补上，省得多配一个变量。
+	if strings.Contains(base, "openrouter.ai") && !strings.Contains(model, "/") {
+		model = "perplexity/" + model
+	}
+	return &Perplexity{key: key, model: model, base: base, client: &http.Client{Timeout: 90 * time.Second}}
 }
 
 func (*Perplexity) ID() string   { return "perplexity" }
@@ -190,7 +201,14 @@ func (p *Perplexity) Ask(ctx context.Context, prompt string) (string, []WebSourc
 	var out struct {
 		Choices []struct {
 			Message struct {
-				Content string `json:"content"`
+				Content     string `json:"content"`
+				Annotations []struct {
+					Type        string `json:"type"`
+					URLCitation struct {
+						URL   string `json:"url"`
+						Title string `json:"title"`
+					} `json:"url_citation"`
+				} `json:"annotations"` // OpenRouter 的格式
 			} `json:"message"`
 		} `json:"choices"`
 		Citations     []string `json:"citations"`
@@ -210,7 +228,14 @@ func (p *Perplexity) Ask(ctx context.Context, prompt string) (string, []WebSourc
 		return "", nil, errors.New("perplexity: empty answer")
 	}
 	var sources []WebSource
-	if len(out.SearchResults) > 0 {
+	if anns := out.Choices[0].Message.Annotations; len(anns) > 0 {
+		for _, an := range anns {
+			if an.Type == "url_citation" && an.URLCitation.URL != "" {
+				u := an.URLCitation
+				sources = append(sources, WebSource{Title: u.Title, URI: u.URL, Domain: hostOfURL(u.URL)})
+			}
+		}
+	} else if len(out.SearchResults) > 0 {
 		for _, r := range out.SearchResults {
 			sources = append(sources, WebSource{Title: r.Title, URI: r.URL, Domain: hostOfURL(r.URL)})
 		}
