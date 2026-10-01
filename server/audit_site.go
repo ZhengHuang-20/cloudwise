@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"html"
 	"io"
+	"log"
 	"net"
 	"net/http"
 	"net/url"
@@ -15,6 +16,7 @@ import (
 	"strings"
 	"syscall"
 	"time"
+	"unicode"
 )
 
 // ---------- 安全抓取：只访问公网地址，防止 SSRF ----------
@@ -123,6 +125,65 @@ func parseAuditTarget(input string) (domain string, ok bool) {
 		return "", false
 	}
 	return h, true
+}
+
+// parseAuditInput 解析测评输入：像域名的按域名处理，否则当作品牌名（2～60 个字符）。
+func parseAuditInput(input string) (domain, brand string, ok bool) {
+	if d, isDomain := parseAuditTarget(input); isDomain {
+		return d, "", true
+	}
+	brand = strings.Join(strings.Fields(input), " ")
+	n := len([]rune(brand))
+	if n < 2 || n > 60 || strings.ContainsAny(brand, "<>{}\\/@") {
+		return "", "", false
+	}
+	for _, r := range brand {
+		if unicode.IsControl(r) {
+			return "", "", false
+		}
+	}
+	return "", brand, true
+}
+
+// 这些是平台、目录与社交网站，不会是企业官网。
+var notOfficialSites = []string{"alibaba.com", "aliexpress.com", "made-in-china.com", "globalsources.com", "amazon.", "linkedin.com",
+	"facebook.com", "instagram.com", "youtube.com", "wikipedia.org", "baidu.com", "1688.com", "zhihu.com", "qcc.com", "tianyancha.com",
+	"crunchbase.com", "example.com", "bloomberg.com", "thomasnet.com", "x.com", "twitter.com", "tiktok.com"}
+
+var domainInTextRe = regexp.MustCompile(`(?i)\b((?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,24})\b`)
+
+// resolveDomain 让 AI 联网查找品牌官网，找不到或不确定时返回空。
+func (a *App) resolveDomain(ctx context.Context, brand string) string {
+	if a.gemini == nil {
+		return ""
+	}
+	cctx, cancel := context.WithTimeout(ctx, 45*time.Second)
+	defer cancel()
+	prompt := fmt.Sprintf(`What is the official company website of the brand or company "%s"? It is most likely a Chinese manufacturer or exporter.
+Answer with the bare domain only (for example example.com). If you cannot identify the official website with confidence, answer NONE.
+Do not answer with marketplaces, directories, social media or news sites.`, brand)
+	text, _, err := a.gemini.AskWithSearch(cctx, prompt)
+	if err != nil {
+		log.Printf("测评查找官网失败: %v", err)
+		return ""
+	}
+	if strings.HasPrefix(strings.ToUpper(strings.TrimSpace(text)), "NONE") {
+		return ""
+	}
+	for _, m := range domainInTextRe.FindAllString(text, 5) {
+		d, ok := parseAuditTarget(m)
+		if !ok {
+			continue
+		}
+		bad := false
+		for _, s := range notOfficialSites {
+			bad = bad || strings.Contains(d, s)
+		}
+		if !bad {
+			return d
+		}
+	}
+	return ""
 }
 
 // ---------- 官网检查 ----------

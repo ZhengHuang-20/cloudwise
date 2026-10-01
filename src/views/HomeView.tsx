@@ -51,7 +51,7 @@ const TOOLS: { tab: TabId | 'audit'; icon: React.ComponentType<{ className?: str
     tab: 'audit',
     icon: Radar,
     title: 'AI 可见性测评',
-    desc: '输入官网，我们以海外买家身份向 AI 搜索提问，看看你会不会被推荐、卡在哪一步。',
+    desc: '输入官网或品牌名，我们以海外买家身份向 AI 搜索提问，看看你会不会被推荐、卡在哪一步。',
     link: '开始测评',
   },
   {
