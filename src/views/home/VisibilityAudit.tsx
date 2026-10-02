@@ -1,11 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { AlertTriangle, Check, CheckCircle2, ChevronRight, Globe, Loader2 } from 'lucide-react';
+import { AlertTriangle, Check, CheckCircle2, ChevronRight, Globe, Loader2, X } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { ScoreRing } from '../../components/ui/ScoreRing';
 import { SegmentedControl } from '../../components/ui/SegmentedControl';
 import { scoreTone, TONE_BG, TONE_TEXT } from '../../components/ui/tone';
 import { ApiError } from '../../lib/api';
 import {
+  AuditEngineResult,
   AuditEvidence,
   AuditJob,
   AuditReport,
@@ -33,8 +34,6 @@ type JobProgress = Pick<AuditJob, 'status' | 'step' | 'done' | 'total' | 'engine
 
 const POLL_MS = 1500;
 const POLL_LIMIT_MS = 7 * 60 * 1000;
-const EVIDENCE_PREVIEW = 3;
-const ANSWER_PREVIEW_CHARS = 280;
 
 interface VisibilityAuditProps {
   inputRef: React.RefObject<HTMLInputElement | null>;
@@ -128,6 +127,8 @@ export const VisibilityAudit: React.FC<VisibilityAuditProps> = ({ inputRef, open
   };
 
   return (
+    <>
+    <div className="layout-text">
     <div className="tile mx-auto max-w-3xl">
       <div className="flex items-start justify-between gap-4">
         <div>
@@ -184,11 +185,15 @@ export const VisibilityAudit: React.FC<VisibilityAuditProps> = ({ inputRef, open
       </form>
 
       {job && <AuditProgress job={job} />}
-
-      {report && !isRunning && (
-        <AuditResult report={report} openBookingModal={openBookingModal} onGoToConfigurator={onGoToConfigurator} />
-      )}
     </div>
+    </div>
+
+    {report && !isRunning && (
+      <div className="layout-wide mt-6">
+        <AuditResult report={report} openBookingModal={openBookingModal} onGoToConfigurator={onGoToConfigurator} />
+      </div>
+    )}
+    </>
   );
 };
 
@@ -238,7 +243,9 @@ const AuditProgress: React.FC<{ job: JobProgress }> = ({ job }) => (
   </div>
 );
 
-// ---------- 结果 ----------
+// ---------- 结果：驾驶舱 ----------
+// 桌面端一屏看全：顶部身份条 → 总分与四项指标 → 平台对比与竞品声量 → 官网体检与结论 → 回答明细（左列表右详情）。
+// 窄屏自动退化为单列。
 
 interface AuditResultProps {
   report: AuditReport;
@@ -246,9 +253,26 @@ interface AuditResultProps {
   onGoToConfigurator: () => void;
 }
 
+const Panel: React.FC<{
+  title: string;
+  hint?: React.ReactNode;
+  aside?: React.ReactNode;
+  className?: string;
+  children: React.ReactNode;
+}> = ({ title, hint, aside, className = '', children }) => (
+  <section className={`card min-w-0 ${className}`}>
+    <div className="flex flex-wrap items-start justify-between gap-3">
+      <div className="min-w-0">
+        <h4 className="text-title-3">{title}</h4>
+        {hint && <p className="mt-1 text-caption text-label-secondary">{hint}</p>}
+      </div>
+      {aside}
+    </div>
+    <div className="mt-5">{children}</div>
+  </section>
+);
+
 const AuditResult: React.FC<AuditResultProps> = ({ report, openBookingModal, onGoToConfigurator }) => {
-  const [showAllEvidence, setShowAllEvidence] = useState(false);
-  const [engineFilter, setEngineFilter] = useState('all');
   const tone = scoreTone(report.totalScore);
   const hasAI = report.mode !== 'site_only';
   const hasSite = report.site !== null;
@@ -257,11 +281,9 @@ const AuditResult: React.FC<AuditResultProps> = ({ report, openBookingModal, onG
   const { metrics, entity } = report;
   const engines = report.engines ?? [];
   const engineCount = engines.length;
-  const answeredEngines = engines.filter((e) => e.answers > 0);
-  const filtered =
-    engineFilter === 'all' ? report.evidence : report.evidence.filter((item) => item.engine === engineFilter);
-  const evidence = showAllEvidence ? filtered : filtered.slice(0, EVIDENCE_PREVIEW);
   const maxVoice = Math.max(1, ...report.shareOfVoice.map((v) => v.mentions));
+  const showEngines = hasAI && engineCount > 1;
+  const showVoice = hasAI && report.shareOfVoice.length > 1;
 
   const tiles = [
     {
@@ -283,330 +305,385 @@ const AuditResult: React.FC<AuditResultProps> = ({ report, openBookingModal, onG
   ];
 
   return (
-    <div className="mt-8 border-t border-separator pt-8 animate-fade-in" aria-live="polite">
+    <div className="space-y-4 animate-fade-in" aria-live="polite">
       {report.mode === 'sample' && (
-        <p className="mb-6 flex items-start gap-2 text-body text-warning">
+        <p className="flex items-start gap-2 text-body text-warning">
           <AlertTriangle className="mt-1 h-5 w-5 shrink-0" />
           <span>测评服务暂未接入 AI，以下 AI 部分为示例数据，仅用于展示报告格式。</span>
         </p>
       )}
       {report.mode === 'site_only' && (
-        <p className="mb-6 flex items-start gap-2 text-body text-warning">
+        <p className="flex items-start gap-2 text-body text-warning">
           <AlertTriangle className="mt-1 h-5 w-5 shrink-0" />
           <span>本次向 AI 提问没有成功，只给出官网检查结果，请稍后重新测评。</span>
         </p>
       )}
 
-      <div className="flex flex-col items-center gap-6 text-center sm:flex-row sm:text-left">
-        <ScoreRing value={report.totalScore} caption="/ 100" />
+      {/* 身份条 */}
+      <header className="card flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <div className="min-w-0">
-          <p className="break-all text-caption text-label-secondary">
-            {entity.brand}
-            {report.domain ? ` · ${report.domain}` : searchedSite ? ' · 未找到官网' : ''}
+          <h3 className="break-all text-title-2">{entity.brand}</h3>
+          <p className="mt-1 break-all text-caption text-label-secondary">
+            {report.domain ? report.domain : searchedSite ? '未找到官网' : '未提供官网'}
+            {report.domainSource === 'resolved' && ' · 官网由 AI 根据品牌名查找，如不准确请直接输入官网域名'}
           </p>
-          {report.domainSource === 'resolved' && (
-            <p className="text-caption text-label-secondary">
-              官网由 AI 根据品牌名查找，如不准确请直接输入官网域名
-            </p>
-          )}
-          <p className="text-caption text-label-secondary">
-            AI 判断行业：{entity.industry} · 目标市场：{entity.market}
-          </p>
-          <h3 className="mt-1 text-title-2">{hasAI ? 'AI 可见性综合得分' : '官网 AI 可读取性'}</h3>
-          <p className={`mt-1 text-body font-semibold ${TONE_TEXT[tone]}`}>{report.level}</p>
+        </div>
+        <div className="flex min-w-0 flex-wrap items-center gap-2 [&>.badge]:max-w-full [&>.badge]:whitespace-normal">
+          <span className="badge">行业：{entity.industry}</span>
+          <span className="badge">市场：{entity.market}</span>
+          {hasAI && <span className="badge">{report.engine}</span>}
           {hasAI && (
-            <p className="mt-3 text-caption text-label-secondary">
-              向 {report.engine} 提出 {report.questions} 个问题，每个平台每题问 {report.samples} 次，共 {report.answers}{' '}
-              次有效回答。AI 的回答每次略有不同，结果按比例统计{engineCount > 1 && '，总分按各平台平均'}。
-            </p>
+            <span className="badge tabular-nums">
+              {report.questions} 题 × {report.samples} 次 · 共 {report.answers} 次有效回答
+            </span>
           )}
         </div>
+      </header>
+
+      {/* 总分 + 四项指标 */}
+      <div className="grid gap-4 lg:grid-cols-12">
+        <section className="card flex items-center gap-6 lg:col-span-4 lg:flex-col lg:justify-center lg:text-center">
+          <ScoreRing value={report.totalScore} caption="/ 100" size={168} stroke={14} />
+          <div>
+            <p className="text-title-3">{hasAI ? 'AI 可见性综合得分' : '官网 AI 可读取性'}</p>
+            <p className={`mt-1 text-body font-semibold ${TONE_TEXT[tone]}`}>{report.level}</p>
+            {hasAI && engineCount > 1 && (
+              <p className="mt-2 text-caption text-label-secondary">总分按各平台平均；AI 回答每次略有不同，结果按比例统计</p>
+            )}
+          </div>
+        </section>
+        <dl className="grid grid-cols-2 gap-4 lg:col-span-8">
+          {tiles.map((tile) => {
+            const available = tile.ai ? hasAI : hasSite;
+            const tileTone = scoreTone(tile.value);
+            return (
+              <div key={tile.label} className="card flex flex-col justify-between">
+                <dt className="text-caption text-label-secondary">{tile.label}</dt>
+                <dd className="mt-2 text-display tabular-nums">
+                  {available ? tile.value : '—'}
+                  {available && <span className="text-body font-normal text-label-secondary">{tile.unit}</span>}
+                </dd>
+                <div>
+                  <div className="meter mt-4">
+                    <span className={TONE_BG[tileTone]} style={{ width: `${available ? tile.value : 0}%` }} />
+                  </div>
+                  <p className="mt-2 text-caption text-label-secondary">{tile.note}</p>
+                </div>
+              </div>
+            );
+          })}
+        </dl>
       </div>
 
-      <dl className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
-        {tiles.map((tile) => {
-          const available = tile.ai ? hasAI : hasSite;
-          const tileTone = scoreTone(tile.value);
-          return (
-            <div key={tile.label} className="well">
-              <dt className="text-caption text-label-secondary">{tile.label}</dt>
-              <dd className="mt-1 text-title-2 tabular-nums">
-                {available ? tile.value : '—'}
-                {available && <span className="text-caption font-normal text-label-secondary">{tile.unit}</span>}
-              </dd>
-              <div className="meter mt-3">
-                <span className={TONE_BG[tileTone]} style={{ width: `${available ? tile.value : 0}%` }} />
-              </div>
-              <p className="mt-2 text-caption text-label-secondary">{tile.note}</p>
-            </div>
-          );
-        })}
-      </dl>
-
-      {hasAI && engineCount > 1 && (
-        <section className="mt-10" aria-labelledby="audit-engines">
-          <h4 id="audit-engines" className="text-title-3">
-            各平台表现
-          </h4>
-          <table className="mt-2 w-full text-body">
-            <thead>
-              <tr className="text-caption text-label-secondary">
-                <th scope="col" className="py-2 text-left font-normal">平台</th>
-                <th scope="col" className="py-2 text-right font-normal">提到你</th>
-                <th scope="col" className="py-2 text-right font-normal">引用官网</th>
-                <th scope="col" className="py-2 text-right font-normal">品牌认知</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-separator border-t border-separator">
-              {engines.map((engine) => (
-                <tr key={engine.id}>
-                  <th scope="row" className="py-3 text-left font-semibold">
-                    {engine.name}
-                    {engine.failed > 0 && (
-                      <span className="block text-caption font-normal text-label-secondary">
-                        {engine.answers === 0 ? '提问失败，未计入' : `${engine.failed} 次提问失败`}
-                      </span>
-                    )}
-                  </th>
-                  {[engine.mentionRate, engine.citationRate, engine.brandKnowledge].map((value, i) => (
-                    <td
-                      key={i}
-                      className={`py-3 text-right tabular-nums ${engine.answers > 0 ? TONE_TEXT[scoreTone(value)] : 'text-label-secondary'}`}
-                    >
-                      {engine.answers > 0 ? `${value}%` : '—'}
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </section>
+      {/* 平台对比 + 竞品声量 */}
+      {(showEngines || showVoice) && (
+        <div className="grid gap-4 lg:grid-cols-12">
+          {showEngines && (
+            <Panel
+              title="各平台表现"
+              hint="同一批买家问题，在不同 AI 平台上的结果"
+              className={showVoice ? 'lg:col-span-7' : 'lg:col-span-12'}
+            >
+              <ul className="grid gap-3 sm:grid-cols-[repeat(auto-fit,minmax(11rem,1fr))]">
+                {engines.map((engine) => (
+                  <EngineCard key={engine.id} engine={engine} />
+                ))}
+              </ul>
+            </Panel>
+          )}
+          {showVoice && (
+            <Panel
+              title="AI 推荐了谁"
+              hint="不带品牌名的采购问题中，各品牌被提到的次数"
+              className={showEngines ? 'lg:col-span-5' : 'lg:col-span-12'}
+            >
+              <ul className="space-y-3">
+                {report.shareOfVoice.map((voice) => (
+                  <li key={voice.name} className="grid grid-cols-[minmax(0,8rem)_1fr_auto] items-center gap-3 text-body">
+                    <span className={`truncate ${voice.isSelf ? 'font-semibold' : ''}`} title={voice.name}>
+                      {voice.name}
+                      {voice.isSelf && <span className="text-label-secondary">（你）</span>}
+                    </span>
+                    <div className="meter">
+                      <span
+                        className={voice.isSelf ? 'bg-label' : 'bg-label-tertiary'}
+                        style={{ width: `${(voice.mentions / maxVoice) * 100}%` }}
+                      />
+                    </div>
+                    <span className="w-8 text-right tabular-nums text-label-secondary">{voice.mentions}</span>
+                  </li>
+                ))}
+              </ul>
+            </Panel>
+          )}
+        </div>
       )}
 
-      {hasAI && report.shareOfVoice.length > 1 && (
-        <section className="mt-10" aria-labelledby="audit-voice">
-          <h4 id="audit-voice" className="text-title-3">
-            AI 推荐了谁
-          </h4>
-          <p className="mt-1 text-caption text-label-secondary">不带品牌名的采购问题中，各品牌被提到的次数</p>
-          <ul className="mt-4 space-y-3">
-            {report.shareOfVoice.map((voice) => (
-              <li key={voice.name} className="grid grid-cols-[minmax(0,9rem)_1fr_auto] items-center gap-3 text-body">
-                <span className={`truncate ${voice.isSelf ? 'font-semibold' : ''}`} title={voice.name}>
-                  {voice.name}
-                  {voice.isSelf && <span className="text-label-secondary">（你）</span>}
-                </span>
-                <div className="meter">
-                  <span
-                    className={voice.isSelf ? 'bg-label' : 'bg-label-tertiary'}
-                    style={{ width: `${(voice.mentions / maxVoice) * 100}%` }}
-                  />
-                </div>
-                <span className="w-8 text-right tabular-nums text-label-secondary">{voice.mentions}</span>
+      {/* 官网体检 + 结论 */}
+      <div className="grid gap-4 lg:grid-cols-12">
+        {report.site ? (
+          <SiteChecks site={report.site} className="lg:col-span-7" />
+        ) : (
+          <Panel title="官网能否被 AI 读取" className="lg:col-span-5">
+            <p className="flex items-start gap-3 text-body">
+              <AlertTriangle className="mt-1 h-5 w-5 shrink-0 text-warning" aria-hidden="true" />
+              <span className="text-label-secondary">
+                {searchedSite ? 'AI 联网搜索没有找到这个品牌的官网，' : '只输入了品牌名，'}
+                本次未做官网检查。输入官网域名可获得完整测评。
+              </span>
+            </p>
+          </Panel>
+        )}
+        <Panel title="核心发现与建议" className={report.site ? 'lg:col-span-5' : 'lg:col-span-7'}>
+          <ul className="divide-y divide-separator">
+            {report.findings.map((item) => (
+              <li key={item} className="flex items-start gap-3 py-3 text-body first:pt-0">
+                {tone === 'success' ? (
+                  <CheckCircle2 className="mt-1 h-5 w-5 shrink-0 text-success" />
+                ) : (
+                  <AlertTriangle className="mt-1 h-5 w-5 shrink-0 text-warning" />
+                )}
+                <span>{item}</span>
               </li>
             ))}
           </ul>
-        </section>
-      )}
-
-      {hasAI && report.evidence.length > 0 && (
-        <section className="mt-10" aria-labelledby="audit-evidence">
-          <h4 id="audit-evidence" className="text-title-3">
-            AI 的原话
-          </h4>
-          <p className="mt-1 text-caption text-label-secondary">以下是 AI 对买家问题的真实回答（英文原文节选）</p>
-          {answeredEngines.length > 1 && (
-            <SegmentedControl
-              className="mt-4"
-              ariaLabel="按平台筛选回答"
-              value={engineFilter}
-              onChange={(value) => {
-                setEngineFilter(value);
-                setShowAllEvidence(false);
-              }}
-              options={[
-                { id: 'all', label: '全部' },
-                ...answeredEngines.map((engine) => ({ id: engine.name, label: engine.name })),
-              ]}
-            />
-          )}
-          <ul className="mt-2 divide-y divide-separator">
-            {evidence.map((item, index) => (
-              <EvidenceItem key={`${item.question}-${index}`} item={item} domain={report.domain} />
-            ))}
-          </ul>
-          {filtered.length > EVIDENCE_PREVIEW && (
-            <button
-              type="button"
-              className="link mt-2 text-body"
-              aria-expanded={showAllEvidence}
-              onClick={() => setShowAllEvidence((v) => !v)}
-            >
-              {showAllEvidence ? '收起' : `查看全部 ${filtered.length} 条回答`}
-            </button>
-          )}
-        </section>
-      )}
-
-      {report.site ? (
-        <SiteChecks site={report.site} />
-      ) : (
-        <section className="mt-10" aria-labelledby="audit-site">
-          <h4 id="audit-site" className="text-title-3">
-            官网能否被 AI 读取
-          </h4>
-          <p className="mt-2 flex items-start gap-3 py-3 text-body">
-            <AlertTriangle className="mt-1 h-5 w-5 shrink-0 text-warning" aria-hidden="true" />
-            <span className="text-label-secondary">
-              {searchedSite ? 'AI 联网搜索没有找到这个品牌的官网，' : '只输入了品牌名，'}
-              本次未做官网检查。输入官网域名可获得完整测评。
-            </span>
-          </p>
-        </section>
-      )}
-
-      <h4 className="mt-10 text-title-3">核心发现</h4>
-      <ul className="mt-2 divide-y divide-separator">
-        {report.findings.map((item) => (
-          <li key={item} className="flex items-start gap-3 py-4 text-body">
-            {tone === 'success' ? (
-              <CheckCircle2 className="mt-1 h-5 w-5 shrink-0 text-success" />
-            ) : (
-              <AlertTriangle className="mt-1 h-5 w-5 shrink-0 text-warning" />
-            )}
-            <span>{item}</span>
-          </li>
-        ))}
-      </ul>
-
-      <div className="well mt-6">
-        <h4 className="text-body font-semibold">建议方案</h4>
-        <p className="mt-2 text-body text-label-secondary">{report.recommendation}</p>
-        <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
-          <button type="button" onClick={openBookingModal} className="btn btn-primary">
-            预约 30 分钟诊断会
-          </button>
-          <button
-            type="button"
-            onClick={onGoToConfigurator}
-            className="link justify-center px-2 py-2 text-body sm:justify-start"
-          >
-            规划服务方案
-            <ChevronRight />
-          </button>
-        </div>
+          <div className="well mt-4">
+            <h5 className="text-body font-semibold">建议方案</h5>
+            <p className="mt-2 text-body text-label-secondary">{report.recommendation}</p>
+            <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+              <button type="button" onClick={openBookingModal} className="btn btn-primary">
+                预约 30 分钟诊断会
+              </button>
+              <button
+                type="button"
+                onClick={onGoToConfigurator}
+                className="link justify-center px-2 py-2 text-body sm:justify-start"
+              >
+                规划服务方案
+                <ChevronRight />
+              </button>
+            </div>
+          </div>
+        </Panel>
       </div>
+
+      {hasAI && report.evidence.length > 0 && <EvidenceExplorer report={report} />}
     </div>
   );
 };
 
-const hostOf = (source: WebSource) => source.domain || source.title || source.uri;
-
-const EvidenceItem: React.FC<{ item: AuditEvidence; domain: string }> = ({ item, domain }) => {
-  const [expanded, setExpanded] = useState(false);
-  const long = item.answer.length > ANSWER_PREVIEW_CHARS;
-  const text = expanded || !long ? item.answer : `${item.answer.slice(0, ANSWER_PREVIEW_CHARS)}…`;
+const EngineCard: React.FC<{ engine: AuditEngineResult }> = ({ engine }) => {
+  const failedAll = engine.answers === 0;
+  const rows = [
+    { label: '提到你', value: engine.mentionRate },
+    { label: '引用官网', value: engine.citationRate },
+    { label: '品牌认知', value: engine.brandKnowledge },
+  ];
   return (
-    <li className="py-4">
-      <div className="flex flex-wrap items-center gap-2">
-        <span className="badge">{item.engine ?? 'Gemini'}</span>
-        <span className="badge">{item.branded ? '带品牌名' : '不带品牌名'}</span>
-        {item.mentioned ? (
-          <span className="badge bg-success/15 text-success">
-            提到了你{item.position > 0 ? ` · 第 ${item.position} 位` : ''}
-          </span>
-        ) : (
-          <span className="badge bg-danger/15 text-danger">未提到</span>
-        )}
-      </div>
-      <p className="mt-2 text-body font-semibold" lang="en">
-        {item.question}
-      </p>
-      <p className="mt-1 whitespace-pre-line break-words text-body text-label-secondary" lang="en">
-        {text}
-      </p>
-      {long && (
-        <button
-          type="button"
-          className="link mt-1 text-caption"
-          aria-expanded={expanded}
-          onClick={() => setExpanded((v) => !v)}
-        >
-          {expanded ? '收起' : '展开全文'}
-        </button>
+    <li className="well">
+      <h5 className="text-body font-semibold">{engine.name}</h5>
+      {!failedAll && engine.avgPosition > 0 && (
+        <p className="text-caption tabular-nums text-label-secondary">平均排第 {engine.avgPosition} 位</p>
       )}
-      {item.sources.length > 0 && (
-        <p className="mt-2 break-words text-caption text-label-secondary">
-          引用来源：
-          {item.sources.map((source, i) => {
-            const own = domain !== '' && hostOf(source).toLowerCase().includes(domain.replace(/^www\./, ''));
-            return (
-              <React.Fragment key={`${source.uri}-${i}`}>
-                {i > 0 && '、'}
-                <span className={own ? 'font-semibold text-success' : undefined}>{hostOf(source)}</span>
-              </React.Fragment>
-            );
-          })}
-        </p>
+      {failedAll ? (
+        <p className="mt-4 text-caption text-label-secondary">提问失败，未计入总分</p>
+      ) : (
+        <>
+          <ul className="mt-4 space-y-3">
+            {rows.map((row) => (
+              <li key={row.label}>
+                <div className="flex items-baseline justify-between text-caption">
+                  <span className="text-label-secondary">{row.label}</span>
+                  <span className={`tabular-nums ${TONE_TEXT[scoreTone(row.value)]}`}>{row.value}%</span>
+                </div>
+                <div className="meter mt-1">
+                  <span className={TONE_BG[scoreTone(row.value)]} style={{ width: `${row.value}%` }} />
+                </div>
+              </li>
+            ))}
+          </ul>
+          {engine.failed > 0 && (
+            <p className="mt-3 text-caption text-label-secondary">{engine.failed} 次提问失败</p>
+          )}
+        </>
       )}
     </li>
   );
 };
 
-const SiteChecks: React.FC<{ site: SiteCheck }> = ({ site }) => {
-  const blocked = site.crawlers.filter((c) => !c.allowed);
-  const rows: { ok: boolean; label: string; detail: string }[] = site.reachable
-    ? [
-        {
-          ok: blocked.length === 0,
-          label: 'AI 爬虫权限',
-          detail:
-            blocked.length === 0
-              ? `robots.txt 未屏蔽 ${site.crawlers.map((c) => c.agent).join('、')}`
-              : `已屏蔽 ${blocked.map((c) => `${c.agent}（${c.product}）`).join('、')}`,
-        },
-        {
-          ok: site.textChars >= 500,
-          label: '不执行 JavaScript 时的正文',
-          detail: `约 ${site.textChars.toLocaleString('zh-CN')} 字`,
-        },
-        { ok: site.english, label: '英文内容', detail: site.lang ? `页面语言 ${site.lang}` : '未声明页面语言' },
-        {
-          ok: site.schemaTypes.length > 0,
-          label: '结构化数据',
-          detail: site.schemaTypes.length > 0 ? site.schemaTypes.slice(0, 6).join('、') : '未发现 Schema 标记',
-        },
-        { ok: site.hasLlmsTxt, label: 'llms.txt', detail: site.hasLlmsTxt ? '已提供' : '未提供' },
-        { ok: site.hasSitemap, label: '站点地图', detail: site.hasSitemap ? '已提供' : '未发现 sitemap' },
-        { ok: site.https, label: 'HTTPS', detail: site.https ? '已启用' : '未启用' },
-        {
-          ok: site.ttfbMs < 2000,
-          label: '首字节耗时',
-          detail: `约 ${(site.ttfbMs / 1000).toFixed(1)} 秒（从测评服务器访问）`,
-        },
-      ]
-    : [{ ok: false, label: '官网访问', detail: site.error || '无法访问' }];
+// ---------- 回答明细：左侧列表，右侧详情 ----------
+
+const hostOf = (source: WebSource) => source.domain || source.title || source.uri;
+
+const EvidenceExplorer: React.FC<{ report: AuditReport }> = ({ report }) => {
+  const [engineFilter, setEngineFilter] = useState('all');
+  const [selected, setSelected] = useState(0);
+  const answeredEngines = (report.engines ?? []).filter((e) => e.answers > 0);
+  const list =
+    engineFilter === 'all' ? report.evidence : report.evidence.filter((item) => item.engine === engineFilter);
+  const current = list[Math.min(selected, list.length - 1)];
 
   return (
-    <section className="mt-10" aria-labelledby="audit-site">
-      <h4 id="audit-site" className="text-title-3">
-        官网能否被 AI 读取
-      </h4>
-      <ul className="mt-2 divide-y divide-separator">
+    <Panel
+      title="AI 的原话"
+      hint="AI 对买家问题的真实回答（英文原文）"
+      aside={
+        answeredEngines.length > 1 ? (
+          <SegmentedControl
+            ariaLabel="按平台筛选回答"
+            value={engineFilter}
+            onChange={(value) => {
+              setEngineFilter(value);
+              setSelected(0);
+            }}
+            options={[
+              { id: 'all', label: '全部' },
+              ...answeredEngines.map((engine) => ({ id: engine.name, label: engine.name })),
+            ]}
+          />
+        ) : undefined
+      }
+    >
+      <div className="grid gap-4 lg:grid-cols-12">
+        <ul className="max-h-80 divide-y divide-separator overflow-y-auto lg:col-span-5 lg:max-h-[32rem]" aria-label="回答列表">
+          {list.map((item, index) => {
+            const active = index === Math.min(selected, list.length - 1);
+            return (
+              <li key={`${item.engine}-${item.question}-${index}`}>
+                <button
+                  type="button"
+                  aria-pressed={active}
+                  onClick={() => setSelected(index)}
+                  className={`w-full rounded-control px-3 py-3 text-left transition-colors ${
+                    active ? 'bg-surface-raised' : 'hover:bg-surface-hover'
+                  }`}
+                >
+                  <span className="flex flex-wrap items-center gap-2">
+                    <span className="badge">{item.engine ?? 'Gemini'}</span>
+                    {item.mentioned ? (
+                      <span className="badge bg-success/15 text-success">
+                        提到了你{item.position > 0 ? ` · 第 ${item.position} 位` : ''}
+                      </span>
+                    ) : (
+                      <span className="badge bg-danger/15 text-danger">未提到</span>
+                    )}
+                  </span>
+                  <span className="mt-2 line-clamp-2 block text-body" lang="en">
+                    {item.question}
+                  </span>
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+        {current && <EvidenceDetail item={current} domain={report.domain} className="lg:col-span-7" />}
+      </div>
+    </Panel>
+  );
+};
+
+const EvidenceDetail: React.FC<{ item: AuditEvidence; domain: string; className?: string }> = ({
+  item,
+  domain,
+  className = '',
+}) => (
+  <article className={`well max-h-[32rem] overflow-y-auto ${className}`}>
+    <div className="flex flex-wrap items-center gap-2">
+      <span className="badge">{item.engine ?? 'Gemini'}</span>
+      <span className="badge">{item.branded ? '带品牌名' : '不带品牌名'}</span>
+      {item.ownCited && <span className="badge bg-success/15 text-success">引用了官网</span>}
+    </div>
+    <h5 className="mt-3 text-body font-semibold" lang="en">
+      {item.question}
+    </h5>
+    <p className="mt-2 whitespace-pre-line break-words text-body text-label-secondary" lang="en">
+      {item.answer}
+    </p>
+    {item.sources.length > 0 && (
+      <div className="mt-4 border-t border-separator pt-3">
+        <p className="text-caption text-label-secondary">引用来源</p>
+        <ul className="mt-2 flex flex-wrap gap-2">
+          {item.sources.map((source, i) => {
+            const own = domain !== '' && hostOf(source).toLowerCase().includes(domain.replace(/^www\./, ''));
+            return (
+              <li
+                key={`${source.uri}-${i}`}
+                className={`badge ${own ? 'bg-success/15 text-success' : ''}`}
+              >
+                {hostOf(source)}
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+    )}
+  </article>
+);
+
+// ---------- 官网体检 ----------
+
+const siteRows = (site: SiteCheck): { ok: boolean; label: string; detail: string }[] => {
+  const blocked = site.crawlers.filter((c) => !c.allowed);
+  if (!site.reachable) return [{ ok: false, label: '官网访问', detail: site.error || '无法访问' }];
+  return [
+    {
+      ok: blocked.length === 0,
+      label: 'AI 爬虫权限',
+      detail:
+        blocked.length === 0
+          ? `robots.txt 未屏蔽 ${site.crawlers.map((c) => c.agent).join('、')}`
+          : `已屏蔽 ${blocked.map((c) => `${c.agent}（${c.product}）`).join('、')}`,
+    },
+    {
+      ok: site.textChars >= 500,
+      label: '不执行 JavaScript 时的正文',
+      detail: `约 ${site.textChars.toLocaleString('zh-CN')} 字`,
+    },
+    { ok: site.english, label: '英文内容', detail: site.lang ? `页面语言 ${site.lang}` : '未声明页面语言' },
+    {
+      ok: site.schemaTypes.length > 0,
+      label: '结构化数据',
+      detail: site.schemaTypes.length > 0 ? site.schemaTypes.slice(0, 6).join('、') : '未发现 Schema 标记',
+    },
+    { ok: site.hasLlmsTxt, label: 'llms.txt', detail: site.hasLlmsTxt ? '已提供' : '未提供' },
+    { ok: site.hasSitemap, label: '站点地图', detail: site.hasSitemap ? '已提供' : '未发现 sitemap' },
+    { ok: site.https, label: 'HTTPS', detail: site.https ? '已启用' : '未启用' },
+    {
+      ok: site.ttfbMs < 2000,
+      label: '首字节耗时',
+      detail: `约 ${(site.ttfbMs / 1000).toFixed(1)} 秒（从测评服务器访问）`,
+    },
+  ];
+};
+
+const SiteChecks: React.FC<{ site: SiteCheck; className?: string }> = ({ site, className }) => {
+  const rows = siteRows(site);
+  const passed = rows.filter((r) => r.ok).length;
+  return (
+    <Panel
+      title="官网能否被 AI 读取"
+      className={className}
+      aside={
+        <span className="badge tabular-nums">
+          {passed} / {rows.length} 项通过
+        </span>
+      }
+    >
+      <ul className="grid gap-3 sm:grid-cols-2">
         {rows.map((row) => (
-          <li key={row.label} className="flex items-start gap-3 py-3 text-body">
+          <li key={row.label} className="well flex items-start gap-3 text-body">
             {row.ok ? (
               <Check className="mt-1 h-5 w-5 shrink-0 text-success" aria-label="通过" />
             ) : (
-              <AlertTriangle className="mt-1 h-5 w-5 shrink-0 text-warning" aria-label="待改进" />
+              <X className="mt-1 h-5 w-5 shrink-0 text-danger" aria-label="待改进" />
             )}
             <span className="min-w-0">
-              <span className="font-semibold">{row.label}</span>
-              <span className="break-words text-label-secondary"> · {row.detail}</span>
+              <span className="block font-semibold">{row.label}</span>
+              <span className="block break-words text-caption text-label-secondary">{row.detail}</span>
             </span>
           </li>
         ))}
       </ul>
-    </section>
+    </Panel>
   );
 };

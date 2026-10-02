@@ -17,12 +17,13 @@ import (
 
 type App struct {
 	cfg            Config
-	db             *sql.DB     // 未配置 MySQL 时为 nil，AI 接口仍可用
-	gemini         *Gemini     // 未配置 key 时为 nil，走确定性 fallback
-	openai         *OpenAI     // 测评探测平台，未配置时为 nil
-	perplexity     *Perplexity // 同上
-	dbState        string      // unconfigured | ok | failed
-	dbIssue        string      // 失败阶段与错误摘要（不含敏感信息）
+	db             *sql.DB       // 未配置 MySQL 时为 nil，AI 接口仍可用
+	gemini         *Gemini       // 未配置 key 时为 nil，走确定性 fallback
+	openai         *OpenAI       // 测评探测平台，未配置时为 nil
+	perplexity     *Perplexity   // 同上
+	openrouter     []probeEngine // 配了 OPENROUTER_API_KEY 时三个平台统一走它，优先于上面两个
+	dbState        string        // unconfigured | ok | failed
+	dbIssue        string        // 失败阶段与错误摘要（不含敏感信息）
 	loginLimiter   *limiter
 	collectLimiter *limiter // 公开接口按 IP 限流
 	leadLimiter    *limiter
@@ -238,7 +239,8 @@ func main() {
 		collectLimiter: newLimiter(120, time.Minute), leadLimiter: newLimiter(10, time.Minute),
 		auditLimiter: newLimiter(6, time.Hour), audits: newAuditStore(),
 		openai:     NewOpenAI(cfg.OpenAIKey, cfg.OpenAIModel, cfg.OpenAIBase, cfg.OpenAIEffort),
-		perplexity: NewPerplexity(cfg.PerplexityKey, cfg.PerplexityModel, cfg.PerplexityBase)}
+		perplexity: NewPerplexity(cfg.PerplexityKey, cfg.PerplexityModel, cfg.PerplexityBase),
+		openrouter: NewOpenRouterEngines(cfg)}
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 

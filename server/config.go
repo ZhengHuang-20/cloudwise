@@ -34,6 +34,13 @@ type Config struct {
 	PerplexityKey   string
 	PerplexityModel string
 	PerplexityBase  string
+
+	OpenRouterKey        string
+	OpenRouterBase       string
+	OpenRouterChatGPT    string
+	OpenRouterPerplexity string
+	OpenRouterGemini     string
+	OpenRouterEffort     string
 }
 
 var envKeyRe = regexp.MustCompile(`^[A-Z][A-Z0-9_]*$`)
@@ -80,7 +87,7 @@ func loadDotEnv(path string) {
 // 的 CW_DEPLOY_ENV。只接受下列前缀的变量，避免被用来改写 PATH 之类的进程环境。
 var (
 	deployEnvRe        = regexp.MustCompile(`CW_ENV=([0-9a-fA-F]+)`)
-	deployEnvPrefixes  = []string{"GEMINI_", "OPENAI_", "PERPLEXITY_", "MYSQL_", "CW_ADMIN_", "COOKIE_", "TRUST_", "SHOW_FDE"}
+	deployEnvPrefixes  = []string{"GEMINI_", "OPENAI_", "OPENROUTER_", "PERPLEXITY_", "MYSQL_", "CW_ADMIN_", "COOKIE_", "TRUST_", "SHOW_FDE"}
 	ephemeralEnvPrefix = []string{"MYSQL_ADMIN_", "CW_ADMIN_"} // 只在本次启动生效，不落盘
 )
 
@@ -208,5 +215,12 @@ func loadConfig() Config {
 		PerplexityKey:   os.Getenv("PERPLEXITY_API_KEY"),
 		PerplexityModel: env("PERPLEXITY_MODEL", "sonar"),
 		PerplexityBase:  env("PERPLEXITY_BASE_URL", "https://api.perplexity.ai"),
+
+		OpenRouterKey:        os.Getenv("OPENROUTER_API_KEY"),
+		OpenRouterBase:       env("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1"),
+		OpenRouterChatGPT:    env("OPENROUTER_CHATGPT_MODEL", "openai/gpt-6-luna"),
+		OpenRouterPerplexity: env("OPENROUTER_PERPLEXITY_MODEL", "perplexity/sonar"),
+		OpenRouterGemini:     env("OPENROUTER_GEMINI_MODEL", "google/gemini-3.1-flash-lite"),
+		OpenRouterEffort:     envAllowEmpty("OPENROUTER_REASONING_EFFORT", "low"),
 	}
 }

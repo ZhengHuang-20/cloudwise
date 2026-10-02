@@ -108,7 +108,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate, openBookingModal
       </section>
 
       {/* ===================== 即时评估工具 ===================== */}
-      <section id="audit" className="layout-text scroll-mt-20 pt-16 md:pt-20">
+      <section id="audit" className="scroll-mt-20 pt-16 md:pt-20">
         <VisibilityAudit
           inputRef={auditInputRef}
           openBookingModal={openBookingModal}
