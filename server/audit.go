@@ -84,10 +84,12 @@ type auditMetrics struct {
 }
 
 type AuditReport struct {
-	ID        string `json:"id"`
-	Domain    string `json:"domain"`
-	Mode      string `json:"mode"` // live：真实探测；sample：未配置模型，AI 部分为示例；site_only：AI 探测失败，只有官网检查
-	CreatedAt string `json:"createdAt"`
+	ID           string `json:"id"`
+	Target       string `json:"target"`       // 用户输入的原文（域名或品牌名）
+	Domain       string `json:"domain"`       // 官网域名；只输入品牌名且没找到官网时为空
+	DomainSource string `json:"domainSource"` // input：用户输入；resolved：AI 根据品牌名找到；none：没有官网
+	Mode         string `json:"mode"`         // live：真实探测；sample：未配置模型，AI 部分为示例；site_only：AI 探测失败，只有官网检查
+	CreatedAt    string `json:"createdAt"`
 
 	Entity       auditEntity         `json:"entity"`
 	TotalScore   int                 `json:"totalScore"`
@@ -199,9 +201,9 @@ func (a *App) handleCreateAudit(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, "bad_request", "请求无效")
 		return
 	}
-	domain, ok := parseAuditTarget(req.Target)
+	domain, brand, ok := parseAuditInput(req.Target)
 	if !ok {
-		writeError(w, http.StatusBadRequest, "bad_target", "请输入官网域名，例如 www.example.com")
+		writeError(w, http.StatusBadRequest, "bad_target", "请输入官网域名或品牌名称，例如 www.example.com 或 爱康医疗")
 		return
 	}
 	if !a.auditLimiter.allow(a.clientIP(r)) {
@@ -209,6 +211,9 @@ func (a *App) handleCreateAudit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	key := strings.TrimPrefix(domain, "www.")
+	if domain == "" {
+		key = "brand:" + strings.ToLower(brand)
+	}
 	now := time.Now().UTC()
 	sig := engineSignature(a.activeEngines())
 	s := a.audits
@@ -252,7 +257,7 @@ func (a *App) handleCreateAudit(w http.ResponseWriter, r *http.Request) {
 	s.jobs[job.ID] = job
 	s.mu.Unlock()
 
-	go a.runAudit(job, domain)
+	go a.runAudit(job, domain, brand)
 	writeJSON(w, http.StatusAccepted, map[string]any{"id": job.ID})
 }
 
@@ -356,7 +361,8 @@ func (a *App) auditEngineIDs() []string {
 	return ids
 }
 
-func (a *App) runAudit(job *auditJob, domain string) {
+// runAudit 执行一次测评。domain 与 brand 二选一：只给品牌名时先让 AI 联网查找官网。
+func (a *App) runAudit(job *auditJob, domain, brand string) {
 	s := a.audits
 	defer func() {
 		if p := recover(); p != nil {
@@ -371,20 +377,30 @@ func (a *App) runAudit(job *auditJob, domain string) {
 	defer cancel()
 	setStep := func(n int) { s.update(job, func(j *auditJob) { j.Status, j.Step = "running", n }) }
 
-	// ① 官网检查
+	// ① 官网检查（只给品牌名时先查找官网，找不到就跳过官网检查）
 	setStep(1)
-	site := checkSite(ctx, domain)
+	target, source := domain, "input"
+	if domain == "" {
+		target, source = brand, "none"
+		if domain = a.resolveDomain(ctx, brand); domain != "" {
+			source = "resolved"
+		}
+	}
+	var site *SiteCheck
+	if domain != "" {
+		site = checkSite(ctx, domain)
+	}
 
 	// ② 识别品牌、行业与市场
 	setStep(2)
-	entity := a.identifyEntity(ctx, domain, site)
+	entity := a.identifyEntity(ctx, domain, brand, site)
 
 	engines := a.activeEngines()
 	names := make([]string, len(engines))
 	for i, e := range engines {
 		names[i] = e.Name()
 	}
-	rep := &AuditReport{ID: job.ID, Domain: domain, Entity: entity, Site: site, Engine: strings.Join(names, "、"), EngineSet: engineSignature(engines),
+	rep := &AuditReport{ID: job.ID, Target: target, Domain: domain, DomainSource: source, Entity: entity, Site: site, Engine: strings.Join(names, "、"), EngineSet: engineSignature(engines),
 		Samples: auditSamples, CreatedAt: time.Now().UTC().Format(time.RFC3339), Engines: []auditEngineResult{},
 		ShareOfVoice: []auditVoice{}, Evidence: []auditEvidence{}}
 
@@ -409,6 +425,11 @@ func (a *App) runAudit(job *auditJob, domain string) {
 			if ans.err == nil {
 				ok++
 			}
+		}
+		if ok == 0 && site == nil {
+			// 没有官网、提问又全部失败：没有任何可展示的结果
+			s.update(job, func(j *auditJob) { j.Status, j.Err = "failed", "AI 平台暂时无法访问，请稍后重试" })
+			return
 		}
 		if ok == 0 {
 			rep.Mode = "site_only"
@@ -463,11 +484,16 @@ func domainLabel(domain string) string {
 	return root
 }
 
-// heuristicEntity 在没有模型或模型失败时，根据域名与页面标题做粗略判断。
-func heuristicEntity(domain string, site *SiteCheck) auditEntity {
-	label := domainLabel(domain)
-	brand := strings.ToUpper(label[:1]) + label[1:]
-	hay := strings.ToLower(domain + " " + site.Title + " " + site.Description)
+// heuristicEntity 在没有模型或模型失败时，根据品牌名、域名与页面标题做粗略判断。
+func heuristicEntity(domain, brand string, site *SiteCheck) auditEntity {
+	if brand == "" {
+		label := domainLabel(domain)
+		brand = strings.ToUpper(label[:1]) + label[1:]
+	}
+	hay := strings.ToLower(brand + " " + domain)
+	if site != nil {
+		hay += " " + strings.ToLower(site.Title+" "+site.Description)
+	}
 	e := auditEntity{Brand: brand, Aliases: []string{}, Industry: "工业制造出海", CategoryEn: "industrial products", Products: []string{}}
 	for _, r := range industryRules {
 		if r.re.MatchString(hay) {
@@ -488,17 +514,24 @@ func parseModelJSON(text string, dst any) error {
 	return json.Unmarshal([]byte(strings.TrimSpace(t)), dst)
 }
 
-func (a *App) identifyEntity(ctx context.Context, domain string, site *SiteCheck) auditEntity {
-	fb := heuristicEntity(domain, site)
+func (a *App) identifyEntity(ctx context.Context, domain, brand string, site *SiteCheck) auditEntity {
+	fb := heuristicEntity(domain, brand, site)
 	if a.gemini == nil {
 		return fb
 	}
-	page := "（官网无法访问，只能根据域名判断）"
-	if site.Reachable {
-		page = fmt.Sprintf("标题：%s\n描述：%s\n正文节选：%s", site.Title, site.Description, clip(site.text, 3000))
+	var info []string
+	if brand != "" {
+		info = append(info, "用户输入的品牌名："+brand)
 	}
-	prompt := fmt.Sprintf(`你是 B2B 出海行业分析师。根据下面的企业官网信息，识别企业品牌与业务。
-域名：%s
+	switch {
+	case site != nil && site.Reachable:
+		info = append(info, "域名："+domain, fmt.Sprintf("标题：%s\n描述：%s\n正文节选：%s", site.Title, site.Description, clip(site.text, 3000)))
+	case domain != "":
+		info = append(info, "域名："+domain, "（官网无法访问，只能根据域名判断）")
+	default:
+		info = append(info, "（没有找到官网，请根据品牌名与你掌握的公开信息判断）")
+	}
+	prompt := fmt.Sprintf(`你是 B2B 出海行业分析师。根据下面的信息，识别企业品牌与业务。
 %s
 
 只返回 JSON：
@@ -510,7 +543,7 @@ func (a *App) identifyEntity(ctx context.Context, domain string, site *SiteCheck
   "products": ["核心产品的英文名，最多 4 个"],
   "market": "主要目标市场（简体中文，如 欧洲市场、北美市场）",
   "marketEn": "主要目标市场的英文（如 Europe、the US）"
-}`, domain, page)
+}`, strings.Join(info, "\n"))
 	cctx, cancel := context.WithTimeout(ctx, 40*time.Second)
 	defer cancel()
 	text, err := a.gemini.GenerateJSON(cctx, "", prompt, 0.2)
@@ -528,6 +561,16 @@ func (a *App) identifyEntity(ctx context.Context, domain string, site *SiteCheck
 	e.MarketEn = orDefault(clip(e.MarketEn, 40), fb.MarketEn)
 	e.Aliases = cleanList(e.Aliases, 4, 60)
 	e.Products = cleanList(e.Products, 4, 80)
+	// 用户输入的品牌名（常是中文名）也要能在回答里匹配到
+	if brand != "" && !strings.EqualFold(brand, e.Brand) {
+		known := false
+		for _, al := range e.Aliases {
+			known = known || strings.EqualFold(al, brand)
+		}
+		if !known {
+			e.Aliases = append([]string{brand}, e.Aliases...)
+		}
+	}
 	return e
 }
 
@@ -587,10 +630,17 @@ Return JSON only: {"questions": ["..."]}`, auditUnbranded, e.MarketEn, e.Categor
 	}
 	// 带品牌名的问题用固定模板，测的是 AI 对品牌本身的认知。
 	qs = append(qs,
-		auditQuestion{Text: fmt.Sprintf("What do you know about %s (%s)? What products do they make?", e.Brand, domain), Branded: true},
+		auditQuestion{Text: fmt.Sprintf("What do you know about %s%s? What products do they make?", e.Brand, withDomain(domain)), Branded: true},
 		auditQuestion{Text: fmt.Sprintf("Is %s a reliable supplier of %s? What are its strengths and weaknesses?", e.Brand, e.CategoryEn), Branded: true},
 	)
 	return qs
+}
+
+func withDomain(domain string) string {
+	if domain == "" {
+		return ""
+	}
+	return " (" + domain + ")"
 }
 
 // ---------- ④ 提问 ----------
@@ -775,7 +825,7 @@ func (a *App) analyze(ctx context.Context, rep *AuditReport, engines []probeEngi
 		sources := []WebSource{}
 		seenSrc := map[string]bool{}
 		for _, src := range ans.sources {
-			if strings.Contains(strings.ToLower(src.Domain+" "+src.Title+" "+src.URI), root) {
+			if root != "" && strings.Contains(strings.ToLower(src.Domain+" "+src.Title+" "+src.URI), root) {
 				ownCited = true
 			}
 			k := strings.ToLower(orDefault(src.Domain, src.Title))
@@ -918,12 +968,15 @@ func fillSampleAI(rep *AuditReport) {
 func finishReport(rep *AuditReport) {
 	m := &rep.Metrics
 	site := rep.Site
-	m.Readability = site.Score
-
-	if rep.Mode == "site_only" {
+	ai := 0.5*float64(m.MentionRate) + 0.2*float64(m.CitationRate) + 0.3*float64(m.BrandKnowledge)
+	switch {
+	case site == nil: // 只有品牌名且没找到官网：总分只看 AI 部分
+		rep.TotalScore = int(math.Round(ai))
+	case rep.Mode == "site_only":
+		m.Readability = site.Score
 		rep.TotalScore = site.Score
-	} else {
-		ai := 0.5*float64(m.MentionRate) + 0.2*float64(m.CitationRate) + 0.3*float64(m.BrandKnowledge)
+	default:
+		m.Readability = site.Score
 		rep.TotalScore = int(math.Round(0.7*ai + 0.3*float64(site.Score)))
 	}
 	switch {
@@ -979,9 +1032,14 @@ func finishReport(rep *AuditReport) {
 		}
 	}
 
-	if !site.Reachable {
+	switch {
+	case site == nil && rep.Mode == "sample": // 未配置模型，没有真的去查官网
+		issues = append(issues, "官网：只输入了品牌名，本次未做官网检查；输入官网域名可获得完整测评")
+	case site == nil:
+		issues = append(issues, fmt.Sprintf("官网：AI 联网搜索没有找到 %s 的官网，本次未做官网检查；输入官网域名可获得完整测评", brand))
+	case !site.Reachable:
 		issues = append(issues, "官网："+orDefault(site.Error, "无法访问")+"，AI 爬虫同样无法读取")
-	} else {
+	default:
 		var blocked []string
 		for _, c := range site.Crawlers {
 			if !c.Allowed {
@@ -1016,6 +1074,10 @@ func finishReport(rep *AuditReport) {
 	}
 
 	switch {
+	case site == nil && rep.Mode == "sample":
+		rep.Advice = "建议输入官网域名重新测评，同时检查官网能否被 AI 读取。"
+	case site == nil:
+		rep.Advice = "AI 没能找到你的官网，这本身就是问题：海外买家向 AI 提问时，AI 也很难把你和官网对应起来。建议先建设或完善英文官网，再做 GEO 信源建设。"
 	case !site.Reachable || site.Score < 50:
 		rep.Advice = "先把官网改造成 AI 读得懂的样子：放开 AI 爬虫、服务端输出英文正文、补齐结构化数据；再做 GEO 信源建设，提高被 AI 推荐的机会。"
 	case rep.Mode != "site_only" && m.MentionRate < 30:

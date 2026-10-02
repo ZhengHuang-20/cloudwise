@@ -58,7 +58,12 @@ export interface AuditEngineResult {
 
 export interface AuditReport {
   id: string;
+  /** 用户输入的原文（域名或品牌名）；早期报告没有 */
+  target?: string;
+  /** 官网域名；只输入品牌名且没找到官网时为空 */
   domain: string;
+  /** input：用户输入；resolved：AI 根据品牌名找到；none：没有官网。早期报告没有，视为 input */
+  domainSource?: 'input' | 'resolved' | 'none';
   /** live：真实探测；sample：示例数据；site_only：AI 探测失败，只有官网检查 */
   mode: 'live' | 'sample' | 'site_only';
   createdAt: string;
@@ -117,6 +122,16 @@ export const parseDomain = (input: string): string | null => {
   }
 };
 
+/** 测评输入：像域名的按域名处理，否则当作品牌名（2～60 个字符），与后端 parseAuditInput 一致。 */
+export const parseAuditInput = (input: string): { domain: string } | { brand: string } | null => {
+  const domain = parseDomain(input);
+  if (domain) return { domain };
+  const brand = input.trim().split(/\s+/).join(' ');
+  const length = [...brand].length;
+  if (length < 2 || length > 60 || /[<>{}\\/@]/.test(brand)) return null;
+  return { brand };
+};
+
 /** 后端不可用（Node 开发服务器或网络异常）时返回 true，调用方改用示例报告。 */
 export const isBackendMissing = (err: unknown) =>
   err instanceof ApiError && (err.status === 0 || (err.status === 404 && err.code === 'http'));
@@ -127,12 +142,15 @@ export const startAudit = (target: string) =>
 export const getAudit = (id: string) => api<AuditJob>(`/api/public/audits/${id}`);
 
 /** 后端不可用时的本地示例，数值固定，页面会标注「示例数据」。 */
-export const sampleReport = (domain: string): AuditReport => {
-  const label = domain.replace(/^www\./, '').split('.')[0];
+export const sampleReport = (target: string): AuditReport => {
+  const domain = parseDomain(target) ?? '';
+  const label = domain ? domain.replace(/^www\./, '').split('.')[0] : target;
   const brand = label.charAt(0).toUpperCase() + label.slice(1);
   return {
     id: 'sample',
+    target,
     domain,
+    domainSource: domain ? 'input' : 'none',
     mode: 'sample',
     createdAt: new Date().toISOString(),
     entity: {
@@ -146,7 +164,7 @@ export const sampleReport = (domain: string): AuditReport => {
     },
     totalScore: 34,
     level: '待改进',
-    metrics: { mentionRate: 17, citationRate: 6, brandKnowledge: 50, readability: 58, avgPosition: 4.5 },
+    metrics: { mentionRate: 17, citationRate: 6, brandKnowledge: 50, readability: 0, avgPosition: 4.5 },
     engine: 'ChatGPT、Perplexity、Gemini',
     engines: [
       { id: 'openai', name: 'ChatGPT', answers: 16, failed: 0, mentionRate: 17, citationRate: 6, brandKnowledge: 50, avgPosition: 5 },

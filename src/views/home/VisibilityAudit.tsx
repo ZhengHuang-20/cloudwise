@@ -11,7 +11,7 @@ import {
   AuditReport,
   getAudit,
   isBackendMissing,
-  parseDomain,
+  parseAuditInput,
   sampleReport,
   SiteCheck,
   startAudit,
@@ -19,15 +19,17 @@ import {
 } from '../../lib/audit';
 
 // 与后端 runAudit 的五个步骤一一对应；第 4 步的平台名来自任务状态
-const auditSteps = (engines: string[] | null) => [
-  '读取官网：页面内容、AI 爬虫权限与结构化数据',
+const auditSteps = (engines: string[] | null, byBrand: boolean) => [
+  byBrand ? '查找品牌官网，并读取页面内容、AI 爬虫权限与结构化数据' : '读取官网：页面内容、AI 爬虫权限与结构化数据',
   '识别品牌、所属行业与目标市场',
   '生成海外买家会向 AI 提出的采购问题',
-  `以买家身份向 ${engines && engines.length > 0 ? engines.join('、') : 'AI 搜索'} 提问（开启联网搜索）`,
+  engines && engines.length > 0
+    ? `以买家身份向 ${engines.join('、')} 提问（开启联网搜索）`
+    : '以买家身份向各 AI 平台提问（开启联网搜索）',
   '统计品牌提及、推荐排位与引用来源',
 ];
 
-type JobProgress = Pick<AuditJob, 'status' | 'step' | 'done' | 'total' | 'engines'>;
+type JobProgress = Pick<AuditJob, 'status' | 'step' | 'done' | 'total' | 'engines'> & { byBrand: boolean };
 
 const POLL_MS = 1500;
 const POLL_LIMIT_MS = 7 * 60 * 1000;
@@ -58,10 +60,11 @@ export const VisibilityAudit: React.FC<VisibilityAuditProps> = ({ inputRef, open
   const isRunning = job !== null;
 
   const finish = (result: AuditReport) => {
+    const target = result.domain || result.target || result.entity.brand;
     setJob(null);
     setReport(result);
-    logLeadActivity(`完成了【${result.domain}】AI 可见性测评`, 20, { target: result.domain, mode: result.mode });
-    saveDiagnosis('ai_visibility', 'AI 可见性测评', result.totalScore, `${result.domain} · ${result.level}`, {
+    logLeadActivity(`完成了【${target}】AI 可见性测评`, 20, { target, mode: result.mode });
+    saveDiagnosis('ai_visibility', 'AI 可见性测评', result.totalScore, `${target} · ${result.level}`, {
       auditId: result.id,
       mode: result.mode,
     });
@@ -86,36 +89,38 @@ export const VisibilityAudit: React.FC<VisibilityAuditProps> = ({ inputRef, open
       if (!alive.current) return;
       if (current.status === 'done' && current.report) return finish(current.report);
       if (current.status === 'failed') return fail(current.error || '测评失败，请稍后重试');
-      setJob({
+      setJob((prev) => ({
+        byBrand: prev?.byBrand ?? false,
         status: current.status,
         step: current.step,
         done: current.done,
         total: current.total,
         engines: current.engines,
-      });
+      }));
       await new Promise((resolve) => setTimeout(resolve, POLL_MS));
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const domain = parseDomain(input);
-    if (!domain) {
-      setInputError('请输入官网域名，例如 www.example.com');
+    const parsed = parseAuditInput(input);
+    if (!parsed) {
+      setInputError('请输入官网域名或品牌名称，例如 www.example.com 或 爱康医疗');
       inputRef.current?.focus();
       return;
     }
+    const target = 'domain' in parsed ? parsed.domain : parsed.brand;
     setInputError('');
     setReport(null);
-    setJob({ status: 'queued', step: 0, done: 0, total: 0, engines: null });
+    setJob({ status: 'queued', step: 0, done: 0, total: 0, engines: null, byBrand: 'brand' in parsed });
     try {
-      const { id } = await startAudit(domain);
+      const { id } = await startAudit(target);
       await poll(id, Date.now());
     } catch (err) {
       if (isBackendMissing(err)) {
         // 测评服务未启用（例如用 Node 版 server.ts 开发时），展示标注过的示例
         await new Promise((resolve) => setTimeout(resolve, 800));
-        if (alive.current) finish(sampleReport(domain));
+        if (alive.current) finish(sampleReport(target));
         return;
       }
       fail(err instanceof ApiError ? err.message : '测评失败，请稍后重试');
@@ -128,7 +133,7 @@ export const VisibilityAudit: React.FC<VisibilityAuditProps> = ({ inputRef, open
         <div>
           <h2 className="text-title-2">AI 可见性测评</h2>
           <p className="mt-2 text-body text-label-secondary">
-            输入官网域名，我们以海外买家的身份向 AI 搜索提问，统计你被推荐、被引用的情况，并检查官网能否被 AI 读取。所属行业与目标市场由 AI 根据官网自动判断。
+            输入官网域名或品牌名称，我们以海外买家的身份向 AI 搜索提问，统计你被推荐、被引用的情况，并检查官网能否被 AI 读取。只填品牌名时，由 AI 联网查找官网；所属行业与目标市场也由 AI 自动判断。
           </p>
         </div>
         <span className="badge shrink-0 bg-success/15 text-success">免费</span>
@@ -137,7 +142,7 @@ export const VisibilityAudit: React.FC<VisibilityAuditProps> = ({ inputRef, open
       <form className="mt-8 space-y-5" onSubmit={handleSubmit} noValidate>
         <div>
           <label htmlFor="audit-target" className="field-label">
-            官网域名
+            官网域名或品牌名称
           </label>
           <div className="relative">
             <Globe className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-label-secondary" />
@@ -145,13 +150,12 @@ export const VisibilityAudit: React.FC<VisibilityAuditProps> = ({ inputRef, open
               ref={inputRef}
               id="audit-target"
               type="text"
-              inputMode="url"
               value={input}
               onChange={(e) => {
                 setInput(e.target.value);
                 if (inputError) setInputError('');
               }}
-              placeholder="例如 www.ak-medical.net"
+              placeholder="例如 www.ak-medical.net 或 爱康医疗"
               className="field field-lg pl-12"
               autoComplete="off"
               autoCapitalize="none"
@@ -198,7 +202,7 @@ const AuditProgress: React.FC<{ job: JobProgress }> = ({ job }) => (
         : '需要真实向多个 AI 平台提问几十次，通常 1 到 3 分钟完成，请不要关闭页面。'}
     </p>
     <ol className="mt-4 space-y-3" aria-label="测评进度">
-      {auditSteps(job.engines).map((step, index) => {
+      {auditSteps(job.engines, job.byBrand).map((step, index) => {
         const stepNumber = index + 1;
         const isDone = job.step > stepNumber;
         const isCurrent = job.step === stepNumber;
@@ -247,6 +251,9 @@ const AuditResult: React.FC<AuditResultProps> = ({ report, openBookingModal, onG
   const [engineFilter, setEngineFilter] = useState('all');
   const tone = scoreTone(report.totalScore);
   const hasAI = report.mode !== 'site_only';
+  const hasSite = report.site !== null;
+  // 没有官网时区分：真的搜过没找到，还是示例模式根本没搜
+  const searchedSite = report.domainSource === 'none' && report.mode !== 'sample';
   const { metrics, entity } = report;
   const engines = report.engines ?? [];
   const engineCount = engines.length;
@@ -266,7 +273,13 @@ const AuditResult: React.FC<AuditResultProps> = ({ report, openBookingModal, onG
     },
     { label: '官网被引用', value: metrics.citationRate, unit: '%', note: '回答列出的来源', ai: true },
     { label: '品牌认知', value: metrics.brandKnowledge, unit: '%', note: '直接问品牌时', ai: true },
-    { label: 'AI 可读取性', value: metrics.readability, unit: ' / 100', note: '官网检查', ai: false },
+    {
+      label: 'AI 可读取性',
+      value: metrics.readability,
+      unit: ' / 100',
+      note: hasSite ? '官网检查' : '未检查官网',
+      ai: false,
+    },
   ];
 
   return (
@@ -288,8 +301,14 @@ const AuditResult: React.FC<AuditResultProps> = ({ report, openBookingModal, onG
         <ScoreRing value={report.totalScore} caption="/ 100" />
         <div className="min-w-0">
           <p className="break-all text-caption text-label-secondary">
-            {entity.brand} · {report.domain}
+            {entity.brand}
+            {report.domain ? ` · ${report.domain}` : searchedSite ? ' · 未找到官网' : ''}
           </p>
+          {report.domainSource === 'resolved' && (
+            <p className="text-caption text-label-secondary">
+              官网由 AI 根据品牌名查找，如不准确请直接输入官网域名
+            </p>
+          )}
           <p className="text-caption text-label-secondary">
             AI 判断行业：{entity.industry} · 目标市场：{entity.market}
           </p>
@@ -306,7 +325,7 @@ const AuditResult: React.FC<AuditResultProps> = ({ report, openBookingModal, onG
 
       <dl className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
         {tiles.map((tile) => {
-          const available = hasAI || !tile.ai;
+          const available = tile.ai ? hasAI : hasSite;
           const tileTone = scoreTone(tile.value);
           return (
             <div key={tile.label} className="well">
@@ -429,7 +448,22 @@ const AuditResult: React.FC<AuditResultProps> = ({ report, openBookingModal, onG
         </section>
       )}
 
-      {report.site && <SiteChecks site={report.site} />}
+      {report.site ? (
+        <SiteChecks site={report.site} />
+      ) : (
+        <section className="mt-10" aria-labelledby="audit-site">
+          <h4 id="audit-site" className="text-title-3">
+            官网能否被 AI 读取
+          </h4>
+          <p className="mt-2 flex items-start gap-3 py-3 text-body">
+            <AlertTriangle className="mt-1 h-5 w-5 shrink-0 text-warning" aria-hidden="true" />
+            <span className="text-label-secondary">
+              {searchedSite ? 'AI 联网搜索没有找到这个品牌的官网，' : '只输入了品牌名，'}
+              本次未做官网检查。输入官网域名可获得完整测评。
+            </span>
+          </p>
+        </section>
+      )}
 
       <h4 className="mt-10 text-title-3">核心发现</h4>
       <ul className="mt-2 divide-y divide-separator">
@@ -505,7 +539,7 @@ const EvidenceItem: React.FC<{ item: AuditEvidence; domain: string }> = ({ item,
         <p className="mt-2 break-words text-caption text-label-secondary">
           引用来源：
           {item.sources.map((source, i) => {
-            const own = hostOf(source).toLowerCase().includes(domain.replace(/^www\./, ''));
+            const own = domain !== '' && hostOf(source).toLowerCase().includes(domain.replace(/^www\./, ''));
             return (
               <React.Fragment key={`${source.uri}-${i}`}>
                 {i > 0 && '、'}
