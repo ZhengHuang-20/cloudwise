@@ -74,6 +74,32 @@ func (e geminiEngine) Ask(ctx context.Context, prompt string) (string, []WebSour
 
 // ---------- 通用 HTTP 调用 ----------
 
+// aiProxy 是调用海外 AI 平台（OpenRouter、OpenAI、Perplexity、Gemini）时使用的出口代理，
+// 由 AI_PROXY_URL 配置，为空时直连。国内服务器调用 OpenAI / Google 的模型会因地区限制被拒，
+// 需要经受支持地区的代理发出。只用于 AI 接口；测评抓取客户官网仍直连（见 newSafeClient）。
+var aiProxy *url.URL
+
+func setAIProxy(raw string) error {
+	if raw == "" {
+		return nil
+	}
+	u, err := url.Parse(raw)
+	if err != nil || (u.Scheme != "http" && u.Scheme != "https") || u.Host == "" {
+		return fmt.Errorf("AI_PROXY_URL 格式应为 http://[用户名:密码@]主机:端口")
+	}
+	aiProxy = u
+	return nil
+}
+
+func newAIClient(timeout time.Duration) *http.Client {
+	if aiProxy == nil {
+		return &http.Client{Timeout: timeout}
+	}
+	t := http.DefaultTransport.(*http.Transport).Clone()
+	t.Proxy = http.ProxyURL(aiProxy)
+	return &http.Client{Timeout: timeout, Transport: t}
+}
+
 // postJSON 发送 JSON 请求并解析响应；429/503 时等待后重试一次。
 func postJSON(ctx context.Context, c *http.Client, endpoint, bearer string, body any, out any) error {
 	buf, _ := json.Marshal(body)
@@ -121,7 +147,7 @@ func NewOpenAI(key, model, base, effort string) *OpenAI {
 	if key == "" {
 		return nil
 	}
-	return &OpenAI{key: key, model: model, base: strings.TrimRight(base, "/"), effort: effort, client: &http.Client{Timeout: 90 * time.Second}}
+	return &OpenAI{key: key, model: model, base: strings.TrimRight(base, "/"), effort: effort, client: newAIClient(90 * time.Second)}
 }
 
 func (*OpenAI) ID() string   { return "openai" }
@@ -195,7 +221,7 @@ func NewPerplexity(key, model, base string) *Perplexity {
 	if strings.Contains(base, "openrouter.ai") && !strings.Contains(model, "/") {
 		model = "perplexity/" + model
 	}
-	return &Perplexity{key: key, model: model, base: base, client: &http.Client{Timeout: 90 * time.Second}}
+	return &Perplexity{key: key, model: model, base: base, client: newAIClient(90 * time.Second)}
 }
 
 func (*Perplexity) ID() string   { return "perplexity" }
@@ -267,7 +293,7 @@ func NewOpenRouterEngines(cfg Config) []probeEngine {
 		return nil
 	}
 	base := strings.TrimRight(cfg.OpenRouterBase, "/")
-	client := &http.Client{Timeout: 90 * time.Second}
+	client := newAIClient(90 * time.Second)
 	return []probeEngine{
 		&orEngine{id: "openai", name: "ChatGPT", model: withOnline(cfg.OpenRouterChatGPT), key: cfg.OpenRouterKey, base: base, effort: cfg.OpenRouterEffort, client: client},
 		&orEngine{id: "perplexity", name: "Perplexity", model: cfg.OpenRouterPerplexity, key: cfg.OpenRouterKey, base: base, client: client},

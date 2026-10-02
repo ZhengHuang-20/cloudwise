@@ -144,12 +144,15 @@ jobs:
       #                          同时把 PERPLEXITY_BASE_URL 设为 https://openrouter.ai/api/v1
       #   OPENROUTER_API_KEY     （推荐）ChatGPT / Perplexity / Gemini 三个测评平台统一经 OpenRouter 提问，
       #                          配了就优先于下面的直连 key；可选 OPENROUTER_CHATGPT_MODEL / _PERPLEXITY_MODEL / _GEMINI_MODEL
+      #   AI_PROXY_URL           （可选）调用 OpenRouter / OpenAI / Gemini 的海外出口代理，http://用户名:密码@IP:端口；
+      #                          国内服务器调用 OpenAI、Google 模型会被地区限制拒绝（403 not available in your region）
       #   OPENAI_BASE_URL / PERPLEXITY_BASE_URL （可选）国内服务器直连不通时，填海外中转网关地址
       #   OPENAI_MODEL / OPENAI_REASONING_EFFORT / PERPLEXITY_MODEL （可选）覆盖默认模型（gpt-6-luna / low / sonar）
       - name: 触发远程部署
         env:
           S_GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           S_OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          S_AI_PROXY_URL: ${{ secrets.AI_PROXY_URL }}
           S_OPENROUTER_CHATGPT_MODEL: ${{ secrets.OPENROUTER_CHATGPT_MODEL }}
           S_OPENROUTER_PERPLEXITY_MODEL: ${{ secrets.OPENROUTER_PERPLEXITY_MODEL }}
           S_OPENROUTER_GEMINI_MODEL: ${{ secrets.OPENROUTER_GEMINI_MODEL }}
@@ -185,6 +188,7 @@ jobs:
           }
           add S_GEMINI_API_KEY          GEMINI_API_KEY
           add S_OPENROUTER_API_KEY      OPENROUTER_API_KEY
+          add S_AI_PROXY_URL            AI_PROXY_URL
           add S_OPENROUTER_CHATGPT_MODEL OPENROUTER_CHATGPT_MODEL
           add S_OPENROUTER_PERPLEXITY_MODEL OPENROUTER_PERPLEXITY_MODEL
           add S_OPENROUTER_GEMINI_MODEL OPENROUTER_GEMINI_MODEL

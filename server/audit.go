@@ -692,6 +692,8 @@ func probeErrorReason(err error) (string, string) {
 	switch {
 	case errors.Is(err, context.DeadlineExceeded) || has("deadline exceeded", "timeout"):
 		return "超时：90 秒内没有返回", detail
+	case has("not available in your region", "user location is not supported", "unsupported_country"):
+		return "服务器所在地区无法使用该模型，需要配置海外出口代理（AI_PROXY_URL）", detail
 	case has("http 401", "http 403"):
 		return "鉴权失败，或账号无权使用该模型", detail
 	case has("http 402", "insufficient credits", "requires more credits"):
