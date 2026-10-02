@@ -41,6 +41,8 @@ type Config struct {
 	OpenRouterPerplexity string
 	OpenRouterGemini     string
 	OpenRouterEffort     string
+
+	AIProxyURL string // 调用海外 AI 平台的出口代理，如 http://user:pass@1.2.3.4:8888；为空时直连
 }
 
 var envKeyRe = regexp.MustCompile(`^[A-Z][A-Z0-9_]*$`)
@@ -87,7 +89,7 @@ func loadDotEnv(path string) {
 // 的 CW_DEPLOY_ENV。只接受下列前缀的变量，避免被用来改写 PATH 之类的进程环境。
 var (
 	deployEnvRe        = regexp.MustCompile(`CW_ENV=([0-9a-fA-F]+)`)
-	deployEnvPrefixes  = []string{"GEMINI_", "OPENAI_", "OPENROUTER_", "PERPLEXITY_", "MYSQL_", "CW_ADMIN_", "COOKIE_", "TRUST_", "SHOW_FDE"}
+	deployEnvPrefixes  = []string{"GEMINI_", "OPENAI_", "OPENROUTER_", "PERPLEXITY_", "AI_PROXY_", "MYSQL_", "CW_ADMIN_", "COOKIE_", "TRUST_", "SHOW_FDE"}
 	ephemeralEnvPrefix = []string{"MYSQL_ADMIN_", "CW_ADMIN_"} // 只在本次启动生效，不落盘
 )
 
@@ -222,5 +224,7 @@ func loadConfig() Config {
 		OpenRouterPerplexity: env("OPENROUTER_PERPLEXITY_MODEL", "perplexity/sonar"),
 		OpenRouterGemini:     env("OPENROUTER_GEMINI_MODEL", "google/gemini-3.1-flash-lite"),
 		OpenRouterEffort:     envAllowEmpty("OPENROUTER_REASONING_EFFORT", "low"),
+
+		AIProxyURL: os.Getenv("AI_PROXY_URL"),
 	}
 }

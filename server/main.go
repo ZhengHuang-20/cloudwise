@@ -39,6 +39,7 @@ func (a *App) routes() http.Handler {
 			"status":       "ok",
 			"hasGeminiKey": a.gemini != nil,
 			"auditEngines": a.auditEngineIDs(),
+			"aiProxy":      aiProxy != nil,
 			"hasDatabase":  a.db != nil,
 			"dbStatus":     a.dbState,
 			"dbIssue":      a.dbIssue,
@@ -233,6 +234,13 @@ func main() {
 		default:
 			log.Fatalf("未知命令 %q，可用：create-admin、migrate", os.Args[1])
 		}
+	}
+
+	// 必须在创建各 AI 客户端之前设置
+	if err := setAIProxy(cfg.AIProxyURL); err != nil {
+		log.Printf("忽略出口代理配置：%v", err)
+	} else if aiProxy != nil {
+		log.Printf("AI 接口经出口代理 %s 访问", aiProxy.Redacted())
 	}
 
 	app := &App{cfg: cfg, gemini: NewGemini(cfg.GeminiKey, cfg.GeminiModel), loginLimiter: newLimiter(10, time.Minute),

@@ -24,7 +24,7 @@ func NewGemini(key, model string) *Gemini {
 	if key == "" {
 		return nil
 	}
-	return &Gemini{key: key, model: model, base: "https://generativelanguage.googleapis.com", client: &http.Client{Timeout: 60 * time.Second}}
+	return &Gemini{key: key, model: model, base: "https://generativelanguage.googleapis.com", client: newAIClient(60 * time.Second)}
 }
 
 type gPart struct {
