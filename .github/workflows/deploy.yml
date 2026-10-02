@@ -142,11 +142,17 @@ jobs:
       #   OPENAI_API_KEY         （可选）AI 可见性测评向 ChatGPT（Responses API + web_search）提问
       #   PERPLEXITY_API_KEY     （可选）AI 可见性测评向 Perplexity（Sonar）提问；也可以填 OpenRouter 的 key，
       #                          同时把 PERPLEXITY_BASE_URL 设为 https://openrouter.ai/api/v1
+      #   OPENROUTER_API_KEY     （推荐）ChatGPT / Perplexity / Gemini 三个测评平台统一经 OpenRouter 提问，
+      #                          配了就优先于下面的直连 key；可选 OPENROUTER_CHATGPT_MODEL / _PERPLEXITY_MODEL / _GEMINI_MODEL
       #   OPENAI_BASE_URL / PERPLEXITY_BASE_URL （可选）国内服务器直连不通时，填海外中转网关地址
       #   OPENAI_MODEL / OPENAI_REASONING_EFFORT / PERPLEXITY_MODEL （可选）覆盖默认模型（gpt-6-luna / low / sonar）
       - name: 触发远程部署
         env:
           S_GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          S_OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          S_OPENROUTER_CHATGPT_MODEL: ${{ secrets.OPENROUTER_CHATGPT_MODEL }}
+          S_OPENROUTER_PERPLEXITY_MODEL: ${{ secrets.OPENROUTER_PERPLEXITY_MODEL }}
+          S_OPENROUTER_GEMINI_MODEL: ${{ secrets.OPENROUTER_GEMINI_MODEL }}
           S_OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           S_OPENAI_BASE_URL: ${{ secrets.OPENAI_BASE_URL }}
           S_PERPLEXITY_API_KEY: ${{ secrets.PERPLEXITY_API_KEY }}
@@ -178,6 +184,10 @@ jobs:
             BLOB="${BLOB}${2}=${v}"$'\n'
           }
           add S_GEMINI_API_KEY          GEMINI_API_KEY
+          add S_OPENROUTER_API_KEY      OPENROUTER_API_KEY
+          add S_OPENROUTER_CHATGPT_MODEL OPENROUTER_CHATGPT_MODEL
+          add S_OPENROUTER_PERPLEXITY_MODEL OPENROUTER_PERPLEXITY_MODEL
+          add S_OPENROUTER_GEMINI_MODEL OPENROUTER_GEMINI_MODEL
           add S_OPENAI_API_KEY          OPENAI_API_KEY
           add S_OPENAI_BASE_URL         OPENAI_BASE_URL
           add S_PERPLEXITY_API_KEY      PERPLEXITY_API_KEY
@@ -202,8 +212,8 @@ jobs:
           # 健康检查阶段据此判断是否要求数据库就绪
           if [ -n "$S_MYSQL_APP_PASSWORD" ]; then echo "EXPECT_DB=1" >> "$GITHUB_ENV"; fi
           if [ -n "$S_GEMINI_API_KEY" ]; then echo "EXPECT_GEMINI=1" >> "$GITHUB_ENV"; fi
-          if [ -n "$S_OPENAI_API_KEY" ]; then echo "EXPECT_OPENAI=1" >> "$GITHUB_ENV"; fi
-          if [ -n "$S_PERPLEXITY_API_KEY" ]; then echo "EXPECT_PERPLEXITY=1" >> "$GITHUB_ENV"; fi
+          if [ -n "$S_OPENAI_API_KEY" ] || [ -n "$S_OPENROUTER_API_KEY" ]; then echo "EXPECT_OPENAI=1" >> "$GITHUB_ENV"; fi
+          if [ -n "$S_PERPLEXITY_API_KEY" ] || [ -n "$S_OPENROUTER_API_KEY" ]; then echo "EXPECT_PERPLEXITY=1" >> "$GITHUB_ENV"; fi
 
           echo "远程指令：$CMD（携带 $(printf '%s' "$BLOB" | grep -c .) 项运行时配置）  目标：$SSH_USER@$SSH_HOST"
 

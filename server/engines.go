@@ -22,7 +22,11 @@ type probeEngine interface {
 }
 
 // 展示顺序：ChatGPT → Perplexity → Gemini。
+// 配了 OpenRouter 时三个平台统一经它提问（一把 key、一个出口），否则各走各的直连配置。
 func (a *App) probeEngines() []probeEngine {
+	if len(a.openrouter) > 0 {
+		return a.openrouter
+	}
 	var out []probeEngine
 	if a.openai != nil {
 		out = append(out, a.openai)
@@ -240,6 +244,91 @@ func (p *Perplexity) Ask(ctx context.Context, prompt string) (string, []WebSourc
 			sources = append(sources, WebSource{Title: r.Title, URI: r.URL, Domain: hostOfURL(r.URL)})
 		}
 	} else {
+		for _, u := range out.Citations {
+			sources = append(sources, WebSource{URI: u, Domain: hostOfURL(u)})
+		}
+	}
+	return out.Choices[0].Message.Content, sources, nil
+}
+
+// ---------- OpenRouter（统一网关，/chat/completions） ----------
+// ChatGPT、Perplexity、Gemini 三个平台都经 OpenRouter 提问。联网搜索：Perplexity 的 Sonar 自带，
+// 其余模型名加 :online 后缀由 OpenRouter 注入搜索结果。回答里的来源在 message.annotations（url_citation）。
+
+type orEngine struct {
+	id, name, model, key, base string
+	effort                     string
+	client                     *http.Client
+}
+
+// NewOpenRouterEngines 返回按展示顺序排列的三个平台；key 为空返回 nil。
+func NewOpenRouterEngines(cfg Config) []probeEngine {
+	if cfg.OpenRouterKey == "" {
+		return nil
+	}
+	base := strings.TrimRight(cfg.OpenRouterBase, "/")
+	client := &http.Client{Timeout: 90 * time.Second}
+	return []probeEngine{
+		&orEngine{id: "openai", name: "ChatGPT", model: withOnline(cfg.OpenRouterChatGPT), key: cfg.OpenRouterKey, base: base, effort: cfg.OpenRouterEffort, client: client},
+		&orEngine{id: "perplexity", name: "Perplexity", model: cfg.OpenRouterPerplexity, key: cfg.OpenRouterKey, base: base, client: client},
+		&orEngine{id: "gemini", name: "Gemini", model: withOnline(cfg.OpenRouterGemini), key: cfg.OpenRouterKey, base: base, client: client},
+	}
+}
+
+func withOnline(model string) string {
+	if strings.HasSuffix(model, ":online") {
+		return model
+	}
+	return model + ":online"
+}
+
+func (e *orEngine) ID() string   { return e.id }
+func (e *orEngine) Name() string { return e.name }
+
+func (e *orEngine) Ask(ctx context.Context, prompt string) (string, []WebSource, error) {
+	var out struct {
+		Choices []struct {
+			Message struct {
+				Content     string `json:"content"`
+				Annotations []struct {
+					Type        string `json:"type"`
+					URLCitation struct {
+						URL   string `json:"url"`
+						Title string `json:"title"`
+					} `json:"url_citation"`
+				} `json:"annotations"`
+			} `json:"message"`
+		} `json:"choices"`
+		Citations []string `json:"citations"`
+		Error     *struct {
+			Message string `json:"message"`
+		} `json:"error"`
+	}
+	body := map[string]any{
+		"model":    e.model,
+		"messages": []any{map[string]any{"role": "user", "content": prompt}},
+	}
+	if e.effort != "" {
+		body["reasoning"] = map[string]any{"effort": e.effort}
+	}
+	if err := postJSON(ctx, e.client, e.base+"/chat/completions", e.key, body, &out); err != nil {
+		return "", nil, fmt.Errorf("openrouter/%s: %w", e.id, err)
+	}
+	// OpenRouter 有时以 200 返回上游错误
+	if out.Error != nil {
+		return "", nil, fmt.Errorf("openrouter/%s: %s", e.id, out.Error.Message)
+	}
+	if len(out.Choices) == 0 || strings.TrimSpace(out.Choices[0].Message.Content) == "" {
+		return "", nil, fmt.Errorf("openrouter/%s: empty answer", e.id)
+	}
+	var sources []WebSource
+	for _, an := range out.Choices[0].Message.Annotations {
+		if an.Type == "url_citation" && an.URLCitation.URL != "" {
+			u := an.URLCitation
+			sources = append(sources, WebSource{Title: u.Title, URI: u.URL, Domain: hostOfURL(u.URL)})
+		}
+	}
+	if len(sources) == 0 {
 		for _, u := range out.Citations {
 			sources = append(sources, WebSource{URI: u, Domain: hostOfURL(u)})
 		}
