@@ -11,6 +11,7 @@ import {
   AuditJob,
   AuditReport,
   getAudit,
+  ProbeLogEntry,
   isBackendMissing,
   parseAuditInput,
   sampleReport,
@@ -30,7 +31,7 @@ const auditSteps = (engines: string[] | null, byBrand: boolean) => [
   '统计品牌提及、推荐排位与引用来源',
 ];
 
-type JobProgress = Pick<AuditJob, 'status' | 'step' | 'done' | 'total' | 'engines'> & { byBrand: boolean };
+type JobProgress = Pick<AuditJob, 'status' | 'step' | 'done' | 'total' | 'engines' | 'log'> & { byBrand: boolean };
 
 const POLL_MS = 1500;
 const POLL_LIMIT_MS = 7 * 60 * 1000;
@@ -47,6 +48,8 @@ export const VisibilityAudit: React.FC<VisibilityAuditProps> = ({ inputRef, open
   const [inputError, setInputError] = useState('');
   const [job, setJob] = useState<JobProgress | null>(null);
   const [report, setReport] = useState<AuditReport | null>(null);
+  // 测评失败时保留第④步的提问日志，方便排查是哪个平台、什么原因
+  const [failedLog, setFailedLog] = useState<ProbeLogEntry[]>([]);
   const alive = useRef(true);
 
   useEffect(() => {
@@ -70,8 +73,9 @@ export const VisibilityAudit: React.FC<VisibilityAuditProps> = ({ inputRef, open
     showToast('测评报告已生成');
   };
 
-  const fail = (message: string) => {
+  const fail = (message: string, log?: ProbeLogEntry[] | null) => {
     setJob(null);
+    setFailedLog(log ?? []);
     setInputError(message);
     inputRef.current?.focus();
   };
@@ -87,7 +91,7 @@ export const VisibilityAudit: React.FC<VisibilityAuditProps> = ({ inputRef, open
       }
       if (!alive.current) return;
       if (current.status === 'done' && current.report) return finish(current.report);
-      if (current.status === 'failed') return fail(current.error || '测评失败，请稍后重试');
+      if (current.status === 'failed') return fail(current.error || '测评失败，请稍后重试', current.log);
       setJob((prev) => ({
         byBrand: prev?.byBrand ?? false,
         status: current.status,
@@ -95,6 +99,7 @@ export const VisibilityAudit: React.FC<VisibilityAuditProps> = ({ inputRef, open
         done: current.done,
         total: current.total,
         engines: current.engines,
+        log: current.log,
       }));
       await new Promise((resolve) => setTimeout(resolve, POLL_MS));
     }
@@ -111,7 +116,8 @@ export const VisibilityAudit: React.FC<VisibilityAuditProps> = ({ inputRef, open
     const target = 'domain' in parsed ? parsed.domain : parsed.brand;
     setInputError('');
     setReport(null);
-    setJob({ status: 'queued', step: 0, done: 0, total: 0, engines: null, byBrand: 'brand' in parsed });
+    setFailedLog([]);
+    setJob({ status: 'queued', step: 0, done: 0, total: 0, engines: null, log: null, byBrand: 'brand' in parsed });
     try {
       const { id } = await startAudit(target);
       await poll(id, Date.now());
@@ -185,6 +191,14 @@ export const VisibilityAudit: React.FC<VisibilityAuditProps> = ({ inputRef, open
       </form>
 
       {job && <AuditProgress job={job} />}
+
+      {!job && !report && failedLog.length > 0 && (
+        <div className="mt-8 border-t border-separator pt-8">
+          <h3 className="text-title-3">提问日志</h3>
+          <ProbeLogSummary entries={failedLog} />
+          <ProbeLogList entries={failedLog} className="mt-4" />
+        </div>
+      )}
     </div>
     </div>
 
@@ -240,6 +254,7 @@ const AuditProgress: React.FC<{ job: JobProgress }> = ({ job }) => (
         );
       })}
     </ol>
+    {job.log && job.log.length > 0 && <ProbeLogList entries={job.log} live className="mt-6" />}
   </div>
 );
 
@@ -284,6 +299,7 @@ const AuditResult: React.FC<AuditResultProps> = ({ report, openBookingModal, onG
   const maxVoice = Math.max(1, ...report.shareOfVoice.map((v) => v.mentions));
   const showEngines = hasAI && engineCount > 1;
   const showVoice = hasAI && report.shareOfVoice.length > 1;
+  const probeLog = report.probeLog ?? [];
 
   const tiles = [
     {
@@ -386,7 +402,7 @@ const AuditResult: React.FC<AuditResultProps> = ({ report, openBookingModal, onG
             >
               <ul className="grid gap-3 sm:grid-cols-[repeat(auto-fit,minmax(11rem,1fr))]">
                 {engines.map((engine) => (
-                  <EngineCard key={engine.id} engine={engine} />
+                  <EngineCard key={engine.id} engine={engine} log={probeLog} />
                 ))}
               </ul>
             </Panel>
@@ -468,12 +484,15 @@ const AuditResult: React.FC<AuditResultProps> = ({ report, openBookingModal, onG
       </div>
 
       {hasAI && report.evidence.length > 0 && <EvidenceExplorer report={report} />}
+
+      {probeLog.length > 0 && <ProbeLogPanel entries={probeLog} />}
     </div>
   );
 };
 
-const EngineCard: React.FC<{ engine: AuditEngineResult }> = ({ engine }) => {
+const EngineCard: React.FC<{ engine: AuditEngineResult; log: ProbeLogEntry[] }> = ({ engine, log }) => {
   const failedAll = engine.answers === 0;
+  const reason = topReason(log.filter((entry) => entry.engine === engine.name));
   const rows = [
     { label: '提到你', value: engine.mentionRate },
     { label: '引用官网', value: engine.citationRate },
@@ -486,7 +505,10 @@ const EngineCard: React.FC<{ engine: AuditEngineResult }> = ({ engine }) => {
         <p className="text-caption tabular-nums text-label-secondary">平均排第 {engine.avgPosition} 位</p>
       )}
       {failedAll ? (
-        <p className="mt-4 text-caption text-label-secondary">提问失败，未计入总分</p>
+        <p className="mt-4 text-caption text-label-secondary">
+          提问失败，未计入总分
+          {reason && <span className="mt-1 block text-danger">原因：{reason}</span>}
+        </p>
       ) : (
         <>
           <ul className="mt-4 space-y-3">
@@ -503,7 +525,9 @@ const EngineCard: React.FC<{ engine: AuditEngineResult }> = ({ engine }) => {
             ))}
           </ul>
           {engine.failed > 0 && (
-            <p className="mt-3 text-caption text-label-secondary">{engine.failed} 次提问失败</p>
+            <p className="mt-3 text-caption text-label-secondary">
+              {engine.failed} 次提问失败{reason && `：${reason}`}
+            </p>
           )}
         </>
       )}
@@ -684,6 +708,125 @@ const SiteChecks: React.FC<{ site: SiteCheck; className?: string }> = ({ site, c
           </li>
         ))}
       </ul>
+    </Panel>
+  );
+};
+
+// ---------- 提问日志 ----------
+
+/** 出现最多的失败原因 */
+const topReason = (entries: ProbeLogEntry[]) => {
+  const counts = new Map<string, number>();
+  for (const entry of entries) {
+    if (!entry.ok && entry.reason) counts.set(entry.reason, (counts.get(entry.reason) ?? 0) + 1);
+  }
+  let best = '';
+  let max = 0;
+  counts.forEach((count, reason) => {
+    if (count > max) [best, max] = [reason, count];
+  });
+  return best;
+};
+
+const seconds = (ms: number) => `${(ms / 1000).toFixed(1)} 秒`;
+
+/** 按平台汇总：成功、失败次数，平均耗时与主要失败原因 */
+const ProbeLogSummary: React.FC<{ entries: ProbeLogEntry[] }> = ({ entries }) => {
+  const engines = [...new Set(entries.map((entry) => entry.engine))];
+  return (
+    <ul className="mt-4 grid gap-3 sm:grid-cols-[repeat(auto-fit,minmax(12rem,1fr))]">
+      {engines.map((name) => {
+        const list = entries.filter((entry) => entry.engine === name);
+        const ok = list.filter((entry) => entry.ok);
+        const failed = list.length - ok.length;
+        const avg = ok.length > 0 ? ok.reduce((sum, entry) => sum + entry.ms, 0) / ok.length : 0;
+        const reason = topReason(list);
+        return (
+          <li key={name} className="well">
+            <p className="text-body font-semibold">{name}</p>
+            <p className="mt-1 text-caption tabular-nums text-label-secondary">
+              <span className="text-success">成功 {ok.length}</span>
+              {' · '}
+              <span className={failed > 0 ? 'text-danger' : undefined}>失败 {failed}</span>
+              {ok.length > 0 && ` · 平均 ${seconds(avg)}`}
+            </p>
+            {reason && <p className="mt-1 text-caption text-danger">{reason}</p>}
+          </li>
+        );
+      })}
+    </ul>
+  );
+};
+
+const ProbeLogList: React.FC<{ entries: ProbeLogEntry[]; live?: boolean; className?: string }> = ({
+  entries,
+  live = false,
+  className = '',
+}) => {
+  const listRef = useRef<HTMLOListElement>(null);
+
+  // 进行中时跟随最新一条
+  useEffect(() => {
+    if (live && listRef.current) listRef.current.scrollTop = listRef.current.scrollHeight;
+  }, [live, entries.length]);
+
+  return (
+    <ol
+      ref={listRef}
+      className={`well max-h-72 space-y-2 overflow-y-auto ${className}`}
+      aria-label="提问日志"
+      aria-live={live ? 'polite' : undefined}
+    >
+      {entries.map((entry, index) => (
+        <li key={index} className="flex items-start gap-2 text-caption">
+          {entry.ok ? (
+            <Check className="mt-0.5 h-4 w-4 shrink-0 text-success" aria-label="成功" />
+          ) : (
+            <X className="mt-0.5 h-4 w-4 shrink-0 text-danger" aria-label="失败" />
+          )}
+          <span className="min-w-0">
+            <span className="tabular-nums">
+              <span className="font-semibold">{entry.engine}</span>
+              <span className="text-label-secondary">
+                {' · '}第 {entry.question} 题第 {entry.sample} 次{entry.branded ? '（带品牌名）' : ''} · {seconds(entry.ms)}
+                {entry.ok && ` · ${entry.sources} 个来源`}
+              </span>
+            </span>
+            {!entry.ok && (
+              <>
+                <span className="block text-danger">{entry.reason || '调用失败'}</span>
+                {entry.detail && (
+                  <span className="block break-all text-label-tertiary" lang="en">
+                    {entry.detail}
+                  </span>
+                )}
+              </>
+            )}
+          </span>
+        </li>
+      ))}
+    </ol>
+  );
+};
+
+const ProbeLogPanel: React.FC<{ entries: ProbeLogEntry[] }> = ({ entries }) => {
+  const [onlyFailed, setOnlyFailed] = useState(false);
+  const failed = entries.filter((entry) => !entry.ok).length;
+  const shown = onlyFailed ? entries.filter((entry) => !entry.ok) : entries;
+  return (
+    <Panel
+      title="提问日志"
+      hint={`以买家身份向各平台提问的逐条记录，共 ${entries.length} 次，失败 ${failed} 次`}
+      aside={
+        failed > 0 ? (
+          <button type="button" className="chip" aria-pressed={onlyFailed} onClick={() => setOnlyFailed((v) => !v)}>
+            只看失败
+          </button>
+        ) : undefined
+      }
+    >
+      <ProbeLogSummary entries={entries} />
+      <ProbeLogList entries={shown} className="mt-4" />
     </Panel>
   );
 };

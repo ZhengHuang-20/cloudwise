@@ -56,6 +56,24 @@ export interface AuditEngineResult {
   avgPosition: number;
 }
 
+/** 第④步一次提问的记录（后端 probeLogEntry） */
+export interface ProbeLogEntry {
+  engine: string;
+  /** 第几题，从 1 开始 */
+  question: number;
+  text: string;
+  /** 同一题的第几次 */
+  sample: number;
+  branded: boolean;
+  ok: boolean;
+  /** 失败原因（中文归类） */
+  reason?: string;
+  /** 脱敏后的原始错误 */
+  detail?: string;
+  ms: number;
+  sources: number;
+}
+
 export interface AuditReport {
   id: string;
   /** 用户输入的原文（域名或品牌名）；早期报告没有 */
@@ -97,6 +115,8 @@ export interface AuditReport {
   site: SiteCheck | null;
   findings: string[];
   recommendation: string;
+  /** 提问日志；早期报告没有 */
+  probeLog?: ProbeLogEntry[] | null;
 }
 
 export interface AuditJob {
@@ -106,6 +126,8 @@ export interface AuditJob {
   done: number;
   total: number;
   engines: string[] | null;
+  /** 第④步的实时提问日志 */
+  log?: ProbeLogEntry[] | null;
   error: string;
   report: AuditReport | null;
 }

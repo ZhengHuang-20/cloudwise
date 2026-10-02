@@ -106,6 +106,7 @@ type AuditReport struct {
 	Site         *SiteCheck          `json:"site"`
 	Findings     []string            `json:"findings"`
 	Advice       string              `json:"recommendation"`
+	ProbeLog     []probeLogEntry     `json:"probeLog"` // 第④步每一次提问的记录，按完成顺序
 
 	unbrandedAnswers int // 不带品牌名问题的有效回答数，只用于生成文案
 }
@@ -119,7 +120,8 @@ type auditJob struct {
 	Step    int    // 1~5，对应前端进度
 	Done    int
 	Total   int
-	Engines []string // 本次提问的平台名，用于进度文案
+	Engines []string        // 本次提问的平台名，用于进度文案
+	Log     []probeLogEntry // 第④步的实时提问日志，只追加
 	Err     string
 	Report  *AuditReport
 	created time.Time
@@ -283,6 +285,7 @@ func (a *App) handleGetAudit(w http.ResponseWriter, r *http.Request) {
 		"done":    j.Done,
 		"total":   j.Total,
 		"engines": j.Engines,
+		"log":     j.Log,
 		"error":   j.Err,
 		"report":  j.Report,
 	})
@@ -426,6 +429,7 @@ func (a *App) runAudit(job *auditJob, domain, brand string) {
 				ok++
 			}
 		}
+		s.update(job, func(j *auditJob) { rep.ProbeLog = append([]probeLogEntry{}, j.Log...) })
 		if ok == 0 && site == nil {
 			// 没有官网、提问又全部失败：没有任何可展示的结果
 			s.update(job, func(j *auditJob) { j.Status, j.Err = "failed", "AI 平台暂时无法访问，请稍后重试" })
@@ -653,6 +657,61 @@ type auditAnswer struct {
 	err     error
 }
 
+// probeLogEntry 是一次提问的记录，供前端展示「提问日志」。Detail 是脱敏、截断后的原始错误。
+type probeLogEntry struct {
+	Engine   string `json:"engine"`
+	Question int    `json:"question"` // 第几题，从 1 开始
+	Text     string `json:"text"`
+	Sample   int    `json:"sample"` // 同一题的第几次
+	Branded  bool   `json:"branded"`
+	OK       bool   `json:"ok"`
+	Reason   string `json:"reason,omitempty"`
+	Detail   string `json:"detail,omitempty"`
+	Ms       int64  `json:"ms"`
+	Sources  int    `json:"sources"`
+}
+
+var secretPattern = regexp.MustCompile(`(?i)(bearer\s+|sk-)[a-z0-9._\-]{8,}`)
+
+// probeErrorReason 把调用错误归成一句中文原因，并返回去掉密钥、截断后的原始信息。
+func probeErrorReason(err error) (string, string) {
+	msg := err.Error()
+	detail := secretPattern.ReplaceAllString(msg, "${1}***")
+	if r := []rune(detail); len(r) > 240 {
+		detail = string(r[:240]) + "…"
+	}
+	lower := strings.ToLower(msg)
+	has := func(subs ...string) bool {
+		for _, sub := range subs {
+			if strings.Contains(lower, sub) {
+				return true
+			}
+		}
+		return false
+	}
+	switch {
+	case errors.Is(err, context.DeadlineExceeded) || has("deadline exceeded", "timeout"):
+		return "超时：90 秒内没有返回", detail
+	case has("http 401", "http 403"):
+		return "鉴权失败，或账号无权使用该模型", detail
+	case has("http 402", "insufficient credits", "requires more credits"):
+		return "账户余额不足", detail
+	case has("http 404", "no endpoints", "not a valid model", "model not found"):
+		return "模型不存在或当前不可用，请检查模型 ID", detail
+	case has("http 400"):
+		return "请求参数不被接受（模型可能不支持联网搜索或推理参数）", detail
+	case has("http 429"):
+		return "触发限流，请稍后重试", detail
+	case has("http 5"):
+		return "平台服务异常", detail
+	case has("empty answer"):
+		return "返回了空回答", detail
+	case has("no such host", "connection refused", "connection reset", "tls:", "eof"):
+		return "网络无法连接到平台", detail
+	}
+	return "调用失败", detail
+}
+
 // probe 向每个平台提出全部问题，每题问 auditSamples 次。各平台单独限制并发，互不拖累。
 func (a *App) probe(ctx context.Context, job *auditJob, engines []probeEngine, qs []auditQuestion) []auditAnswer {
 	total := len(engines) * len(qs) * auditSamples
@@ -662,15 +721,16 @@ func (a *App) probe(ctx context.Context, job *auditJob, engines []probeEngine, q
 	idx := 0
 	for _, eng := range engines {
 		sem := make(chan struct{}, auditConcurrency)
-		for _, q := range qs {
+		for qi, q := range qs {
 			for s := 0; s < auditSamples; s++ {
 				wg.Add(1)
-				go func(i int, eng probeEngine, q auditQuestion) {
+				go func(i int, eng probeEngine, q auditQuestion, qi, sample int) {
 					defer wg.Done()
 					sem <- struct{}{}
 					defer func() { <-sem }()
 					cctx, cancel := context.WithTimeout(ctx, 90*time.Second)
 					defer cancel()
+					start := time.Now()
 					text, sources, err := eng.Ask(cctx, q.Text)
 					if err == nil && strings.TrimSpace(text) == "" {
 						err = errors.New("empty answer")
@@ -678,9 +738,17 @@ func (a *App) probe(ctx context.Context, job *auditJob, engines []probeEngine, q
 					if err != nil {
 						log.Printf("测评提问失败（%s）: %v", eng.ID(), err)
 					}
+					entry := probeLogEntry{Engine: eng.Name(), Question: qi + 1, Text: q.Text, Sample: sample + 1, Branded: q.Branded,
+						OK: err == nil, Ms: time.Since(start).Milliseconds(), Sources: len(sources)}
+					if err != nil {
+						entry.Reason, entry.Detail = probeErrorReason(err)
+					}
 					answers[i] = auditAnswer{engine: eng, q: q, text: text, sources: sources, err: err}
-					a.audits.update(job, func(j *auditJob) { j.Done++ })
-				}(idx, eng, q)
+					a.audits.update(job, func(j *auditJob) {
+						j.Done++
+						j.Log = append(j.Log, entry)
+					})
+				}(idx, eng, q, qi, s)
 				idx++
 			}
 		}
