@@ -4,9 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 项目概述
 
-「云端智荐」—— 面向中国出海企业的 AI 售前支持系统与能力样板间（独立站 / SEO / GEO / AI 客服 / FDE 驻场五项服务），同时承载客户后台（访问统计、线索）。技术栈：**Next.js 16（App Router）+ React 19 + TypeScript 7 + Tailwind CSS v4**，部署在 **Vercel**，数据库为 **Neon Postgres**；AI 能力来自服务端调用的 Gemini（REST）。界面文案全部为简体中文，新增文案请保持中文。
+「云端智荐」—— 面向中国出海企业的 AI 售前支持系统与能力样板间（独立站 / SEO / GEO / AI 客服 / FDE 驻场五项服务），同时承载客户后台（访问统计、线索）。技术栈：**Next.js 16（App Router）+ React 19 + TypeScript 7 + Tailwind CSS v4**（登录页与客户后台另用 **antd 6**），部署在 **Vercel**，数据库为 **Neon Postgres**；AI 能力来自服务端调用的 Gemini（REST）。界面文案全部为简体中文，新增文案请保持中文。
 
-**任何 UI 改动前先读 [`DESIGN.md`](./DESIGN.md)**（设计规范：token、组件、页面模板、文案与无障碍规则），改动后按其第 8 节评审清单自查。
+**任何 UI 改动前先读 [`DESIGN.md`](./DESIGN.md)**（设计规范：token、组件、页面模板、文案与无障碍规则），改动后按其第 8 节评审清单自查。后台（`#/login`、`#/console/*`）用 antd，规则见 DESIGN.md 第 10 节；官网页面不要引入 antd。
 
 ## 常用命令
 
@@ -56,8 +56,8 @@ bun run create-admin <email>   # 创建管理员并打印一次性初始密码
 ### 账号与客户后台
 
 - 数据库：迁移文件在 `db/migrations/`，按文件名顺序执行，时间一律 `TIMESTAMPTZ`（默认 `now()`）。账号由管理员创建（不开放注册），密码 argon2id（`@node-rs/argon2`，参数与 PHC 格式和原 Go 版一致），会话为 HttpOnly cookie（库里只存令牌的 SHA-256）+ `X-CSRF-Token`，首次登录必须改密，连续 5 次失败锁定 15 分钟。客户只能访问 `site_members` 授权的站点，所有站点数据查询都必须经过它。
-- 前端账号页：`#/login`、`#/console`（`LoginView`、`ConsoleView` 与 `src/views/console/*`，不进导航，入口在 Header 右侧「登录 / 客户后台」），状态在 `src/context/AuthContext.tsx`，请求封装 `src/lib/api.ts`（自动带 CSRF）。账号不开放注册，由管理员在后台「管理」页开通。
-- **客户数据与对外接口**（`src/server/routes/analytics.ts`，迁移 `002_analytics.sql`）：其他网站（如爱康医疗官网）通过公开接口写入数据库——`POST /api/public/collect`（页面浏览）与 `POST /api/public/leads`（线索：姓名/手机/邮箱/公司/留言，手机与邮箱至少一项），靠公开的 `site_key` 识别站点；浏览器请求的 `Origin` 必须匹配站点域名（含子域、www 互换），无 Origin 的服务端调用放行；按 IP 限流，`website` 字段是蜜罐。`/cw.js`（静态文件 `public/cw.js`，缓存与 CORS 头在 `next.config.mjs`）是嵌入脚本（`<script async src=".../cw.js" data-site="sk_xxx">` 自动上报 PV；带 `data-cw-lead` 的表单自动提交线索；`CloudWise.submitLead()` 可手动调用）。客户登录后用 `/api/sites/{id}/stats|leads|leads.csv` 与 `PATCH /api/sites/{id}/leads/{leadId}` 查看，全部经 `withSite`（管理员或 `site_members`）校验，越权一律 404。访问记录只存匿名 visitor_id，不存 IP；统计按北京时间分天。
+- 前端账号页：`#/login`、`#/console/<section>`（全部在 `src/views/console/`，入口 `ConsoleApp.tsx` 由 `App.tsx` 懒加载、全屏渲染，不显示官网 Header/Footer；不进导航，入口在 Header 右侧「登录 / 客户后台」）。后台左侧导航分「站点数据」（`overview` 数据概览、`leads` 线索管理、`install` 接入代码）与仅管理员可见的「系统管理」（`orgs` 客户公司、`users` 账号、`sites` 站点与授权）；`ConsoleContext` 提供当前用户、站点列表与切换（`localStorage` 键 `cw_console_site`）、`go(section)`。登录状态在 `src/context/AuthContext.tsx`，请求封装 `src/lib/api.ts`（自动带 CSRF）。账号不开放注册，由管理员在「账号」页开通（可同时授权站点），初始密码只在弹窗里显示一次。
+- **客户数据与对外接口**（`src/server/routes/analytics.ts`，迁移 `002_analytics.sql`）：其他网站（如爱康医疗官网）通过公开接口写入数据库——`POST /api/public/collect`（页面浏览）与 `POST /api/public/leads`（线索：姓名/手机/邮箱/公司/留言，手机与邮箱至少一项），靠公开的 `site_key` 识别站点；浏览器请求的 `Origin` 必须匹配站点域名（含子域、www 互换），无 Origin 的服务端调用放行；按 IP 限流，`website` 字段是蜜罐。`/cw.js`（静态文件 `public/cw.js`，缓存与 CORS 头在 `next.config.mjs`）是嵌入脚本（`<script async src=".../cw.js" data-site="sk_xxx">` 自动上报 PV；带 `data-cw-lead` 的表单自动提交线索；`CloudWise.submitLead()` 可手动调用）。客户登录后用 `/api/sites/{id}/stats|leads|leads.csv` 与 `PATCH /api/sites/{id}/leads/{leadId}` 查看（`leads` 支持 `page`、`status` 与关键词 `q`，`q` 模糊匹配姓名/手机/邮箱/公司/留言），全部经 `withSite`（管理员或 `site_members`）校验，越权一律 404。访问记录只存匿名 visitor_id，不存 IP；统计按北京时间分天。
 
 ### AI 可见性测评（`src/server/audit.ts`、`auditSite.ts`、`auditStore.ts`、`engines.ts`，迁移 `003_audits.sql`）
 
@@ -69,7 +69,7 @@ bun run create-admin <email>   # 创建管理员并打印一次性初始密码
 ### 前端导航（无路由库）
 
 - 整站是一个客户端 SPA：`app/page.tsx` → `src/ClientApp.tsx`（`ssr: false`）→ `src/App.tsx`。页面与组件不需要 `'use client'`，可以直接用 `window` / `localStorage`。
-- `src/App.tsx` 用 `currentTab` 状态条件渲染 `src/views/*`，并与地址栏 hash 同步（`#/services`），支持浏览器前进后退与分享链接；切页时滚到顶部并更新 `document.title`。
+- `src/App.tsx` 用 `currentTab` 状态条件渲染 `src/views/*`，并与地址栏 hash 同步（`#/services`），支持浏览器前进后退与分享链接；切页时滚到顶部并更新 `document.title`。hash 只取第一段作为 `TabId`，后台子页面（`#/console/leads`）由 `ConsoleApp` 自己解析。
 - `TabId` 类型、导航分组（了解 / 决策）与短标签、全称都只定义在 `src/components/navigation.ts`，`Header`、`Footer` 与 App 的 hash 解析共用它。
 - 页面间跳转通过 App 下发的回调 props（`onGoToConfigurator`、`onGoToAudit`、`onGoToBooking` 等）完成；`handleNavigateToConfigurator(prefill)` 可向配置器传入初始参数。
 - **站内唯一的自测工具是首页的 AI 可见性测评**（`HomeView` 的 `#audit` 区块，组件在 `src/views/home/VisibilityAudit.tsx`，接口封装在 `src/lib/audit.ts`，调用服务端的真实测评；接口不可用时展示标注「示例数据」的本地报告）；原「断点体检」「能力体验」页已删除。其他页面与课程要引导自测时，用 App 的 `goToAudit` 回到首页并滚动到测评区；课程「下一步」的目标由 App 的 `handleCourseTarget` 分流（方案规划 / 预约 / 资源 / 测评）。旧的 `/api/gemini/visibility-test`（让模型“模拟”结果）仍保留，但前端不再调用。
@@ -95,6 +95,8 @@ bun run create-admin <email>   # 创建管理员并打印一次性初始密码
 课程视频放在 `public/videos/<课程字母>/<课程编号>.mp4`，由 `coursesData.ts` 的 `Lesson.videoUrl` 引用，课程弹窗直接播放。新增视频建议先压缩（画面流直接复制，音频转 96 kbps AAC，并加 `-movflags +faststart`），B 站投稿清单在 `docs/course-videos.md`（不要放进 `public/`，会被公开访问）。
 
 ## 样式约定（完整规范见 `DESIGN.md`）
+
+以下约定针对官网页面。后台用 antd，主题在 `src/views/console/theme.ts`（色值与 `@theme` 对应）；antd 样式优先级高于 Tailwind 工具类，不要在 antd 组件上用 Tailwind 控制宽度、显示或外边距，详见 DESIGN.md 第 10 节。
 
 - Tailwind v4 通过 `@tailwindcss/postcss`（`postcss.config.mjs`）引入，没有 `tailwind.config`；全局样式 `src/index.css` 在 `app/layout.tsx` 中引入。设计 token 写在 `src/index.css` 的 `@theme` 中，会自动生成对应的工具类；组件类写在 `@layer components` 中。
 - **只用语义 token，不写 hex、不用 Tailwind 默认色板**：颜色用 `bg-canvas` / `bg-surface` / `bg-surface-raised`、`text-label` / `text-label-secondary`、`border-separator`、`text-link`、`bg-accent`、`text-success|warning|danger`；字号用 `text-display|headline|title-1|title-2|title-3|intro|body|caption`（自带行高与字重）；圆角用 `rounded-tile|card|control`；缓动用 `ease-apple`。

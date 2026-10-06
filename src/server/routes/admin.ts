@@ -123,8 +123,13 @@ const siteJSON = (r: any) => ({
 });
 
 export const listSites = authed(adminOnly, async () => {
-  const rows = await query(`SELECT ${SITE_COLS} FROM sites s ORDER BY s.id DESC`);
-  return json({ sites: rows.map(siteJSON) });
+  // 管理视角额外返回已授权的账号 ID，用于展示与撤销授权
+  const rows = await query(
+    `SELECT ${SITE_COLS},
+       COALESCE((SELECT array_agg(m.user_id::int ORDER BY m.user_id) FROM site_members m WHERE m.site_id = s.id), '{}') AS member_ids
+     FROM sites s ORDER BY s.id DESC`,
+  );
+  return json({ sites: rows.map((r) => ({ ...siteJSON(r), memberIds: r.member_ids as number[] })) });
 });
 
 export const createSite = authed(adminOnly, async (req) => {

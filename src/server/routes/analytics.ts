@@ -237,8 +237,15 @@ export const siteLeads = withSite(async (req, _u, siteId) => {
   const status = sp.get('status');
   if (status) {
     if (!LEAD_STATUSES.has(status)) return apiError(400, 'bad_request', '无效的状态');
-    where += ` AND status = $2`;
     args.push(status);
+    where += ` AND status = $${args.length}`;
+  }
+  // 关键词：姓名、手机、邮箱、公司、留言模糊匹配（转义 LIKE 通配符）
+  const q = (sp.get('q') ?? '').trim().slice(0, 64);
+  if (q) {
+    args.push(`%${q.replace(/[\\%_]/g, (c) => '\\' + c)}%`);
+    const p = `$${args.length}`;
+    where += ` AND (name ILIKE ${p} OR phone ILIKE ${p} OR email ILIKE ${p} OR company ILIKE ${p} OR message ILIKE ${p})`;
   }
   const total = await queryOne(`SELECT COUNT(*) AS n FROM leads WHERE ${where}`, args);
   const rows = await query(
