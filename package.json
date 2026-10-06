@@ -15,6 +15,7 @@
     "@node-rs/argon2": "^2.0.2",
     "@vercel/analytics": "^2.0.1",
     "@vercel/functions": "^3.9.11",
+    "antd": "^6.6.5",
     "lucide-react": "^0.546.0",
     "motion": "^12.23.24",
     "next": "^16.3.8",

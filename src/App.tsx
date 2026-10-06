@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { lazy, Suspense, useCallback, useEffect, useState } from 'react';
 import { AppProvider, useApp } from './context/AppContext';
 import { AuthProvider } from './context/AuthContext';
 import { Header } from './components/Header';
@@ -16,14 +16,16 @@ import { ConfiguratorView } from './views/ConfiguratorView';
 import { CasesView } from './views/CasesView';
 import { DealRoomView } from './views/DealRoomView';
 import { ResourcesView } from './views/ResourcesView';
-import { LoginView } from './views/LoginView';
-import { ConsoleView } from './views/ConsoleView';
+
+// 后台（登录与客户后台）使用 antd，单独分块按需加载，官网页面不下载
+const ConsoleApp = lazy(() => import('./views/console/ConsoleApp'));
 
 const SITE_TITLE = '云端智荐 - AI出海售前支持系统与能力样板间';
 
-// 当前页面与地址栏 hash 同步（#/services），支持浏览器前进后退与分享链接
+// 当前页面与地址栏 hash 同步（#/services），支持浏览器前进后退与分享链接；
+// 后台的子页面形如 #/console/leads，这里只取第一段
 const readTabFromHash = (): TabId => {
-  const value = window.location.hash.replace(/^#\/?/, '');
+  const value = window.location.hash.replace(/^#\/?/, '').split('/')[0];
   return isTabId(value) ? value : 'home';
 };
 
@@ -81,6 +83,18 @@ function MainApp() {
     else goToAudit();
   };
 
+  // 后台是独立的全屏布局，不显示官网的页眉、页脚与 AI 顾问入口
+  if (currentTab === 'login' || currentTab === 'console') {
+    return (
+      <>
+        <Suspense fallback={<div className="min-h-screen bg-canvas" />}>
+          <ConsoleApp tab={currentTab} onNavigate={navigate} onGoToBooking={openBooking} />
+        </Suspense>
+        <BookingModal isOpen={isBookingOpen} onClose={() => setIsBookingOpen(false)} />
+      </>
+    );
+  }
+
   return (
     <div className="relative flex min-h-screen flex-col bg-canvas text-label">
       <button
@@ -128,12 +142,6 @@ function MainApp() {
         {currentTab === 'deal-room' && <DealRoomView onGoToBooking={openBooking} />}
 
         {currentTab === 'resources' && <ResourcesView onGoToLesson={() => navigate('academy')} />}
-
-        {currentTab === 'login' && (
-          <LoginView onLoggedIn={() => navigate('console')} onGoToBooking={openBooking} />
-        )}
-
-        {currentTab === 'console' && <ConsoleView onNavigate={navigate} />}
       </main>
 
       <Footer onNavigate={navigate} />

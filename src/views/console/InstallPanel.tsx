@@ -1,27 +1,20 @@
-import React, { useState } from 'react';
-import { Check, Copy } from 'lucide-react';
-import { Site } from './types';
+import React from 'react';
+import { Card, Descriptions, Tabs, Typography } from 'antd';
+import { CodeBlock, PageTitle } from './parts';
+import { HOSTING, type Site } from './types';
 
-const Code: React.FC<{ title: string; code: string }> = ({ title, code }) => {
-  const [done, setDone] = useState(false);
-  const copy = () => {
-    navigator.clipboard?.writeText(code).then(() => {
-      setDone(true);
-      setTimeout(() => setDone(false), 1500);
-    });
-  };
-  return (
-    <div className="tile">
-      <div className="flex items-center justify-between gap-3">
-        <h3 className="text-title-3">{title}</h3>
-        <button type="button" className="btn btn-secondary btn-sm" onClick={copy}>
-          {done ? <Check /> : <Copy />}{done ? '已复制' : '复制'}
-        </button>
+const Step: React.FC<{ n: number; title: string; desc: React.ReactNode; code: string; lang?: string }> = ({ n, title, desc, code, lang }) => (
+  <div className="space-y-4">
+    <div className="flex gap-3">
+      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-fill text-caption tabular-nums">{n}</span>
+      <div>
+        <p className="font-semibold">{title}</p>
+        <p className="mt-1 text-caption text-label-secondary">{desc}</p>
       </div>
-      <pre className="well mt-4 overflow-x-auto text-caption leading-relaxed"><code>{code}</code></pre>
     </div>
-  );
-};
+    <CodeBlock code={code} lang={lang} />
+  </div>
+);
 
 export const InstallPanel: React.FC<{ site: Site }> = ({ site }) => {
   const origin = window.location.origin;
@@ -39,25 +32,105 @@ export const InstallPanel: React.FC<{ site: Site }> = ({ site }) => {
   document.addEventListener('cw:success', () => alert('已收到，我们会尽快联系您'));
   document.addEventListener('cw:error', (e) => alert(e.detail));
 </script>`;
+  const js = `CloudWise.submitLead({
+  name: '张三',
+  phone: '13800000000',
+  email: 'zhangsan@example.com',
+  company: '示例公司',
+  message: '想了解产品',
+});`;
   const curl = `curl -X POST ${origin}/api/public/leads \\
   -H 'Content-Type: application/json' \\
   -d '{"siteKey":"${site.siteKey}","name":"张三","phone":"13800000000","message":"想了解产品"}'`;
 
   return (
-    <div className="space-y-6">
-      <div className="tile">
-        <p className="text-caption text-label-secondary">站点标识（site key，可公开）</p>
-        <p className="mt-2 break-all text-title-3 tabular-nums">{site.siteKey}</p>
-        <p className="mt-3 text-caption text-label-secondary">
-          线索与访问数据只接受来自 {site.domain}（含子域名）的浏览器请求；服务器之间调用不受此限制。
-        </p>
+    <>
+      <PageTitle title="接入代码" description="把采集脚本与线索表单接到您的网站，数据会实时进入后台。" />
+
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_22rem]">
+        <Card variant="borderless" className="xl:order-2 xl:self-start" title="站点信息">
+          <Descriptions
+            column={1}
+            size="small"
+            colon={false}
+            styles={{ label: { width: 80 } }}
+            items={[
+              { key: 'name', label: '站点', children: site.name },
+              { key: 'domain', label: '域名', children: site.domain },
+              { key: 'hosting', label: '接入方式', children: HOSTING[site.hosting] ?? site.hosting },
+              {
+                key: 'key',
+                label: 'site key',
+                children: (
+                  <Typography.Text copyable={{ text: site.siteKey }} className="break-all tabular-nums">
+                    {site.siteKey}
+                  </Typography.Text>
+                ),
+              },
+            ]}
+          />
+          <p className="mt-4 text-caption text-label-secondary">
+            site key 是公开标识，不是密钥。线索与访问数据只接受来自 {site.domain}（含子域名）的浏览器请求；服务器之间的调用不受此限制。
+          </p>
+        </Card>
+
+        <Card variant="borderless" className="min-w-0 xl:order-1" styles={{ body: { paddingTop: 4 } }}>
+          <Tabs
+            items={[
+              {
+                key: 'web',
+                label: '网站嵌入',
+                children: (
+                  <div className="space-y-8 pt-2">
+                    <Step
+                      n={1}
+                      title="统计：把脚本放进网站的 <head>"
+                      desc="自动上报页面浏览，只记录匿名访客标识，不存 IP。"
+                      code={script}
+                    />
+                    <Step
+                      n={2}
+                      title="线索：给表单加上 data-cw-lead"
+                      desc="提交时自动入库，字段名用 name / phone / email / company / message，手机与邮箱至少填一项。"
+                      code={form}
+                    />
+                  </div>
+                ),
+              },
+              {
+                key: 'js',
+                label: '自有前端',
+                children: (
+                  <div className="pt-2">
+                    <Step
+                      n={1}
+                      title="在自己的提交逻辑里调用"
+                      desc="页面已加载采集脚本时可用，返回 Promise。"
+                      code={js}
+                      lang="JavaScript"
+                    />
+                  </div>
+                ),
+              },
+              {
+                key: 'api',
+                label: '服务端接口',
+                children: (
+                  <div className="pt-2">
+                    <Step
+                      n={1}
+                      title="后端 / 小程序直接调用"
+                      desc="POST /api/public/leads，按 IP 限流；不带 Origin 的服务端请求不做域名校验。"
+                      code={curl}
+                      lang="Shell"
+                    />
+                  </div>
+                ),
+              },
+            ]}
+          />
+        </Card>
       </div>
-      <Code title="① 统计：把脚本放进网站 <head>" code={script} />
-      <Code title="② 线索：给表单加 data-cw-lead，提交时自动入库" code={form} />
-      <Code title="③ 或者：后端 / 小程序直接调用接口" code={curl} />
-      <p className="text-center text-caption text-label-secondary">
-        脚本同时提供 <code>CloudWise.submitLead({'{'} name, phone, email, company, message {'}'})</code>，可在自有前端逻辑里调用。
-      </p>
-    </div>
+    </>
   );
 };

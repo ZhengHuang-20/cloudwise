@@ -3,6 +3,7 @@
 > 版本 1.0 · 2026-09
 > 基准：apple.com 深色产品页的视觉语言 + Apple Human Interface Guidelines，针对简体中文排版与 B2B 出海售前场景做了取舍。
 > 实现：token 与组件类在 `src/index.css`，React 基础组件在 `src/components/ui/`。**本文档与这两处代码必须保持一致；改其一，同步改其余。**
+> 适用范围：第 0～9 节约束官网（营销页）。登录页与客户后台（`#/login`、`#/console/*`）改用 antd，规则见第 10 节。
 
 ---
 
@@ -478,3 +479,34 @@ Hero（eyebrow、`text-display` 标语、导语、两个按钮）→ AI 可见�
 | `src/components/ui/serviceIdentity.ts` | 五项服务的图标与识别色 |
 | `src/components/navigation.ts` | 导航分组与标签、`TabId` |
 | `src/components/Header.tsx` / `Footer.tsx` | 全局导航与页脚 |
+| `src/views/console/` | 后台（antd）：`ConsoleApp` 入口、`theme.ts` 主题、`ConsoleLayout` 外壳、`parts.tsx` 公共件，见第 10 节 |
+
+---
+
+## 10. 后台（antd）
+
+登录页与客户后台是给客户和运营天天用的工具，讲的是信息密度和操作效率，所以单独用 antd 6，不套用官网的组件类。官网页面一律**不得**引入 antd。
+
+### 10.1 加载与主题
+
+- 入口 `src/views/console/ConsoleApp.tsx`，由 `App.tsx` 用 `React.lazy` 按需加载：antd 只打进后台分块，官网首屏不下载。后台是独立的全屏布局，不渲染官网的 Header、Footer 和 AI 顾问入口。
+- 主题在 `src/views/console/theme.ts`：`darkAlgorithm`，色值与第 2.1 节 token 一一对应（canvas / surface / raised / separator / label / accent / link / success / warning / danger）。要改颜色先改 `@theme`，再同步这里；组件里不要直接写 antd 预设色或 hex，需要时从 `CONSOLE_COLORS` 取。
+- 字号 14px 起（`fontSize` 与 `fontSizeSM` 都是 14）；字重只用 400 / 600；图标仍用 `lucide-react`，16px。
+- `ConfigProvider` 关闭了按钮两字之间自动加空格（`autoInsertSpace: false`）；`message` / `modal` 一律用 `App.useApp()` 取，不用静态方法。
+
+### 10.2 与 Tailwind 混用
+
+antd 的 CSS-in-JS 样式不在 CSS layer 里，优先级高于 Tailwind 工具类。所以：
+
+- **不要在 antd 组件上用 Tailwind 控制宽度、显示、外边距**（`w-*`、`hidden` / `lg:hidden`、`mt-*`、`space-y-*` 的子项等会被覆盖）。在外面包一层 `div` 控制布局，或用组件的 `style` / `styles`。
+- 普通元素（`div`、`p`、`span`）上的 Tailwind 类和语义 token（`text-label-secondary`、`bg-surface` 等）照常使用。
+
+### 10.3 页面结构
+
+- 外壳 `ConsoleLayout`：左侧 240px 导航（「站点数据」「系统管理」两组，后者仅管理员可见；小于 1024px 时收进抽屉），顶栏左侧是站点切换（站点类页面）或面包屑（管理页），右侧是账号菜单（修改密码、退出登录）。
+- 子页面地址为 `#/console/<section>`，`section` 定义在 `ConsoleContext.ts`；新增后台页面：在 `Section` / `SECTION_TITLE` 加一项、在 `ConsoleLayout` 的菜单加一项、在 `ConsoleApp` 的分支里渲染。
+- 每页以 `PageTitle`（标题 + 一句说明 + 右侧主操作）开头，内容放在 `Card variant="borderless"` 里；列表用 `Table`，筛选与搜索放在卡片顶部一行。
+- 新建、编辑用 `Modal` + `Form`；详情用右侧 `Drawer`；停用、重置密码、撤销授权等不可撤回的操作必须先确认（`Popconfirm` 或 `modal.confirm`）。初始密码用 `showPassword` 弹窗展示，并提示只显示一次。
+- 表格的固定列需要不透明底色（主题里 `headerBg`、`rowHoverBg` 已设为不透明），不要改成半透明色。
+- 390px 宽度下：线索列表换成卡片列表；管理表格横向滚动，操作列固定在右侧。
+- 图表沿用 `TrendChart`：单一序列、2px 折线 + 10% 面积、悬停十字线与提示，并提供表格视图。
