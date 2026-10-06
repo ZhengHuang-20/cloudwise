@@ -119,8 +119,11 @@ export const VisibilityAudit: React.FC<VisibilityAuditProps> = ({ inputRef, open
     setFailedLog([]);
     setJob({ status: 'queued', step: 0, done: 0, total: 0, engines: null, log: null, byBrand: 'brand' in parsed });
     try {
-      const { id } = await startAudit(target);
-      await poll(id, Date.now());
+      const started = await startAudit(target);
+      if (!alive.current) return;
+      if (started.status === 'done' && started.report) return finish(started.report);
+      if (started.status === 'failed') return fail(started.error || '测评失败，请稍后重试', started.log);
+      await poll(started.id, Date.now());
     } catch (err) {
       if (isBackendMissing(err)) {
         // 测评服务不可用（网络异常或接口缺失）时，展示标注过的示例

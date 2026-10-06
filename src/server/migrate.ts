@@ -6,6 +6,7 @@ import { readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import pg from 'pg';
 import { createUser, normalizeEmail, validatePassword } from './auth';
+import { databaseUrls } from './config';
 
 const MIGRATIONS_DIR = path.join(process.cwd(), 'db', 'migrations');
 const LOCK_ID = 7_270_301;
@@ -15,10 +16,7 @@ const LOCK_ID = 7_270_301;
  * 所以优先用 Vercel × Neon 集成提供的 unpooled 地址。
  */
 export function migrationUrl(): string {
-  const env = process.env;
-  return (
-    env.DATABASE_URL_UNPOOLED || env.POSTGRES_URL_NON_POOLING || env.DATABASE_URL || env.POSTGRES_URL || ''
-  ).trim();
+  return databaseUrls().direct;
 }
 
 export async function migrate(url: string, log = console.log): Promise<void> {
