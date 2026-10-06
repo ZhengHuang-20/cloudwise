@@ -1,9 +1,10 @@
 import React, { useMemo, useState } from 'react';
-import { App as AntApp, Button, Card, Form, Input, Modal, Select, Table, Tag, Typography } from 'antd';
-import { ChartColumn, Plus } from 'lucide-react';
+import { App as AntApp, Button, Card, Drawer, Form, Input, Modal, Select, Table, Tag, Typography } from 'antd';
+import { BookOpen, ChartColumn, Code, Copy, Plus } from 'lucide-react';
 import { api } from '../../../lib/api';
 import { useConsole } from '../ConsoleContext';
-import { PageTitle } from '../parts';
+import { InstallGuide, installGuideText, installSnippets } from '../InstallPanel';
+import { PageTitle, useCopy } from '../parts';
 import { HOSTING, type Site } from '../types';
 import { useAdminData } from './useAdminData';
 
@@ -22,9 +23,11 @@ export const SitesPanel: React.FC = () => {
   const [orgFilter, setOrgFilter] = useState<number | undefined>();
   const [createOpen, setCreateOpen] = useState(false);
   const [grantSite, setGrantSite] = useState<Site | null>(null);
+  const [guideSite, setGuideSite] = useState<Site | null>(null);
   const [grantIds, setGrantIds] = useState<number[]>([]);
   const [busy, setBusy] = useState(false);
   const [form] = Form.useForm<CreateValues>();
+  const copy = useCopy();
 
   const rows = useMemo(() => {
     const k = keyword.trim().toLowerCase();
@@ -45,9 +48,13 @@ export const SitesPanel: React.FC = () => {
     const v = await form.validateFields();
     setBusy(true);
     try {
-      await api('/api/admin/sites', { method: 'POST', body: { ...v, name: v.name.trim(), domain: v.domain.trim() } });
-      message.success(`站点「${v.name.trim()}」已接入`);
+      const res = await api<{ site: Site }>('/api/admin/sites', {
+        method: 'POST',
+        body: { ...v, name: v.name.trim(), domain: v.domain.trim() },
+      });
+      message.success(`站点「${res.site.name}」已创建，把接入说明发给客户的技术人员即可`);
       setCreateOpen(false);
+      setGuideSite({ ...res.site, memberIds: [] });
       refresh();
     } catch (e: any) {
       message.error(e.message);
@@ -160,7 +167,19 @@ export const SitesPanel: React.FC = () => {
                   <Typography.Text copyable={{ text: k }} className="whitespace-nowrap tabular-nums">
                     {k}
                   </Typography.Text>
-                  <p className="text-caption text-label-tertiary">{HOSTING[s.hosting] ?? s.hosting}</p>
+                  <div className="flex items-center gap-2 text-caption text-label-tertiary">
+                    <span>{HOSTING[s.hosting] ?? s.hosting}</span>
+                    <span aria-hidden>·</span>
+                    <Button
+                      type="link"
+                      size="small"
+                      icon={<Code size={14} />}
+                      style={{ padding: 0, height: 'auto' }}
+                      onClick={() => copy(installSnippets(s).script, '采集脚本已复制')}
+                    >
+                      复制脚本
+                    </Button>
+                  </div>
                 </div>
               ),
             },
@@ -198,20 +217,25 @@ export const SitesPanel: React.FC = () => {
             {
               title: '操作',
               key: 'actions',
-              width: 120,
+              width: 220,
               fixed: 'right',
               render: (_, s) => (
-                <Button
-                  type="link"
-                  size="small"
-                  icon={<ChartColumn size={14} />}
-                  onClick={() => {
-                    selectSite(s.id);
-                    go('overview');
-                  }}
-                >
-                  看数据
-                </Button>
+                <div className="flex whitespace-nowrap">
+                  <Button type="link" size="small" icon={<BookOpen size={14} />} onClick={() => setGuideSite(s)}>
+                    接入说明
+                  </Button>
+                  <Button
+                    type="link"
+                    size="small"
+                    icon={<ChartColumn size={14} />}
+                    onClick={() => {
+                      selectSite(s.id);
+                      go('overview');
+                    }}
+                  >
+                    看数据
+                  </Button>
+                </div>
               ),
             },
           ]}
@@ -243,6 +267,30 @@ export const SitesPanel: React.FC = () => {
           </Form.Item>
         </Form>
       </Modal>
+
+      <Drawer
+        open={!!guideSite}
+        onClose={() => setGuideSite(null)}
+        size={Math.min(680, window.innerWidth)}
+        title={guideSite ? `接入说明：${guideSite.name}` : ''}
+        extra={
+          guideSite && (
+            <Button type="primary" icon={<Copy size={16} />} onClick={() => copy(installGuideText(guideSite), '接入说明已复制，可直接发给客户')}>
+              复制接入说明
+            </Button>
+          )
+        }
+      >
+        {guideSite && (
+          <div className="flex flex-col gap-4">
+            <p className="text-caption text-label-secondary">
+              「复制接入说明」会生成一份完整的文字说明（脚本、表单写法、接口与注意事项），可直接发给客户的技术人员。站点域名为{' '}
+              {guideSite.domain}，只有来自该域名（含子域名）的浏览器请求会被接受。
+            </p>
+            <InstallGuide site={guideSite} />
+          </div>
+        )}
+      </Drawer>
 
       <Modal
         title={grantSite ? `授权「${grantSite.name}」` : ''}
