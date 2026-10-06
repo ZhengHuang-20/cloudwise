@@ -1,6 +1,6 @@
 /**
  * 后台接口封装：同源请求，会话靠 HttpOnly cookie，写操作带 X-CSRF-Token。
- * 接口只存在于 Go 后端（server/），Node 版 server.ts 没有账号接口，此时会得到 404。
+ * 接口是 app/api 下的 Next.js Route Handlers；未配置数据库时账号与后台接口返回 503（db_unavailable）。
  */
 let csrfToken = '';
 export const setCsrfToken = (token: string) => {
@@ -42,7 +42,7 @@ export async function api<T = any>(
     throw new ApiError(
       res.status,
       data?.code ?? 'http',
-      unavailable ? '后台服务未启用（需要 Go 后端与数据库）' : (data?.error ?? '请求失败'),
+      unavailable ? '后台服务未启用' : (data?.error ?? '请求失败'),
     );
   }
   return data as T;

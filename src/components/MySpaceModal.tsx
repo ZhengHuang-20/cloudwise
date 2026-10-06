@@ -3,7 +3,7 @@ import { Activity, Award, Check, FileText, GraduationCap, Sliders } from 'lucide
 import { useApp } from '../context/AppContext';
 import { COURSES } from '../data/coursesData';
 import { SERVICE_COUNT_CN } from '../lib/features';
-import { UserProfile } from '../lib/supabase';
+import { UserProfile } from '../lib/types';
 import { Dialog, DialogBody } from './ui/Dialog';
 import { SegmentedControl } from './ui/SegmentedControl';
 import { scoreTone, TONE_TEXT } from './ui/tone';
