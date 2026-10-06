@@ -158,8 +158,12 @@ export const parseAuditInput = (input: string): { domain: string } | { brand: st
 export const isBackendMissing = (err: unknown) =>
   err instanceof ApiError && (err.status === 0 || (err.status === 404 && err.code === 'http'));
 
+/** 返回任务 id；服务端未配置数据库时直接返回已结束的任务（带 status 与 report），不需要再轮询。 */
 export const startAudit = (target: string) =>
-  api<{ id: string; cached?: boolean }>('/api/public/audits', { method: 'POST', body: { target, website: '' } });
+  api<{ id: string; cached?: boolean } & Partial<AuditJob>>('/api/public/audits', {
+    method: 'POST',
+    body: { target, website: '' },
+  });
 
 export const getAudit = (id: string) => api<AuditJob>(`/api/public/audits/${id}`);
 

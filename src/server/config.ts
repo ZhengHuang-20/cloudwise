@@ -20,6 +20,30 @@ const envInt = (key: string, def: number) => {
   return Number.isFinite(n) && n >= 0 ? n : def;
 };
 
+/** 第一个名字匹配 re 且有值的环境变量 */
+function envMatching(re: RegExp): string {
+  for (const [k, v] of Object.entries(process.env)) {
+    if (re.test(k) && v && v.trim()) return v.trim();
+  }
+  return '';
+}
+
+/**
+ * Neon 连接串。Vercel × Neon 集成默认注入 DATABASE_URL / DATABASE_URL_UNPOOLED（同时还有 POSTGRES_URL 等），
+ * 连接时若设置了变量前缀，名字会变成 <前缀>_DATABASE_URL，这里一并识别。
+ * pooled 用于运行时；direct（unpooled）用于迁移，没有时退回 pooled。
+ */
+export function databaseUrls(): { pooled: string; direct: string } {
+  const pooled =
+    env('DATABASE_URL') || env('POSTGRES_URL') || envMatching(/^[A-Z0-9_]+_(DATABASE_URL|POSTGRES_URL)$/);
+  const direct =
+    env('DATABASE_URL_UNPOOLED') ||
+    env('POSTGRES_URL_NON_POOLING') ||
+    envMatching(/^[A-Z0-9_]+_(DATABASE_URL_UNPOOLED|POSTGRES_URL_NON_POOLING)$/) ||
+    pooled;
+  return { pooled, direct };
+}
+
 function geminiKey() {
   const key = env('GEMINI_API_KEY');
   return key === 'MY_GEMINI_API_KEY' ? '' : key;
@@ -65,7 +89,7 @@ export function config(): Config {
   cached = {
     geminiKey: geminiKey(),
     geminiModel: env('GEMINI_MODEL', 'gemini-3.1-flash-lite'),
-    databaseUrl: env('DATABASE_URL') || env('POSTGRES_URL'),
+    databaseUrl: databaseUrls().pooled,
     cookieSecure: env('COOKIE_SECURE') === 'true',
     showFDE: showFDE(),
     auditDailyLimit: envInt('GEMINI_AUDIT_DAILY_LIMIT', 100),

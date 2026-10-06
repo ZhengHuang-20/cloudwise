@@ -32,7 +32,7 @@ bun run create-admin <email>   # 创建管理员并打印一次性初始密码
 ### 部署（Vercel + Neon）
 
 - Vercel 通过 Git 集成自动部署（push 到 `main` 即生产部署，其他分支为预览部署），框架自动识别为 Next.js，不需要 `vercel.json`。仓库里没有 Dockerfile、服务器部署脚本或 GitHub Actions 部署工作流。
-- 数据库在 Vercel 项目里连接 Neon（Storage / Integrations），会自动注入 `DATABASE_URL`（pooled，运行时用）与 `DATABASE_URL_UNPOOLED`（直连，迁移用）。若开启 Neon 的预览分支，每个预览部署有独立的数据库分支。
+- 数据库在 Vercel 项目里连接 Neon（Storage / Integrations），会自动注入 `DATABASE_URL`（pooled，运行时用）与 `DATABASE_URL_UNPOOLED`（直连，迁移用）；连接时设了变量前缀的（如 `STORAGE_DATABASE_URL`）也能识别（`src/server/config.ts` 的 `databaseUrls`）。**生产环境必须连上数据库**，否则 `/api/health` 的 `dbStatus` 为 `unconfigured`，账号后台不可用。若开启 Neon 的预览分支，每个预览部署有独立的数据库分支。
 - 构建命令就是 `bun run build`：先执行 `scripts/migrate.ts`（advisory lock 防并发，每个迁移文件一个事务；迁移失败会让部署失败），再 `next build`。设置 `SKIP_DB_MIGRATE=1` 可跳过迁移。迁移后若设置了 `CW_ADMIN_EMAIL` / `CW_ADMIN_PASSWORD`，会创建首个管理员（只创建不修改）。
 - 其余运行时配置（Gemini / OpenRouter / OpenAI / Perplexity 的 key 与模型、`GEMINI_AUDIT_DAILY_LIMIT`、`SHOW_FDE`）都在 Vercel 的 Environment Variables 里配置，清单见 `.env.example`。改了环境变量要重新部署才生效。
 - `/api/health` 返回 `hasGeminiKey`、`auditEngines`（实际启用的测评平台）、`hasDatabase`、`dbStatus`（`unconfigured` / `ok` / `failed`）与 `dbIssue`（阶段 + SQLSTATE，不含敏感信息），部署后用它确认配置是否生效。
@@ -42,7 +42,7 @@ bun run create-admin <email>   # 创建管理员并打印一次性初始密码
 - `app/` 只有三类文件：`layout.tsx`（`<html lang="zh-CN">`、metadata、全局 CSS、Vercel Analytics）、`page.tsx`（渲染 `src/ClientApp.tsx`，以 `ssr: false` 动态加载整个 SPA）和 `api/**/route.ts`。route 文件只做一行 re-export，处理逻辑都在 `src/server/routes/*.ts`；新增接口时同样在 `app/api` 下按路径建 `route.ts` 并从 routes 导出。未定义的 `/api/*` 由 `app/api/[...path]` 返回 JSON 404。
 - `src/server/` 只在服务端使用，不要从前端代码 import：`config.ts`（环境变量）、`db.ts`（`pg` 连接池 + `attachDatabasePool`，`query` / `queryOne` / `exec` / `tx`；BIGINT 已解析为 number）、`http.ts`（`route()` 包装、`json` / `apiError`、`readJSON`、`clientIP`）、`auth.ts`（argon2id、会话、`authed()` 鉴权包装、`siteAccess`）、`ratelimit.ts`、`gemini.ts`、`knowledge.ts`、`engines.ts`、`audit*.ts`、`migrate.ts`。
 - 错误响应统一为 `{ error: 中文说明, code }`，前端 `src/lib/api.ts` 依赖这个格式。处理函数里 `throw new HttpError(...)` 或直接 `return apiError(...)`；其他异常由 `route()` 记日志并返回 500。
-- **Serverless 约束**：函数实例之间不共享内存，所以限流计数（`rate_limits` 表）、测评任务状态（`audits` 表）都放数据库；未配置数据库时退化为进程内实现（仅适合本地开发）。不要再引入只存内存、却需要跨请求一致的状态。
+- **Serverless 约束**：函数实例之间不共享内存（创建测评的 POST 与轮询的 GET 常落在不同实例），所以限流计数（`rate_limits` 表）、测评任务状态（`audits` 表）都放数据库；未配置数据库时退化为进程内实现，测评 POST 会等任务跑完、把结果直接放在响应里返回（前端收到 `report` 就不轮询），避免轮询到别的实例而 404。不要再引入只存内存、却需要跨请求一致的状态。
 - 接口：`GET /api/health`、`POST /api/gemini/chat`（AI 售前顾问）、`POST /api/gemini/visibility-test`（旧的模拟测评，前端已不调用）、`/api/auth/*`（登录、登出、me、改密）、`/api/sites`（我的站点）、`/api/admin/*`（公司、账号、站点、授权）、`/api/public/*`（采集、线索、测评）。
 
 ### AI 售前顾问
