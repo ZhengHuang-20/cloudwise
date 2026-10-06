@@ -4,8 +4,7 @@ import {
   LessonProgress,
   DiagnosisRecord,
   SavedProposal,
-  getSupabase,
-} from '../lib/supabase';
+} from '../lib/types';
 import { COURSES } from '../data/coursesData';
 
 interface LeadActivity {
@@ -236,24 +235,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       meta,
     };
     setLeadActivities((prev) => [newAct, ...prev]);
-
-    // Async sync to Supabase if configured
-    const client = getSupabase();
-    if (client && user) {
-      client.from('leads').insert({
-        user_id: user.id,
-        company_name: user.companyName,
-        contact_name: user.name,
-        contact_phone: user.phone,
-        mql_score: leadScore + scoreDelta,
-        stage: currentStage,
-        crm_card: { action, meta },
-      }).then(() => {}, (err: any) => console.warn('Supabase lead sync notice:', err));
-    }
   };
 
   const login = async (phoneOrEmail: string, name?: string, company?: string, role?: any): Promise<boolean> => {
-    const client = getSupabase();
     const newUser: UserProfile = {
       id: `usr-${Date.now()}`,
       email: phoneOrEmail.includes('@') ? phoneOrEmail : `${phoneOrEmail}@example.com`,
@@ -268,23 +252,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setUser(newUser);
     logLeadActivity(`用户登录/注册成功: ${newUser.name}`, 10);
     showToast(`欢迎回来，${newUser.name}`);
-
-    // If Supabase is connected, sync user profile
-    if (client) {
-      try {
-        await client.from('profiles').upsert({
-          id: newUser.id,
-          email: newUser.email,
-          phone: newUser.phone,
-          full_name: newUser.name,
-          company_name: newUser.companyName,
-          industry: newUser.industry,
-          role: newUser.role,
-        });
-      } catch (err) {
-        console.warn('Supabase profile sync notice:', err);
-      }
-    }
     return true;
   };
 
@@ -317,19 +284,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
     logLeadActivity(`学完课时: ${lessonId}`, 3, { courseId, quizScore });
     showToast('本课时已学完，进度已更新');
-
-    // Async sync to Supabase
-    const client = getSupabase();
-    if (client && user) {
-      client.from('course_progress').upsert({
-        user_id: user.id,
-        course_id: courseId,
-        lesson_id: lessonId,
-        completed: true,
-        quiz_score: quizScore,
-        exercise_data: exerciseData,
-      }).then(() => {}, (err: any) => console.warn('Supabase course progress sync:', err));
-    }
   };
 
   const isLessonCompleted = (lessonId: string) => {
@@ -369,19 +323,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     logLeadActivity(`完成诊断测试: ${toolName}`, 15, { score });
     showToast(`测评完成：${score} 分，已存入“我的空间”`);
 
-    // Async Supabase sync
-    const client = getSupabase();
-    if (client && user) {
-      client.from('diagnosis_records').insert({
-        user_id: user.id,
-        tool_type: toolType,
-        tool_name: toolName,
-        score,
-        summary,
-        details,
-      }).then(() => {}, (e: any) => console.warn('Supabase diagnosis sync:', e));
-    }
-
     return newRecord;
   };
 
@@ -407,18 +348,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setActiveProposal(newProposal);
     logLeadActivity(`保存方案配置草案: ${title}`, 20, { timeline });
     showToast('方案已保存，方案空间已开启');
-
-    // Async Supabase sync
-    const client = getSupabase();
-    if (client && user) {
-      client.from('saved_proposals').insert({
-        user_id: user.id,
-        title,
-        services,
-        timeline,
-        details,
-      }).then(() => {}, (e: any) => console.warn('Supabase proposal sync:', e));
-    }
 
     return newProposal;
   };

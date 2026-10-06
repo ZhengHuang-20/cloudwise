@@ -123,7 +123,7 @@ export const VisibilityAudit: React.FC<VisibilityAuditProps> = ({ inputRef, open
       await poll(id, Date.now());
     } catch (err) {
       if (isBackendMissing(err)) {
-        // 测评服务未启用（例如用 Node 版 server.ts 开发时），展示标注过的示例
+        // 测评服务不可用（网络异常或接口缺失）时，展示标注过的示例
         await new Promise((resolve) => setTimeout(resolve, 800));
         if (alive.current) finish(sampleReport(target));
         return;

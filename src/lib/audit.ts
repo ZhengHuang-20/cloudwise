@@ -1,7 +1,7 @@
 /**
- * AI 可见性测评的接口封装与类型，与 Go 后端 server/audit.go 的 AuditReport 对应。
- * 测评是异步任务：startAudit 创建，getAudit 轮询。接口只存在于 Go 后端；
- * 用 Node 版 server.ts 开发时接口不存在，前端改用 sampleReport 并标注「示例数据」。
+ * AI 可见性测评的接口封装与类型，与服务端 src/server/audit.ts 的 AuditReport 对应。
+ * 测评是异步任务：startAudit 创建，getAudit 轮询。接口不可用（网络异常等）时，
+ * 前端改用 sampleReport 并标注「示例数据」。
  */
 import { api, ApiError } from './api';
 
