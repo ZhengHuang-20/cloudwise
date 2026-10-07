@@ -4,7 +4,7 @@
  */
 import type { NextRequest } from 'next/server';
 import { db, exec, query, queryOne } from '../db';
-import { apiError, clientIP, clip, dbUnavailable, json, pathID, readJSON, route, str, userAgent } from '../http';
+import { apiError, clientIP, clip, json, pathID, readJSON, route, str, userAgent } from '../http';
 import { limits } from '../ratelimit';
 import { authed, normalizeEmail, siteAccess, type AuthedUser } from '../auth';
 
@@ -46,6 +46,11 @@ function publicCORS(req: Request, domain: string): Record<string, string> | null
   return { 'Access-Control-Allow-Origin': origin, Vary: 'Origin' };
 }
 
+/** 来源校验前就失败的错误响应也带上跨域头，嵌入脚本才能读到原因（只是一段错误说明，不涉及凭据）。 */
+function errorCORS(req: Request): Record<string, string> {
+  return { 'Access-Control-Allow-Origin': req.headers.get('origin') ?? '*', Vary: 'Origin' };
+}
+
 /** 预检请求不带站点信息，只声明允许的方法与头；真正的请求仍会校验来源。 */
 export async function publicPreflight(req: Request) {
   return new Response(null, {
@@ -71,12 +76,12 @@ function deviceOf(ua: string): 'desktop' | 'mobile' | 'tablet' {
 
 /** 接收浏览器脚本上报的页面浏览。用 text/plain 也能解析，方便 sendBeacon 免预检。 */
 export const collect = route(async (req) => {
-  if (!db()) return dbUnavailable();
+  if (!db()) return apiError(503, 'db_unavailable', '数据库未配置', errorCORS(req));
   const body = await readJSON(req);
   const site = await siteByKey(str(body.siteKey));
-  if (!site) return apiError(404, 'unknown_site', '站点标识无效');
+  if (!site) return apiError(404, 'unknown_site', '站点标识无效', errorCORS(req));
   const cors = publicCORS(req, site.domain);
-  if (!cors) return apiError(403, 'origin_not_allowed', '来源域名与站点不匹配');
+  if (!cors) return apiError(403, 'origin_not_allowed', `来源域名与站点不匹配（站点登记的域名是 ${site.domain}）`, errorCORS(req));
   if (!(await limits.collect(clientIP(req)))) return apiError(429, 'rate_limited', '请求过于频繁', cors);
   const visitor = str(body.visitorId);
   if (!VISITOR_RE.test(visitor)) return apiError(400, 'bad_request', 'visitorId 格式不正确', cors);
@@ -100,12 +105,12 @@ export const collect = route(async (req) => {
 // ---------- 公开接口：提交线索 ----------
 
 export const submitLead = route(async (req) => {
-  if (!db()) return dbUnavailable();
+  if (!db()) return apiError(503, 'db_unavailable', '数据库未配置', errorCORS(req));
   const body = await readJSON(req);
   const site = await siteByKey(str(body.siteKey));
-  if (!site) return apiError(404, 'unknown_site', '站点标识无效');
+  if (!site) return apiError(404, 'unknown_site', '站点标识无效', errorCORS(req));
   const cors = publicCORS(req, site.domain);
-  if (!cors) return apiError(403, 'origin_not_allowed', '来源域名与站点不匹配');
+  if (!cors) return apiError(403, 'origin_not_allowed', `来源域名与站点不匹配（站点登记的域名是 ${site.domain}）`, errorCORS(req));
   if (!(await limits.lead(clientIP(req)))) return apiError(429, 'rate_limited', '提交过于频繁，请稍后再试', cors);
   // 蜜罐：真人看不见，机器人会填。命中时假装成功，不入库
   if (str(body.website)) return json({ ok: true }, 201, cors);

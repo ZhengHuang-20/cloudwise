@@ -59,6 +59,7 @@ site key：${site.siteKey}（公开标识，不是密钥）
 ${s.script}
 
 上线后打开网站任意页面，刷新后台「数据概览」即可看到访问。单页应用切换路由时会自动上报，不需要额外代码。
+自查：在网址后加 ?cw_debug=1 打开页面，浏览器控制台会打印「[CloudWise] 已上报」；没有上报时控制台会给出原因（脚本标签缺 data-site、来源域名不匹配、被拦截插件或 CSP 拦截等）。
 
 二、线索表单（按网站情况任选一种）
 方式 1：给现有表单加上 data-cw-lead 属性，提交时自动入库。字段名用 name / phone / email / company / message，手机与邮箱至少填一项。提交成功会触发 cw:success 事件，失败触发 cw:error（e.detail 为错误说明）。示例：
