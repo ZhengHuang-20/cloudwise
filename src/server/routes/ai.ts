@@ -6,6 +6,7 @@ import { config } from '../config';
 import { gemini } from '../gemini';
 import { json, readJSON, route, str } from '../http';
 import { serviceCountCN, systemKnowledge } from '../knowledge';
+import { CONTACTS } from '../../data/contactsData';
 
 const orDefault = (s: string, def: string) => (s ? s : def);
 
@@ -106,7 +107,13 @@ function chatFallback(r: ChatRequest) {
   let next = '建议在首页完成“AI 可见性测评”，再用“方案规划”匹配最适合的服务组合。';
   const citations = ['《云端智荐 AI 出海白皮书》', '《出海企业五个卡点治理指南》'];
 
-  if (has('geo', 'chatgpt', 'ai推荐', '可见性')) {
+  if (has('联系', '电话', '手机', '人工', '客户经理', '负责人', '微信')) {
+    const list = CONTACTS.map((c) => `- ${c.title}：${c.name}，手机 ${c.phone}`).join('\n');
+    answer = `您可以直接联系我们的售前同事：\n${list}\n\n电话沟通前，建议先在首页完成“AI 可见性测评”，把测评结果一并发给我们，沟通会更有针对性。`;
+    intent = 'HIGH';
+    intentReason = '主动索要联系方式，希望与人工售前沟通';
+    next = '直接致电上方联系人，或预约 30 分钟线上诊断会。';
+  } else if (has('geo', 'chatgpt', 'ai推荐', '可见性')) {
     answer =
       'GEO（生成式引擎优化）是我们最具差异化的旗舰服务。不同于传统 SEO 仅在搜索结果列表排位，GEO 的核心是让 ChatGPT、Perplexity、Gemini 等主流 AI 在直接向海外采购商推荐供应商时，首选并权威引用您的品牌。\n\n我们通过六步闭环（诊断、建模、内容、信源、口碑、监测）建立权威证据链。以爱康医疗为例，其现有国内官网的 GEO / SEO 评分仅 47 分，我们新建的海外官网达到 95 分，ChatGPT 连续数月带来真实高意向采购商访问。';
     intent = 'HIGH';

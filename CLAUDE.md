@@ -90,7 +90,7 @@ bun run create-admin <email>   # 创建管理员并打印一次性初始密码
 
 ### 静态内容
 
-课程、案例、术语、资源、服务组合都是 `src/data/*.ts` 中的类型化常量。FDE 的方法论（标准化 → 信息化 → 智能化三层建设、每周“观察-原型-试用-沉淀”）集中在 `fdeData.ts`，服务页三层图使用它；课程 E、术语表和 `SYSTEM_KNOWLEDGE_INSTRUCTION` 中的同类表述要与之一致。方案规划页（`#/configurator`）的周期、交付物与阶段排期由 `servicePackages.ts` 的 `buildProposalPlan` 生成。内容类改动优先改这些数据文件，不要改组件。
+课程、案例、术语、资源、服务组合都是 `src/data/*.ts` 中的类型化常量。对外联系人（姓名、职务、手机）只在 `contactsData.ts` 维护，页脚、方案空间、AI 顾问知识库与 chat fallback 都引用它，不要在别处写死电话。FDE 的方法论（标准化 → 信息化 → 智能化三层建设、每周“观察-原型-试用-沉淀”）集中在 `fdeData.ts`，服务页三层图使用它；课程 E、术语表和 `SYSTEM_KNOWLEDGE_INSTRUCTION` 中的同类表述要与之一致。方案规划页（`#/configurator`）的周期、交付物与阶段排期由 `servicePackages.ts` 的 `buildProposalPlan` 生成。内容类改动优先改这些数据文件，不要改组件。
 
 课程视频放在 `public/videos/<课程字母>/<课程编号>.mp4`，由 `coursesData.ts` 的 `Lesson.videoUrl` 引用，课程弹窗直接播放。新增视频建议先压缩（画面流直接复制，音频转 96 kbps AAC，并加 `-movflags +faststart`），B 站投稿清单在 `docs/course-videos.md`（不要放进 `public/`，会被公开访问）。
 

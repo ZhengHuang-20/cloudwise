@@ -1,5 +1,6 @@
 import React from 'react';
 import { NAV_GROUPS, TabId } from './navigation';
+import { CONTACTS, formatPhone } from '../data/contactsData';
 
 interface FooterProps {
   onNavigate: (tab: TabId) => void;
@@ -9,7 +10,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
   return (
     <footer className="border-t border-separator bg-canvas">
       <div className="layout-wide py-12 md:py-16">
-        <div className="grid grid-cols-2 gap-x-6 gap-y-10 md:grid-cols-3">
+        <div className="grid grid-cols-2 gap-x-6 gap-y-10 md:grid-cols-4">
           <div className="col-span-2 md:col-span-1">
             <p className="flex items-center gap-2 text-body font-semibold">
               <img src="/brand/logo-mark.png" alt="" className="h-7 w-auto" />
@@ -38,6 +39,24 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
               </ul>
             </nav>
           ))}
+
+          <section aria-labelledby="footer-contact" className="col-span-2 md:col-span-1">
+            <h2 id="footer-contact" className="text-caption font-semibold text-label">
+              联系我们
+            </h2>
+            <ul className="mt-3 space-y-3">
+              {CONTACTS.map((c) => (
+                <li key={c.phone} className="text-caption">
+                  <p className="text-label-secondary">
+                    {c.title} · {c.name}
+                  </p>
+                  <a href={`tel:${c.phone}`} className="link tabular-nums">
+                    {formatPhone(c.phone)}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </section>
         </div>
 
         <div className="mt-12 flex flex-col gap-4 border-t border-separator pt-6 text-caption text-label-secondary md:flex-row md:items-center md:justify-between">
