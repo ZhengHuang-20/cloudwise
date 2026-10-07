@@ -3,6 +3,7 @@ import { CheckCircle2, Circle, Lock } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { SegmentedControl } from '../components/ui/SegmentedControl';
 import { SHOW_FDE } from '../lib/features';
+import { CONTACTS, formatPhone } from '../data/contactsData';
 
 type DealTab = 'overview' | 'plan' | 'qa' | 'contract';
 
@@ -11,11 +12,6 @@ const TABS: { id: DealTab; label: string }[] = [
   { id: 'plan', label: '共同行动计划' },
   { id: 'qa', label: '答疑讨论' },
   { id: 'contract', label: '在线签约' },
-];
-
-const TEAM = [
-  { name: 'David Huang', initials: 'DH', role: '出海解决方案总监 · 负责方案' },
-  { name: 'Chen Wei', initials: 'CW', role: SHOW_FDE ? 'FDE 驻场工程师 · 负责三层建设落地' : '交付工程师 · 负责系统落地' },
 ];
 
 export const DealRoomView: React.FC<{ onGoToBooking: () => void }> = ({ onGoToBooking }) => {
@@ -129,7 +125,7 @@ export const DealRoomView: React.FC<{ onGoToBooking: () => void }> = ({ onGoToBo
               <dl className="mt-10 grid grid-cols-2 gap-6 border-t border-separator pt-8 sm:grid-cols-3">
                 {[
                   { label: '交付周期', value: activeProposal?.timeline || '8 ~ 12 周' },
-                  { label: '协同架构师', value: 'David Huang' },
+                  { label: '对接人', value: CONTACTS.map((c) => c.name).join(' · ') },
                   { label: '交付模式', value: SHOW_FDE ? '敏捷驻场' : '敏捷迭代' },
                 ].map((stat) => (
                   <div key={stat.label}>
@@ -142,20 +138,23 @@ export const DealRoomView: React.FC<{ onGoToBooking: () => void }> = ({ onGoToBo
 
             <section className="tile lg:col-span-4" aria-labelledby="team-title">
               <h2 id="team-title" className="text-title-3">
-                专属售前与交付团队
+                售前对接
               </h2>
               <ul className="mt-6 space-y-5">
-                {TEAM.map((member) => (
-                  <li key={member.name} className="flex items-center gap-4">
+                {CONTACTS.map((member) => (
+                  <li key={member.phone} className="flex items-center gap-4">
                     <span
                       aria-hidden="true"
                       className="avatar h-11 w-11 text-caption"
                     >
-                      {member.initials}
+                      {member.name.slice(0, 1)}
                     </span>
                     <div className="min-w-0">
                       <p className="text-body font-semibold">{member.name}</p>
-                      <p className="text-caption text-label-secondary">{member.role}</p>
+                      <p className="text-caption text-label-secondary">{member.title}</p>
+                      <a href={`tel:${member.phone}`} className="link text-caption tabular-nums">
+                        {formatPhone(member.phone)}
+                      </a>
                     </div>
                   </li>
                 ))}
