@@ -4,15 +4,18 @@
  */
 export interface Contact {
   name: string;
+  /** 英文姓名（拼音），英文界面使用 */
+  nameEn: string;
   /** 职务，如“西南大区客户经理” */
   title: string;
+  titleEn: string;
   /** 11 位手机号，展示时用 formatPhone 分段 */
   phone: string;
 }
 
 export const CONTACTS: Contact[] = [
-  { name: '周荣岳', title: '西南大区客户经理', phone: '13880491401' },
-  { name: '崔跃', title: '华北大区负责人', phone: '13811954582' },
+  { name: '周荣岳', nameEn: 'Zhou Rongyue', title: '西南大区客户经理', titleEn: 'Southwest China Account Manager', phone: '13880491401' },
+  { name: '崔跃', nameEn: 'Cui Yue', title: '华北大区负责人', titleEn: 'North China Regional Lead', phone: '13811954582' },
 ];
 
 /** 13880491401 → 138 8049 1401 */

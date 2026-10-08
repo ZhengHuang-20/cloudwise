@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { AlertTriangle, Check, CheckCircle2, ChevronRight, Globe, Loader2, X } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
+import { useLang } from '../../context/LanguageContext';
 import { ScoreRing } from '../../components/ui/ScoreRing';
 import { SegmentedControl } from '../../components/ui/SegmentedControl';
 import { scoreTone, TONE_BG, TONE_TEXT } from '../../components/ui/tone';
@@ -12,24 +13,30 @@ import {
   AuditReport,
   getAudit,
   ProbeLogEntry,
-  isBackendMissing,
   parseAuditInput,
-  sampleReport,
   SiteCheck,
   startAudit,
   WebSource,
 } from '../../lib/audit';
+import { CONTACT_NAME_MAX, contactNameError, contactPhoneError, parseContact } from '../../lib/contact';
+
+type T = (zh: string, en: string) => string;
 
 // 与后端 runAudit 的五个步骤一一对应；第 4 步的平台名来自任务状态
-const auditSteps = (engines: string[] | null, byBrand: boolean) => [
-  byBrand ? '查找品牌官网，并读取页面内容、AI 爬虫权限与结构化数据' : '读取官网：页面内容、AI 爬虫权限与结构化数据',
-  '识别品牌、所属行业与目标市场',
-  '生成海外买家会向 AI 提出的采购问题',
-  engines && engines.length > 0
-    ? `以买家身份向 ${engines.join('、')} 提问（开启联网搜索）`
-    : '以买家身份向各 AI 平台提问（开启联网搜索）',
-  '统计品牌提及、推荐排位与引用来源',
-];
+const auditSteps = (engines: string[] | null, byBrand: boolean, t: T, lang: 'zh' | 'en') => {
+  const sep = lang === 'en' ? ', ' : '、';
+  return [
+    byBrand
+      ? t('查找品牌官网，并读取页面内容、AI 爬虫权限与结构化数据', 'Find the brand’s website, then read its content, AI crawler access and structured data')
+      : t('读取官网：页面内容、AI 爬虫权限与结构化数据', 'Read the website: content, AI crawler access and structured data'),
+    t('识别品牌、所属行业与目标市场', 'Identify the brand, industry and target market'),
+    t('生成海外买家会向 AI 提出的采购问题', 'Generate the procurement questions overseas buyers would ask AI'),
+    engines && engines.length > 0
+      ? t(`以买家身份向 ${engines.join(sep)} 提问（开启联网搜索）`, `Ask ${engines.join(sep)} as a buyer, with web search on`)
+      : t('以买家身份向各 AI 平台提问（开启联网搜索）', 'Ask each AI platform as a buyer, with web search on'),
+    t('统计品牌提及、推荐排位与引用来源', 'Count brand mentions, recommendation rank and cited sources'),
+  ];
+};
 
 type JobProgress = Pick<AuditJob, 'status' | 'step' | 'done' | 'total' | 'engines' | 'log'> & { byBrand: boolean };
 
@@ -44,8 +51,14 @@ interface VisibilityAuditProps {
 
 export const VisibilityAudit: React.FC<VisibilityAuditProps> = ({ inputRef, openBookingModal, onGoToConfigurator }) => {
   const { logLeadActivity, saveDiagnosis, showToast } = useApp();
+  const { t, lang } = useLang();
   const [input, setInput] = useState('');
   const [inputError, setInputError] = useState('');
+  const [contactName, setContactName] = useState('');
+  const [contactPhone, setContactPhone] = useState('');
+  const [contactErrors, setContactErrors] = useState<{ name: string; phone: string }>({ name: '', phone: '' });
+  const nameRef = useRef<HTMLInputElement>(null);
+  const phoneRef = useRef<HTMLInputElement>(null);
   const [job, setJob] = useState<JobProgress | null>(null);
   const [report, setReport] = useState<AuditReport | null>(null);
   // 测评失败时保留第④步的提问日志，方便排查是哪个平台、什么原因
@@ -60,6 +73,9 @@ export const VisibilityAudit: React.FC<VisibilityAuditProps> = ({ inputRef, open
   }, []);
 
   const isRunning = job !== null;
+  const targetError = t('请输入官网域名或品牌名称，例如 www.example.com 或 爱康医疗', 'Enter a website domain or brand name, e.g. www.example.com or Aikang Medical');
+  const nameErrorText = t(`请填写联系人姓名（${CONTACT_NAME_MAX} 个字以内）`, `Enter a contact name (up to ${CONTACT_NAME_MAX} characters)`);
+  const phoneErrorText = t('请填写 11 位手机号码', 'Enter an 11-digit mobile number');
 
   const finish = (result: AuditReport) => {
     const target = result.domain || result.target || result.entity.brand;
@@ -70,7 +86,7 @@ export const VisibilityAudit: React.FC<VisibilityAuditProps> = ({ inputRef, open
       auditId: result.id,
       mode: result.mode,
     });
-    showToast('测评报告已生成');
+    showToast(t('测评报告已生成', 'Your audit report is ready'));
   };
 
   const fail = (message: string, log?: ProbeLogEntry[] | null) => {
@@ -82,16 +98,16 @@ export const VisibilityAudit: React.FC<VisibilityAuditProps> = ({ inputRef, open
 
   const poll = async (id: string, startedAt: number) => {
     while (alive.current) {
-      if (Date.now() - startedAt > POLL_LIMIT_MS) return fail('测评超时，请稍后重试');
+      if (Date.now() - startedAt > POLL_LIMIT_MS) return fail(t('测评超时，请稍后重试', 'The audit timed out. Please try again later'));
       let current: AuditJob;
       try {
         current = await getAudit(id);
       } catch (err) {
-        return fail(err instanceof ApiError ? err.message : '测评失败，请稍后重试');
+        return fail(err instanceof ApiError ? err.message : t('测评失败，请稍后重试', 'The audit failed. Please try again later'));
       }
       if (!alive.current) return;
       if (current.status === 'done' && current.report) return finish(current.report);
-      if (current.status === 'failed') return fail(current.error || '测评失败，请稍后重试', current.log);
+      if (current.status === 'failed') return fail(current.error || t('测评失败，请稍后重试', 'The audit failed. Please try again later'), current.log);
       setJob((prev) => ({
         byBrand: prev?.byBrand ?? false,
         status: current.status,
@@ -108,30 +124,28 @@ export const VisibilityAudit: React.FC<VisibilityAuditProps> = ({ inputRef, open
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const parsed = parseAuditInput(input);
-    if (!parsed) {
-      setInputError('请输入官网域名或品牌名称，例如 www.example.com 或 爱康医疗');
-      inputRef.current?.focus();
+    const contact = parseContact(contactName, contactPhone);
+    const nameError = contactNameError(contactName) ? nameErrorText : '';
+    const phoneError = contactPhoneError(contactPhone) ? phoneErrorText : '';
+    setInputError(parsed ? '' : targetError);
+    setContactErrors({ name: nameError, phone: phoneError });
+    if (!parsed || !contact.ok) {
+      // 错误都在表单里标出来；焦点落到第一个出错的字段
+      if (!parsed) inputRef.current?.focus();
+      else if (nameError) nameRef.current?.focus();
+      else phoneRef.current?.focus();
       return;
     }
     const target = 'domain' in parsed ? parsed.domain : parsed.brand;
-    setInputError('');
     setReport(null);
     setFailedLog([]);
     setJob({ status: 'queued', step: 0, done: 0, total: 0, engines: null, log: null, byBrand: 'brand' in parsed });
     try {
-      const started = await startAudit(target);
+      const started = await startAudit({ target, contactName: contact.name, contactPhone: contact.phone });
       if (!alive.current) return;
-      if (started.status === 'done' && started.report) return finish(started.report);
-      if (started.status === 'failed') return fail(started.error || '测评失败，请稍后重试', started.log);
       await poll(started.id, Date.now());
     } catch (err) {
-      if (isBackendMissing(err)) {
-        // 测评服务不可用（网络异常或接口缺失）时，展示标注过的示例
-        await new Promise((resolve) => setTimeout(resolve, 800));
-        if (alive.current) finish(sampleReport(target));
-        return;
-      }
-      fail(err instanceof ApiError ? err.message : '测评失败，请稍后重试');
+      fail(err instanceof ApiError ? err.message : t('测评失败，请稍后重试', 'The audit failed. Please try again later'));
     }
   };
 
@@ -141,18 +155,21 @@ export const VisibilityAudit: React.FC<VisibilityAuditProps> = ({ inputRef, open
     <div className="tile mx-auto max-w-3xl">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h2 className="text-title-2">AI 可见性测评</h2>
+          <h2 className="text-title-2">{t('AI 可见性测评', 'AI visibility audit')}</h2>
           <p className="mt-2 text-body text-label-secondary">
-            输入官网域名或品牌名称，我们以海外买家的身份向 AI 搜索提问，统计你被推荐、被引用的情况，并检查官网能否被 AI 读取。只填品牌名时，由 AI 联网查找官网；所属行业与目标市场也由 AI 自动判断。
+            {t(
+              '输入官网域名或品牌名称，我们以海外买家的身份向 AI 搜索提问，统计你被推荐、被引用的情况，并检查官网能否被 AI 读取。只填品牌名时，由 AI 联网查找官网；所属行业与目标市场也由 AI 自动判断。',
+              'Enter your website domain or brand name. We ask AI search tools questions as an overseas buyer would, track whether you get recommended and cited, and check whether AI can read your website. If you only enter a brand name, AI searches the web for the site, and it also determines your industry and target market.'
+            )}
           </p>
         </div>
-        <span className="badge shrink-0 bg-success/15 text-success">免费</span>
+        <span className="badge shrink-0 bg-success/15 text-success">{t('免费', 'Free')}</span>
       </div>
 
       <form className="mt-8 space-y-5" onSubmit={handleSubmit} noValidate>
         <div>
           <label htmlFor="audit-target" className="field-label">
-            官网域名或品牌名称
+            {t('官网域名或品牌名称', 'Website domain or brand name')}
           </label>
           <div className="relative">
             <Globe className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-label-secondary" />
@@ -165,7 +182,7 @@ export const VisibilityAudit: React.FC<VisibilityAuditProps> = ({ inputRef, open
                 setInput(e.target.value);
                 if (inputError) setInputError('');
               }}
-              placeholder="例如 www.ak-medical.net 或 爱康医疗"
+              placeholder={t('例如 www.ak-medical.net 或 爱康医疗', 'e.g. www.ak-medical.net or Aikang Medical')}
               className="field field-lg pl-12"
               autoComplete="off"
               autoCapitalize="none"
@@ -181,14 +198,77 @@ export const VisibilityAudit: React.FC<VisibilityAuditProps> = ({ inputRef, open
           )}
         </div>
 
+        <div className="grid gap-5 sm:grid-cols-2">
+          <div>
+            <label htmlFor="audit-name" className="field-label">
+              {t('联系人姓名', 'Contact name')}
+            </label>
+            <input
+              ref={nameRef}
+              id="audit-name"
+              type="text"
+              value={contactName}
+              onChange={(e) => {
+                setContactName(e.target.value);
+                if (contactErrors.name) setContactErrors((prev) => ({ ...prev, name: '' }));
+              }}
+              placeholder={t('如 张总', 'e.g. Mr. Zhang')}
+              maxLength={CONTACT_NAME_MAX}
+              className="field"
+              autoComplete="name"
+              required
+              aria-invalid={contactErrors.name ? true : undefined}
+              aria-describedby={contactErrors.name ? 'audit-name-error' : undefined}
+            />
+            {contactErrors.name && (
+              <p id="audit-name-error" role="alert" className="mt-2 text-caption text-danger">
+                {contactErrors.name}
+              </p>
+            )}
+          </div>
+          <div>
+            <label htmlFor="audit-phone" className="field-label">
+              {t('手机号', 'Mobile number')}
+            </label>
+            <input
+              ref={phoneRef}
+              id="audit-phone"
+              type="tel"
+              inputMode="tel"
+              value={contactPhone}
+              onChange={(e) => {
+                setContactPhone(e.target.value);
+                if (contactErrors.phone) setContactErrors((prev) => ({ ...prev, phone: '' }));
+              }}
+              placeholder={t('如 13800138000', 'e.g. 13800138000')}
+              className="field tabular-nums"
+              autoComplete="tel-national"
+              required
+              aria-invalid={contactErrors.phone ? true : undefined}
+              aria-describedby={contactErrors.phone ? 'audit-phone-error' : undefined}
+            />
+            {contactErrors.phone && (
+              <p id="audit-phone-error" role="alert" className="mt-2 text-caption text-danger">
+                {contactErrors.phone}
+              </p>
+            )}
+          </div>
+          <p className="text-caption text-label-secondary sm:col-span-2">
+            {t(
+              '联系方式仅用于发送测评结果，以及安排 30 分钟诊断会。',
+              'Your contact details are used only to send the audit results and to arrange a 30-minute diagnosis call.'
+            )}
+          </p>
+        </div>
+
         <button type="submit" disabled={isRunning} className="btn btn-primary btn-lg btn-block">
           {isRunning ? (
             <>
               <Loader2 className="animate-spin" />
-              正在测评…
+              {t('正在测评…', 'Running audit…')}
             </>
           ) : (
-            '开始测评'
+            t('开始测评', 'Start audit')
           )}
         </button>
       </form>
@@ -197,7 +277,7 @@ export const VisibilityAudit: React.FC<VisibilityAuditProps> = ({ inputRef, open
 
       {!job && !report && failedLog.length > 0 && (
         <div className="mt-8 border-t border-separator pt-8">
-          <h3 className="text-title-3">提问日志</h3>
+          <h3 className="text-title-3">{t('提问日志', 'Probe log')}</h3>
           <ProbeLogSummary entries={failedLog} />
           <ProbeLogList entries={failedLog} className="mt-4" />
         </div>
@@ -216,15 +296,20 @@ export const VisibilityAudit: React.FC<VisibilityAuditProps> = ({ inputRef, open
 
 // ---------- 进度 ----------
 
-const AuditProgress: React.FC<{ job: JobProgress }> = ({ job }) => (
+const AuditProgress: React.FC<{ job: JobProgress }> = ({ job }) => {
+  const { t, lang } = useLang();
+  return (
   <div className="mt-8 border-t border-separator pt-8">
     <p className="text-caption text-label-secondary" aria-live="polite">
       {job.status === 'queued'
-        ? '排队中，前面还有测评在进行…'
-        : '需要真实向多个 AI 平台提问几十次，通常 1 到 3 分钟完成，请不要关闭页面。'}
+        ? t('排队中，前面还有测评在进行…', 'Queued. Other audits are running ahead of yours…')
+        : t(
+            '需要真实向多个 AI 平台提问几十次，通常 1 到 3 分钟完成，请不要关闭页面。',
+            'We need to ask several AI platforms dozens of real questions. This usually takes 1 to 3 minutes, so please keep this page open.'
+          )}
     </p>
-    <ol className="mt-4 space-y-3" aria-label="测评进度">
-      {auditSteps(job.engines, job.byBrand).map((step, index) => {
+    <ol className="mt-4 space-y-3" aria-label={t('测评进度', 'Audit progress')}>
+      {auditSteps(job.engines, job.byBrand, t, lang).map((step, index) => {
         const stepNumber = index + 1;
         const isDone = job.step > stepNumber;
         const isCurrent = job.step === stepNumber;
@@ -249,7 +334,7 @@ const AuditProgress: React.FC<{ job: JobProgress }> = ({ job }) => (
               {stepNumber === 4 && job.total > 0 && (isCurrent || isDone) && (
                 <span className="tabular-nums text-label-secondary">
                   {' '}
-                  （{job.done} / {job.total}）
+                  ({job.done} / {job.total})
                 </span>
               )}
             </span>
@@ -259,7 +344,8 @@ const AuditProgress: React.FC<{ job: JobProgress }> = ({ job }) => (
     </ol>
     {job.log && job.log.length > 0 && <ProbeLogList entries={job.log} live className="mt-6" />}
   </div>
-);
+  );
+};
 
 // ---------- 结果：驾驶舱 ----------
 // 桌面端一屏看全：顶部身份条 → 总分与四项指标 → 平台对比与竞品声量 → 官网体检与结论 → 回答明细（左列表右详情）。
@@ -291,6 +377,7 @@ const Panel: React.FC<{
 );
 
 const AuditResult: React.FC<AuditResultProps> = ({ report, openBookingModal, onGoToConfigurator }) => {
+  const { t, lang } = useLang();
   const tone = scoreTone(report.totalScore);
   const hasAI = report.mode !== 'site_only';
   const hasSite = report.site !== null;
@@ -306,19 +393,19 @@ const AuditResult: React.FC<AuditResultProps> = ({ report, openBookingModal, onG
 
   const tiles = [
     {
-      label: 'AI 推荐时提到你',
+      label: t('AI 推荐时提到你', 'Mentioned by AI when recommending'),
       value: metrics.mentionRate,
       unit: '%',
-      note: metrics.avgPosition > 0 ? `平均排第 ${metrics.avgPosition} 位` : '不带品牌名的问题',
+      note: metrics.avgPosition > 0 ? t(`平均排第 ${metrics.avgPosition} 位`, `Average rank ${metrics.avgPosition}`) : t('不带品牌名的问题', 'Questions without the brand name'),
       ai: true,
     },
-    { label: '官网被引用', value: metrics.citationRate, unit: '%', note: '回答列出的来源', ai: true },
-    { label: '品牌认知', value: metrics.brandKnowledge, unit: '%', note: '直接问品牌时', ai: true },
+    { label: t('官网被引用', 'Your site is cited'), value: metrics.citationRate, unit: '%', note: t('回答列出的来源', 'Sources listed in answers'), ai: true },
+    { label: t('品牌认知', 'Brand awareness'), value: metrics.brandKnowledge, unit: '%', note: t('直接问品牌时', 'When asked about the brand directly'), ai: true },
     {
-      label: 'AI 可读取性',
+      label: t('AI 可读取性', 'AI readability'),
       value: metrics.readability,
       unit: ' / 100',
-      note: hasSite ? '官网检查' : '未检查官网',
+      note: hasSite ? t('官网检查', 'Website check') : t('未检查官网', 'Website not checked'),
       ai: false,
     },
   ];
@@ -328,13 +415,23 @@ const AuditResult: React.FC<AuditResultProps> = ({ report, openBookingModal, onG
       {report.mode === 'sample' && (
         <p className="flex items-start gap-2 text-body text-warning">
           <AlertTriangle className="mt-1 h-5 w-5 shrink-0" />
-          <span>测评服务暂未接入 AI，以下 AI 部分为示例数据，仅用于展示报告格式。</span>
+          <span>
+            {t(
+              '测评服务暂未接入 AI，以下 AI 部分为示例数据，仅用于展示报告格式。',
+              'The AI service is not connected yet. The AI section below is sample data, shown only to illustrate the report format.'
+            )}
+          </span>
         </p>
       )}
       {report.mode === 'site_only' && (
         <p className="flex items-start gap-2 text-body text-warning">
           <AlertTriangle className="mt-1 h-5 w-5 shrink-0" />
-          <span>本次向 AI 提问没有成功，只给出官网检查结果，请稍后重新测评。</span>
+          <span>
+            {t(
+              '本次向 AI 提问没有成功，只给出官网检查结果，请稍后重新测评。',
+              'The AI questions did not succeed this time, so only the website check is shown. Please run the audit again later.'
+            )}
+          </span>
         </p>
       )}
 
@@ -343,17 +440,30 @@ const AuditResult: React.FC<AuditResultProps> = ({ report, openBookingModal, onG
         <div className="min-w-0">
           <h3 className="break-all text-title-2">{entity.brand}</h3>
           <p className="mt-1 break-all text-caption text-label-secondary">
-            {report.domain ? report.domain : searchedSite ? '未找到官网' : '未提供官网'}
-            {report.domainSource === 'resolved' && ' · 官网由 AI 根据品牌名查找，如不准确请直接输入官网域名'}
+            {report.domain ? report.domain : searchedSite ? t('未找到官网', 'No website found') : t('未提供官网', 'No website provided')}
+            {report.domainSource === 'resolved' &&
+              t(
+                ' · 官网由 AI 根据品牌名查找，如不准确请直接输入官网域名',
+                ' · Website found by AI from the brand name. If this is wrong, enter the domain directly'
+              )}
           </p>
         </div>
         <div className="flex min-w-0 flex-wrap items-center gap-2 [&>.badge]:max-w-full [&>.badge]:whitespace-normal">
-          <span className="badge">行业：{entity.industry}</span>
-          <span className="badge">市场：{entity.market}</span>
+          <span className="badge">
+            {t('行业：', 'Industry: ')}
+            {entity.industry}
+          </span>
+          <span className="badge">
+            {t('市场：', 'Market: ')}
+            {entity.market}
+          </span>
           {hasAI && <span className="badge">{report.engine}</span>}
           {hasAI && (
             <span className="badge tabular-nums">
-              {report.questions} 题 × {report.samples} 次 · 共 {report.answers} 次有效回答
+              {t(
+                `${report.questions} 题 × ${report.samples} 次 · 共 ${report.answers} 次有效回答`,
+                `${report.questions} questions × ${report.samples} times · ${report.answers} valid answers in total`
+              )}
             </span>
           )}
         </div>
@@ -364,10 +474,17 @@ const AuditResult: React.FC<AuditResultProps> = ({ report, openBookingModal, onG
         <section className="card flex items-center gap-6 lg:col-span-4 lg:flex-col lg:justify-center lg:text-center">
           <ScoreRing value={report.totalScore} caption="/ 100" size={168} stroke={14} />
           <div>
-            <p className="text-title-3">{hasAI ? 'AI 可见性综合得分' : '官网 AI 可读取性'}</p>
+            <p className="text-title-3">
+              {hasAI ? t('AI 可见性综合得分', 'Overall AI visibility score') : t('官网 AI 可读取性', 'Website readability for AI')}
+            </p>
             <p className={`mt-1 text-body font-semibold ${TONE_TEXT[tone]}`}>{report.level}</p>
             {hasAI && engineCount > 1 && (
-              <p className="mt-2 text-caption text-label-secondary">总分按各平台平均；AI 回答每次略有不同，结果按比例统计</p>
+              <p className="mt-2 text-caption text-label-secondary">
+                {t(
+                  '总分按各平台平均；AI 回答每次略有不同，结果按比例统计',
+                  'The total is the average across platforms. AI answers vary a little each time, so results are shown as proportions.'
+                )}
+              </p>
             )}
           </div>
         </section>
@@ -399,8 +516,8 @@ const AuditResult: React.FC<AuditResultProps> = ({ report, openBookingModal, onG
         <div className="grid gap-4 lg:grid-cols-12">
           {showEngines && (
             <Panel
-              title="各平台表现"
-              hint="同一批买家问题，在不同 AI 平台上的结果"
+              title={t('各平台表现', 'Results by platform')}
+              hint={t('同一批买家问题，在不同 AI 平台上的结果', 'The same buyer questions, asked on different AI platforms')}
               className={showVoice ? 'lg:col-span-7' : 'lg:col-span-12'}
             >
               <ul className="grid gap-3 sm:grid-cols-[repeat(auto-fit,minmax(11rem,1fr))]">
@@ -412,8 +529,8 @@ const AuditResult: React.FC<AuditResultProps> = ({ report, openBookingModal, onG
           )}
           {showVoice && (
             <Panel
-              title="AI 推荐了谁"
-              hint="不带品牌名的采购问题中，各品牌被提到的次数"
+              title={t('AI 推荐了谁', 'Who AI recommends')}
+              hint={t('不带品牌名的采购问题中，各品牌被提到的次数', 'How often each brand is mentioned in procurement questions without the brand name')}
               className={showEngines ? 'lg:col-span-5' : 'lg:col-span-12'}
             >
               <ul className="space-y-3">
@@ -421,7 +538,7 @@ const AuditResult: React.FC<AuditResultProps> = ({ report, openBookingModal, onG
                   <li key={voice.name} className="grid grid-cols-[minmax(0,8rem)_1fr_auto] items-center gap-3 text-body">
                     <span className={`truncate ${voice.isSelf ? 'font-semibold' : ''}`} title={voice.name}>
                       {voice.name}
-                      {voice.isSelf && <span className="text-label-secondary">（你）</span>}
+                      {voice.isSelf && <span className="text-label-secondary">{t('（你）', ' (you)')}</span>}
                     </span>
                     <div className="meter">
                       <span
@@ -443,17 +560,19 @@ const AuditResult: React.FC<AuditResultProps> = ({ report, openBookingModal, onG
         {report.site ? (
           <SiteChecks site={report.site} className="lg:col-span-7" />
         ) : (
-          <Panel title="官网能否被 AI 读取" className="lg:col-span-5">
+          <Panel title={t('官网能否被 AI 读取', 'Can AI read the website?')} className="lg:col-span-5">
             <p className="flex items-start gap-3 text-body">
               <AlertTriangle className="mt-1 h-5 w-5 shrink-0 text-warning" aria-hidden="true" />
               <span className="text-label-secondary">
-                {searchedSite ? 'AI 联网搜索没有找到这个品牌的官网，' : '只输入了品牌名，'}
-                本次未做官网检查。输入官网域名可获得完整测评。
+                {searchedSite
+                  ? t('AI 联网搜索没有找到这个品牌的官网，', 'AI web search found no website for this brand. ')
+                  : t('只输入了品牌名，', 'Only the brand name was entered. ')}
+                {t('本次未做官网检查。输入官网域名可获得完整测评。', 'The website was not checked this time. Enter the domain for a full audit.')}
               </span>
             </p>
           </Panel>
         )}
-        <Panel title="核心发现与建议" className={report.site ? 'lg:col-span-5' : 'lg:col-span-7'}>
+        <Panel title={t('核心发现与建议', 'Key findings and recommendations')} className={report.site ? 'lg:col-span-5' : 'lg:col-span-7'}>
           <ul className="divide-y divide-separator">
             {report.findings.map((item) => (
               <li key={item} className="flex items-start gap-3 py-3 text-body first:pt-0">
@@ -467,18 +586,18 @@ const AuditResult: React.FC<AuditResultProps> = ({ report, openBookingModal, onG
             ))}
           </ul>
           <div className="well mt-4">
-            <h5 className="text-body font-semibold">建议方案</h5>
+            <h5 className="text-body font-semibold">{t('建议方案', 'Recommended plan')}</h5>
             <p className="mt-2 text-body text-label-secondary">{report.recommendation}</p>
             <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
               <button type="button" onClick={openBookingModal} className="btn btn-primary">
-                预约 30 分钟诊断会
+                {t('预约 30 分钟诊断会', 'Book a 30-minute diagnosis call')}
               </button>
               <button
                 type="button"
                 onClick={onGoToConfigurator}
                 className="link justify-center px-2 py-2 text-body sm:justify-start"
               >
-                规划服务方案
+                {t('规划服务方案', 'Plan a service package')}
                 <ChevronRight />
               </button>
             </div>
@@ -494,23 +613,29 @@ const AuditResult: React.FC<AuditResultProps> = ({ report, openBookingModal, onG
 };
 
 const EngineCard: React.FC<{ engine: AuditEngineResult; log: ProbeLogEntry[] }> = ({ engine, log }) => {
+  const { t } = useLang();
   const failedAll = engine.answers === 0;
   const reason = topReason(log.filter((entry) => entry.engine === engine.name));
   const rows = [
-    { label: '提到你', value: engine.mentionRate },
-    { label: '引用官网', value: engine.citationRate },
-    { label: '品牌认知', value: engine.brandKnowledge },
+    { label: t('提到你', 'Mentions you'), value: engine.mentionRate },
+    { label: t('引用官网', 'Cites your site'), value: engine.citationRate },
+    { label: t('品牌认知', 'Brand awareness'), value: engine.brandKnowledge },
   ];
   return (
     <li className="well">
       <h5 className="text-body font-semibold">{engine.name}</h5>
       {!failedAll && engine.avgPosition > 0 && (
-        <p className="text-caption tabular-nums text-label-secondary">平均排第 {engine.avgPosition} 位</p>
+        <p className="text-caption tabular-nums text-label-secondary">{t(`平均排第 ${engine.avgPosition} 位`, `Average rank ${engine.avgPosition}`)}</p>
       )}
       {failedAll ? (
         <p className="mt-4 text-caption text-label-secondary">
-          提问失败，未计入总分
-          {reason && <span className="mt-1 block text-danger">原因：{reason}</span>}
+          {t('提问失败，未计入总分', 'Questions failed, not included in the score')}
+          {reason && (
+            <span className="mt-1 block text-danger">
+              {t('原因：', 'Reason: ')}
+              {reason}
+            </span>
+          )}
         </p>
       ) : (
         <>
@@ -529,7 +654,8 @@ const EngineCard: React.FC<{ engine: AuditEngineResult; log: ProbeLogEntry[] }> 
           </ul>
           {engine.failed > 0 && (
             <p className="mt-3 text-caption text-label-secondary">
-              {engine.failed} 次提问失败{reason && `：${reason}`}
+              {t(`${engine.failed} 次提问失败`, `${engine.failed} questions failed`)}
+              {reason && `${t('：', ': ')}${reason}`}
             </p>
           )}
         </>
@@ -543,6 +669,7 @@ const EngineCard: React.FC<{ engine: AuditEngineResult; log: ProbeLogEntry[] }> 
 const hostOf = (source: WebSource) => source.domain || source.title || source.uri;
 
 const EvidenceExplorer: React.FC<{ report: AuditReport }> = ({ report }) => {
+  const { t } = useLang();
   const [engineFilter, setEngineFilter] = useState('all');
   const [selected, setSelected] = useState(0);
   const answeredEngines = (report.engines ?? []).filter((e) => e.answers > 0);
@@ -552,19 +679,19 @@ const EvidenceExplorer: React.FC<{ report: AuditReport }> = ({ report }) => {
 
   return (
     <Panel
-      title="AI 的原话"
-      hint="AI 对买家问题的真实回答（英文原文）"
+      title={t('AI 的原话', 'What AI actually said')}
+      hint={t('AI 对买家问题的真实回答（英文原文）', 'AI’s real answers to buyer questions (original English)')}
       aside={
         answeredEngines.length > 1 ? (
           <SegmentedControl
-            ariaLabel="按平台筛选回答"
+            ariaLabel={t('按平台筛选回答', 'Filter answers by platform')}
             value={engineFilter}
             onChange={(value) => {
               setEngineFilter(value);
               setSelected(0);
             }}
             options={[
-              { id: 'all', label: '全部' },
+              { id: 'all', label: t('全部', 'All') },
               ...answeredEngines.map((engine) => ({ id: engine.name, label: engine.name })),
             ]}
           />
@@ -572,7 +699,10 @@ const EvidenceExplorer: React.FC<{ report: AuditReport }> = ({ report }) => {
       }
     >
       <div className="grid gap-4 lg:grid-cols-12">
-        <ul className="max-h-80 divide-y divide-separator overflow-y-auto lg:col-span-5 lg:max-h-[32rem]" aria-label="回答列表">
+        <ul
+          className="max-h-80 divide-y divide-separator overflow-y-auto lg:col-span-5 lg:max-h-[32rem]"
+          aria-label={t('回答列表', 'Answer list')}
+        >
           {list.map((item, index) => {
             const active = index === Math.min(selected, list.length - 1);
             return (
@@ -589,10 +719,11 @@ const EvidenceExplorer: React.FC<{ report: AuditReport }> = ({ report }) => {
                     <span className="badge">{item.engine ?? 'Gemini'}</span>
                     {item.mentioned ? (
                       <span className="badge bg-success/15 text-success">
-                        提到了你{item.position > 0 ? ` · 第 ${item.position} 位` : ''}
+                        {t('提到了你', 'Mentioned you')}
+                        {item.position > 0 ? t(` · 第 ${item.position} 位`, ` · rank ${item.position}`) : ''}
                       </span>
                     ) : (
-                      <span className="badge bg-danger/15 text-danger">未提到</span>
+                      <span className="badge bg-danger/15 text-danger">{t('未提到', 'Not mentioned')}</span>
                     )}
                   </span>
                   <span className="mt-2 line-clamp-2 block text-body" lang="en">
@@ -613,12 +744,14 @@ const EvidenceDetail: React.FC<{ item: AuditEvidence; domain: string; className?
   item,
   domain,
   className = '',
-}) => (
+}) => {
+  const { t } = useLang();
+  return (
   <article className={`well max-h-[32rem] overflow-y-auto ${className}`}>
     <div className="flex flex-wrap items-center gap-2">
       <span className="badge">{item.engine ?? 'Gemini'}</span>
-      <span className="badge">{item.branded ? '带品牌名' : '不带品牌名'}</span>
-      {item.ownCited && <span className="badge bg-success/15 text-success">引用了官网</span>}
+      <span className="badge">{item.branded ? t('带品牌名', 'With brand name') : t('不带品牌名', 'Without brand name')}</span>
+      {item.ownCited && <span className="badge bg-success/15 text-success">{t('引用了官网', 'Cites your site')}</span>}
     </div>
     <h5 className="mt-3 text-body font-semibold" lang="en">
       {item.question}
@@ -628,7 +761,7 @@ const EvidenceDetail: React.FC<{ item: AuditEvidence; domain: string; className?
     </p>
     {item.sources.length > 0 && (
       <div className="mt-4 border-t border-separator pt-3">
-        <p className="text-caption text-label-secondary">引用来源</p>
+        <p className="text-caption text-label-secondary">{t('引用来源', 'Sources cited')}</p>
         <ul className="mt-2 flex flex-wrap gap-2">
           {item.sources.map((source, i) => {
             const own = domain !== '' && hostOf(source).toLowerCase().includes(domain.replace(/^www\./, ''));
@@ -645,54 +778,68 @@ const EvidenceDetail: React.FC<{ item: AuditEvidence; domain: string; className?
       </div>
     )}
   </article>
-);
+  );
+};
 
 // ---------- 官网体检 ----------
 
-const siteRows = (site: SiteCheck): { ok: boolean; label: string; detail: string }[] => {
+const siteRows = (site: SiteCheck, t: T, lang: 'zh' | 'en'): { ok: boolean; label: string; detail: string }[] => {
+  const sep = lang === 'en' ? ', ' : '、';
   const blocked = site.crawlers.filter((c) => !c.allowed);
-  if (!site.reachable) return [{ ok: false, label: '官网访问', detail: site.error || '无法访问' }];
+  if (!site.reachable) return [{ ok: false, label: t('官网访问', 'Website access'), detail: site.error || t('无法访问', 'Cannot be reached') }];
   return [
     {
       ok: blocked.length === 0,
-      label: 'AI 爬虫权限',
+      label: t('AI 爬虫权限', 'AI crawler access'),
       detail:
         blocked.length === 0
-          ? `robots.txt 未屏蔽 ${site.crawlers.map((c) => c.agent).join('、')}`
-          : `已屏蔽 ${blocked.map((c) => `${c.agent}（${c.product}）`).join('、')}`,
+          ? t(`robots.txt 未屏蔽 ${site.crawlers.map((c) => c.agent).join(sep)}`, `robots.txt does not block ${site.crawlers.map((c) => c.agent).join(sep)}`)
+          : t(`已屏蔽 ${blocked.map((c) => `${c.agent}（${c.product}）`).join(sep)}`, `Blocked: ${blocked.map((c) => `${c.agent} (${c.product})`).join(sep)}`),
     },
     {
       ok: site.textChars >= 500,
-      label: '不执行 JavaScript 时的正文',
-      detail: `约 ${site.textChars.toLocaleString('zh-CN')} 字`,
+      label: t('不执行 JavaScript 时的正文', 'Body text without running JavaScript'),
+      detail: t(`约 ${site.textChars.toLocaleString('zh-CN')} 字`, `About ${site.textChars.toLocaleString('en-US')} characters`),
     },
-    { ok: site.english, label: '英文内容', detail: site.lang ? `页面语言 ${site.lang}` : '未声明页面语言' },
+    {
+      ok: site.english,
+      label: t('英文内容', 'English content'),
+      detail: site.lang ? t(`页面语言 ${site.lang}`, `Page language ${site.lang}`) : t('未声明页面语言', 'No page language declared'),
+    },
     {
       ok: site.schemaTypes.length > 0,
-      label: '结构化数据',
-      detail: site.schemaTypes.length > 0 ? site.schemaTypes.slice(0, 6).join('、') : '未发现 Schema 标记',
+      label: t('结构化数据', 'Structured data'),
+      detail: site.schemaTypes.length > 0 ? site.schemaTypes.slice(0, 6).join(sep) : t('未发现 Schema 标记', 'No Schema markup found'),
     },
-    { ok: site.hasLlmsTxt, label: 'llms.txt', detail: site.hasLlmsTxt ? '已提供' : '未提供' },
-    { ok: site.hasSitemap, label: '站点地图', detail: site.hasSitemap ? '已提供' : '未发现 sitemap' },
-    { ok: site.https, label: 'HTTPS', detail: site.https ? '已启用' : '未启用' },
+    { ok: site.hasLlmsTxt, label: 'llms.txt', detail: site.hasLlmsTxt ? t('已提供', 'Provided') : t('未提供', 'Not provided') },
+    {
+      ok: site.hasSitemap,
+      label: t('站点地图', 'Sitemap'),
+      detail: site.hasSitemap ? t('已提供', 'Provided') : t('未发现 sitemap', 'No sitemap found'),
+    },
+    { ok: site.https, label: 'HTTPS', detail: site.https ? t('已启用', 'Enabled') : t('未启用', 'Not enabled') },
     {
       ok: site.ttfbMs < 2000,
-      label: '首字节耗时',
-      detail: `约 ${(site.ttfbMs / 1000).toFixed(1)} 秒（从测评服务器访问）`,
+      label: t('首字节耗时', 'Time to first byte'),
+      detail: t(
+        `约 ${(site.ttfbMs / 1000).toFixed(1)} 秒（从测评服务器访问）`,
+        `About ${(site.ttfbMs / 1000).toFixed(1)} s (measured from the audit server)`
+      ),
     },
   ];
 };
 
 const SiteChecks: React.FC<{ site: SiteCheck; className?: string }> = ({ site, className }) => {
-  const rows = siteRows(site);
+  const { t, lang } = useLang();
+  const rows = siteRows(site, t, lang);
   const passed = rows.filter((r) => r.ok).length;
   return (
     <Panel
-      title="官网能否被 AI 读取"
+      title={t('官网能否被 AI 读取', 'Can AI read the website?')}
       className={className}
       aside={
         <span className="badge tabular-nums">
-          {passed} / {rows.length} 项通过
+          {t(`${passed} / ${rows.length} 项通过`, `${passed} / ${rows.length} passed`)}
         </span>
       }
     >
@@ -700,9 +847,9 @@ const SiteChecks: React.FC<{ site: SiteCheck; className?: string }> = ({ site, c
         {rows.map((row) => (
           <li key={row.label} className="well flex items-start gap-3 text-body">
             {row.ok ? (
-              <Check className="mt-1 h-5 w-5 shrink-0 text-success" aria-label="通过" />
+              <Check className="mt-1 h-5 w-5 shrink-0 text-success" aria-label={t('通过', 'Passed')} />
             ) : (
-              <X className="mt-1 h-5 w-5 shrink-0 text-danger" aria-label="待改进" />
+              <X className="mt-1 h-5 w-5 shrink-0 text-danger" aria-label={t('待改进', 'Needs work')} />
             )}
             <span className="min-w-0">
               <span className="block font-semibold">{row.label}</span>
@@ -731,10 +878,11 @@ const topReason = (entries: ProbeLogEntry[]) => {
   return best;
 };
 
-const seconds = (ms: number) => `${(ms / 1000).toFixed(1)} 秒`;
+const seconds = (ms: number, t: T) => t(`${(ms / 1000).toFixed(1)} 秒`, `${(ms / 1000).toFixed(1)} s`);
 
 /** 按平台汇总：成功、失败次数，平均耗时与主要失败原因 */
 const ProbeLogSummary: React.FC<{ entries: ProbeLogEntry[] }> = ({ entries }) => {
+  const { t } = useLang();
   const engines = [...new Set(entries.map((entry) => entry.engine))];
   return (
     <ul className="mt-4 grid gap-3 sm:grid-cols-[repeat(auto-fit,minmax(12rem,1fr))]">
@@ -748,10 +896,10 @@ const ProbeLogSummary: React.FC<{ entries: ProbeLogEntry[] }> = ({ entries }) =>
           <li key={name} className="well">
             <p className="text-body font-semibold">{name}</p>
             <p className="mt-1 text-caption tabular-nums text-label-secondary">
-              <span className="text-success">成功 {ok.length}</span>
+              <span className="text-success">{t(`成功 ${ok.length}`, `Succeeded ${ok.length}`)}</span>
               {' · '}
-              <span className={failed > 0 ? 'text-danger' : undefined}>失败 {failed}</span>
-              {ok.length > 0 && ` · 平均 ${seconds(avg)}`}
+              <span className={failed > 0 ? 'text-danger' : undefined}>{t(`失败 ${failed}`, `Failed ${failed}`)}</span>
+              {ok.length > 0 && ` · ${t('平均', 'avg')} ${seconds(avg, t)}`}
             </p>
             {reason && <p className="mt-1 text-caption text-danger">{reason}</p>}
           </li>
@@ -766,6 +914,7 @@ const ProbeLogList: React.FC<{ entries: ProbeLogEntry[]; live?: boolean; classNa
   live = false,
   className = '',
 }) => {
+  const { t } = useLang();
   const listRef = useRef<HTMLOListElement>(null);
 
   // 进行中时跟随最新一条
@@ -777,27 +926,33 @@ const ProbeLogList: React.FC<{ entries: ProbeLogEntry[]; live?: boolean; classNa
     <ol
       ref={listRef}
       className={`well max-h-72 space-y-2 overflow-y-auto ${className}`}
-      aria-label="提问日志"
+      aria-label={t('提问日志', 'Probe log')}
       aria-live={live ? 'polite' : undefined}
     >
       {entries.map((entry, index) => (
         <li key={index} className="flex items-start gap-2 text-caption">
           {entry.ok ? (
-            <Check className="mt-0.5 h-4 w-4 shrink-0 text-success" aria-label="成功" />
+            <Check className="mt-0.5 h-4 w-4 shrink-0 text-success" aria-label={t('成功', 'Succeeded')} />
           ) : (
-            <X className="mt-0.5 h-4 w-4 shrink-0 text-danger" aria-label="失败" />
+            <X className="mt-0.5 h-4 w-4 shrink-0 text-danger" aria-label={t('失败', 'Failed')} />
           )}
           <span className="min-w-0">
             <span className="tabular-nums">
               <span className="font-semibold">{entry.engine}</span>
               <span className="text-label-secondary">
-                {' · '}第 {entry.question} 题第 {entry.sample} 次{entry.branded ? '（带品牌名）' : ''} · {seconds(entry.ms)}
-                {entry.ok && ` · ${entry.sources} 个来源`}
+                {' · '}
+                {t(
+                  `第 ${entry.question} 题第 ${entry.sample} 次${entry.branded ? '（带品牌名）' : ''}`,
+                  `Question ${entry.question}, try ${entry.sample}${entry.branded ? ' (with brand name)' : ''}`
+                )}
+                {' · '}
+                {seconds(entry.ms, t)}
+                {entry.ok && t(` · ${entry.sources} 个来源`, ` · ${entry.sources} sources`)}
               </span>
             </span>
             {!entry.ok && (
               <>
-                <span className="block text-danger">{entry.reason || '调用失败'}</span>
+                <span className="block text-danger">{entry.reason || t('调用失败', 'Call failed')}</span>
                 {entry.detail && (
                   <span className="block break-all text-label-tertiary" lang="en">
                     {entry.detail}
@@ -813,17 +968,21 @@ const ProbeLogList: React.FC<{ entries: ProbeLogEntry[]; live?: boolean; classNa
 };
 
 const ProbeLogPanel: React.FC<{ entries: ProbeLogEntry[] }> = ({ entries }) => {
+  const { t } = useLang();
   const [onlyFailed, setOnlyFailed] = useState(false);
   const failed = entries.filter((entry) => !entry.ok).length;
   const shown = onlyFailed ? entries.filter((entry) => !entry.ok) : entries;
   return (
     <Panel
-      title="提问日志"
-      hint={`以买家身份向各平台提问的逐条记录，共 ${entries.length} 次，失败 ${failed} 次`}
+      title={t('提问日志', 'Probe log')}
+      hint={t(
+        `以买家身份向各平台提问的逐条记录，共 ${entries.length} 次，失败 ${failed} 次`,
+        `Each question asked to each platform as a buyer: ${entries.length} in total, ${failed} failed`
+      )}
       aside={
         failed > 0 ? (
           <button type="button" className="chip" aria-pressed={onlyFailed} onClick={() => setOnlyFailed((v) => !v)}>
-            只看失败
+            {t('只看失败', 'Failed only')}
           </button>
         ) : undefined
       }

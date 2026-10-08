@@ -1,5 +1,6 @@
 import React, { useEffect, useId, useRef } from 'react';
 import { X } from 'lucide-react';
+import { useLang } from '../../context/LanguageContext';
 
 /**
  * 全站唯一的弹窗外壳（DESIGN.md §4.8）。
@@ -48,6 +49,7 @@ export const Dialog: React.FC<DialogProps> = ({
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
   const titleId = useId();
+  const { t } = useLang();
 
   useEffect(() => {
     if (!open) return;
@@ -115,7 +117,7 @@ export const Dialog: React.FC<DialogProps> = ({
             {description && <p className="mt-0.5 text-caption text-label-secondary">{description}</p>}
           </div>
           {actions}
-          <button type="button" onClick={onClose} className="btn-icon" aria-label="关闭">
+          <button type="button" onClick={onClose} className="btn-icon" aria-label={t('关闭', 'Close')}>
             <X />
           </button>
         </header>

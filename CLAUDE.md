@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 项目概述
 
-「云端智荐」—— 面向中国出海企业的 AI 售前支持系统与能力样板间（独立站 / SEO / GEO / AI 客服 / FDE 驻场五项服务），同时承载客户后台（访问统计、线索）。技术栈：**Next.js 16（App Router）+ React 19 + TypeScript 7 + Tailwind CSS v4**（登录页与客户后台另用 **antd 6**），部署在 **Vercel**，数据库为 **Neon Postgres**；AI 能力来自服务端调用的 Gemini（REST）。界面文案全部为简体中文，新增文案请保持中文。
+「云端智荐」—— 面向中国出海企业的 AI 售前支持系统与能力样板间（独立站 / SEO / GEO / AI 客服 / FDE 驻场五项服务），同时承载客户后台（访问统计、线索）。技术栈：**Next.js 16（App Router）+ React 19 + TypeScript 7 + Tailwind CSS v4**（登录页与客户后台另用 **antd 6**），部署在 **Vercel**，数据库为 **Neon Postgres**；AI 能力来自服务端调用的 Gemini（REST）。界面默认为简体中文，官网同时提供英文（见下文「多语言」），新增文案需同时写中英文。
 
 **任何 UI 改动前先读 [`DESIGN.md`](./DESIGN.md)**（设计规范：token、组件、页面模板、文案与无障碍规则），改动后按其第 8 节评审清单自查。后台（`#/login`、`#/console/*`）用 antd，规则见 DESIGN.md 第 10 节；官网页面不要引入 antd。
 
@@ -42,7 +42,7 @@ bun run create-admin <email>   # 创建管理员并打印一次性初始密码
 - `app/` 只有三类文件：`layout.tsx`（`<html lang="zh-CN">`、metadata、全局 CSS、Vercel Analytics）、`page.tsx`（渲染 `src/ClientApp.tsx`，以 `ssr: false` 动态加载整个 SPA）和 `api/**/route.ts`。route 文件只做一行 re-export，处理逻辑都在 `src/server/routes/*.ts`；新增接口时同样在 `app/api` 下按路径建 `route.ts` 并从 routes 导出。未定义的 `/api/*` 由 `app/api/[...path]` 返回 JSON 404。
 - `src/server/` 只在服务端使用，不要从前端代码 import：`config.ts`（环境变量）、`db.ts`（`pg` 连接池 + `attachDatabasePool`，`query` / `queryOne` / `exec` / `tx`；BIGINT 已解析为 number）、`http.ts`（`route()` 包装、`json` / `apiError`、`readJSON`、`clientIP`）、`auth.ts`（argon2id、会话、`authed()` 鉴权包装、`siteAccess`）、`ratelimit.ts`、`gemini.ts`、`knowledge.ts`、`engines.ts`、`audit*.ts`、`migrate.ts`。
 - 错误响应统一为 `{ error: 中文说明, code }`，前端 `src/lib/api.ts` 依赖这个格式。处理函数里 `throw new HttpError(...)` 或直接 `return apiError(...)`；其他异常由 `route()` 记日志并返回 500。
-- **Serverless 约束**：函数实例之间不共享内存（创建测评的 POST 与轮询的 GET 常落在不同实例），所以限流计数（`rate_limits` 表）、测评任务状态（`audits` 表）都放数据库；未配置数据库时退化为进程内实现，测评 POST 会等任务跑完、把结果直接放在响应里返回（前端收到 `report` 就不轮询），避免轮询到别的实例而 404。不要再引入只存内存、却需要跨请求一致的状态。
+- **Serverless 约束**：函数实例之间不共享内存（创建测评的 POST 与轮询的 GET 常落在不同实例），所以限流计数（`rate_limits` 表）、测评任务状态（`audits` 表）都放数据库；测评必须配置数据库（联系方式要入库，未配置时 POST 返回 503），所以不再有进程内的测评实现，任务状态一律走数据库。不要再引入只存内存、却需要跨请求一致的状态。
 - 接口：`GET /api/health`、`POST /api/gemini/chat`（AI 售前顾问）、`POST /api/gemini/visibility-test`（旧的模拟测评，前端已不调用）、`/api/auth/*`（登录、登出、me、改密）、`/api/sites`（我的站点）、`/api/admin/*`（公司、账号、站点、授权）、`/api/public/*`（采集、线索、测评）。
 
 ### AI 售前顾问
@@ -61,7 +61,7 @@ bun run create-admin <email>   # 创建管理员并打印一次性初始密码
 
 ### AI 可见性测评（`src/server/audit.ts`、`auditSite.ts`、`auditStore.ts`、`engines.ts`，迁移 `003_audits.sql`）
 
-- `POST /api/public/audits {target}` 创建异步任务，`GET /api/public/audits/{id}` 轮询进度与报告。POST 返回后测评用 Next 的 `after()` 在同一次函数调用里继续执行，受该路由 `maxDuration = 300` 限制：提问最晚在开始后 210 秒截止（未完成的记为超时），整个任务 280 秒内写完结果；超过 6 分钟没有进度更新的任务按「测评超时」失败处理。任务进度、提问日志与报告都写在 `audits` 表，所以轮询可以落在任意实例。
+- `POST /api/public/audits {target, contactName, contactPhone}` 创建异步任务，`GET /api/public/audits/{id}` 轮询进度与报告。联系人姓名与 11 位手机号必填（`src/lib/contact.ts` 前后端共用校验），每次提交都写入 `audit_contacts`（迁移 `004_audit_contacts.sql`，包括复用已有报告的提交），只通过服务端写入、没有公开的读取接口。POST 返回后测评用 Next 的 `after()` 在同一次函数调用里继续执行，受该路由 `maxDuration = 300` 限制：提问最晚在开始后 210 秒截止（未完成的记为超时），整个任务 280 秒内写完结果；超过 6 分钟没有进度更新的任务按「测评超时」失败处理。任务进度、提问日志与报告都写在 `audits` 表，所以轮询可以落在任意实例。
 - 输入可以是官网域名或品牌名称（`parseAuditInput`：像 ASCII 域名的按域名处理，否则当作 2～60 字的品牌名）；只给品牌名时第①步先用 Gemini 联网搜索查找官网（`resolveDomain`，排除平台、目录与社交网站），报告的 `domainSource` 标明 `input` / `resolved` / `none`，找不到官网时跳过官网检查、总分只按 AI 部分计算，用户输入的品牌名会加进别名用于匹配。
 - 流程：① 抓取官网做确定性检查（AI 爬虫的 robots.txt 权限、不执行 JS 时的正文、语言、JSON-LD、sitemap、llms.txt、首字节耗时；抓取用 `node:http(s)` + 自定义 DNS lookup，只连公网 IP 的 80/443，防 SSRF）→ ② 模型识别品牌/行业/市场 → ③ 生成 6 个不带品牌名的买家问题 + 2 个固定模板的带品牌问题 → ④ 向各探测平台每题问 2 次、每个平台 8 路并发（ChatGPT 用 OpenAI Responses API + `web_search`（默认 `gpt-6-luna`、推理强度 `low`），Perplexity 用 Sonar（可直连，也可经 OpenRouter：`PERPLEXITY_BASE_URL=https://openrouter.ai/api/v1`，模型名自动补 `perplexity/` 前缀），Gemini 用 Google 搜索 grounding；配了 `OPENROUTER_API_KEY` 时三个平台统一经 OpenRouter 提问并优先于直连配置）→ ⑤ Gemini 按平台分组只抽取事实（是否提及、排位、推荐了哪些品牌），代码分平台计算指标，总体指标取各平台平均。
 - 品牌识别、出题与分析都依赖 Gemini，未配 `GEMINI_API_KEY` 时其他平台也不启用。报告 `mode`：`live` 真实探测、`sample` 未配 key（AI 部分为示例，前端标注）、`site_only` 提问全部失败。成本控制：按 IP 每小时 6 次、`GEMINI_AUDIT_DAILY_LIMIT`（默认 100）每日真实探测上限（计数在数据库）、同一域名（或同一品牌名）7 天内复用 `live` 结果（平台组合变化后不复用，`engineSet` 签名）、同一目标同时只跑一个任务（`uq_audits_running` 部分唯一索引）。
@@ -72,10 +72,18 @@ bun run create-admin <email>   # 创建管理员并打印一次性初始密码
 - `src/App.tsx` 用 `currentTab` 状态条件渲染 `src/views/*`，并与地址栏 hash 同步（`#/services`），支持浏览器前进后退与分享链接；切页时滚到顶部并更新 `document.title`。hash 只取第一段作为 `TabId`，后台子页面（`#/console/leads`）由 `ConsoleApp` 自己解析。
 - `TabId` 类型、导航分组（了解 / 决策）与短标签、全称都只定义在 `src/components/navigation.ts`，`Header`、`Footer` 与 App 的 hash 解析共用它。
 - 页面间跳转通过 App 下发的回调 props（`onGoToConfigurator`、`onGoToAudit`、`onGoToBooking` 等）完成；`handleNavigateToConfigurator(prefill)` 可向配置器传入初始参数。
-- **站内唯一的自测工具是首页的 AI 可见性测评**（`HomeView` 的 `#audit` 区块，组件在 `src/views/home/VisibilityAudit.tsx`，接口封装在 `src/lib/audit.ts`，调用服务端的真实测评；接口不可用时展示标注「示例数据」的本地报告）；原「断点体检」「能力体验」页已删除。其他页面与课程要引导自测时，用 App 的 `goToAudit` 回到首页并滚动到测评区；课程「下一步」的目标由 App 的 `handleCourseTarget` 分流（方案规划 / 预约 / 资源 / 测评）。旧的 `/api/gemini/visibility-test`（让模型“模拟”结果）仍保留，但前端不再调用。
+- **站内唯一的自测工具是首页的 AI 可见性测评**（`HomeView` 的 `#audit` 区块，组件在 `src/views/home/VisibilityAudit.tsx`，接口封装在 `src/lib/audit.ts`，调用服务端的真实测评；接口不可用时显示错误提示，不再展示本地示例报告，避免联系方式没入库却看到结果）；原「断点体检」「能力体验」页已删除。其他页面与课程要引导自测时，用 App 的 `goToAudit` 回到首页并滚动到测评区；课程「下一步」的目标由 App 的 `handleCourseTarget` 分流（方案规划 / 预约 / 资源 / 测评）。旧的 `/api/gemini/visibility-test`（让模型“模拟”结果）仍保留，但前端不再调用。
 - 新增页面需同时改三处：新建 view（以 `PageHeader` 开头）、在 `App.tsx` 加渲染分支、在 `navigation.ts` 加导航项。
 - 全局弹窗都在 `App.tsx` 渲染，外壳统一用 `src/components/ui/Dialog.tsx`（Esc、焦点圈定、滚动锁定已内置）。`AiConsultantModal` 由 context 控制（`setAiAdvisorOpen` / `triggerAiAdvisorWithQuery(query)` 可带预设问题打开，CRM 透视开关在弹窗标题栏），其余弹窗由 App 本地 state 控制。
 - `Header` 的移动端菜单渲染在 `<header>` 之外：`backdrop-filter` 会让 header 成为 fixed 子元素的定位容器。
+
+### 多语言（中英文）
+
+- 官网支持中文（默认）与 English 切换：`src/context/LanguageContext.tsx` 提供 `useLang()` → `{ lang, setLang, t(zh, en), tb({ zh, en }) }`，偏好存 `localStorage`（`cw_lang`），切换后同步 `<html lang>` 与页面标题。切换按钮在 Header（桌面与移动端菜单）。
+- 组件内文案写成 `t('中文', 'English')`；数据里的标题与描述用 `Bi`（`{ zh, en }`）对象，用 `tb()` 取值。新增页面或文案时两种语言要同时写。
+- 数据的英文是覆盖层，按 id 合并到中文数据上，结构保持一致：课程 `src/data/en/courseA–E.ts` 与 `paths.ts`（`courseList(lang)` / `pathList(lang)`）；案例与行业方案 `src/data/en/cases.ts`（`caseList` / `solutionList`）；术语与模板 `src/data/en/resources.ts`（`glossaryList` / `resourceList`）；`contactsData.ts`、`serviceIdentity.ts`、`fdeData.ts`、`servicePackages.ts` 直接带英文字段。改中文数据时要同步英文覆盖层，缺失的 id 会回退到中文。
+- 后台（`#/login`、`#/console/*`）只有中文。AI 顾问的 `/api/gemini/chat` 接收 `lang`，英文时回答全部用英文（提示词指令与 `chatFallbackEn`）。测评报告的分析文本（`audit.ts` 生成的核心发现、建议与探测失败原因）目前仍是中文。
+- 英文界面同样不写金额（与中文相同的价格规则）。
 
 ### 全局状态与持久化（`src/context/AppContext.tsx`）
 

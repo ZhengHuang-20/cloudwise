@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { CheckCircle2, X, XCircle } from 'lucide-react';
 import { Lesson, Course } from '../data/coursesData';
 import { useApp } from '../context/AppContext';
+import { useLang } from '../context/LanguageContext';
 import { LessonVideo } from './LessonVideo';
 import { Dialog, DialogBody } from './ui/Dialog';
 
@@ -9,6 +10,8 @@ interface LessonModalProps {
   lesson: Lesson;
   course: Course;
   onClose: () => void;
+  /** 从学习路径打开时，路径中的下一课（没有则不传） */
+  nextInPath?: { title: string; onNext: () => void };
   onNavigateToNextLesson?: (nextLessonId: string) => void;
   onNavigateToTool?: (toolId: string) => void;
 }
@@ -17,10 +20,12 @@ export const LessonModal: React.FC<LessonModalProps> = ({
   lesson,
   course,
   onClose,
+  nextInPath,
   onNavigateToNextLesson,
   onNavigateToTool,
 }) => {
   const { markLessonComplete, isLessonCompleted } = useApp();
+  const { t, lang } = useLang();
   const completed = isLessonCompleted(lesson.id);
 
   const [selectedAnswers, setSelectedAnswers] = useState<Record<number, number>>({});
@@ -51,6 +56,8 @@ export const LessonModal: React.FC<LessonModalProps> = ({
   };
 
   const quizAnsweredAll = lesson.quiz ? lesson.quiz.every((_, idx) => selectedAnswers[idx] !== undefined) : true;
+  // 英文界面下中文的课程编号标题（如「GEO——…」）只取前半段
+  const courseShortTitle = course.title.split('——')[0];
 
   return (
     <Dialog
@@ -58,16 +65,16 @@ export const LessonModal: React.FC<LessonModalProps> = ({
       onClose={onClose}
       size="lg"
       title={lesson.title}
-      description={`课程 ${course.code} · ${course.title.split('——')[0]} · ${lesson.durationMinutes} 分钟`}
+      description={`${t('课程', 'Course')} ${course.code} · ${courseShortTitle} · ${lesson.durationMinutes} ${t('分钟', 'min')}`}
       actions={
         completed ? (
           <span className="badge hidden bg-success/15 text-success sm:inline-flex">
             <CheckCircle2 className="h-4 w-4" />
-            已学完
+            {t('已学完', 'Completed')}
           </span>
         ) : (
           <button type="button" onClick={handleManualComplete} className="btn btn-neutral btn-sm hidden sm:inline-flex">
-            标记学完
+            {t('标记学完', 'Mark as completed')}
           </button>
         )
       }
@@ -75,7 +82,7 @@ export const LessonModal: React.FC<LessonModalProps> = ({
       <DialogBody>
         <article className="mx-auto max-w-2xl">
           {/* 一句话答案 */}
-          <p className="text-caption text-label-secondary">一句话答案</p>
+          <p className="text-caption text-label-secondary">{t('一句话答案', 'The short answer')}</p>
           <p className="mt-2 text-intro font-semibold">{lesson.summary}</p>
 
           <div className="mt-8">
@@ -83,13 +90,16 @@ export const LessonModal: React.FC<LessonModalProps> = ({
           </div>
 
           <section className="mt-10">
-            <h3 className="text-title-3">深度拆解</h3>
+            <h3 className="text-title-3">{t('深度拆解', 'In depth')}</h3>
             <div className="mt-3 whitespace-pre-wrap text-body text-label-secondary">{lesson.conceptContent}</div>
           </section>
 
           {lesson.caseSnippet && (
             <section className="well mt-8">
-              <p className="text-caption text-label-secondary">实战案例 · {lesson.caseSnippet.company}</p>
+              <p className="text-caption text-label-secondary">
+                {t('实战案例 · ', 'Case in practice · ')}
+                {lesson.caseSnippet.company}
+              </p>
               <h3 className="mt-1 text-title-3">{lesson.caseSnippet.title}</h3>
               <p className="mt-2 text-body text-label-secondary">{lesson.caseSnippet.description}</p>
             </section>
@@ -97,7 +107,7 @@ export const LessonModal: React.FC<LessonModalProps> = ({
 
           {lesson.misconceptions && lesson.misconceptions.length > 0 && (
             <section className="mt-10">
-              <h3 className="text-title-3">常见误区</h3>
+              <h3 className="text-title-3">{t('常见误区', 'Common misconceptions')}</h3>
               <ul className="mt-3 space-y-3">
                 {lesson.misconceptions.map((mis) => (
                   <li key={mis} className="flex gap-3 text-body">
@@ -110,7 +120,7 @@ export const LessonModal: React.FC<LessonModalProps> = ({
           )}
 
           <section className="well mt-10">
-            <p className="text-caption text-label-secondary">决策者要点</p>
+            <p className="text-caption text-label-secondary">{t('决策者要点', 'Key takeaway for decision-makers')}</p>
             <p className="mt-1 text-body font-semibold">{lesson.executiveTakeaway}</p>
           </section>
 
@@ -118,10 +128,12 @@ export const LessonModal: React.FC<LessonModalProps> = ({
             <section className="mt-12 border-t border-separator pt-10" aria-labelledby="quiz-title">
               <div className="flex items-baseline justify-between gap-4">
                 <h3 id="quiz-title" className="text-title-3">
-                  课后自测
+                  {t('课后自测', 'Quick quiz')}
                 </h3>
                 <span className="text-caption text-label-secondary">
-                  {submittedQuiz ? '已完成，成绩已记入学习档案' : '成绩将记入学习档案'}
+                  {submittedQuiz
+                    ? t('已完成，成绩已记入学习档案', 'Done. Your score has been saved to your learning record')
+                    : t('成绩将记入学习档案', 'Your score will be saved to your learning record')}
                 </span>
               </div>
 
@@ -153,9 +165,11 @@ export const LessonModal: React.FC<LessonModalProps> = ({
                             className={`choice ${stateClass}`}
                           >
                             <span>{opt}</span>
-                            {submittedQuiz && isCorrect && <CheckCircle2 className="h-5 w-5 shrink-0 text-success" aria-label="正确答案" />}
+                            {submittedQuiz && isCorrect && (
+                              <CheckCircle2 className="h-5 w-5 shrink-0 text-success" aria-label={t('正确答案', 'Correct answer')} />
+                            )}
                             {submittedQuiz && isSelected && !isCorrect && (
-                              <XCircle className="h-5 w-5 shrink-0 text-danger" aria-label="您的选择" />
+                              <XCircle className="h-5 w-5 shrink-0 text-danger" aria-label={t('您的选择', 'Your answer')} />
                             )}
                           </button>
                         );
@@ -164,7 +178,7 @@ export const LessonModal: React.FC<LessonModalProps> = ({
 
                     {submittedQuiz && (
                       <p className="mt-3 text-caption text-label-secondary">
-                        <span className="font-semibold text-label">解析　</span>
+                        <span className="font-semibold text-label">{t('解析　', 'Explanation: ')}</span>
                         {q.explanation}
                       </p>
                     )}
@@ -179,7 +193,7 @@ export const LessonModal: React.FC<LessonModalProps> = ({
                   disabled={!quizAnsweredAll}
                   className="btn btn-primary btn-block mt-8"
                 >
-                  提交自测
+                  {t('提交自测', 'Submit answers')}
                 </button>
               )}
             </section>
@@ -187,26 +201,52 @@ export const LessonModal: React.FC<LessonModalProps> = ({
 
           {/* 下一步 */}
           <div className="mt-12 flex flex-col gap-4 border-t border-separator pt-8 sm:flex-row sm:items-center sm:justify-between">
-            <span className="text-body text-label-secondary">学完了？继续下一步</span>
-            <button
-              type="button"
-              onClick={() => {
-                onClose();
-                if (lesson.nextStep.actionType === 'lesson' && onNavigateToNextLesson) {
-                  onNavigateToNextLesson(lesson.nextStep.targetId);
-                } else if (onNavigateToTool) {
-                  onNavigateToTool(lesson.nextStep.targetId);
-                }
-              }}
-              className="btn btn-primary"
-            >
-              {lesson.nextStep.label}
-            </button>
+            <span className="min-w-0 text-body text-label-secondary">
+              {nextInPath ? (
+                <>
+                  {t('路径下一课：', 'Next lesson on this path: ')}
+                  <span className="text-label">{nextInPath.title}</span>
+                </>
+              ) : (
+                t('学完了？继续下一步', 'Finished? Continue to the next step')
+              )}
+            </span>
+            <div className="flex flex-col gap-3 sm:shrink-0 sm:flex-row">
+              {nextInPath && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    onClose();
+                    nextInPath.onNext();
+                  }}
+                  className="btn btn-primary"
+                >
+                  {t('下一课', 'Next lesson')}
+                </button>
+              )}
+              {/* 路径模式下，「进入某一课」已由「下一课」代替 */}
+              {!(nextInPath && lesson.nextStep.actionType === 'lesson') && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    onClose();
+                    if (lesson.nextStep.actionType === 'lesson' && onNavigateToNextLesson) {
+                      onNavigateToNextLesson(lesson.nextStep.targetId);
+                    } else if (onNavigateToTool) {
+                      onNavigateToTool(lesson.nextStep.targetId);
+                    }
+                  }}
+                  className={`btn ${nextInPath ? 'btn-neutral' : 'btn-primary'}`}
+                >
+                  {lesson.nextStep.label}
+                </button>
+              )}
+            </div>
           </div>
 
           {!completed && (
             <button type="button" onClick={handleManualComplete} className="btn btn-neutral btn-block mt-4 sm:hidden">
-              标记学完
+              {t('标记学完', 'Mark as completed')}
             </button>
           )}
         </article>

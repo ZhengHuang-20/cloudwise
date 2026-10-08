@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useLang } from '../../context/LanguageContext';
 import { scoreTone, TONE_VAR } from './tone';
 
 /** 圆环得分（DESIGN.md §4.7）。颜色由分数自动决定，不要手动指定。 */
@@ -10,6 +11,7 @@ interface ScoreRingProps {
 }
 
 export const ScoreRing: React.FC<ScoreRingProps> = ({ value, size = 148, stroke = 12, caption }) => {
+  const { t } = useLang();
   const [shown, setShown] = useState(0);
 
   useEffect(() => {
@@ -26,7 +28,7 @@ export const ScoreRing: React.FC<ScoreRingProps> = ({ value, size = 148, stroke 
       className="relative inline-flex shrink-0 items-center justify-center"
       style={{ width: size, height: size }}
       role="img"
-      aria-label={`得分 ${value} / 100`}
+      aria-label={t(`得分 ${value} / 100`, `Score ${value} / 100`)}
     >
       <svg width={size} height={size} className="-rotate-90" aria-hidden="true">
         <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke="var(--color-separator)" strokeWidth={stroke} />

@@ -1,4 +1,11 @@
 import { SERVICE_COUNT_CN, SHOW_FDE } from '../lib/features';
+import { courseA } from './en/courseA';
+import { courseB } from './en/courseB';
+import { courseC } from './en/courseC';
+import { courseD } from './en/courseD';
+import { courseE } from './en/courseE';
+import { pathsEn } from './en/paths';
+import type { CourseEn, LessonEn } from './en/types';
 
 export interface QuizQuestion {
   question: string;
@@ -694,3 +701,75 @@ export const ROLE_LEARNING_PATHS: RoleLearningPath[] = ALL_ROLE_LEARNING_PATHS.m
   ...path,
   featuredLessonIds: path.featuredLessonIds.filter((id) => COURSES.some((course) => course.modules.some((mod) => mod.lessons.some((lesson) => lesson.id === id)))),
 }));
+
+// ---------- 英文版：src/data/en/ 下的覆盖层按 id 合并到中文数据上，结构与中文完全一致 ----------
+
+const EN_COURSES: Record<string, CourseEn> = {
+  'course-a-global-site': courseA,
+  'course-b-seo': courseB,
+  'course-c-geo': courseC,
+  'course-d-ai-agent': courseD,
+  'course-e-fde': courseE,
+};
+
+export const FRICTION_EN: Record<Course['frictionPoint'], string> = {
+  读不懂: 'Hard to read',
+  看不见: 'Invisible',
+  不被信: 'Not trusted',
+  接不住: "Can't keep up",
+  连不上: 'Not connected',
+};
+
+const localizeLesson = (lesson: Lesson, en: LessonEn | undefined): Lesson => {
+  if (!en) return lesson;
+  return {
+    ...lesson,
+    title: en.title,
+    summary: en.summary,
+    conceptContent: en.conceptContent,
+    executiveTakeaway: en.executiveTakeaway,
+    misconceptions: en.misconceptions,
+    quiz: lesson.quiz?.map((q, i) => ({
+      ...q,
+      question: en.quiz?.[i]?.question ?? q.question,
+      options: en.quiz?.[i]?.options ?? q.options,
+      explanation: en.quiz?.[i]?.explanation ?? q.explanation,
+    })),
+    caseSnippet: en.caseSnippet ?? lesson.caseSnippet,
+    nextStep: { ...lesson.nextStep, label: en.nextStepLabel },
+  };
+};
+
+const localizeCourse = (course: Course): Course => {
+  const en = EN_COURSES[course.id];
+  if (!en) return course;
+  return {
+    ...course,
+    title: en.title,
+    subtitle: en.subtitle,
+    targetAudience: en.targetAudience,
+    relatedService: en.relatedService,
+    heroCase: en.heroCase,
+    executiveModuleSummary: en.executiveModuleSummary,
+    relatedTool: course.relatedTool && en.toolName ? { ...course.relatedTool, name: en.toolName } : course.relatedTool,
+    modules: course.modules.map((mod) => ({
+      ...mod,
+      name: en.modules[mod.index]?.name ?? mod.name,
+      description: en.modules[mod.index]?.description ?? mod.description,
+      lessons: mod.lessons.map((lesson) => localizeLesson(lesson, en.lessons[lesson.id])),
+    })),
+  };
+};
+
+const COURSES_EN: Course[] = COURSES.map(localizeCourse);
+
+const ROLE_LEARNING_PATHS_EN: RoleLearningPath[] = ROLE_LEARNING_PATHS.map((path) =>
+  pathsEn[path.id] ? { ...path, ...pathsEn[path.id] } : path
+);
+
+/** 按界面语言取课程列表；英文版与中文版的 id、课时结构相同 */
+export const courseList = (lang: 'zh' | 'en'): Course[] => (lang === 'en' ? COURSES_EN : COURSES);
+
+/** 按界面语言取角色学习路径 */
+export const pathList = (lang: 'zh' | 'en'): RoleLearningPath[] =>
+  lang === 'en' ? ROLE_LEARNING_PATHS_EN : ROLE_LEARNING_PATHS;
