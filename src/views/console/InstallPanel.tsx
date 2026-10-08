@@ -59,6 +59,8 @@ site key：${site.siteKey}（公开标识，不是密钥）
 ${s.script}
 
 上线后打开网站任意页面，刷新后台「数据概览」即可看到访问。单页应用切换路由时会自动上报，不需要额外代码。
+来源渠道（搜索、AI 助手、社交、广告等）、国家地区、设备与浏览器由服务端自动识别；投放链接请带上 utm_source / utm_medium / utm_campaign 参数，后台会按活动统计。页面地址的查询参数不入库，同一页面不会被参数拆散。
+排除自己的访问：在网址后加 ?cw_ignore=1 打开一次（记在这台浏览器上），恢复用 ?cw_ignore=0。
 自查：在网址后加 ?cw_debug=1 打开页面，浏览器控制台会打印「[CloudWise] 已上报」；没有上报时控制台会给出原因（脚本标签缺 data-site、来源域名不匹配、被拦截插件或 CSP 拦截等）。
 
 二、线索表单（按网站情况任选一种）
@@ -76,7 +78,7 @@ ${s.curl}
 
 注意事项
 - 浏览器端只接受来自 ${site.domain}（含子域名，www 与不带 www 均可）的请求；在本地或其他测试域名上提交会被拒绝。服务器之间的调用不做域名校验。
-- 访问统计只记录匿名访客标识，不存 IP。
+- 访问统计只记录匿名访客标识，不存 IP；国家地区由托管平台按 IP 判断后只保存国家与省 / 州代码。
 `;
 };
 
@@ -94,9 +96,16 @@ export const InstallGuide: React.FC<{ site: Site }> = ({ site }) => {
               <Step
                 n={1}
                 title="统计：把脚本放进网站的 <head>"
-                desc="所有页面都要放。自动上报页面浏览，单页应用切换路由也会上报；只记录匿名访客标识，不存 IP。"
+                desc="所有页面都要放。自动上报页面浏览与停留时长，单页应用切换路由也会上报；来源渠道、国家地区、设备由服务端识别。只记录匿名访客标识，不存 IP。"
                 code={s.script}
               />
+              <div className="flex gap-3">
+                <span className="h-6 w-6 shrink-0" />
+                <ul className="list-disc space-y-1 pl-4 text-caption text-label-secondary">
+                  <li>投放链接带上 utm_source / utm_medium / utm_campaign 参数，「数据概览」的来源渠道里可以按活动查看效果。</li>
+                  <li>排除自己和同事的访问：在网址后加 ?cw_ignore=1 打开一次即可（记在当前浏览器），恢复用 ?cw_ignore=0。</li>
+                </ul>
+              </div>
               <Step
                 n={2}
                 title="线索：给表单加上 data-cw-lead"

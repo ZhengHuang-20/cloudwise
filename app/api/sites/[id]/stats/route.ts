@@ -1,1 +1,1 @@
-export { siteStats as GET } from '../../../../../src/server/routes/analytics';
+export { siteStats as GET } from '../../../../../src/server/routes/stats';

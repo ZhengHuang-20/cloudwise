@@ -39,6 +39,12 @@ export interface Lead {
   status: 'new' | 'contacted' | 'qualified' | 'closed' | 'invalid';
   note: string;
   createdAt: string;
+  /** 来源归因（提交时快照）：渠道、来源名、UTM 活动、落地页、国家代码；升级前的线索为空 */
+  channel: string;
+  source: string;
+  utmCampaign: string;
+  landingPath: string;
+  country: string;
 }
 
 export const LEAD_STATUS: Record<Lead['status'], string> = {
