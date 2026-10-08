@@ -15,9 +15,9 @@ export const geoVsSeo: Insight = {
   zh: {
     title: 'GEO 和 SEO 有什么区别？出海企业应该先做哪个',
     description:
-      'SEO 让网页在搜索结果里排得靠前，GEO 让 ChatGPT、Perplexity、Gemini、豆包等 AI 在回答里提到并引用你。本文对比两者的目标、衡量方式与工作内容，并给出出海企业的推进顺序。',
+      'SEO 让网页在搜索结果里排得靠前，GEO 让 ChatGPT、Perplexity、Gemini 等 AI 在回答里提到并引用你。本文对比两者的目标、衡量方式与工作内容，并给出出海企业的推进顺序。',
     answer:
-      'SEO（搜索引擎优化）的目标是让网页在 Google、百度等搜索结果列表里排得靠前；GEO（生成式引擎优化）的目标是让 ChatGPT、Perplexity、Gemini、豆包等 AI 在生成回答时提到并引用你。两者不是二选一：AI 联网回答时检索的往往就是搜索引擎的结果，所以 SEO 是 GEO 的底座，GEO 在此之上还要求内容可查证、有第三方来源。',
+      'SEO（搜索引擎优化）的目标是让网页在 Google、百度等搜索结果列表里排得靠前；GEO（生成式引擎优化）的目标是让 ChatGPT、Perplexity、Gemini 等 AI 在生成回答时提到并引用你。两者不是二选一：AI 联网回答时检索的往往就是搜索引擎的结果，所以 SEO 是 GEO 的底座，GEO 在此之上还要求内容可查证、有第三方来源。',
     body: `## 一张表看懂区别
 
 | | SEO | GEO |

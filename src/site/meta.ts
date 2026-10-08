@@ -103,8 +103,8 @@ export function routeMeta(route: Route, lang: Lang): PageMeta {
       return {
         title: t('GEO 洞察：出海 SEO 与 GEO 的方法、数据与实操', 'GEO insights: methods, data and practice for export SEO and GEO'),
         description: t(
-          '写给出海企业决策者与市场负责人的 SEO、GEO 实操文章：GEO 与 SEO 的区别、豆包与 ChatGPT 怎么引用企业官网、AI 可见性怎么测。',
-          'Practical SEO and GEO articles for export decision-makers and marketing leads: GEO vs SEO, how Doubao and ChatGPT cite company websites, and how to measure AI visibility.'
+          '写给出海企业决策者与市场负责人的 SEO、GEO 实操文章：GEO 与 SEO 的区别、AI 可见性怎么测、llms.txt 怎么写。',
+          'Practical SEO and GEO articles for export decision-makers and marketing leads: GEO vs SEO, how to measure AI visibility, and how to write llms.txt.'
         ),
       };
     case 'insight': {

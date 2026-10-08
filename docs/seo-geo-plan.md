@@ -141,6 +141,8 @@
 
 ### 3.6 域名与收录
 
+> 范围说明：这里只讲 chingeo.com 自身被豆包等国内平台收录的措施，是网站技术与运营工作，不对外写文章。对外的 GEO 内容只面向海外买家。
+
 - 正式域名 chingeo.com：在 Vercel 的 Domains 里设为主域名，`www.chingeo.com` 与 `*.vercel.app` 301 到它。
 - 开通并提交 `https://chingeo.com/sitemap.xml`：Google Search Console、**Bing Webmaster Tools**（Bing 索引同时供 Copilot 和 ChatGPT 搜索使用，比 Google 更直接影响 GEO）、百度搜索资源平台、**头条搜索站长平台**（字节系，与豆包同一生态）、360 与搜狗站长平台。各平台选“HTML 标签”验证，把验证码填进对应环境变量（见 `.env.example`）后重新部署即可。
 - 接入 **IndexNow**（Bing、Yandex 等）：内容更新时主动推送；百度用其「普通收录」API 推送。可以放在构建完成后的脚本里。
