@@ -1,7 +1,7 @@
 import { theme, type ThemeConfig } from 'antd';
 
 /**
- * 后台（#/login、#/console）使用 antd，主题与官网的深色 token 对齐（色值同 src/index.css 的 @theme）。
+ * 后台（/login、/console）使用 antd，主题与官网的深色 token 对齐（色值同 src/index.css 的 @theme）。
  * 官网页面不使用 antd，规范见 DESIGN.md §10。
  */
 const C = {

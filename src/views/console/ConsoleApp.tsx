@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { App as AntApp, Button, ConfigProvider, Empty, Spin } from 'antd';
 import zhCN from 'antd/locale/zh_CN';
-import type { TabId } from '../../components/navigation';
 import { useAuth } from '../../context/AuthContext';
 import { api } from '../../lib/api';
 import { ADMIN_SECTIONS, ConsoleContext, isSection, type ConsoleState, type Section } from './ConsoleContext';
@@ -18,8 +17,12 @@ import type { Site } from './types';
 
 const SITE_KEY = 'cw_console_site';
 
+/** 后台页面跳转的目标：官网首页、登录页、后台 */
+type ConsoleTarget = 'home' | 'login' | 'console';
+
+// 地址为 /console/<section>
 const readSection = (): Section => {
-  const sub = window.location.hash.replace(/^#\/?/, '').split('/')[1] ?? '';
+  const sub = window.location.pathname.split('/')[2] ?? '';
   return isSection(sub) ? sub : 'overview';
 };
 
@@ -37,7 +40,7 @@ const FullscreenSpin: React.FC = () => (
   </div>
 );
 
-const ConsoleShell: React.FC<{ onNavigate: (tab: TabId) => void }> = ({ onNavigate }) => {
+const ConsoleShell: React.FC<{ onNavigate: (tab: ConsoleTarget) => void }> = ({ onNavigate }) => {
   const { user, loading } = useAuth();
   const { message } = AntApp.useApp();
   const [sites, setSites] = useState<Site[] | null>(null);
@@ -51,8 +54,8 @@ const ConsoleShell: React.FC<{ onNavigate: (tab: TabId) => void }> = ({ onNaviga
   }, []);
 
   const go = useCallback((next: Section) => {
-    const hash = `#/console/${next}`;
-    if (window.location.hash !== hash) window.history.pushState(null, '', hash);
+    const url = `/console/${next}`;
+    if (window.location.pathname !== url) window.history.pushState(null, '', url);
     setSection(next);
     window.scrollTo({ top: 0, behavior: 'instant' });
   }, []);
@@ -133,12 +136,12 @@ const ConsoleShell: React.FC<{ onNavigate: (tab: TabId) => void }> = ({ onNaviga
 
 export interface ConsoleAppProps {
   tab: 'login' | 'console';
-  onNavigate: (tab: TabId) => void;
+  onNavigate: (tab: ConsoleTarget) => void;
   onGoToBooking: () => void;
 }
 
 /**
- * 后台入口（#/login、#/console/*）：由 App 懒加载，antd 只打进这个分块，官网页面不受影响。
+ * 后台入口（/login、/console/*）：由 RouteView 懒加载且只在浏览器端渲染，antd 只打进这个分块，官网页面不受影响。
  */
 export default function ConsoleApp({ tab, onNavigate, onGoToBooking }: ConsoleAppProps) {
   const toConsole = useCallback(() => onNavigate('console'), [onNavigate]);

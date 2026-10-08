@@ -2,7 +2,7 @@ import { createContext, useContext } from 'react';
 import type { AuthUser } from '../../context/AuthContext';
 import type { Site } from './types';
 
-/** 后台的功能页：前三项按站点查看，后三项仅管理员可见。地址为 #/console/<section>。 */
+/** 后台的功能页：前三项按站点查看，后三项仅管理员可见。地址为 /console/<section>。 */
 export type Section = 'overview' | 'leads' | 'install' | 'orgs' | 'users' | 'sites';
 
 export const SITE_SECTIONS: Section[] = ['overview', 'leads', 'install'];

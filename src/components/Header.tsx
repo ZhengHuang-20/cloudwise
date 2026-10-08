@@ -1,26 +1,22 @@
 import React, { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { Menu, User, X } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useLang } from '../context/LanguageContext';
-import { NAV_GROUPS, NAV_ITEMS, TabId } from './navigation';
+import { NAV_GROUPS, NAV_ITEMS } from './navigation';
 import { LanguageSwitch } from './LanguageSwitch';
 
 interface HeaderProps {
-  currentTab: TabId;
-  onNavigate: (tab: TabId) => void;
+  /** 当前页面所属的导航项（地址的第一段，首页为 home） */
+  currentTab: string;
   openBookingModal: () => void;
   openMySpaceModal: () => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({
-  currentTab,
-  onNavigate,
-  openBookingModal,
-  openMySpaceModal,
-}) => {
+export const Header: React.FC<HeaderProps> = ({ currentTab, openBookingModal, openMySpaceModal }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { user } = useAuth();
-  const { t, tb } = useLang();
+  const { t, tb, path } = useLang();
 
   useEffect(() => {
     if (!isMenuOpen) return;
@@ -35,10 +31,9 @@ export const Header: React.FC<HeaderProps> = ({
     };
   }, [isMenuOpen]);
 
-  const go = (tab: TabId) => {
-    setIsMenuOpen(false);
-    onNavigate(tab);
-  };
+  const closeMenu = () => setIsMenuOpen(false);
+  // 后台只有中文，不加语言前缀
+  const accountHref = user ? '/console' : '/login';
 
   const runAndClose = (action: () => void) => () => {
     setIsMenuOpen(false);
@@ -50,25 +45,24 @@ export const Header: React.FC<HeaderProps> = ({
       <header className="material sticky top-0 z-40 border-b border-hairline">
         <div className="layout-wide flex h-13 items-center gap-6">
           {/* 品牌 */}
-          <button
-            type="button"
-            onClick={() => go('home')}
+          <Link
+            href={path('/')}
+            onClick={closeMenu}
             className="flex shrink-0 items-center gap-2 text-label"
-            aria-label={t('云端智荐首页', 'Cloudwise home')}
+            aria-label={t('云端智荐首页', 'ChinGEO home')}
           >
-            <img src="/brand/logo-mark.png" alt="" className="h-7 w-auto" />
-            <span className="text-body font-semibold">{t('云端智荐', 'Cloudwise')}</span>
-          </button>
+            <img src="/brand/logo-mark.png" alt="" width={32} height={28} className="h-7 w-auto" />
+            <span className="text-body font-semibold">{t('云端智荐', 'ChinGEO')}</span>
+          </Link>
 
           {/* 桌面导航 */}
           <nav aria-label={t('主导航', 'Main navigation')} className="hidden flex-1 items-stretch justify-center self-stretch lg:flex">
             {NAV_ITEMS.map((item) => {
               const isActive = currentTab === item.id;
               return (
-                <button
+                <Link
                   key={item.id}
-                  type="button"
-                  onClick={() => go(item.id)}
+                  href={path(item.href)}
                   aria-current={isActive ? 'page' : undefined}
                   className={`relative flex items-center px-3 text-caption whitespace-nowrap transition-colors duration-200 after:absolute after:inset-x-3 after:bottom-0 after:h-0.5 after:rounded-full after:transition-colors ${
                     isActive
@@ -77,7 +71,7 @@ export const Header: React.FC<HeaderProps> = ({
                   }`}
                 >
                   {tb(item.label)}
-                </button>
+                </Link>
               );
             })}
           </nav>
@@ -86,14 +80,9 @@ export const Header: React.FC<HeaderProps> = ({
           <div className="ml-auto flex shrink-0 items-center gap-2 lg:ml-0">
             <LanguageSwitch className="hidden sm:inline-flex" />
 
-            <button
-              type="button"
-              onClick={() => go(user ? 'console' : 'login')}
-              aria-current={currentTab === 'login' || currentTab === 'console' ? 'page' : undefined}
-              className="btn btn-neutral btn-sm hidden sm:inline-flex"
-            >
+            <Link href={accountHref} rel="nofollow" className="btn btn-neutral btn-sm hidden sm:inline-flex">
               {user ? t('客户后台', 'Client console') : t('登录', 'Sign in')}
-            </button>
+            </Link>
 
             <button type="button" onClick={openBookingModal} className="btn btn-primary btn-sm">
               {t('预约诊断', 'Book a call')}
@@ -130,14 +119,14 @@ export const Header: React.FC<HeaderProps> = ({
           className="fixed inset-x-0 bottom-0 top-13 z-[45] overflow-y-auto bg-canvas animate-fade-in lg:hidden"
         >
           <nav aria-label={t('主导航', 'Main navigation')} className="layout-wide pb-12 pt-6">
-            <button
-              type="button"
-              onClick={() => go('home')}
+            <Link
+              href={path('/')}
+              onClick={closeMenu}
               aria-current={currentTab === 'home' ? 'page' : undefined}
-              className={`py-2 text-title-2 ${currentTab === 'home' ? 'text-label' : 'text-label-secondary'}`}
+              className={`block py-2 text-title-2 ${currentTab === 'home' ? 'text-label' : 'text-label-secondary'}`}
             >
               {t('首页', 'Home')}
-            </button>
+            </Link>
 
             {NAV_GROUPS.map((group) => (
               <div key={group.title.zh} className="mt-8">
@@ -147,17 +136,17 @@ export const Header: React.FC<HeaderProps> = ({
                     const isActive = currentTab === item.id;
                     return (
                       <li key={item.id}>
-                        <button
-                          type="button"
-                          onClick={() => go(item.id)}
+                        <Link
+                          href={path(item.href)}
+                          onClick={closeMenu}
                           aria-current={isActive ? 'page' : undefined}
-                          className="w-full py-2.5 text-left"
+                          className="block w-full py-2.5 text-left"
                         >
                           <span className={`block text-title-2 ${isActive ? 'text-label' : 'text-label-secondary'}`}>
                             {tb(item.fullLabel)}
                           </span>
                           <span className="mt-0.5 block text-caption text-label-secondary">{tb(item.desc)}</span>
-                        </button>
+                        </Link>
                       </li>
                     );
                   })}
@@ -180,13 +169,9 @@ export const Header: React.FC<HeaderProps> = ({
               >
                 {t('我的空间', 'My space')}
               </button>
-              <button
-                type="button"
-                onClick={() => go(user ? 'console' : 'login')}
-                className="btn btn-neutral btn-lg btn-block"
-              >
+              <Link href={accountHref} rel="nofollow" onClick={closeMenu} className="btn btn-neutral btn-lg btn-block">
                 {user ? t('客户后台', 'Client console') : t('客户登录', 'Client sign in')}
-              </button>
+              </Link>
               <LanguageSwitch size="lg" className="btn-block" />
             </div>
           </nav>

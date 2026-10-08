@@ -1,44 +1,4 @@
-// 模板资源、术语百科的英文覆盖层，按 id 合并到 src/data/resourcesData.ts 与 src/data/glossaryData.ts 的中文数据上。
-import { SHOW_FDE } from '../../lib/features';
-
-export const RESOURCES_EN: Record<string, { title: string; category: string; description: string }> = {
-  'res-buyer-persona': {
-    title: 'Overseas B2B buyer persona and intent-modelling template',
-    category: 'GEO / content planning',
-    description:
-      'A standard worksheet that maps the core needs, search habits and AI question intent of overseas procurement managers, engineering directors and distributors.',
-  },
-  'res-geo-clusters': {
-    title: 'Buyer question-cluster worksheet',
-    category: 'GEO / content planning',
-    description:
-      'A general version of the Aikang Medical approach: start from one business scenario, list 30 English questions buyers ask, and write a direct answer for each.',
-  },
-  'res-seo-keywords-map': {
-    title: '60 core export keywords, one keyword per page (Taining Tech method)',
-    category: 'SEO',
-    description:
-      'Stops your own pages from competing for the same keyword, and organises the keywords into informational, comparison and procurement intent.',
-  },
-  'res-site-launch-checklist': {
-    title: '36-point technical and SEO acceptance checklist before an export website goes live',
-    category: 'Website build',
-    description:
-      'Covers Core Web Vitals, hreflang, Schema validation, direct form-to-CRM routing and the AI crawler path.',
-  },
-  'res-ai-whitepaper': {
-    title: 'The 2026 AI pre-sales whitepaper for Chinese companies going global',
-    category: 'Going-global strategy',
-    description: `Covers the five bottlenecks in overseas lead generation, what Aikang Medical and Taining Tech did, the six-step GEO closed loop and${SHOW_FDE ? ' the FDE three-layer build' : ' system integration in practice'}.`,
-  },
-  'res-fde-needs-spec': {
-    title: 'FDE three-layer build: current-state checklist',
-    category: 'FDE on-site',
-    description:
-      'Helps business and IT leads check each layer: which experience has not yet been written as standards, which data still sits in Excel and personal mailboxes, and which scenarios suit AI first.',
-  },
-};
-
+// 术语百科的英文覆盖层，按 id 合并到 src/data/glossaryData.ts 的中文数据上。
 export interface GlossaryEn {
   term: string;
   questionTitle: string;

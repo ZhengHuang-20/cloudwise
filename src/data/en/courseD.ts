@@ -27,7 +27,7 @@ export const courseD: CourseEn = {
       conceptContent: `A real export scenario:
 - 03:12 (late night in Beijing): a procurement director of an engineering company in California visits the website and asks in the chat window: "Do your drainage components meet AASHTO M252? If we order 500 pieces for a first batch, roughly how long is the lead time?"
 - 03:13: on a traditional website, this hour usually brings a cold "Customer service is offline, please leave a message". The buyer closes the page and looks for the next competitor.
-- Cloudwise AI customer service: within milliseconds it queries the ASTM and AASHTO compliance parameter knowledge base and replies: "Yes, it fully meets the standard. For 500 pieces, the standard production lead time is about 18 working days. Which port on the US West Coast should we calculate the landed price for, including duties?"
+- ChinGEO AI customer service: within milliseconds it queries the ASTM and AASHTO compliance parameter knowledge base and replies: "Yes, it fully meets the standard. For 500 pieces, the standard production lead time is about 18 working days. Which port on the US West Coast should we calculate the landed price for, including duties?"
 - 03:14: the buyer replies with a port. The AI instantly extracts "intent level: HIGH", "order quantity: 500 pcs" and "destination port: Long Beach", creates a lead card in the company CRM, and sends a high-priority to-do alert to the regional sales manager on WeCom.
 - 09:00: the domestic salesperson starts work with no cold outreach needed. They follow up with an accurate quotation straight away, and win the order.`,
       misconceptions: [
@@ -42,7 +42,7 @@ export const courseD: CourseEn = {
       title: '9.2 For decision-makers: work out the cost with the enquiry-loss formula',
       summary:
         'Enter monthly enquiries Q, the share arriving at night p, average order value A and close rate c, and work out how much real money slow replies lose each year.',
-      conceptContent: `The Cloudwise official loss-estimation model: L = Q × p × r × c × A. Here Q is total monthly enquiries, p is the share that arrives at night across time zones, r is the loss rate from delayed replies, c is the close rate and A is the average order value. Many companies lose hundreds of thousands of dollars of orders a year to slow overnight replies, while deploying AI customer service costs far less, so the return is overwhelming.`,
+      conceptContent: `The ChinGEO official loss-estimation model: L = Q × p × r × c × A. Here Q is total monthly enquiries, p is the share that arrives at night across time zones, r is the loss rate from delayed replies, c is the close rate and A is the average order value. Many companies lose hundreds of thousands of dollars of orders a year to slow overnight replies, while deploying AI customer service costs far less, so the return is overwhelming.`,
       misconceptions: [
         'Believing the customer is not in a hurry, and that replying to the email the next morning is good enough. Overseas procurement teams request quotes from three suppliers at once on average, and the first professional reply wins 70% more often.',
       ],

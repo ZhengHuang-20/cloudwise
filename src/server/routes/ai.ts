@@ -109,7 +109,7 @@ function chatFallback(r: ChatRequest) {
   let intentReason = '常规业务咨询';
   const services: string[] = [];
   let next = '建议在首页完成“AI 可见性测评”，再用“方案规划”匹配最适合的服务组合。';
-  const citations = ['《云端智荐 AI 出海白皮书》', '《出海企业五个卡点治理指南》'];
+  const citations = ['《云端智荐服务说明》', '《出海学院课程》'];
 
   if (has('联系', '电话', '手机', '人工', '客户经理', '负责人', '微信')) {
     const list = CONTACTS.map((c) => `- ${c.title}：${c.name}，手机 ${c.phone}`).join('\n');
@@ -182,7 +182,7 @@ function chatFallbackEn(r: ChatRequest) {
   let intentReason = 'General business question';
   const services: string[] = [];
   let next = 'Run the AI visibility audit on the homepage first, then use the Project planner to match the right service package.';
-  const citations = ['Cloudwise white paper on AI for going global', 'Guide to the five export bottlenecks'];
+  const citations = ['ChinGEO services overview', 'ChinGEO Export Academy courses'];
 
   if (has('contact', 'phone', 'call', 'human', 'account manager', 'talk to', 'speak to', 'wechat')) {
     const list = CONTACTS.map((c) => `- ${c.titleEn}: ${c.nameEn}, phone ${c.phone}`).join('\n');
@@ -200,7 +200,7 @@ function chatFallbackEn(r: ChatRequest) {
     citations.push('Aikang Medical global site and GEO case');
   } else if (has('enquir', 'inquir', 'crm', 'lead', 'overnight', 'after hours', 'missed', 'customer service')) {
     answer =
-      'Overseas buyers face a time-zone gap of more than 12 hours, and a large share of high-value enquiries arrive during the Chinese night. Traditional forms or manual replies usually wait until the next morning, and by then the buyer has already asked your competitors.\n\nCloudwise AI customer service works from your structured knowledge base (parameter sheets, certifications, engineering cases). At 3 a.m. it replies to technical questions in several languages, extracts order quantity and lead-time requirements, and writes them to your CRM and WeCom, so the salesperson can send an accurate quotation as soon as they start work.';
+      'Overseas buyers face a time-zone gap of more than 12 hours, and a large share of high-value enquiries arrive during the Chinese night. Traditional forms or manual replies usually wait until the next morning, and by then the buyer has already asked your competitors.\n\nChinGEO AI customer service works from your structured knowledge base (parameter sheets, certifications, engineering cases). At 3 a.m. it replies to technical questions in several languages, extracts order quantity and lead-time requirements, and writes them to your CRM and WeCom, so the salesperson can send an accurate quotation as soon as they start work.';
     intent = 'HIGH';
     intentReason = 'Concerned about lost enquiries and conversion leakage, which points to an AI customer service opportunity';
     services.push('AI customer service and system integration');
@@ -221,7 +221,7 @@ function chatFallbackEn(r: ChatRequest) {
     next = 'Book a 60-minute technical integration review to go through your current systems face to face with our technical experts.';
   } else {
     const connect = show ? 'experience, systems and AI are not yet connected, to be solved by an FDE on-site' : 'enquiries are not yet connected to the CRM and ERP';
-    answer = `Hello. I am the Cloudwise AI pre-sales advisor. We focus on the five bottlenecks in an export company’s overseas lead-generation chain: invisible (SEO/GEO), hard to read (websites), not trusted (authoritative content), can’t keep up (AI customer service), and not connected (${connect}).\n\nTell me about your main products and the biggest challenges you face in overseas lead generation today, and I will map out the most precise route forward.`;
+    answer = `Hello. I am the ChinGEO AI pre-sales advisor. We focus on the five bottlenecks in an export company’s overseas lead-generation chain: invisible (SEO/GEO), hard to read (websites), not trusted (authoritative content), can’t keep up (AI customer service), and not connected (${connect}).\n\nTell me about your main products and the biggest challenges you face in overseas lead generation today, and I will map out the most precise route forward.`;
     intent = 'LOW';
     intentReason = 'Early exploratory conversation';
     services.push('AI visibility audit', 'Overseas websites');

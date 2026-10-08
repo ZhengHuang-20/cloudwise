@@ -67,7 +67,7 @@ const safeLookup: net.LookupFunction = (hostname, options, callback) => {
 };
 
 // 部分站点会拒绝空 UA，这里如实标明是测评程序。
-const AUDIT_UA = 'Mozilla/5.0 (compatible; CloudWiseAudit/1.0)';
+const AUDIT_UA = 'Mozilla/5.0 (compatible; ChinGEOAudit/1.0; +https://chingeo.com)';
 
 interface Fetched {
   status: number;

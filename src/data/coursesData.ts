@@ -321,9 +321,9 @@ const ALL_COURSES: Course[] = [
             executiveTakeaway: '关键词不是拍脑袋想的，必须来源于海外买家的真实采购意图与当地工程技术规范。',
             videoUrl: '/videos/b/b-3-5.mp4',
             nextStep: {
-              label: '下载泰宁科创关键词映射表模板',
-              actionType: 'tool',
-              targetId: 'resources-templates'
+              label: '预约诊断，规划贵司的核心词体系',
+              actionType: 'booking',
+              targetId: 'booking'
             }
           }
         ]

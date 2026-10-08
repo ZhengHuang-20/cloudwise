@@ -3,7 +3,7 @@ import type { CourseEn } from './types';
 export const courseC: CourseEn = {
   title: 'GEO——Get AI to name you in its answers',
   subtitle:
-    'Cloudwise flagship course: how AI picks suppliers, how to measure your position inside AI, and how to keep improving through a six-step closed loop.',
+    'ChinGEO flagship course: how AI picks suppliers, how to measure your position inside AI, and how to keep improving through a six-step closed loop.',
   targetAudience: 'Export decision-makers, marketing directors, heads of export sales',
   relatedService: 'Export GEO',
   heroCase: 'Aikang Medical: 91 content items planned for the year and an AI recommendation score of 95',
@@ -16,7 +16,7 @@ export const courseC: CourseEn = {
       description: 'How overseas buyers’ purchasing behaviour has changed, and how large models work',
     },
     3: {
-      name: 'M3 Closed loop: Cloudwise’s six-step GEO method',
+      name: 'M3 Closed loop: ChinGEO’s six-step GEO method',
       description: 'Diagnose, model, create content, build sources, manage reputation and monitor, iterated monthly',
     },
     10: {
@@ -77,7 +77,7 @@ SEO is the water channel; GEO is the knowledge that flows together into the sea.
       title: '3.1 Overview of the six-step loop: diagnosis, modelling, content, sources, reputation and monitoring',
       summary:
         'Stop running one-off blind campaigns. Run six steps of data-driven iteration every month, so that the work accumulates into a lasting international digital asset.',
-      conceptContent: `Cloudwise’s standard GEO delivery follows a strict six-step closed loop:
+      conceptContent: `ChinGEO’s standard GEO delivery follows a strict six-step closed loop:
 1. Diagnosis: run hundreds of probing questions across the major platforms in fresh, memory-free sessions, to map the current position and the gap with competitors.
 2. Modelling: reconstruct the frequent purchase intents and real question clusters of three to seven overseas decision-making roles (procurement, engineers, distributors).
 3. Content: create the high-value technical white papers, compliance comparison guides and numerical definitions that AI is most willing to cite.
@@ -99,7 +99,7 @@ SEO is the water channel; GEO is the knowledge that flows together into the sea.
 - This compares two different sites. It is not a before-and-after of one site after a rebuild. Both scores were estimated by the third-party evaluation platform arobis.ai on the same basis, covering content structure, definition completeness and source readiness.
 - More solid business evidence comes from the Google Analytics 4 back end: AI domains such as chatgpt.com and perplexity appear as referral sources, and for several months they have consistently brought visits from engineers in overseas orthopaedic device procurement departments, with an average session of 4 minutes 35 seconds.
 
-Being upfront about the basis, and not playing with numbers, is what makes Cloudwise a credible export engineering team.`,
+Being upfront about the basis, and not playing with numbers, is what makes ChinGEO a credible export engineering team.`,
       caseSnippet: {
         company: 'Aikang Medical',
         title: 'A global GEO example from a leading 3D-printed orthopaedic company',

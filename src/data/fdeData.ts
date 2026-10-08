@@ -1,6 +1,6 @@
 // FDE 驻场服务的方法论内容：三层建设、每周闭环与离场设计。
 // 服务页的三层图使用这里的数据；AI 顾问的知识库（src/server/knowledge.ts）与课程 E、术语表中的同类表述需保持一致。
-import type { Bi } from '../context/LanguageContext';
+import type { Bi } from '../lib/i18n';
 
 export interface FdeLayer {
   step: 1 | 2 | 3;

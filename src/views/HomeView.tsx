@@ -1,16 +1,13 @@
 import React, { useRef } from 'react';
+import Link from 'next/link';
 import { ChevronRight, ListChecks, Lock, Radar } from 'lucide-react';
-import { TabId } from '../components/navigation';
 import { Reveal } from '../components/ui/Reveal';
 import { SERVICE_IDENTITY, ServiceKey } from '../components/ui/serviceIdentity';
 import { SERVICE_COUNT_CN, SERVICE_COUNT_EN, SHOW_FDE } from '../lib/features';
 import { Bi, useLang } from '../context/LanguageContext';
 import { VisibilityAudit } from './home/VisibilityAudit';
-
-interface HomeViewProps {
-  onNavigate: (tab: TabId) => void;
-  openBookingModal: () => void;
-}
+import { useSite } from '../site/SiteContext';
+import { SERVICES as SERVICE_DATA } from '../data/servicesData';
 
 interface ServiceCard {
   key: ServiceKey;
@@ -70,7 +67,7 @@ const SERVICES = SHOW_FDE ? ALL_SERVICES : ALL_SERVICES.filter((service) => serv
 
 // 售前工具：tab 为 'audit' 时滚动到首页的 AI 可见性测评，其余跳转到对应页面
 const TOOLS: {
-  tab: TabId | 'audit';
+  tab: 'audit' | 'configurator' | 'deal-room';
   icon: React.ComponentType<{ className?: string }>;
   title: Bi;
   desc: Bi;
@@ -109,6 +106,8 @@ const TOOLS: {
 ];
 
 const CASES: {
+  /** 案例详情页 /cases/<slug> */
+  slug: string;
   meta: Bi;
   name: Bi;
   stat: string;
@@ -118,6 +117,7 @@ const CASES: {
   pains: Bi;
 }[] = [
   {
+    slug: 'ak-medical',
     meta: { zh: '港股上市 · 骨科植入物头部企业', en: 'Hong Kong-listed · leading orthopaedic implant maker' },
     name: { zh: '爱康医疗', en: 'Aikang Medical' },
     stat: '47 → 95',
@@ -130,6 +130,7 @@ const CASES: {
     pains: { zh: '读不懂 · 不被信', en: 'Hard to read · Not trusted' },
   },
   {
+    slug: 'tide-lion',
     meta: { zh: '国家级专精特新“小巨人” · 环保水务', en: 'National "little giant" specialised SME · water environment' },
     name: { zh: '泰宁科创', en: 'Taining Tech' },
     stat: '60',
@@ -145,9 +146,12 @@ const CASES: {
 
 const prefersReducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-export const HomeView: React.FC<HomeViewProps> = ({ onNavigate, openBookingModal }) => {
+const serviceSlug = (key: ServiceKey) => SERVICE_DATA.find((svc) => svc.key === key)?.slug ?? '';
+
+export const HomeView: React.FC = () => {
   const auditInputRef = useRef<HTMLInputElement>(null);
-  const { t, tb } = useLang();
+  const { t, tb, path } = useLang();
+  const { openBooking: openBookingModal, navigate } = useSite();
 
   const scrollToAudit = () => {
     document.getElementById('audit')?.scrollIntoView({
@@ -161,7 +165,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate, openBookingModal
     <div>
       {/* ===================== Hero ===================== */}
       <section className="layout-text pt-[clamp(4rem,2rem+6vw,7.5rem)] text-center">
-        <p className="eyebrow">{t('云端智荐 · AI 出海售前系统', 'Cloudwise · AI pre-sales system for going global')}</p>
+        <p className="eyebrow">{t('云端智荐 · AI 出海售前系统', 'ChinGEO · AI pre-sales system for going global')}</p>
         <h1 className="mt-4 text-display">
           {t('让海外买家找到你', 'Help overseas buyers find you')}
           <br />
@@ -188,7 +192,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate, openBookingModal
         <VisibilityAudit
           inputRef={auditInputRef}
           openBookingModal={openBookingModal}
-          onGoToConfigurator={() => onNavigate('configurator')}
+          onGoToConfigurator={() => navigate('/configurator')}
         />
       </section>
 
@@ -217,10 +221,9 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate, openBookingModal
                   ? 'md:col-span-2 lg:col-span-2'
                   : 'lg:col-span-2';
             return (
-              <button
+              <Link
                 key={service.key}
-                type="button"
-                onClick={() => onNavigate('services')}
+                href={path(`/services/${serviceSlug(service.key)}`)}
                 className={`tile interactive group flex flex-col items-start ${span}`}
               >
                 <Icon className={`h-8 w-8 ${identity.text}`} />
@@ -230,7 +233,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate, openBookingModal
                   {tb(service.link)}
                   <ChevronRight className="transition-transform duration-200 group-hover:translate-x-0.5" />
                 </span>
-              </button>
+              </Link>
             );
           })}
         </Reveal>
@@ -252,13 +255,8 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate, openBookingModal
         <Reveal className="mt-12 grid grid-cols-1 gap-4 md:grid-cols-3 md:gap-5">
           {TOOLS.map((tool) => {
             const Icon = tool.icon;
-            return (
-              <button
-                key={tool.tab}
-                type="button"
-                onClick={() => (tool.tab === 'audit' ? scrollToAudit() : onNavigate(tool.tab))}
-                className="tile interactive group flex flex-col items-start"
-              >
+            const body = (
+              <>
                 <Icon className="h-8 w-8 text-label" />
                 <h3 className="mt-6 text-title-2">{tb(tool.title)}</h3>
                 <p className="mt-3 flex-1 text-body text-label-secondary">{tb(tool.desc)}</p>
@@ -266,7 +264,26 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate, openBookingModal
                   {tb(tool.link)}
                   <ChevronRight className="transition-transform duration-200 group-hover:translate-x-0.5" />
                 </span>
+              </>
+            );
+            return tool.tab === 'audit' ? (
+              <button
+                key={tool.tab}
+                type="button"
+                onClick={scrollToAudit}
+                className="tile interactive group flex flex-col items-start"
+              >
+                {body}
               </button>
+            ) : (
+              <Link
+                key={tool.tab}
+                href={path(`/${tool.tab}`)}
+                rel={tool.tab === 'deal-room' ? 'nofollow' : undefined}
+                className="tile interactive group flex flex-col items-start"
+              >
+                {body}
+              </Link>
             );
           })}
         </Reveal>
@@ -279,18 +296,17 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate, openBookingModal
           <h2 className="mt-3 text-headline">
             <span className="inline-block">{t('看制造企业怎样走向海外。', 'See how manufacturers go overseas.')}</span>
           </h2>
-          <button type="button" onClick={() => onNavigate('cases')} className="link mt-5 text-intro">
+          <Link href={path('/cases')} className="link mt-5 text-intro">
             {t('查看全部案例', 'View all cases')}
             <ChevronRight />
-          </button>
+          </Link>
         </Reveal>
 
         <Reveal className="mt-12 grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-5">
           {CASES.map((item) => (
-            <button
+            <Link
               key={item.name.zh}
-              type="button"
-              onClick={() => onNavigate('cases')}
+              href={path(`/cases/${item.slug}`)}
               className="tile interactive group flex flex-col items-start"
             >
               <p className="text-caption text-label-secondary">{tb(item.meta)}</p>
@@ -311,7 +327,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate, openBookingModal
                   <ChevronRight className="transition-transform duration-200 group-hover:translate-x-0.5" />
                 </span>
               </div>
-            </button>
+            </Link>
           ))}
         </Reveal>
       </section>
