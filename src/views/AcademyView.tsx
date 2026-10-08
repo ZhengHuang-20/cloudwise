@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { CheckCircle2, ChevronDown, ChevronRight, PlayCircle } from 'lucide-react';
-import { COURSES, Lesson, ROLE_LEARNING_PATHS } from '../data/coursesData';
+import { COURSES, Lesson, RoleLearningPath, ROLE_LEARNING_PATHS } from '../data/coursesData';
 import { useApp } from '../context/AppContext';
 import { LessonModal } from '../components/LessonModal';
 import { PageHeader } from '../components/ui/PageHeader';
@@ -30,12 +30,85 @@ const findLesson = (lessonId: string) => {
   return null;
 };
 
+/** 路径里的课按顺序列出；有课程被隐藏（如 FDE 关闭）时已在数据层过滤掉 */
+const pathLessons = (path: RoleLearningPath) =>
+  path.featuredLessonIds.flatMap((id) => {
+    const found = findLesson(id);
+    return found ? [found] : [];
+  });
+
+/** 角色学习路径的课程列表。点击任一课直接播放，课程标签页随之切换。 */
+const PathPanel: React.FC<{
+  path: RoleLearningPath;
+  lastLessonId: string | null;
+  onOpenLesson: (lessonId: string) => void;
+  onClose: () => void;
+}> = ({ path, lastLessonId, onOpenLesson, onClose }) => {
+  const { isLessonCompleted } = useApp();
+  const lessons = pathLessons(path);
+  const doneCount = lessons.filter(({ lesson }) => isLessonCompleted(lesson.id)).length;
+
+  return (
+    <section className="tile mt-6 animate-fade-in" aria-labelledby="path-title">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0">
+          <p className="text-caption text-label-secondary">
+            学习路径 · 已学 <span className="tabular-nums text-label">{doneCount}</span> / {lessons.length} 课
+          </p>
+          <h3 id="path-title" className="mt-1 text-title-2">
+            {path.title}
+          </h3>
+          <p className="mt-2 text-body text-label-secondary">学完目标：{path.endGoal}</p>
+        </div>
+        <button type="button" onClick={onClose} className="btn btn-neutral btn-sm shrink-0">
+          收起路径
+        </button>
+      </div>
+
+      <ol className="mt-6 divide-y divide-separator border-t border-separator">
+        {lessons.map(({ course, lesson }, index) => {
+          const completed = isLessonCompleted(lesson.id);
+          const last = lesson.id === lastLessonId;
+          return (
+            <li key={lesson.id}>
+              <button
+                type="button"
+                onClick={() => onOpenLesson(lesson.id)}
+                aria-current={last ? 'step' : undefined}
+                className="group flex w-full items-center gap-4 py-4 text-left transition-colors hover:bg-surface-hover"
+              >
+                {completed ? (
+                  <CheckCircle2 className="h-6 w-6 shrink-0 text-success" aria-label="已学完" />
+                ) : (
+                  <span className="flex h-6 w-6 shrink-0 items-center justify-center text-body tabular-nums text-label-secondary">
+                    {index + 1}
+                  </span>
+                )}
+                <span className="min-w-0 flex-1">
+                  <span className={`block text-body ${completed ? 'text-label-secondary' : 'text-label'} ${last ? 'font-semibold' : ''}`}>
+                    {lesson.title}
+                  </span>
+                  <span className="mt-0.5 block text-caption text-label-secondary">
+                    {last ? '上次学到 · ' : ''}课程 {course.code} · {splitTitle(course.title).short} · {lesson.durationMinutes} 分钟
+                  </span>
+                </span>
+                <ChevronRight className="h-5 w-5 shrink-0 text-label-tertiary transition-transform duration-200 group-hover:translate-x-0.5" />
+              </button>
+            </li>
+          );
+        })}
+      </ol>
+    </section>
+  );
+};
+
 export const AcademyView: React.FC<AcademyViewProps> = ({ onGoToTool }) => {
   const { isLessonCompleted, getCourseProgressPercentage, totalCompletedLessons } = useApp();
 
   const [activeCourseId, setActiveCourseId] = useState<string>('course-c-geo');
   const [activeLesson, setActiveLesson] = useState<Lesson | null>(null);
-  const [selectedRolePathId, setSelectedRolePathId] = useState<string | null>(null);
+  const [lastLessonId, setLastLessonId] = useState<string | null>(null);
+  const [activePathId, setActivePathId] = useState<string | null>(null);
   const [expandedModules, setExpandedModules] = useState<Record<number, boolean>>({
     1: true,
     2: true,
@@ -58,8 +131,26 @@ export const AcademyView: React.FC<AcademyViewProps> = ({ onGoToTool }) => {
     if (found) {
       setActiveCourseId(found.course.id);
       setActiveLesson(found.lesson);
+      setLastLessonId(found.lesson.id);
     }
   };
+
+  const activePath = ROLE_LEARNING_PATHS.find((p) => p.id === activePathId) ?? null;
+
+  // 「开始学习」：进入路径，从第一节未学完的课开始播放
+  const startPath = (path: RoleLearningPath) => {
+    setActivePathId(path.id);
+    const firstOpen = path.featuredLessonIds.find((id) => !isLessonCompleted(id)) ?? path.featuredLessonIds[0];
+    openLessonById(firstOpen);
+  };
+
+  // 弹窗里「下一课」指路径中的下一节
+  const nextInPath = (() => {
+    if (!activePath || !activeLesson) return null;
+    const lessons = pathLessons(activePath);
+    const index = lessons.findIndex(({ lesson }) => lesson.id === activeLesson.id);
+    return index >= 0 && index + 1 < lessons.length ? lessons[index + 1].lesson : null;
+  })();
 
   return (
     <div>
@@ -91,16 +182,13 @@ export const AcademyView: React.FC<AcademyViewProps> = ({ onGoToTool }) => {
 
           <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
             {ROLE_LEARNING_PATHS.map((path) => {
-              const isSelected = selectedRolePathId === path.id;
+              const isSelected = activePathId === path.id;
               return (
                 <button
                   key={path.id}
                   type="button"
                   aria-pressed={isSelected}
-                  onClick={() => {
-                    setSelectedRolePathId(isSelected ? null : path.id);
-                    openLessonById(path.featuredLessonIds[0]);
-                  }}
+                  onClick={() => startPath(path)}
                   className={`card interactive group flex flex-col items-start ${
                     isSelected ? 'shadow-[inset_0_0_0_2px_var(--color-accent)]' : ''
                   }`}
@@ -118,6 +206,16 @@ export const AcademyView: React.FC<AcademyViewProps> = ({ onGoToTool }) => {
               );
             })}
           </div>
+
+          {activePath && (
+            <PathPanel
+              key={activePath.id}
+              path={activePath}
+              lastLessonId={lastLessonId}
+              onOpenLesson={openLessonById}
+              onClose={() => setActivePathId(null)}
+            />
+          )}
         </section>
 
         {/* 课程 */}
@@ -249,6 +347,7 @@ export const AcademyView: React.FC<AcademyViewProps> = ({ onGoToTool }) => {
           key={activeLesson.id}
           lesson={activeLesson}
           course={currentCourse}
+          nextInPath={nextInPath ? { title: nextInPath.title, onNext: () => openLessonById(nextInPath.id) } : undefined}
           onClose={() => setActiveLesson(null)}
           onNavigateToNextLesson={openLessonById}
           onNavigateToTool={(toolId) => {

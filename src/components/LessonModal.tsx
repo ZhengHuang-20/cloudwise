@@ -9,6 +9,8 @@ interface LessonModalProps {
   lesson: Lesson;
   course: Course;
   onClose: () => void;
+  /** 从学习路径打开时，路径中的下一课（没有则不传） */
+  nextInPath?: { title: string; onNext: () => void };
   onNavigateToNextLesson?: (nextLessonId: string) => void;
   onNavigateToTool?: (toolId: string) => void;
 }
@@ -17,6 +19,7 @@ export const LessonModal: React.FC<LessonModalProps> = ({
   lesson,
   course,
   onClose,
+  nextInPath,
   onNavigateToNextLesson,
   onNavigateToTool,
 }) => {
@@ -187,21 +190,46 @@ export const LessonModal: React.FC<LessonModalProps> = ({
 
           {/* 下一步 */}
           <div className="mt-12 flex flex-col gap-4 border-t border-separator pt-8 sm:flex-row sm:items-center sm:justify-between">
-            <span className="text-body text-label-secondary">学完了？继续下一步</span>
-            <button
-              type="button"
-              onClick={() => {
-                onClose();
-                if (lesson.nextStep.actionType === 'lesson' && onNavigateToNextLesson) {
-                  onNavigateToNextLesson(lesson.nextStep.targetId);
-                } else if (onNavigateToTool) {
-                  onNavigateToTool(lesson.nextStep.targetId);
-                }
-              }}
-              className="btn btn-primary"
-            >
-              {lesson.nextStep.label}
-            </button>
+            <span className="min-w-0 text-body text-label-secondary">
+              {nextInPath ? (
+                <>
+                  路径下一课：<span className="text-label">{nextInPath.title}</span>
+                </>
+              ) : (
+                '学完了？继续下一步'
+              )}
+            </span>
+            <div className="flex flex-col gap-3 sm:shrink-0 sm:flex-row">
+              {nextInPath && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    onClose();
+                    nextInPath.onNext();
+                  }}
+                  className="btn btn-primary"
+                >
+                  下一课
+                </button>
+              )}
+              {/* 路径模式下，「进入某一课」已由「下一课」代替 */}
+              {!(nextInPath && lesson.nextStep.actionType === 'lesson') && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    onClose();
+                    if (lesson.nextStep.actionType === 'lesson' && onNavigateToNextLesson) {
+                      onNavigateToNextLesson(lesson.nextStep.targetId);
+                    } else if (onNavigateToTool) {
+                      onNavigateToTool(lesson.nextStep.targetId);
+                    }
+                  }}
+                  className={`btn ${nextInPath ? 'btn-neutral' : 'btn-primary'}`}
+                >
+                  {lesson.nextStep.label}
+                </button>
+              )}
+            </div>
           </div>
 
           {!completed && (

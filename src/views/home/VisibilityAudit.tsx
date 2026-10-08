@@ -12,13 +12,14 @@ import {
   AuditReport,
   getAudit,
   ProbeLogEntry,
-  isBackendMissing,
   parseAuditInput,
-  sampleReport,
   SiteCheck,
   startAudit,
   WebSource,
 } from '../../lib/audit';
+import { CONTACT_NAME_MAX, contactNameError, contactPhoneError, parseContact } from '../../lib/contact';
+
+const TARGET_ERROR = '请输入官网域名或品牌名称，例如 www.example.com 或 爱康医疗';
 
 // 与后端 runAudit 的五个步骤一一对应；第 4 步的平台名来自任务状态
 const auditSteps = (engines: string[] | null, byBrand: boolean) => [
@@ -46,6 +47,11 @@ export const VisibilityAudit: React.FC<VisibilityAuditProps> = ({ inputRef, open
   const { logLeadActivity, saveDiagnosis, showToast } = useApp();
   const [input, setInput] = useState('');
   const [inputError, setInputError] = useState('');
+  const [contactName, setContactName] = useState('');
+  const [contactPhone, setContactPhone] = useState('');
+  const [contactErrors, setContactErrors] = useState<{ name: string; phone: string }>({ name: '', phone: '' });
+  const nameRef = useRef<HTMLInputElement>(null);
+  const phoneRef = useRef<HTMLInputElement>(null);
   const [job, setJob] = useState<JobProgress | null>(null);
   const [report, setReport] = useState<AuditReport | null>(null);
   // 测评失败时保留第④步的提问日志，方便排查是哪个平台、什么原因
@@ -108,29 +114,27 @@ export const VisibilityAudit: React.FC<VisibilityAuditProps> = ({ inputRef, open
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const parsed = parseAuditInput(input);
-    if (!parsed) {
-      setInputError('请输入官网域名或品牌名称，例如 www.example.com 或 爱康医疗');
-      inputRef.current?.focus();
+    const contact = parseContact(contactName, contactPhone);
+    const nameError = contactNameError(contactName);
+    const phoneError = contactPhoneError(contactPhone);
+    setInputError(parsed ? '' : TARGET_ERROR);
+    setContactErrors({ name: nameError, phone: phoneError });
+    if (!parsed || !contact.ok) {
+      // 错误都在表单里标出来；焦点落到第一个出错的字段
+      if (!parsed) inputRef.current?.focus();
+      else if (nameError) nameRef.current?.focus();
+      else phoneRef.current?.focus();
       return;
     }
     const target = 'domain' in parsed ? parsed.domain : parsed.brand;
-    setInputError('');
     setReport(null);
     setFailedLog([]);
     setJob({ status: 'queued', step: 0, done: 0, total: 0, engines: null, log: null, byBrand: 'brand' in parsed });
     try {
-      const started = await startAudit(target);
+      const started = await startAudit({ target, contactName: contact.name, contactPhone: contact.phone });
       if (!alive.current) return;
-      if (started.status === 'done' && started.report) return finish(started.report);
-      if (started.status === 'failed') return fail(started.error || '测评失败，请稍后重试', started.log);
       await poll(started.id, Date.now());
     } catch (err) {
-      if (isBackendMissing(err)) {
-        // 测评服务不可用（网络异常或接口缺失）时，展示标注过的示例
-        await new Promise((resolve) => setTimeout(resolve, 800));
-        if (alive.current) finish(sampleReport(target));
-        return;
-      }
       fail(err instanceof ApiError ? err.message : '测评失败，请稍后重试');
     }
   };
@@ -179,6 +183,66 @@ export const VisibilityAudit: React.FC<VisibilityAuditProps> = ({ inputRef, open
               {inputError}
             </p>
           )}
+        </div>
+
+        <div className="grid gap-5 sm:grid-cols-2">
+          <div>
+            <label htmlFor="audit-name" className="field-label">
+              联系人姓名
+            </label>
+            <input
+              ref={nameRef}
+              id="audit-name"
+              type="text"
+              value={contactName}
+              onChange={(e) => {
+                setContactName(e.target.value);
+                if (contactErrors.name) setContactErrors((prev) => ({ ...prev, name: '' }));
+              }}
+              placeholder="如 张总"
+              maxLength={CONTACT_NAME_MAX}
+              className="field"
+              autoComplete="name"
+              required
+              aria-invalid={contactErrors.name ? true : undefined}
+              aria-describedby={contactErrors.name ? 'audit-name-error' : undefined}
+            />
+            {contactErrors.name && (
+              <p id="audit-name-error" role="alert" className="mt-2 text-caption text-danger">
+                {contactErrors.name}
+              </p>
+            )}
+          </div>
+          <div>
+            <label htmlFor="audit-phone" className="field-label">
+              手机号
+            </label>
+            <input
+              ref={phoneRef}
+              id="audit-phone"
+              type="tel"
+              inputMode="tel"
+              value={contactPhone}
+              onChange={(e) => {
+                setContactPhone(e.target.value);
+                if (contactErrors.phone) setContactErrors((prev) => ({ ...prev, phone: '' }));
+              }}
+              placeholder="如 13800138000"
+              className="field tabular-nums"
+              autoComplete="tel-national"
+              required
+              aria-invalid={contactErrors.phone ? true : undefined}
+              aria-describedby={contactErrors.phone ? 'audit-phone-error' : undefined}
+            />
+            {contactErrors.phone && (
+              <p id="audit-phone-error" role="alert" className="mt-2 text-caption text-danger">
+                {contactErrors.phone}
+              </p>
+            )}
+          </div>
+          <p className="text-caption text-label-secondary sm:col-span-2">
+            联系方式仅用于发送测评结果，以及安排 30 分钟诊断会。
+          </p>
         </div>
 
         <button type="submit" disabled={isRunning} className="btn btn-primary btn-lg btn-block">
