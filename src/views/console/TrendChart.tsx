@@ -6,6 +6,9 @@ export interface DailyPoint {
   pv: number;
   uv: number;
   leads: number;
+  sessions?: number;
+  bounceRate?: number | null;
+  avgEngagedMs?: number | null;
 }
 
 export type Metric = 'uv' | 'pv' | 'leads';
@@ -13,6 +16,8 @@ export type Metric = 'uv' | 'pv' | 'leads';
 export const METRIC_LABEL: Record<Metric, string> = { uv: '访客', pv: '浏览量', leads: '线索' };
 
 const SERIES = CONSOLE_COLORS.link;
+/** 上一周期：灰色虚线，只作参照 */
+const PREV = CONSOLE_COLORS.tertiary;
 const HEIGHT = 280;
 const PAD = { top: 12, right: 12, bottom: 28, left: 44 };
 
@@ -30,9 +35,9 @@ function niceTicks(max: number, count = 4): number[] {
 
 /**
  * 单指标的每日趋势：2px 折线 + 10% 面积，悬停（或键盘左右键）显示十字线与当天三项数据。
- * 单一序列不需要图例，卡片标题与指标切换说明画的是什么；完整数据见表格视图。
+ * 传入 prev 时叠加上一周期的灰色虚线（按天对齐）并显示图例；完整数据见表格视图。
  */
-export const TrendChart: React.FC<{ data: DailyPoint[]; metric: Metric }> = ({ data, metric }) => {
+export const TrendChart: React.FC<{ data: DailyPoint[]; metric: Metric; prev?: DailyPoint[] }> = ({ data, metric, prev }) => {
   const wrapRef = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(0);
   const [active, setActive] = useState<number | null>(null);
@@ -49,7 +54,8 @@ export const TrendChart: React.FC<{ data: DailyPoint[]; metric: Metric }> = ({ d
   useEffect(() => setActive(null), [data, metric]);
 
   const values = data.map((d) => d[metric]);
-  const ticks = niceTicks(Math.max(0, ...values));
+  const prevValues = prev && prev.length === data.length ? prev.map((d) => d[metric]) : null;
+  const ticks = niceTicks(Math.max(0, ...values, ...(prevValues ?? [])));
   const yMax = ticks[ticks.length - 1];
   const plotW = Math.max(0, width - PAD.left - PAD.right);
   const plotH = HEIGHT - PAD.top - PAD.bottom;
@@ -59,12 +65,14 @@ export const TrendChart: React.FC<{ data: DailyPoint[]; metric: Metric }> = ({ d
 
   const line = values.map((v, i) => `${i === 0 ? 'M' : 'L'}${x(i).toFixed(1)},${y(v).toFixed(1)}`).join('');
   const area = n > 0 ? `${line}L${x(n - 1).toFixed(1)},${y(0)}L${x(0).toFixed(1)},${y(0)}Z` : '';
+  const prevLine = prevValues?.map((v, i) => `${i === 0 ? 'M' : 'L'}${x(i).toFixed(1)},${y(v).toFixed(1)}`).join('') ?? '';
 
-  // x 轴最多 6 个日期标签，首尾必出
-  const labelEvery = Math.max(1, Math.ceil(n / 6));
+  // x 轴最多 6 个日期标签（窄屏每 72px 一个），首尾必出
+  const maxLabels = Math.max(2, Math.min(6, Math.floor(plotW / 72)));
+  const labelEvery = Math.max(1, Math.ceil((n - 1) / (maxLabels - 1)));
   const xLabels = data
     .map((d, i) => ({ i, text: d.date.slice(5) }))
-    .filter(({ i }) => i === 0 || i === n - 1 || (i % labelEvery === 0 && n - 1 - i >= labelEvery / 2));
+    .filter(({ i }) => i === 0 || i === n - 1 || (i % labelEvery === 0 && n - 1 - i >= labelEvery * 0.6));
 
   const pick = (clientX: number) => {
     const rect = wrapRef.current?.getBoundingClientRect();
@@ -85,86 +93,113 @@ export const TrendChart: React.FC<{ data: DailyPoint[]; metric: Metric }> = ({ d
   const peak = Math.max(0, ...values);
   const total = values.reduce((a, b) => a + b, 0);
   const point = active !== null ? data[active] : null;
+  const prevPoint = active !== null && prevValues ? prev![active] : null;
   const tipLeft = active !== null ? x(active) : 0;
 
   return (
-    <div ref={wrapRef} className="relative select-none" style={{ height: HEIGHT }}>
-      {width > 0 && (
-        <svg
-          width={width}
-          height={HEIGHT}
-          role="img"
-          tabIndex={0}
-          aria-label={`近 ${n} 天每日${METRIC_LABEL[metric]}，合计 ${total}，单日最高 ${peak}。可用左右方向键逐日查看。`}
-          className="block rounded-[8px] outline-none focus-visible:outline-2 focus-visible:outline-link"
-          onPointerMove={(e) => pick(e.clientX)}
-          onPointerLeave={() => setActive(null)}
-          onKeyDown={onKey}
-          onBlur={() => setActive(null)}
-        >
-          {ticks.map((t) => (
-            <g key={t}>
-              <line x1={PAD.left} x2={width - PAD.right} y1={y(t)} y2={y(t)} stroke={CONSOLE_COLORS.separatorSoft} strokeWidth={1} />
+    <div>
+      {prevValues && (
+        <div className="mb-3 flex items-center gap-5 text-caption text-label-secondary" aria-hidden="true">
+          <span className="flex items-center gap-2">
+            <span className="h-0.5 w-4 rounded-full" style={{ background: SERIES }} />
+            本期
+          </span>
+          <span className="flex items-center gap-2">
+            <svg width="16" height="2" className="block">
+              <line x1="0" x2="16" y1="1" y2="1" stroke={PREV} strokeWidth={2} strokeDasharray="4 3" />
+            </svg>
+            上一周期
+          </span>
+        </div>
+      )}
+      <div ref={wrapRef} className="relative select-none" style={{ height: HEIGHT }}>
+        {width > 0 && (
+          <svg
+            width={width}
+            height={HEIGHT}
+            role="img"
+            tabIndex={0}
+            aria-label={`近 ${n} 天每日${METRIC_LABEL[metric]}，合计 ${total}，单日最高 ${peak}${
+              prevValues ? `；上一周期合计 ${prevValues.reduce((a, b) => a + b, 0)}` : ''
+            }。可用左右方向键逐日查看。`}
+            className="block rounded-[8px] outline-none focus-visible:outline-2 focus-visible:outline-link"
+            onPointerMove={(e) => pick(e.clientX)}
+            onPointerLeave={() => setActive(null)}
+            onKeyDown={onKey}
+            onBlur={() => setActive(null)}
+          >
+            {ticks.map((t) => (
+              <g key={t}>
+                <line x1={PAD.left} x2={width - PAD.right} y1={y(t)} y2={y(t)} stroke={CONSOLE_COLORS.separatorSoft} strokeWidth={1} />
+                <text
+                  x={PAD.left - 10}
+                  y={y(t)}
+                  dy="0.32em"
+                  textAnchor="end"
+                  fontSize={14}
+                  fill={CONSOLE_COLORS.tertiary}
+                  className="tabular-nums"
+                >
+                  {t.toLocaleString()}
+                </text>
+              </g>
+            ))}
+            {xLabels.map(({ i, text }) => (
               <text
-                x={PAD.left - 10}
-                y={y(t)}
-                dy="0.32em"
-                textAnchor="end"
+                key={i}
+                x={x(i)}
+                y={HEIGHT - 6}
+                textAnchor={i === 0 ? 'start' : i === n - 1 ? 'end' : 'middle'}
                 fontSize={14}
                 fill={CONSOLE_COLORS.tertiary}
                 className="tabular-nums"
               >
-                {t.toLocaleString()}
+                {text}
               </text>
-            </g>
-          ))}
-          {xLabels.map(({ i, text }) => (
-            <text
-              key={i}
-              x={x(i)}
-              y={HEIGHT - 6}
-              textAnchor={i === 0 ? 'start' : i === n - 1 ? 'end' : 'middle'}
-              fontSize={14}
-              fill={CONSOLE_COLORS.tertiary}
-              className="tabular-nums"
-            >
-              {text}
-            </text>
-          ))}
-          <path d={area} fill={SERIES} fillOpacity={0.1} />
-          <path d={line} fill="none" stroke={SERIES} strokeWidth={2} strokeLinejoin="round" strokeLinecap="round" />
-          {point && active !== null && (
-            <g pointerEvents="none">
-              <line x1={x(active)} x2={x(active)} y1={PAD.top} y2={PAD.top + plotH} stroke={CONSOLE_COLORS.secondary} strokeWidth={1} />
-              <circle cx={x(active)} cy={y(values[active])} r={5} fill={SERIES} stroke={CONSOLE_COLORS.surface} strokeWidth={2} />
-            </g>
-          )}
-        </svg>
-      )}
+            ))}
+            {prevLine && (
+              <path d={prevLine} fill="none" stroke={PREV} strokeWidth={2} strokeDasharray="4 3" strokeLinejoin="round" strokeLinecap="round" />
+            )}
+            <path d={area} fill={SERIES} fillOpacity={0.1} />
+            <path d={line} fill="none" stroke={SERIES} strokeWidth={2} strokeLinejoin="round" strokeLinecap="round" />
+            {point && active !== null && (
+              <g pointerEvents="none">
+                <line x1={x(active)} x2={x(active)} y1={PAD.top} y2={PAD.top + plotH} stroke={CONSOLE_COLORS.secondary} strokeWidth={1} />
+                <circle cx={x(active)} cy={y(values[active])} r={5} fill={SERIES} stroke={CONSOLE_COLORS.surface} strokeWidth={2} />
+              </g>
+            )}
+          </svg>
+        )}
 
-      {point && (
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute top-2 z-10 min-w-36 rounded-[10px] border border-hairline bg-surface-raised px-3 py-2.5 shadow-[0_12px_32px_rgb(0_0_0/0.5)]"
-          style={{
-            left: tipLeft,
-            transform: `translateX(${tipLeft > width / 2 ? 'calc(-100% - 12px)' : '12px'})`,
-          }}
-        >
-          <p className="text-caption text-label-secondary tabular-nums">{point.date}</p>
-          <p className="mt-1 flex items-center gap-2">
-            <span className="h-0.5 w-3 rounded-full" style={{ background: SERIES }} />
-            <span className="text-body font-semibold tabular-nums">{point[metric].toLocaleString()}</span>
-            <span className="text-caption text-label-secondary">{METRIC_LABEL[metric]}</span>
-          </p>
-          <p className="mt-1 text-caption text-label-secondary tabular-nums">
-            {(['uv', 'pv', 'leads'] as Metric[])
-              .filter((m) => m !== metric)
-              .map((m) => `${METRIC_LABEL[m]} ${point[m].toLocaleString()}`)
-              .join(' · ')}
-          </p>
-        </div>
-      )}
+        {point && (
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute top-2 z-10 min-w-36 rounded-[10px] border border-hairline bg-surface-raised px-3 py-2.5 shadow-[0_12px_32px_rgb(0_0_0/0.5)]"
+            style={{
+              left: tipLeft,
+              transform: `translateX(${tipLeft > width / 2 ? 'calc(-100% - 12px)' : '12px'})`,
+            }}
+          >
+            <p className="text-caption text-label-secondary tabular-nums">{point.date}</p>
+            <p className="mt-1 flex items-center gap-2">
+              <span className="h-0.5 w-3 rounded-full" style={{ background: SERIES }} />
+              <span className="text-body font-semibold tabular-nums">{point[metric].toLocaleString()}</span>
+              <span className="text-caption text-label-secondary">{METRIC_LABEL[metric]}</span>
+            </p>
+            <p className="mt-1 text-caption text-label-secondary tabular-nums">
+              {(['uv', 'pv', 'leads'] as Metric[])
+                .filter((m) => m !== metric)
+                .map((m) => `${METRIC_LABEL[m]} ${point[m].toLocaleString()}`)
+                .join(' · ')}
+            </p>
+            {prevPoint && (
+              <p className="mt-1 text-caption text-label-secondary tabular-nums">
+                上期 {prevPoint.date.slice(5)}：{prevPoint[metric].toLocaleString()}
+              </p>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 };

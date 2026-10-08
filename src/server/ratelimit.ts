@@ -45,7 +45,8 @@ export async function allow(name: string, id: string, max: number, windowSec: nu
 
 export const limits = {
   login: (ip: string) => allow('login', ip, 10, 60),
-  collect: (ip: string) => allow('collect', ip, 120, 60),
+  // 每次页面浏览约 1～3 次（浏览 + 参与时长补报），公司出口 IP 后面可能有很多访客
+  collect: (ip: string) => allow('collect', ip, 300, 60),
   lead: (ip: string) => allow('lead', ip, 10, 60),
   audit: (ip: string) => allow('audit', ip, 6, 3600),
 };

@@ -1,65 +1,101 @@
 import React, { useEffect, useState } from 'react';
-import { App as AntApp, Badge, Button, Card, Empty, Segmented, Spin, Statistic, Table } from 'antd';
-import { ArrowRight, ChartLine, Table2 } from 'lucide-react';
+import { Alert, App as AntApp, Badge, Button, Card, Empty, Segmented, Spin, Switch, Table, Tooltip } from 'antd';
+import { ArrowRight, ChartLine, Info, Table2 } from 'lucide-react';
 import { api, formatTime } from '../../lib/api';
+import { BreakdownCard, DeltaText, PagesCard } from './Breakdown';
 import { useConsole } from './ConsoleContext';
+import { CHANNEL_LABEL, countryName, delta, DEVICE_LABEL, formatDuration, formatPercent, languageName } from './labels';
 import { PageTitle } from './parts';
+import { CONSOLE_COLORS } from './theme';
 import { METRIC_LABEL, TrendChart, type DailyPoint, type Metric } from './TrendChart';
 import { LEAD_BADGE, LEAD_STATUS, type Lead, type Site } from './types';
 
-interface Stats {
+interface Kpis {
   pv: number;
   uv: number;
+  legacyPv: number;
+  sessions: number;
+  bounceRate: number | null;
+  avgEngagedMs: number | null;
+  aiVisitors: number;
+  newVisitors: number;
   leads: number;
   newLeads: number;
-  daily: DailyPoint[];
-  topPages: { name: string; count: number }[];
-  topReferrers: { name: string; count: number }[];
-  devices: { name: string; count: number }[];
+  conversionRate: number | null;
 }
 
-const DEVICE: Record<string, string> = { desktop: '电脑', mobile: '手机', tablet: '平板' };
+interface Stats {
+  days: number;
+  current: Kpis;
+  previous: Kpis;
+  daily: DailyPoint[];
+  prevDaily: DailyPoint[];
+}
 
-const Kpi: React.FC<{ title: string; value: number | string; hint: React.ReactNode }> = ({ title, value, hint }) => (
-  <Card variant="borderless">
-    <Statistic title={title} value={value} styles={{ content: { fontVariantNumeric: 'tabular-nums', fontWeight: 600 } }} />
-    <p className="mt-2 text-caption text-label-secondary">{hint}</p>
-  </Card>
-);
+type Days = 7 | 30 | 90;
 
-const RankCard: React.FC<{ title: string; items: { name: string; count: number }[]; map?: Record<string, string>; empty: string }> = ({
-  title,
-  items,
-  map,
-  empty,
-}) => {
-  const max = Math.max(1, ...items.map((i) => i.count));
-  const total = items.reduce((a, b) => a + b.count, 0);
+/** 迷你趋势线：KPI 卡片里只看走势，具体数值看下方趋势图。没有数据的日子断开。 */
+const Sparkline: React.FC<{ values: (number | null | undefined)[] }> = ({ values }) => {
+  const W = 88;
+  const H = 28;
+  const nums = values.filter((v): v is number => typeof v === 'number');
+  if (nums.length < 2) return null;
+  const max = Math.max(...nums);
+  const min = Math.min(0, ...nums);
+  const span = max - min || 1;
+  const n = values.length;
+  let d = '';
+  let pen = false;
+  values.forEach((v, i) => {
+    if (typeof v !== 'number') {
+      pen = false;
+      return;
+    }
+    const x = n <= 1 ? W / 2 : (i / (n - 1)) * (W - 2) + 1;
+    const y = H - 1 - ((v - min) / span) * (H - 2);
+    d += `${pen ? 'L' : 'M'}${x.toFixed(1)},${y.toFixed(1)}`;
+    pen = true;
+  });
   return (
-    <Card variant="borderless" title={title} className="h-full">
-      {items.length === 0 ? (
-        <p className="py-6 text-center text-caption text-label-secondary">{empty}</p>
-      ) : (
-        <ul className="space-y-4">
-          {items.map((i) => (
-            <li key={i.name}>
-              <div className="flex justify-between gap-4">
-                <span className="truncate" title={i.name}>{map?.[i.name] ?? i.name}</span>
-                <span className="shrink-0 tabular-nums text-label-secondary">
-                  {i.count.toLocaleString()}
-                  <span className="ml-2 inline-block w-12 text-right text-label-tertiary">{((i.count / (total || 1)) * 100).toFixed(0)}%</span>
-                </span>
-              </div>
-              <div className="mt-2 h-1 overflow-hidden rounded-full bg-fill">
-                <div className="h-full rounded-full bg-link" style={{ width: `${(i.count / max) * 100}%` }} />
-              </div>
-            </li>
-          ))}
-        </ul>
-      )}
-    </Card>
+    <svg width={W} height={H} aria-hidden="true" className="block shrink-0">
+      <path d={d} fill="none" stroke={CONSOLE_COLORS.link} strokeWidth={1.5} strokeLinejoin="round" strokeLinecap="round" />
+    </svg>
   );
 };
+
+const Kpi: React.FC<{
+  title: string;
+  tip: string;
+  value: string;
+  d: ReturnType<typeof delta>;
+  goodWhen?: 'up' | 'down';
+  spark?: (number | null | undefined)[];
+  extra?: React.ReactNode;
+}> = ({ title, tip, value, d, goodWhen, spark, extra }) => (
+  <Card variant="borderless" className="h-full" styles={{ body: { padding: 18 } }}>
+    <div className="flex items-center gap-1.5 text-label-secondary">
+      <span>{title}</span>
+      <Tooltip title={tip}>
+        <button type="button" className="text-label-tertiary" aria-label={`${title}：${tip}`}>
+          <Info size={14} />
+        </button>
+      </Tooltip>
+    </div>
+    <div className="mt-2 flex items-end justify-between gap-2">
+      <p className="truncate text-[1.625rem] font-semibold leading-tight tabular-nums">{value}</p>
+      {spark && (
+        // 窄屏两列时让位给数值
+        <div className="hidden sm:block">
+          <Sparkline values={spark} />
+        </div>
+      )}
+    </div>
+    <p className="mt-2 text-caption">
+      <DeltaText d={d} goodWhen={goodWhen} suffix="较上期" />
+    </p>
+    {extra && <p className="mt-1 text-caption">{extra}</p>}
+  </Card>
+);
 
 const RecentLeads: React.FC<{ site: Site }> = ({ site }) => {
   const { go } = useConsole();
@@ -94,7 +130,11 @@ const RecentLeads: React.FC<{ site: Site }> = ({ site }) => {
                   {l.name || '未留姓名'}
                   {l.company && <span className="text-label-secondary"> · {l.company}</span>}
                 </p>
-                <p className="truncate text-caption text-label-tertiary tabular-nums">{formatTime(l.createdAt)}</p>
+                <p className="truncate text-caption text-label-tertiary tabular-nums">
+                  {formatTime(l.createdAt)}
+                  {l.channel && ` · ${l.source || CHANNEL_LABEL[l.channel] || l.channel}`}
+                  {l.country && ` · ${countryName(l.country)}`}
+                </p>
               </div>
               <Badge status={LEAD_BADGE[l.status]} text={LEAD_STATUS[l.status]} className="shrink-0" />
             </li>
@@ -105,14 +145,49 @@ const RecentLeads: React.FC<{ site: Site }> = ({ site }) => {
   );
 };
 
+/** AI 来源：GEO 效果的直接证据。没有数据时引导去做 AI 可见性测评。 */
+const AiCard: React.FC<{ site: Site; days: Days; stats: Stats; comparable: boolean }> = ({ site, days, stats, comparable }) => {
+  const { current, previous } = stats;
+  return (
+    <BreakdownCard
+      title="AI 来源"
+      siteId={site.id}
+      days={days}
+      quality
+      tabs={[{ dim: 'ai', label: 'AI 助手', empty: '暂无来自 AI 助手的访问' }]}
+      header={
+        <div className="mb-5 flex items-end justify-between gap-3 rounded-[10px] bg-surface-raised px-4 py-3">
+          <div>
+            <p className="text-caption text-label-secondary">AI 助手带来的访客</p>
+            <p className="text-[1.375rem] font-semibold tabular-nums">{current.aiVisitors.toLocaleString()}</p>
+          </div>
+          <div className="text-right text-caption">
+            <p className="text-label-secondary tabular-nums">占访客 {formatPercent(current.uv ? current.aiVisitors / current.uv : null)}</p>
+            {comparable && <DeltaText d={delta(current.aiVisitors, previous.aiVisitors)} suffix="较上期" />}
+          </div>
+        </div>
+      }
+      emptyExtra={
+        <p className="text-center text-caption text-label-secondary">
+          ChatGPT、Perplexity、Gemini 等推荐您的网站时，访问会出现在这里。
+          <a className="link ml-1" href="/audit" target="_blank" rel="noreferrer">
+            做一次 AI 可见性测评
+          </a>
+        </p>
+      }
+    />
+  );
+};
+
 export const StatsPanel: React.FC<{ site: Site }> = ({ site }) => {
   const { go } = useConsole();
   const { message } = AntApp.useApp();
-  const [days, setDays] = useState<7 | 30 | 90>(7);
+  const [days, setDays] = useState<Days>(7);
   const [stats, setStats] = useState<Stats | null>(null);
   const [reloading, setReloading] = useState(false);
   const [metric, setMetric] = useState<Metric>('uv');
   const [view, setView] = useState<'chart' | 'table'>('chart');
+  const [compare, setCompare] = useState(true);
 
   useEffect(() => {
     setReloading(true);
@@ -122,48 +197,91 @@ export const StatsPanel: React.FC<{ site: Site }> = ({ site }) => {
       .finally(() => setReloading(false));
   }, [site.id, days, message]);
 
-  const rate = stats && stats.uv > 0 ? `${((stats.leads / stats.uv) * 100).toFixed(1)}%` : '—';
+  const cur = stats?.current;
+  const prev = stats?.previous;
+  // 上一周期含统计升级前的访问时，会话类指标（跳出率、时长、AI 来源）的上期数据不完整，不做比较
+  const prevHasSessions = !!prev && prev.sessions > 0 && prev.legacyPv === 0;
 
   return (
     <>
       <PageTitle
         title="数据概览"
-        description={`${site.name} · ${site.domain} · 按北京时间统计`}
+        description={`${site.name} · ${site.domain} · 按北京时间统计，与上一周期对比`}
         extra={
-          <Segmented
-            aria-label="统计范围"
-            value={days}
-            onChange={(v) => setDays(v as 7 | 30 | 90)}
-            options={[
-              { value: 7, label: '近 7 天' },
-              { value: 30, label: '近 30 天' },
-              { value: 90, label: '近 90 天' },
-            ]}
-          />
+          <>
+            <label className="flex items-center gap-2 text-caption text-label-secondary">
+              <Switch size="small" checked={compare} onChange={setCompare} />
+              趋势叠加上一周期
+            </label>
+            <Segmented
+              aria-label="统计范围"
+              value={days}
+              onChange={(v) => setDays(v as Days)}
+              options={[
+                { value: 7, label: '近 7 天' },
+                { value: 30, label: '近 30 天' },
+                { value: 90, label: '近 90 天' },
+              ]}
+            />
+          </>
         }
       />
 
-      {!stats ? (
+      {!stats || !cur || !prev ? (
         <div className="flex justify-center py-24"><Spin /></div>
       ) : (
         <div className="space-y-4 transition-opacity duration-200" style={{ opacity: reloading ? 0.55 : 1 }}>
-          <div className="grid grid-cols-2 gap-4 xl:grid-cols-4">
-            <Kpi title="页面浏览量" value={stats.pv} hint="每次打开页面计一次" />
-            <Kpi title="访客数" value={stats.uv} hint="按浏览器去重" />
+          {cur.legacyPv > 0 && (
+            <div>
+              <Alert
+                type="info"
+                showIcon
+                closable
+                title={`所选时间内有 ${cur.legacyPv.toLocaleString()} 次浏览发生在统计升级之前：这部分只计入访客与浏览量，来源渠道、国家地区、跳出率与参与时长从升级后开始统计。`}
+              />
+            </div>
+          )}
+
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-3 2xl:grid-cols-6">
+            <Kpi title="访客" tip="按浏览器去重的访客数" value={cur.uv.toLocaleString()} d={delta(cur.uv, prev.uv)} spark={stats.daily.map((x) => x.uv)} />
+            <Kpi title="浏览量" tip="页面被打开的次数" value={cur.pv.toLocaleString()} d={delta(cur.pv, prev.pv)} spark={stats.daily.map((x) => x.pv)} />
             <Kpi
-              title="线索数"
-              value={stats.leads}
-              hint={
-                stats.newLeads > 0 ? (
+              title="跳出率"
+              tip="只看了 1 个页面、停留不到 10 秒且没有留资的访问占比，越低越好"
+              value={formatPercent(cur.bounceRate)}
+              d={prevHasSessions ? delta(cur.bounceRate, prev.bounceRate, true) : null}
+              goodWhen="down"
+              spark={stats.daily.map((x) => x.bounceRate)}
+            />
+            <Kpi
+              title="平均参与时长"
+              tip="每次访问中页面停留在前台的平均时长（切到其他标签页不计）"
+              value={formatDuration(cur.avgEngagedMs)}
+              d={prevHasSessions ? delta(cur.avgEngagedMs, prev.avgEngagedMs) : null}
+              spark={stats.daily.map((x) => x.avgEngagedMs)}
+            />
+            <Kpi
+              title="线索"
+              tip="访客在网站上留下联系方式的次数"
+              value={cur.leads.toLocaleString()}
+              d={delta(cur.leads, prev.leads)}
+              spark={stats.daily.map((x) => x.leads)}
+              extra={
+                cur.newLeads > 0 ? (
                   <button type="button" className="link" onClick={() => go('leads')}>
-                    {stats.newLeads} 条待跟进
+                    {cur.newLeads} 条待跟进
                   </button>
                 ) : (
-                  '没有待跟进的线索'
+                  <span className="text-label-tertiary">没有待跟进的线索</span>
                 )
               }
             />
-            <Kpi title="留资转化率" value={rate} hint="线索数 ÷ 访客数" />
+            <Kpi
+              title="留资转化率"
+              tip="留下线索的访客 ÷ 访客"
+              value={formatPercent(cur.conversionRate)}
+              d={delta(cur.conversionRate, prev.conversionRate, true)}
+            />
           </div>
 
           <div className="grid gap-4 xl:grid-cols-3">
@@ -194,7 +312,7 @@ export const StatsPanel: React.FC<{ site: Site }> = ({ site }) => {
               }
             >
               {view === 'chart' ? (
-                stats.pv === 0 && stats.leads === 0 ? (
+                cur.pv === 0 && cur.leads === 0 && prev.pv === 0 ? (
                   <Empty
                     image={Empty.PRESENTED_IMAGE_SIMPLE}
                     description="暂无访问数据。把采集脚本放进网站后，数据会在这里出现。"
@@ -203,7 +321,7 @@ export const StatsPanel: React.FC<{ site: Site }> = ({ site }) => {
                     <Button onClick={() => go('install')}>查看接入代码</Button>
                   </Empty>
                 ) : (
-                  <TrendChart data={stats.daily} metric={metric} />
+                  <TrendChart data={stats.daily} metric={metric} prev={compare ? stats.prevDaily : undefined} />
                 )
               ) : (
                 <Table
@@ -211,10 +329,13 @@ export const StatsPanel: React.FC<{ site: Site }> = ({ site }) => {
                   rowKey="date"
                   dataSource={[...stats.daily].reverse()}
                   pagination={{ pageSize: 10, hideOnSinglePage: true, showSizeChanger: false }}
+                  scroll={{ x: 520 }}
                   columns={[
-                    { title: '日期', dataIndex: 'date' },
+                    { title: '日期', dataIndex: 'date', className: 'tabular-nums' },
                     { title: '访客', dataIndex: 'uv', align: 'right', className: 'tabular-nums' },
                     { title: '浏览量', dataIndex: 'pv', align: 'right', className: 'tabular-nums' },
+                    { title: '跳出率', dataIndex: 'bounceRate', align: 'right', className: 'tabular-nums', render: (v) => formatPercent(v, 0) },
+                    { title: '参与时长', dataIndex: 'avgEngagedMs', align: 'right', className: 'tabular-nums', render: (v) => formatDuration(v) },
                     { title: '线索', dataIndex: 'leads', align: 'right', className: 'tabular-nums' },
                   ]}
                 />
@@ -223,10 +344,45 @@ export const StatsPanel: React.FC<{ site: Site }> = ({ site }) => {
             <RecentLeads site={site} />
           </div>
 
-          <div className="grid gap-4 lg:grid-cols-3">
-            <RankCard title="热门页面" items={stats.topPages} empty="暂无数据" />
-            <RankCard title="来源网站" items={stats.topReferrers} empty="暂无外部来源（直接访问不计入）" />
-            <RankCard title="设备" items={stats.devices} map={DEVICE} empty="暂无数据" />
+          <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
+            <BreakdownCard
+              title="来源渠道"
+              siteId={site.id}
+              days={days}
+              quality
+              tabs={[
+                { dim: 'channel', label: '渠道', name: (v) => CHANNEL_LABEL[v] ?? v },
+                { dim: 'source', label: '来源', empty: '暂无站外来源（直接访问不计入）' },
+                { dim: 'utm_campaign', label: '活动', empty: '暂无带 utm_campaign 参数的访问' },
+              ]}
+            />
+            <AiCard site={site} days={days} stats={stats} comparable={prevHasSessions} />
+            <BreakdownCard
+              title="国家 / 地区"
+              siteId={site.id}
+              days={days}
+              quality
+              tabs={[
+                { dim: 'country', label: '国家', name: countryName },
+                { dim: 'lang', label: '浏览器语言', name: languageName },
+              ]}
+            />
+          </div>
+
+          <div className="grid gap-4 xl:grid-cols-3">
+            <div className="min-w-0 xl:col-span-2">
+              <PagesCard siteId={site.id} days={days} />
+            </div>
+            <BreakdownCard
+              title="访客环境"
+              siteId={site.id}
+              days={days}
+              tabs={[
+                { dim: 'device', label: '设备', name: (v) => DEVICE_LABEL[v] ?? v },
+                { dim: 'browser', label: '浏览器' },
+                { dim: 'os', label: '系统' },
+              ]}
+            />
           </div>
         </div>
       )}

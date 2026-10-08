@@ -18,6 +18,7 @@ import {
 } from 'antd';
 import { Download } from 'lucide-react';
 import { api, formatTime } from '../../lib/api';
+import { CHANNEL_LABEL, countryName, prettyPath } from './labels';
 import { PageTitle } from './parts';
 import { LEAD_BADGE, LEAD_STATUS, LEAD_STATUSES, type Lead, type Site } from './types';
 
@@ -62,6 +63,10 @@ const Contact: React.FC<{ lead: Lead }> = ({ lead }) => (
     )}
   </div>
 );
+
+/** 线索来源：渠道（来源名）；升级前的线索没有来源信息 */
+const sourceText = (l: Lead) =>
+  l.channel ? [CHANNEL_LABEL[l.channel] ?? l.channel, l.source && l.source !== CHANNEL_LABEL[l.channel] ? l.source : ''].filter(Boolean).join(' · ') : '';
 
 /** 线索详情：完整信息、状态与跟进备注。 */
 const LeadDrawer: React.FC<{
@@ -118,6 +123,10 @@ const LeadDrawer: React.FC<{
                   </a>
                 ) : '—',
               },
+              { key: 'channel', label: '来源', children: sourceText(lead) || '—' },
+              ...(lead.utmCampaign ? [{ key: 'utm', label: '推广活动', children: lead.utmCampaign }] : []),
+              { key: 'landing', label: '落地页', children: lead.landingPath ? <span className="break-all">{prettyPath(lead.landingPath)}</span> : '—' },
+              { key: 'country', label: '国家/地区', children: lead.country ? countryName(lead.country) : '—' },
             ]}
           />
 
@@ -193,10 +202,18 @@ export const LeadsPanel: React.FC<{ site: Site }> = ({ site }) => {
 
   const columns: TableColumnsType<Lead> = [
     {
-      title: '提交时间',
+      title: '提交时间 / 来源',
       dataIndex: 'createdAt',
-      width: 180,
-      render: (v: string) => <span className="tabular-nums text-label-secondary">{formatTime(v)}</span>,
+      width: 200,
+      render: (v: string, l) => {
+        const src = [sourceText(l), l.country && countryName(l.country)].filter(Boolean).join(' · ');
+        return (
+          <div className="min-w-0">
+            <p className="tabular-nums text-label-secondary">{formatTime(v)}</p>
+            {src && <p className="truncate text-caption text-label-tertiary" title={src}>{src}</p>}
+          </div>
+        );
+      },
     },
     {
       title: '联系人',
@@ -210,6 +227,7 @@ export const LeadsPanel: React.FC<{ site: Site }> = ({ site }) => {
       ),
     },
     { title: '联系方式', key: 'contact', width: 220, render: (_, l) => <Contact lead={l} /> },
+
     {
       title: '留言',
       dataIndex: 'message',
@@ -325,7 +343,9 @@ export const LeadsPanel: React.FC<{ site: Site }> = ({ site }) => {
                   <Badge status={LEAD_BADGE[l.status]} text={LEAD_STATUS[l.status]} className="shrink-0" />
                 </div>
                 {l.message && <p className="mt-2 line-clamp-2 text-caption text-label-secondary">{l.message}</p>}
-                <p className="mt-2 text-caption text-label-tertiary tabular-nums">{formatTime(l.createdAt)}</p>
+                <p className="mt-2 text-caption text-label-tertiary tabular-nums">
+                  {[formatTime(l.createdAt), sourceText(l), l.country && countryName(l.country)].filter(Boolean).join(' · ')}
+                </p>
               </button>
             </li>
           ))}
