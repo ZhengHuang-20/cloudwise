@@ -33,7 +33,7 @@ const INITIAL_ACTIONS: { id: number; title: Bi; owner: Bi; due: Bi; completed: b
   {
     id: 3,
     title: { zh: '独立站三读者架构与英文内容白皮书初稿评审', en: 'Review the three-reader website architecture and the first draft of the English white paper' },
-    owner: { zh: '云端智荐交付团队', en: 'Cloudwise delivery team' },
+    owner: { zh: '云端智荐交付团队', en: 'ChinGEO delivery team' },
     due: { zh: '第 4 周', en: 'Week 4' },
     completed: false,
   },
@@ -49,7 +49,7 @@ const INITIAL_ACTIONS: { id: number; title: Bi; owner: Bi; due: Bi; completed: b
   {
     id: 5,
     title: { zh: '全站上线发布并开展首期 AI 可见性月度探针监测', en: 'Full-site launch, and the first monthly AI visibility probe monitoring' },
-    owner: { zh: '云端智荐算法组', en: 'Cloudwise algorithm team' },
+    owner: { zh: '云端智荐算法组', en: 'ChinGEO algorithm team' },
     due: { zh: '第 8 周', en: 'Week 8' },
     completed: false,
   },

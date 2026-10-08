@@ -67,7 +67,7 @@ export const CASE_STUDIES_EN: Record<string, CaseStudyEn> = {
     ],
     testimonial: {
       quote:
-        '“Cloudwise helped us turn dry technical parameters into authoritative evidence that overseas doctors and procurement committees can look up in ChatGPT. Right after the new site went live, distributors in Latin America came to us directly.”',
+        '“ChinGEO helped us turn dry technical parameters into authoritative evidence that overseas doctors and procurement committees can look up in ChatGPT. Right after the new site went live, distributors in Latin America came to us directly.”',
       author: 'International business department, Aikang Medical',
       title: 'Overseas market director',
     },

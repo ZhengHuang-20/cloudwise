@@ -683,22 +683,98 @@
   }
 
   /* ---------- 滚动出现（ui/Reveal.tsx） ---------- */
-  .reveal {
+  /* 只在脚本可用时隐藏（app 根布局在 <html> 上加 js 类），关闭 JS 的访客与爬虫截图也能看到内容 */
+  .js .reveal {
     opacity: 0;
     transform: translateY(24px);
+  }
+  .reveal {
     transition:
       opacity 0.9s var(--ease-apple),
       transform 0.9s var(--ease-apple);
   }
-  .reveal.is-visible {
+  .js .reveal.is-visible {
     opacity: 1;
     transform: none;
   }
   @media (prefers-reduced-motion: reduce) {
-    .reveal {
+    .js .reveal {
       opacity: 1;
       transform: none;
     }
+  }
+
+  /* ---------- 长文排版（components/Markdown.tsx） ---------- */
+  .prose-article {
+    color: var(--color-label-secondary);
+    font-size: var(--text-body);
+    line-height: var(--text-body--line-height);
+  }
+  .prose-article > * + * {
+    margin-top: 1.25rem;
+  }
+  .prose-article h2 {
+    margin-top: 3rem;
+    color: var(--color-label);
+    font-size: var(--text-title-2);
+    line-height: var(--text-title-2--line-height);
+    font-weight: 600;
+  }
+  .prose-article h3 {
+    margin-top: 2rem;
+    color: var(--color-label);
+    font-size: var(--text-title-3);
+    line-height: var(--text-title-3--line-height);
+    font-weight: 600;
+  }
+  .prose-article strong {
+    color: var(--color-label);
+    font-weight: 600;
+  }
+  .prose-article ul,
+  .prose-article ol {
+    padding-left: 1.5rem;
+  }
+  .prose-article ul {
+    list-style: disc;
+  }
+  .prose-article ol {
+    list-style: decimal;
+  }
+  .prose-article li + li {
+    margin-top: 0.5rem;
+  }
+  .prose-article li::marker {
+    color: var(--color-label-tertiary);
+  }
+  .prose-article blockquote {
+    border-left: 2px solid var(--color-separator-strong);
+    padding-left: 1rem;
+  }
+  .prose-table {
+    overflow-x: auto;
+    border-radius: var(--radius-card);
+    background-color: var(--color-surface);
+  }
+  .prose-table table {
+    width: 100%;
+    min-width: 32rem;
+    border-collapse: collapse;
+    font-variant-numeric: tabular-nums;
+  }
+  .prose-table th,
+  .prose-table td {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    vertical-align: top;
+    border-bottom: 1px solid var(--color-separator);
+  }
+  .prose-table th {
+    color: var(--color-label);
+    font-weight: 600;
+  }
+  .prose-table tr:last-child td {
+    border-bottom: 0;
   }
 }
 

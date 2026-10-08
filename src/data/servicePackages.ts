@@ -1,5 +1,5 @@
 import { SHOW_FDE } from '../lib/features';
-import type { Bi } from '../context/LanguageContext';
+import type { Bi } from '../lib/i18n';
 
 export interface ServicePackage {
   id: string;

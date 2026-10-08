@@ -1,5 +1,6 @@
 import React from 'react';
 import { useLang } from '../context/LanguageContext';
+import { videoPoster } from '../data/videoMeta';
 
 interface LessonVideoProps {
   src: string;
@@ -13,12 +14,15 @@ export const LessonVideo: React.FC<LessonVideoProps> = ({ src, title }) => {
       <div className="overflow-hidden rounded-card bg-black">
         <video
           src={src}
+          poster={videoPoster(src)}
           controls
           playsInline
-          preload="metadata"
+          preload="none"
           controlsList="nodownload"
           aria-label={title}
-          className="aspect-video w-full"
+          width={1280}
+          height={720}
+          className="aspect-video h-auto w-full"
         >
           {t('您的浏览器不支持视频播放。', 'Your browser does not support video playback.')}
         </video>

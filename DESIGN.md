@@ -3,7 +3,7 @@
 > 版本 1.0 · 2026-09
 > 基准：apple.com 深色产品页的视觉语言 + Apple Human Interface Guidelines，针对简体中文排版与 B2B 出海售前场景做了取舍。
 > 实现：token 与组件类在 `src/index.css`，React 基础组件在 `src/components/ui/`。**本文档与这两处代码必须保持一致；改其一，同步改其余。**
-> 适用范围：第 0～9 节约束官网（营销页）。登录页与客户后台（`#/login`、`#/console/*`）改用 antd，规则见第 10 节。
+> 适用范围：第 0～9 节约束官网（营销页）。登录页与客户后台（`/login`、`/console/*`）改用 antd，规则见第 10 节。
 
 ---
 
@@ -268,7 +268,7 @@ canvas  #000000   页面画布
 | 类 | 圆角 | 内边距 | 用于 |
 | --- | --- | --- | --- |
 | `tile` | 28px | 24 → 40px | 页面级区块：工具面板、服务详情、案例详情 |
-| `card` | 18px | 24px | 网格中的小卡片：资源、角色路径、套餐 |
+| `card` | 18px | 24px | 网格中的小卡片：文章、角色路径、套餐 |
 | `well` | 18px | 20px | tile 内的分组：指标块、建议框、实测问答 |
 
 - 可点击的 tile 或 card：用 `<button className="tile interactive group …">`，悬停只改变背景色。
@@ -329,11 +329,11 @@ canvas  #000000   页面画布
 
 ### 3.9 导航
 
-- **全局导航**：52px 高，毛玻璃。左侧品牌（点击回首页），中间 6 个 2–4 字的短标签，右侧依次为“预约诊断”小号主按钮、账户图标按钮。当前页的标签为白字，底部有 2px 白色指示条，并标注 `aria-current="page"`。
+- **全局导航**：52px 高，毛玻璃。左侧品牌（点击回首页），中间 7 个 2–4 字的短标签，右侧依次为语言切换、登录、“预约诊断”小号主按钮、账户图标按钮。导航项、品牌与语言切换都是真实链接（`<a href>`），搜索引擎能顺着链接发现页面。当前页的标签为白字，底部有 2px 白色指示条，并标注 `aria-current="page"`。
 - **移动端（< 1024px）**：汉堡按钮打开全屏菜单。菜单按“了解 / 决策”分组，条目为 24px 标题加一行说明，底部是全宽的主按钮和中性按钮。Esc 可关闭，打开时锁定背景滚动。
-- **页脚**：品牌简介加两组站点地图，底部一行放版权和备案号。
-- **品牌标识**：导航与页脚左上角都用公司 logo 的图形部分 `public/brand/logo-mark.png`（透明底，品牌蓝 `#1479BE`，高 28px，`alt=""`）加白色“云端智荐”文字。完整 logo 里的藏青色中英文字在纯黑画布上看不清，所以深色界面不用整套 logo。logo 图形是品牌资产，不受“蓝色只属于交互”的限制，但不要把品牌蓝用到其他元素上。favicon（`public/favicon.png`）与 `apple-touch-icon.png` 由同一图形生成。
-- **地址同步**：当前页写入 `#/tab`，所以浏览器前进后退、分享链接和“复制链接”都能用。切页时滚动到顶部，并更新 `document.title`。
+- **页脚**：品牌简介加两组站点地图（“决策”组末尾附 AI 可见性测评与关于我们），底部一行放版权和备案号。
+- **品牌标识**：导航与页脚左上角都用公司 logo 的图形部分 `public/brand/logo-mark.png`（透明底，品牌蓝 `#1479BE`，高 28px，`alt=""`）加白色“云端智荐”文字（英文界面为 ChinGEO）。完整 logo 里的藏青色中英文字在纯黑画布上看不清，所以深色界面不用整套 logo。logo 图形是品牌资产，不受“蓝色只属于交互”的限制，但不要把品牌蓝用到其他元素上。favicon（`public/favicon.png`）与 `apple-touch-icon.png` 由同一图形生成。
+- **地址**：每个页面有自己的路径（`/services/geo`，英文加 `/en`），在服务端渲染并输出独立的标题、描述与结构化数据；旧的 `#/tab` 链接会自动跳到对应路径。详情页在页头上方显示面包屑。
 - 导航数据只维护在 `src/components/navigation.ts` 一处。
 
 ### 3.10 Toast
@@ -387,10 +387,12 @@ Hero（eyebrow、`text-display` 标语、导语、两个按钮）→ AI 可见�
 
 | 分组 | 页面（短标签 / 全称） |
 | --- | --- |
-| 了解 | 服务 / 五项服务 · 案例 / 标杆案例 · 学院 / 出海学院 · 资源 / 模板与术语 |
+| 了解 | 服务 / 五项服务 · 案例 / 标杆案例 · 学院 / 出海学院 · 洞察 / GEO 洞察 · 术语 / 术语百科 |
 | 决策 | 规划 / 方案规划 · 方案空间 |
 
-新增页面需要同时改动：`navigation.ts`（导航数据）、`App.tsx`（渲染分支）、新的 view 文件（以 `PageHeader` 开头）。
+新增页面需要同时改动：`src/site/routes.ts`（路由）、`src/site/meta.ts`（标题与描述）、`src/site/RouteView.tsx`（渲染分支）、新的 view 文件（以 `PageHeader` 开头）；需要进导航时再改 `navigation.ts`。
+
+长文页（GEO 洞察文章、术语、课时）用 `layout-reading`：页头（面包屑 → 眉标 → H1）之后先放一个 `well` 写“简短回答”，再放正文。文章正文由 `src/components/Markdown.tsx` 渲染（样式类 `prose-article`、表格 `prose-table`），常见问题用 `FaqList`（问答直接展示，不折叠）。
 
 ---
 
@@ -492,7 +494,7 @@ Hero（eyebrow、`text-display` 标语、导语、两个按钮）→ AI 可见�
 
 ### 10.1 加载与主题
 
-- 入口 `src/views/console/ConsoleApp.tsx`，由 `App.tsx` 用 `React.lazy` 按需加载：antd 只打进后台分块，官网首屏不下载。后台是独立的全屏布局，不渲染官网的 Header、Footer 和 AI 顾问入口。
+- 入口 `src/views/console/ConsoleApp.tsx`，由 `src/site/RouteView.tsx` 用 `next/dynamic`（`ssr: false`）按需加载：antd 只打进后台分块，官网首屏不下载。后台是独立的全屏布局，不渲染官网的 Header、Footer 和 AI 顾问入口。
 - 主题在 `src/views/console/theme.ts`：`darkAlgorithm`，色值与第 2.1 节 token 一一对应（canvas / surface / raised / separator / label / accent / link / success / warning / danger）。要改颜色先改 `@theme`，再同步这里；组件里不要直接写 antd 预设色或 hex，需要时从 `CONSOLE_COLORS` 取。
 - 字号 14px 起（`fontSize` 与 `fontSizeSM` 都是 14）；字重只用 400 / 600；图标仍用 `lucide-react`，16px。
 - `ConfigProvider` 关闭了按钮两字之间自动加空格（`autoInsertSpace: false`）；`message` / `modal` 一律用 `App.useApp()` 取，不用静态方法。
@@ -507,7 +509,7 @@ antd 的 CSS-in-JS 样式不在 CSS layer 里，优先级高于 Tailwind 工具�
 ### 10.3 页面结构
 
 - 外壳 `ConsoleLayout`：左侧 240px 导航（「站点数据」「系统管理」两组，后者仅管理员可见；小于 1024px 时收进抽屉），顶栏左侧是站点切换（站点类页面）或面包屑（管理页），右侧是账号菜单（修改密码、退出登录）。
-- 子页面地址为 `#/console/<section>`，`section` 定义在 `ConsoleContext.ts`；新增后台页面：在 `Section` / `SECTION_TITLE` 加一项、在 `ConsoleLayout` 的菜单加一项、在 `ConsoleApp` 的分支里渲染。
+- 子页面地址为 `/console/<section>`，`section` 定义在 `ConsoleContext.ts`；新增后台页面：在 `Section` / `SECTION_TITLE` 加一项、在 `ConsoleLayout` 的菜单加一项、在 `ConsoleApp` 的分支里渲染。
 - 每页以 `PageTitle`（标题 + 一句说明 + 右侧主操作）开头，内容放在 `Card variant="borderless"` 里；列表用 `Table`，筛选与搜索放在卡片顶部一行。
 - 新建、编辑用 `Modal` + `Form`；详情用右侧 `Drawer`；停用、重置密码、撤销授权等不可撤回的操作必须先确认（`Popconfirm` 或 `modal.confirm`）。初始密码用 `showPassword` 弹窗展示，并提示只显示一次。
 - 表格的固定列需要不透明底色（主题里 `headerBg`、`rowHoverBg` 已设为不透明），不要改成半透明色。

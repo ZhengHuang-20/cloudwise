@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { CheckCircle2, ChevronDown, ChevronRight, PlayCircle } from 'lucide-react';
 import { COURSES, Course, courseList, FRICTION_EN, Lesson, pathList, RoleLearningPath } from '../data/coursesData';
 import { useApp } from '../context/AppContext';
@@ -7,16 +8,13 @@ import { LessonModal } from '../components/LessonModal';
 import { PageHeader } from '../components/ui/PageHeader';
 import { SegmentedControl } from '../components/ui/SegmentedControl';
 import { SERVICE_COUNT_CN, SERVICE_COUNT_EN } from '../lib/features';
-
-interface AcademyViewProps {
-  onGoToTool: (toolId: string) => void;
-  onGoToBooking: () => void;
-}
+import { courseSlug, lessonPath } from '../site/routes';
+import { useSite } from '../site/SiteContext';
 
 const TOTAL_LESSONS = COURSES.reduce((sum, course) => sum + course.totalLessons, 0);
 
 // 课程标题形如「GEO——让 AI 在答案里说出你的名字」
-const splitTitle = (title: string) => {
+export const splitTitle = (title: string) => {
   const [short, tagline] = title.split('——');
   return { short, tagline: tagline || short };
 };
@@ -41,6 +39,13 @@ const pathLessons = (courses: Course[], path: RoleLearningPath) =>
     return found ? [found] : [];
   });
 
+/** 课时链接：普通点击在当前页打开课程弹窗，新标签页打开或爬虫访问时进入课时页 */
+const openInPlace = (e: React.MouseEvent, open: () => void) => {
+  if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+  e.preventDefault();
+  open();
+};
+
 /** 角色学习路径的课程列表。点击任一课直接播放，课程标签页随之切换。 */
 const PathPanel: React.FC<{
   path: RoleLearningPath;
@@ -50,7 +55,7 @@ const PathPanel: React.FC<{
   onClose: () => void;
 }> = ({ path, courses, lastLessonId, onOpenLesson, onClose }) => {
   const { isLessonCompleted } = useApp();
-  const { t } = useLang();
+  const { t, path: localize } = useLang();
   const lessons = pathLessons(courses, path);
   const doneCount = lessons.filter(({ lesson }) => isLessonCompleted(lesson.id)).length;
 
@@ -81,9 +86,9 @@ const PathPanel: React.FC<{
           const last = lesson.id === lastLessonId;
           return (
             <li key={lesson.id}>
-              <button
-                type="button"
-                onClick={() => onOpenLesson(lesson.id)}
+              <a
+                href={localize(lessonPath(lesson.id))}
+                onClick={(e) => openInPlace(e, () => onOpenLesson(lesson.id))}
                 aria-current={last ? 'step' : undefined}
                 className="group flex w-full items-center gap-4 py-4 text-left transition-colors hover:bg-surface-hover"
               >
@@ -107,7 +112,7 @@ const PathPanel: React.FC<{
                   </span>
                 </span>
                 <ChevronRight className="h-5 w-5 shrink-0 text-label-tertiary transition-transform duration-200 group-hover:translate-x-0.5" />
-              </button>
+              </a>
             </li>
           );
         })}
@@ -116,9 +121,10 @@ const PathPanel: React.FC<{
   );
 };
 
-export const AcademyView: React.FC<AcademyViewProps> = ({ onGoToTool }) => {
+export const AcademyView: React.FC = () => {
   const { isLessonCompleted, getCourseProgressPercentage, totalCompletedLessons } = useApp();
-  const { t, lang } = useLang();
+  const { t, lang, path } = useLang();
+  const { goToCourseTarget: onGoToTool } = useSite();
   const courses = courseList(lang);
   const paths = pathList(lang);
 
@@ -278,6 +284,10 @@ export const AcademyView: React.FC<AcademyViewProps> = ({ onGoToTool }) => {
                   {t('主案例：', 'Lead case: ')}
                   {currentCourse.heroCase}
                 </p>
+                <Link href={path(`/academy/${courseSlug(currentCourse.code)}`)} className="link mt-4 text-body">
+                  {t('课程主页与全部课时', 'Course page and all lessons')}
+                  <ChevronRight />
+                </Link>
               </div>
 
               <div className="w-full shrink-0 lg:w-64">
@@ -342,9 +352,9 @@ export const AcademyView: React.FC<AcademyViewProps> = ({ onGoToTool }) => {
                         const completed = isLessonCompleted(lesson.id);
                         return (
                           <li key={lesson.id}>
-                            <button
-                              type="button"
-                              onClick={() => setActiveLesson(lesson)}
+                            <a
+                              href={path(lessonPath(lesson.id))}
+                              onClick={(e) => openInPlace(e, () => setActiveLesson(lesson))}
                               className="group flex w-full items-center gap-4 px-6 py-4 text-left transition-colors hover:bg-surface-hover md:px-8"
                             >
                               {completed ? (
@@ -364,7 +374,7 @@ export const AcademyView: React.FC<AcademyViewProps> = ({ onGoToTool }) => {
                                 {lesson.durationMinutes} {t('分钟', 'min')}
                               </span>
                               <ChevronRight className="h-5 w-5 shrink-0 text-label-tertiary transition-transform duration-200 group-hover:translate-x-0.5" />
-                            </button>
+                            </a>
                           </li>
                         );
                       })}

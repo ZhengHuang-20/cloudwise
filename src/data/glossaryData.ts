@@ -1,5 +1,5 @@
 import { SHOW_FDE } from '../lib/features';
-import { GLOSSARY_EN } from './en/resources';
+import { GLOSSARY_EN } from './en/glossary';
 
 export interface GlossaryTerm {
   id: string;

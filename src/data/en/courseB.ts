@@ -55,7 +55,7 @@ More importantly, the answers from today's leading AI tools (Google AI Overviews
         'From a Chinese rainwater product line to 60 high-commercial-value English keyword groups that match how engineers on European and US municipal projects search.',
       conceptContent: `Taining Tech is a leading Chinese rainwater management and sponge-city company. Early in its overseas push, it translated "rainwater module" and "infiltration well" word for word as "Rainwater Module". That term had very low search volume overseas and did not match engineering practice.
 
-The Cloudwise team rebuilt the buyer intent in depth:
+The ChinGEO team rebuilt the buyer intent in depth:
 1. Keyword families: the library was split into informational ("What is SuDS compliance?"), comparison ("Siphon drainage vs gravity drainage cost comparison") and procurement ("stormwater attenuation tank manufacturer supplier") terms.
 2. One keyword, one page: no two internal pages are allowed to compete for the same keyword.
 3. Alignment with UK and EU standards: authoritative compliance guidance was written around SuDS (sustainable drainage systems), so international contractors can follow it directly.`,
@@ -70,7 +70,7 @@ The Cloudwise team rebuilt the buyer intent in depth:
       ],
       executiveTakeaway:
         'Keywords are not pulled from thin air. They must come from the real purchase intent of overseas buyers and from local engineering standards.',
-      nextStepLabel: 'Download the Taining Tech keyword mapping template',
+      nextStepLabel: 'Book a diagnosis to plan your core keyword system',
     },
   },
 };
