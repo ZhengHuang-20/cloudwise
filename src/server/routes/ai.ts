@@ -26,6 +26,8 @@ const rawJSON = (body: string) => new Response(body, { headers: { 'Content-Type'
 
 interface ChatRequest {
   message: string;
+  /** 访客界面语言：en 时回答全部用英文 */
+  lang: 'zh' | 'en';
   role: string;
   company: string;
   industry: string;
@@ -37,6 +39,7 @@ export const chat = route(async (req) => {
   const uc = (body.userContext && typeof body.userContext === 'object' ? body.userContext : {}) as Record<string, unknown>;
   const r: ChatRequest = {
     message: str(body.message),
+    lang: str(body.lang) === 'en' ? 'en' : 'zh',
     role: str(uc.role),
     company: str(uc.company),
     industry: str(uc.industry),
@@ -57,6 +60,7 @@ export const chat = route(async (req) => {
 访客最新消息：
 "${r.message}"
 
+${r.lang === 'en' ? '本次访客使用英文界面：answer、intentReason、extractedFields 的值、recommendedServices、suggestedNextAction 全部用英文撰写（覆盖知识库中“用中文回答”的要求）；sourceCitations 使用英文书名。\n' : ''}
 请以资深售前专家身份进行解答，并返回纯 JSON 格式：
 {
   "answer": "对访客的详细专业解答（包含观点支撑、案例依据与下一步建议）",
@@ -90,7 +94,7 @@ export const chat = route(async (req) => {
       console.warn('Gemini chat error:', err);
     }
   }
-  return json(chatFallback(r));
+  return json(r.lang === 'en' ? chatFallbackEn(r) : chatFallback(r));
 });
 
 /** 无 key / 调用失败时的确定性关键词匹配结果 */
@@ -159,6 +163,79 @@ function chatFallback(r: ChatRequest) {
       targetMarkets: '欧美/一带一路',
       budgetSignal: intent === 'HIGH' ? '具备采购预算意向' : '信息探索中',
       timeline: '近 1-3 个月',
+    },
+    recommendedServices: services,
+    suggestedNextAction: next,
+    sourceCitations: citations,
+  };
+}
+
+/** 英文界面下无 key / 调用失败时的确定性关键词匹配结果，与 chatFallback 的分支一一对应 */
+function chatFallbackEn(r: ChatRequest) {
+  const show = config().showFDE;
+  const countEn = show ? 'five' : 'four';
+  const msg = r.message.toLowerCase();
+  const has = (...words: string[]) => words.some((w) => msg.includes(w));
+
+  let answer: string;
+  let intent = 'MEDIUM';
+  let intentReason = 'General business question';
+  const services: string[] = [];
+  let next = 'Run the AI visibility audit on the homepage first, then use the Project planner to match the right service package.';
+  const citations = ['Cloudwise white paper on AI for going global', 'Guide to the five export bottlenecks'];
+
+  if (has('contact', 'phone', 'call', 'human', 'account manager', 'talk to', 'speak to', 'wechat')) {
+    const list = CONTACTS.map((c) => `- ${c.titleEn}: ${c.nameEn}, phone ${c.phone}`).join('\n');
+    answer = `You can contact our pre-sales team directly:\n${list}\n\nBefore calling, we suggest running the AI visibility audit on the homepage and sending us the results, so the conversation can be more specific.`;
+    intent = 'HIGH';
+    intentReason = 'Asked for contact details and wants to speak to a person';
+    next = 'Call the contacts above directly, or book a 30-minute online diagnosis call.';
+  } else if (has('geo', 'chatgpt', 'perplexity', 'gemini', 'visibility', 'recommend')) {
+    answer =
+      'GEO (generative engine optimisation) is our most distinctive flagship service. Unlike traditional SEO, which only competes for positions in a results list, GEO aims to make ChatGPT, Perplexity, Gemini and other leading AI tools name and cite your brand first when they recommend suppliers to overseas buyers.\n\nWe build the evidence chain through a six-step closed loop: diagnosis, modelling, content, sources, reputation and monitoring. Aikang Medical is an example: its domestic site scored 47 on GEO / SEO, while the new overseas site scored 95, and ChatGPT has sent high-intent overseas buyers for several months.';
+    intent = 'HIGH';
+    intentReason = 'Asked about the flagship GEO service, with a strong intent to upgrade lead generation';
+    services.push('Export GEO', 'Export SEO');
+    next = 'Run the free AI visibility audit on the homepage now to check how often your brand is recommended in ChatGPT and Perplexity.';
+    citations.push('Aikang Medical global site and GEO case');
+  } else if (has('enquir', 'inquir', 'crm', 'lead', 'overnight', 'after hours', 'missed', 'customer service')) {
+    answer =
+      'Overseas buyers face a time-zone gap of more than 12 hours, and a large share of high-value enquiries arrive during the Chinese night. Traditional forms or manual replies usually wait until the next morning, and by then the buyer has already asked your competitors.\n\nCloudwise AI customer service works from your structured knowledge base (parameter sheets, certifications, engineering cases). At 3 a.m. it replies to technical questions in several languages, extracts order quantity and lead-time requirements, and writes them to your CRM and WeCom, so the salesperson can send an accurate quotation as soon as they start work.';
+    intent = 'HIGH';
+    intentReason = 'Concerned about lost enquiries and conversion leakage, which points to an AI customer service opportunity';
+    services.push('AI customer service and system integration');
+    next = 'Use the Project planner to see the AI customer service timeline and deliverables, or book a 30-minute diagnosis call to see how an overnight enquiry is handled.';
+    citations.push('Standard for automated overnight enquiry routing');
+  } else if (has('price', 'cost', 'budget', 'quote', 'how much', 'fee')) {
+    const fdeWord = show ? ', and FDE on-site engineering' : '';
+    answer = `We do not publish a standard price online. The investment for websites, SEO, GEO and AI customer service${fdeWord} depends on the number of products, target markets and languages, the annual content volume and the company systems to be integrated, and it varies widely from company to company.\n\nTwo steps: use the Project planner on this site to combine services and review timelines and deliverables, then book a 30-minute diagnosis call so an architect can prepare a tailored plan based on real test results.`;
+    intent = 'HIGH';
+    intentReason = 'Asked about cost, so the conversation has moved into a high-intent commercial assessment';
+    services.push(`Full package (all ${countEn} services)`);
+    next = 'Open the Project planner to review timelines and deliverables, then book a 30-minute diagnosis call for a tailored plan.';
+  } else if (show && has('fde', 'on-site', 'onsite', 'forward deployed', 'engineer')) {
+    answer =
+      'An FDE (forward deployed engineer) originated at Palantir, and OpenAI and Anthropic now use the role to bring AI into real businesses. Consulting gives advice, outsourcing gives code, SaaS gives an account, while an FDE works alongside your front line and is accountable for business results.\n\nThe FDE builds in three layers from the bottom up:\n- Standardisation: write veteran salespeople’s experience, such as quoting and enquiry grading, as rules\n- Digitisation: load the rules into systems and connect your website, email, WhatsApp, CRM and ERP\n- Intelligence: let AI customer service, quoting assistants and other scenarios do real work on clean data\n\nEach week goes through one observe–prototype–trial–consolidate cycle. When the FDE leaves, the source code, data, documents and trained people stay with your company.';
+    intentReason = 'Wants to understand the delivery model and technical safeguards';
+    services.push('FDE on-site engineering service');
+    next = 'Book a 60-minute technical integration review to go through your current systems face to face with our technical experts.';
+  } else {
+    const connect = show ? 'experience, systems and AI are not yet connected, to be solved by an FDE on-site' : 'enquiries are not yet connected to the CRM and ERP';
+    answer = `Hello. I am the Cloudwise AI pre-sales advisor. We focus on the five bottlenecks in an export company’s overseas lead-generation chain: invisible (SEO/GEO), hard to read (websites), not trusted (authoritative content), can’t keep up (AI customer service), and not connected (${connect}).\n\nTell me about your main products and the biggest challenges you face in overseas lead generation today, and I will map out the most precise route forward.`;
+    intent = 'LOW';
+    intentReason = 'Early exploratory conversation';
+    services.push('AI visibility audit', 'Overseas websites');
+  }
+
+  return {
+    answer,
+    intent,
+    intentReason,
+    extractedFields: {
+      industry: orDefault(r.industry, 'Export manufacturing'),
+      targetMarkets: 'Europe and US / Belt and Road',
+      budgetSignal: intent === 'HIGH' ? 'Has a purchase budget in view' : 'Still exploring',
+      timeline: 'Within 1–3 months',
     },
     recommendedServices: services,
     suggestedNextAction: next,

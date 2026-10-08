@@ -1,4 +1,5 @@
 import { SHOW_FDE } from '../lib/features';
+import { RESOURCES_EN } from './en/resources';
 
 export interface ResourceItem {
   id: string;
@@ -89,3 +90,11 @@ const ALL_RESOURCE_ITEMS: ResourceItem[] = [
 ];
 
 export const RESOURCE_ITEMS: ResourceItem[] = SHOW_FDE ? ALL_RESOURCE_ITEMS : ALL_RESOURCE_ITEMS.filter((item) => item.id !== 'res-fde-needs-spec');
+
+const RESOURCE_ITEMS_EN: ResourceItem[] = RESOURCE_ITEMS.map((item) =>
+  RESOURCES_EN[item.id] ? { ...item, ...RESOURCES_EN[item.id] } : item
+);
+
+/** 按界面语言取模板与白皮书列表 */
+export const resourceList = (lang: 'zh' | 'en'): ResourceItem[] => (lang === 'en' ? RESOURCE_ITEMS_EN : RESOURCE_ITEMS);
+

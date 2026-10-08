@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ArrowRight, Check } from 'lucide-react';
-import { CASE_STUDIES, INDUSTRY_SOLUTIONS } from '../data/caseStudiesData';
+import { caseList, solutionList } from '../data/caseStudiesData';
+import { useLang } from '../context/LanguageContext';
 import { PageHeader } from '../components/ui/PageHeader';
 import { SegmentedControl } from '../components/ui/SegmentedControl';
 
@@ -18,26 +19,32 @@ const splitName = (name: string) => {
 export const CasesView: React.FC<CasesViewProps> = ({ onGoToAudit }) => {
   const [activeTab, setActiveTab] = useState<'cases' | 'solutions'>('cases');
   const [selectedCaseId, setSelectedCaseId] = useState<string>('case-ak-medical');
+  const { t, lang } = useLang();
+  const cases = caseList(lang);
+  const solutions = solutionList(lang);
 
-  const currentCase = CASE_STUDIES.find((c) => c.id === selectedCaseId) || CASE_STUDIES[0];
+  const currentCase = cases.find((c) => c.id === selectedCaseId) || cases[0];
   const caseName = splitName(currentCase.clientName);
   const comparison = currentCase.scoreComparison;
 
   return (
     <div>
       <PageHeader
-        eyebrow="标杆案例"
-        title="案例与行业方案"
-        intro="每个案例按同样的顺序写：起点、做了什么、结果，以及数据的口径。"
+        eyebrow={t('标杆案例', 'Case studies')}
+        title={t('案例与行业方案', 'Cases and industry plans')}
+        intro={t(
+          '每个案例按同样的顺序写：起点、做了什么、结果，以及数据的口径。',
+          'Every case follows the same order: the starting point, what we did, the results, and the basis of the data.'
+        )}
       >
         <SegmentedControl
-          ariaLabel="案例内容"
+          ariaLabel={t('案例内容', 'Case content')}
           size="lg"
           value={activeTab}
           onChange={setActiveTab}
           options={[
-            { id: 'cases', label: '标杆案例' },
-            { id: 'solutions', label: '行业方案' },
+            { id: 'cases', label: t('标杆案例', 'Case studies') },
+            { id: 'solutions', label: t('行业方案', 'Industry plans') },
           ]}
         />
       </PageHeader>
@@ -45,8 +52,8 @@ export const CasesView: React.FC<CasesViewProps> = ({ onGoToAudit }) => {
       <div className="layout-wide pb-[clamp(4.5rem,2.5rem+6vw,8.75rem)]">
         {activeTab === 'cases' ? (
           <div className="space-y-6">
-            <div className="flex flex-wrap justify-center gap-2" role="group" aria-label="选择案例">
-              {CASE_STUDIES.map((c) => (
+            <div className="flex flex-wrap justify-center gap-2" role="group" aria-label={t('选择案例', 'Choose a case')}>
+              {cases.map((c) => (
                 <button
                   key={c.id}
                   type="button"
@@ -71,7 +78,8 @@ export const CasesView: React.FC<CasesViewProps> = ({ onGoToAudit }) => {
                     )}
                   </h2>
                   <p className="mt-3 text-body text-label-secondary">
-                    {currentCase.status} · 目标市场：{currentCase.targetMarket}
+                    {currentCase.status} · {t('目标市场：', 'Target market: ')}
+                    {currentCase.targetMarket}
                   </p>
                 </div>
 
@@ -79,15 +87,15 @@ export const CasesView: React.FC<CasesViewProps> = ({ onGoToAudit }) => {
                   {comparison && <p className="mb-3 text-caption font-semibold">{comparison.metric}</p>}
                   <dl className="flex items-end gap-5">
                     <div>
-                      <dt className="text-caption text-label-secondary">{comparison?.beforeLabel ?? '改造前'}</dt>
+                      <dt className="text-caption text-label-secondary">{comparison?.beforeLabel ?? t('改造前', 'Before')}</dt>
                       <dd className="text-title-1 tabular-nums text-label-secondary">{currentCase.startingScore}</dd>
                     </div>
                     <ArrowRight className="mb-3 h-6 w-6 text-label-tertiary" aria-hidden="true" />
                     <div>
-                      <dt className="text-caption text-label-secondary">{comparison?.afterLabel ?? '改造后'}</dt>
+                      <dt className="text-caption text-label-secondary">{comparison?.afterLabel ?? t('改造后', 'After')}</dt>
                       <dd className="text-headline tabular-nums text-success">
                         {currentCase.results.finalScore}
-                        <span className="ml-1 text-title-3 text-label-secondary">分</span>
+                        <span className="ml-1 text-title-3 text-label-secondary">{t('分', 'pts')}</span>
                       </dd>
                     </div>
                   </dl>
@@ -97,11 +105,11 @@ export const CasesView: React.FC<CasesViewProps> = ({ onGoToAudit }) => {
               {/* 起点 */}
               <div className="mt-10 grid gap-8 border-t border-separator pt-10 md:grid-cols-2">
                 <section>
-                  <h3 className="text-title-3">出海前的痛点</h3>
+                  <h3 className="text-title-3">{t('出海前的痛点', 'Pain points before going overseas')}</h3>
                   <p className="mt-3 text-body text-label-secondary">{currentCase.startingPointFriction}</p>
                 </section>
                 <section>
-                  <h3 className="text-title-3">我们研究的海外决策者</h3>
+                  <h3 className="text-title-3">{t('我们研究的海外决策者', 'Overseas decision-makers we studied')}</h3>
                   <ul className="mt-4 flex flex-wrap gap-2">
                     {currentCase.buyerRoles.map((role) => (
                       <li key={role} className="badge font-normal text-label">
@@ -114,7 +122,7 @@ export const CasesView: React.FC<CasesViewProps> = ({ onGoToAudit }) => {
 
               {/* 实施 */}
               <section className="mt-10 border-t border-separator pt-10">
-                <h3 className="text-title-3">我们做了什么</h3>
+                <h3 className="text-title-3">{t('我们做了什么', 'What we did')}</h3>
                 <ol className="mt-5 grid gap-x-10 gap-y-5 md:grid-cols-2">
                   {currentCase.whatWeDid.map((step, idx) => (
                     <li key={step} className="flex gap-4 text-body">
@@ -129,7 +137,7 @@ export const CasesView: React.FC<CasesViewProps> = ({ onGoToAudit }) => {
 
               {/* 成果 */}
               <section className="mt-10 border-t border-separator pt-10">
-                <h3 className="text-title-3">结果</h3>
+                <h3 className="text-title-3">{t('结果', 'Results')}</h3>
                 <ul className="mt-5 space-y-3">
                   {currentCase.results.metrics.map((metric) => (
                     <li key={metric} className="flex gap-3 text-body">
@@ -156,20 +164,20 @@ export const CasesView: React.FC<CasesViewProps> = ({ onGoToAudit }) => {
               <div className="mt-10 flex flex-col gap-6 border-t border-separator pt-8 md:flex-row md:items-center md:justify-between">
                 <p className="max-w-2xl text-caption text-label-secondary">{currentCase.dataScopeStatement}</p>
                 <button type="button" onClick={onGoToAudit} className="btn btn-primary shrink-0">
-                  给我的企业做同样的测评
+                  {t('给我的企业做同样的测评', 'Run the same audit for my company')}
                 </button>
               </div>
             </article>
           </div>
         ) : (
           <div className="grid gap-5 md:grid-cols-2">
-            {INDUSTRY_SOLUTIONS.map((sol) => (
+            {solutions.map((sol) => (
               <article key={sol.id} className="tile flex flex-col animate-fade-in">
-                <p className="text-caption text-label-secondary">行业方案</p>
+                <p className="text-caption text-label-secondary">{t('行业方案', 'Industry plan')}</p>
                 <h2 className="mt-2 text-title-2">{sol.name}</h2>
                 <p className="mt-3 text-body text-label-secondary">{sol.description}</p>
 
-                <h3 className="mt-8 text-body font-semibold">海外决策者关注什么</h3>
+                <h3 className="mt-8 text-body font-semibold">{t('海外决策者关注什么', 'What overseas decision-makers focus on')}</h3>
                 <dl className="mt-2 flex-1 divide-y divide-separator">
                   {sol.overseasDecisionMakers.map((dm) => (
                     <div key={dm.role} className="py-4">
@@ -187,7 +195,7 @@ export const CasesView: React.FC<CasesViewProps> = ({ onGoToAudit }) => {
                   }}
                   className="btn btn-secondary mt-6 self-start"
                 >
-                  查看对应案例
+                  {t('查看对应案例', 'View the matching case')}
                 </button>
               </article>
             ))}

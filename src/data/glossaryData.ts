@@ -1,4 +1,5 @@
 import { SHOW_FDE } from '../lib/features';
+import { GLOSSARY_EN } from './en/resources';
 
 export interface GlossaryTerm {
   id: string;
@@ -86,3 +87,32 @@ const ALL_GLOSSARY_TERMS: GlossaryTerm[] = [
 ];
 
 export const GLOSSARY_TERMS: GlossaryTerm[] = SHOW_FDE ? ALL_GLOSSARY_TERMS : ALL_GLOSSARY_TERMS.filter((term) => term.id !== 'term-fde');
+
+/** 分类的英文显示名（内部仍用中文分类做筛选值） */
+export const GLOSSARY_CATEGORY_EN: Record<GlossaryTerm['category'], string> = {
+  'SEO/GEO': 'SEO / GEO',
+  技术底座: 'Technical foundation',
+  交付与架构: 'Delivery and architecture',
+  智能客服: 'AI customer service',
+};
+
+const localizeGlossary = (term: GlossaryTerm): GlossaryTerm => {
+  const en = GLOSSARY_EN[term.id];
+  if (!en) return term;
+  return {
+    ...term,
+    term: en.term,
+    questionTitle: en.questionTitle,
+    oneLineDefinition: en.oneLineDefinition,
+    detailedExplanation: en.detailedExplanation,
+    realWorldExample: en.realWorldExample,
+    commonPitfalls: en.commonPitfalls,
+    relatedTerms: en.relatedTerms,
+  };
+};
+
+const GLOSSARY_TERMS_EN = GLOSSARY_TERMS.map(localizeGlossary);
+
+/** 按界面语言取术语列表 */
+export const glossaryList = (lang: 'zh' | 'en'): GlossaryTerm[] => (lang === 'en' ? GLOSSARY_TERMS_EN : GLOSSARY_TERMS);
+

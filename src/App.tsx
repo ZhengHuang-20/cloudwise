@@ -1,6 +1,7 @@
 import React, { lazy, Suspense, useCallback, useEffect, useState } from 'react';
 import { AppProvider, useApp } from './context/AppContext';
 import { AuthProvider } from './context/AuthContext';
+import { LanguageProvider, useLang } from './context/LanguageContext';
 import { Header } from './components/Header';
 import { Footer } from './components/Footer';
 import { AiConsultantModal } from './components/AiConsultantModal';
@@ -21,6 +22,7 @@ import { ResourcesView } from './views/ResourcesView';
 const ConsoleApp = lazy(() => import('./views/console/ConsoleApp'));
 
 const SITE_TITLE = '云端智荐 - AI出海售前支持系统与能力样板间';
+const SITE_TITLE_EN = 'Cloudwise - AI pre-sales support for going global';
 
 // 当前页面与地址栏 hash 同步（#/services），支持浏览器前进后退与分享链接；
 // 后台的子页面形如 #/console/leads，这里只取第一段
@@ -31,6 +33,7 @@ const readTabFromHash = (): TabId => {
 
 function MainApp() {
   const { setAiAdvisorOpen, isAiAdvisorOpen, toastMessage } = useApp();
+  const { lang, t } = useLang();
 
   const [currentTab, setCurrentTab] = useState<TabId>(readTabFromHash);
   const [isBookingOpen, setIsBookingOpen] = useState(false);
@@ -47,9 +50,10 @@ function MainApp() {
   }, []);
 
   useEffect(() => {
-    const title = tabTitle(currentTab);
-    document.title = title ? `${title} - 云端智荐` : SITE_TITLE;
-  }, [currentTab]);
+    const title = tabTitle(currentTab, lang);
+    if (lang === 'en') document.title = title ? `${title} - Cloudwise` : SITE_TITLE_EN;
+    else document.title = title ? `${title} - 云端智荐` : SITE_TITLE;
+  }, [currentTab, lang]);
 
   const navigate = useCallback((tab: TabId) => {
     const hash = tab === 'home' ? '' : `#/${tab}`;
@@ -102,7 +106,7 @@ function MainApp() {
         onClick={() => document.getElementById('main')?.focus()}
         className="btn btn-primary btn-sm sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-3 focus:z-[70]"
       >
-        跳到主要内容
+        {t('跳到主要内容', 'Skip to main content')}
       </button>
 
       <Header
@@ -154,7 +158,7 @@ function MainApp() {
           className="material fixed bottom-[max(1.25rem,env(safe-area-inset-bottom))] right-5 z-40 inline-flex min-h-12 items-center gap-2.5 rounded-full border border-hairline px-5 text-body text-label shadow-[0_8px_32px_rgb(0_0_0/0.5)] transition-colors duration-200 hover:bg-surface-hover"
         >
           <span className="h-2 w-2 rounded-full bg-success" aria-hidden="true" />
-          AI 售前顾问
+          {t('AI 售前顾问', 'AI pre-sales advisor')}
         </button>
       )}
 
@@ -179,10 +183,12 @@ function MainApp() {
 
 export default function App() {
   return (
-    <AppProvider>
-      <AuthProvider>
-        <MainApp />
-      </AuthProvider>
-    </AppProvider>
+    <LanguageProvider>
+      <AppProvider>
+        <AuthProvider>
+          <MainApp />
+        </AuthProvider>
+      </AppProvider>
+    </LanguageProvider>
   );
 }

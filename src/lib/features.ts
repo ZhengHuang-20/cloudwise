@@ -10,3 +10,6 @@ export const SHOW_FDE = true;
 
 /** 对外展示的服务数（每项服务对应一门学院课程），用于“五项服务”“五门课”这类文案 */
 export const SERVICE_COUNT_CN = SHOW_FDE ? '五' : '四';
+
+/** 英文文案里的服务数：Five / Four（句中用 toLowerCase()） */
+export const SERVICE_COUNT_EN = SHOW_FDE ? 'Five' : 'Four';

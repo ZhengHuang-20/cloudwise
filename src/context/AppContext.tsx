@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react';
+import { useLang } from './LanguageContext';
 import {
   UserProfile,
   LessonProgress,
@@ -74,6 +75,7 @@ const LOCAL_STORAGE_KEYS = {
 };
 
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const { t } = useLang();
   // Auth state
   const [user, setUser] = useState<UserProfile | null>(() => {
     if (typeof window === 'undefined') return null;
@@ -86,9 +88,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       id: 'guest-user-1',
       email: 'demo@cloudwisdom.com',
       phone: '13800138000',
-      name: '出海企业探索者',
-      companyName: '某外贸智造集团',
-      industry: '高端工业装备 / 医疗器械',
+      name: t('出海企业探索者', 'Export explorer'),
+      companyName: t('某外贸智造集团', 'Sample trading group'),
+      industry: t('高端工业装备 / 医疗器械', 'High-end industrial equipment / medical devices'),
       role: '决策者',
       createdAt: new Date().toISOString(),
     };
@@ -126,9 +128,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       {
         id: 'diag-demo-1',
         toolType: 'ai_visibility',
-        toolName: 'AI 可见性测评',
+        toolName: t('AI 可见性测评', 'AI visibility audit'),
         score: 62,
-        summary: '在“看不见”与“不被信”卡点存在显著薄弱项，建议首选 SEO + GEO 获客组合。',
+        summary: t('在“看不见”与“不被信”卡点存在显著薄弱项，建议首选 SEO + GEO 获客组合。', 'Clear weak points in the “invisible” and “not trusted” bottlenecks. Start with the SEO + GEO lead-generation package.'),
         date: new Date(Date.now() - 3600000 * 48).toLocaleDateString(),
         details: {}
       }
@@ -145,14 +147,14 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     return [
       {
         id: 'prop-sample-01',
-        title: '某医疗智造企业 · 获客增长与 GEO 专项方案',
+        title: t('某医疗智造企业 · 获客增长与 GEO 专项方案', 'Sample medical manufacturer · lead growth and GEO project'),
         date: new Date().toLocaleDateString(),
-        services: ['海外独立站建站', '出海 GEO 优化', '外贸 SEO 优化'],
-        timeline: '10 ~ 12 周',
+        services: [t('海外独立站建站', 'Overseas websites'), t('出海 GEO 优化', 'Export GEO'), t('外贸 SEO 优化', 'Export SEO')],
+        timeline: t('10 ~ 12 周', '10 ~ 12 weeks'),
         shareId: 'ak-med-draft-2026',
         details: {
           packageType: 'package-acquisition',
-          deliverables: ['三读者高转化独立站', '60组核心词库', '爱康同款91项技术内容规划', '月度AI探针监测']
+          deliverables: [t('三读者高转化独立站', 'Three-reader conversion website'), t('60组核心词库', '60 core keyword groups'), t('爱康同款91项技术内容规划', '91-item technical content plan, as used by Aikang Medical'), t('月度AI探针监测', 'Monthly AI probe monitoring')]
         }
       }
     ];
@@ -168,9 +170,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       try { return JSON.parse(stored); } catch (e) { return []; }
     }
     return [
-      { id: 'act-1', action: '完成课时：1.1 独立站与电子画册区别', scoreDelta: 1, timestamp: '1天前' },
-      { id: 'act-2', action: '完成 AI 可见性测评', scoreDelta: 10, timestamp: '2天前' },
-      { id: 'act-3', action: '配置获客组合方案草案', scoreDelta: 15, timestamp: '今天' }
+      { id: 'act-1', action: t('完成课时：1.1 独立站与电子画册区别', 'Completed lesson 1.1: independent site vs e-brochure site'), scoreDelta: 1, timestamp: t('1天前', '1 day ago') },
+      { id: 'act-2', action: t('完成 AI 可见性测评', 'Completed the AI visibility audit'), scoreDelta: 10, timestamp: t('2天前', '2 days ago') },
+      { id: 'act-3', action: t('配置获客组合方案草案', 'Set up a lead-growth package draft'), scoreDelta: 15, timestamp: t('今天', 'Today') }
     ];
   });
 
@@ -231,7 +233,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       id: `act-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
       action,
       scoreDelta,
-      timestamp: '刚刚',
+      timestamp: t('刚刚', 'Just now'),
       meta,
     };
     setLeadActivities((prev) => [newAct, ...prev]);
@@ -251,19 +253,19 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
     setUser(newUser);
     logLeadActivity(`用户登录/注册成功: ${newUser.name}`, 10);
-    showToast(`欢迎回来，${newUser.name}`);
+    showToast(t(`欢迎回来，${newUser.name}`, `Welcome back, ${newUser.name}`));
     return true;
   };
 
   const logout = () => {
     setUser(null);
-    showToast('已退出登录');
+    showToast(t('已退出登录', 'Signed out'));
   };
 
   const updateUserProfile = (data: Partial<UserProfile>) => {
     if (!user) return;
     setUser({ ...user, ...data });
-    showToast('个人档案与企业信息已更新');
+    showToast(t('个人档案与企业信息已更新', 'Profile and company details updated'));
   };
 
   const markLessonComplete = (courseId: string, lessonId: string, quizScore = 100, exerciseData?: any) => {
@@ -283,7 +285,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     });
 
     logLeadActivity(`学完课时: ${lessonId}`, 3, { courseId, quizScore });
-    showToast('本课时已学完，进度已更新');
+    showToast(t('本课时已学完，进度已更新', 'Lesson completed, and your progress is updated'));
   };
 
   const isLessonCompleted = (lessonId: string) => {
@@ -321,7 +323,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
     setDiagnoses((prev) => [newRecord, ...prev]);
     logLeadActivity(`完成诊断测试: ${toolName}`, 15, { score });
-    showToast(`测评完成：${score} 分，已存入“我的空间”`);
+    showToast(t(`测评完成：${score} 分，已存入“我的空间”`, `Audit complete: ${score} pts, saved to My space`));
 
     return newRecord;
   };
@@ -347,7 +349,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setSavedProposals((prev) => [newProposal, ...prev]);
     setActiveProposal(newProposal);
     logLeadActivity(`保存方案配置草案: ${title}`, 20, { timeline });
-    showToast('方案已保存，方案空间已开启');
+    showToast(t('方案已保存，方案空间已开启', 'Plan saved, and the project room is open'));
 
     return newProposal;
   };

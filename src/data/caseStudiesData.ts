@@ -1,3 +1,5 @@
+import { CASE_STUDIES_EN, SOLUTIONS_EN } from './en/cases';
+
 export interface CaseStudy {
   id: string;
   clientName: string;
@@ -174,3 +176,47 @@ export const INDUSTRY_SOLUTIONS: IndustrySolution[] = [
     relatedCaseId: 'case-tide-lion'
   }
 ];
+
+// ---------- 英文版：src/data/en/cases.ts 的覆盖层按 id 合并，结构与中文一致 ----------
+
+const localizeCase = (item: CaseStudy): CaseStudy => {
+  const en = CASE_STUDIES_EN[item.id];
+  if (!en) return item;
+  return {
+    ...item,
+    clientName: en.clientName,
+    industry: en.industry,
+    status: en.status,
+    targetMarket: en.targetMarket,
+    buyerRoles: en.buyerRoles,
+    startingPointFriction: en.startingPointFriction,
+    scoreComparison: en.scoreComparison ?? item.scoreComparison,
+    whatWeDid: en.whatWeDid,
+    results: { ...item.results, metrics: en.results.metrics, directOutcome: en.results.directOutcome },
+    dataScopeStatement: en.dataScopeStatement,
+    reusableExperience: en.reusableExperience,
+    testimonial: en.testimonial ?? item.testimonial,
+  };
+};
+
+const localizeSolution = (item: IndustrySolution): IndustrySolution => {
+  const en = SOLUTIONS_EN[item.id];
+  if (!en) return item;
+  return {
+    ...item,
+    name: en.name,
+    description: en.description,
+    overseasDecisionMakers: en.overseasDecisionMakers,
+    recommendedContentFormat: en.recommendedContentFormat,
+    complianceNotes: en.complianceNotes,
+  };
+};
+
+const CASE_STUDIES_LOCALIZED_EN = CASE_STUDIES.map(localizeCase);
+const INDUSTRY_SOLUTIONS_LOCALIZED_EN = INDUSTRY_SOLUTIONS.map(localizeSolution);
+
+/** 按界面语言取案例与行业方案 */
+export const caseList = (lang: 'zh' | 'en'): CaseStudy[] => (lang === 'en' ? CASE_STUDIES_LOCALIZED_EN : CASE_STUDIES);
+export const solutionList = (lang: 'zh' | 'en'): IndustrySolution[] =>
+  lang === 'en' ? INDUSTRY_SOLUTIONS_LOCALIZED_EN : INDUSTRY_SOLUTIONS;
+
