@@ -55,6 +55,9 @@ export const BookingModal: React.FC<{ isOpen: boolean; onClose: () => void }> = 
     setIsBooked(false);
   };
 
+  // 线索的留言：记下预约的诊断形式与时段，销售看线索时能直接知道约的是什么
+  const leadMessage = `预约${MEETING_TYPES.find((m) => m.id === meetingType)?.title.zh ?? ''} · ${selectedDate} ${selectedSlot}`;
+
   const handleBookingSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setIsBooked(true);
@@ -76,7 +79,10 @@ export const BookingModal: React.FC<{ isOpen: boolean; onClose: () => void }> = 
     >
       <DialogBody>
         {!isBooked ? (
-          <form onSubmit={handleBookingSubmit} className="space-y-8">
+          <form onSubmit={handleBookingSubmit} className="space-y-8" data-cw-lead data-cw-keep>
+            {/* 访问统计脚本（data-cw-lead）读取的字段；蜜罐用于挡住机器人，真人看不见 */}
+            <input type="hidden" name="message" value={leadMessage} />
+            <input name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" style={{ position: 'absolute', left: '-9999px' }} />
             <fieldset>
               <legend className="field-label">{t('诊断形式', 'Session type')}</legend>
               <div role="radiogroup" className="grid grid-cols-1 gap-3 sm:grid-cols-3">
@@ -133,6 +139,7 @@ export const BookingModal: React.FC<{ isOpen: boolean; onClose: () => void }> = 
                 <label htmlFor="booking-name" className="field-label">{t('您的称呼', 'Your name')}</label>
                 <input
                   id="booking-name"
+                  name="name"
                   type="text"
                   value={contactName}
                   onChange={(e) => setContactName(e.target.value)}
@@ -146,6 +153,7 @@ export const BookingModal: React.FC<{ isOpen: boolean; onClose: () => void }> = 
                 <label htmlFor="booking-phone" className="field-label">{t('手机号', 'Mobile number')}</label>
                 <input
                   id="booking-phone"
+                  name="phone"
                   type="tel"
                   value={contactPhone}
                   onChange={(e) => setContactPhone(e.target.value)}
@@ -159,6 +167,7 @@ export const BookingModal: React.FC<{ isOpen: boolean; onClose: () => void }> = 
                 <label htmlFor="booking-company" className="field-label">{t('企业全称', 'Company name')}</label>
                 <input
                   id="booking-company"
+                  name="company"
                   type="text"
                   value={companyName}
                   onChange={(e) => setCompanyName(e.target.value)}
