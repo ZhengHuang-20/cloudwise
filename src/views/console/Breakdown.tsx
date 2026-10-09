@@ -80,8 +80,13 @@ const CardBody: React.FC<{ loading: boolean; error: string; ready: boolean; empt
   return <div className="transition-opacity duration-200" style={{ opacity: loading ? 0.55 : 1 }}>{children}</div>;
 };
 
-/** 排行列表：名称、访客数与占比、比例条；quality 时再显示环比、跳出率与留资。 */
-export const RankList: React.FC<{ data: Breakdown; name?: (v: string) => string; quality?: boolean }> = ({ data, name, quality }) => {
+/** 排行列表：名称、访客数与占比、比例条；quality 时再显示环比、跳出率与留资，showPageviews 时显示浏览量。 */
+export const RankList: React.FC<{ data: Breakdown; name?: (v: string) => string; quality?: boolean; showPageviews?: boolean }> = ({
+  data,
+  name,
+  quality,
+  showPageviews,
+}) => {
   const max = Math.max(1, ...data.rows.map((r) => r.visitors));
   return (
     <ul className="space-y-4">
@@ -103,6 +108,7 @@ export const RankList: React.FC<{ data: Breakdown; name?: (v: string) => string;
             </div>
             <p className="mt-1.5 flex flex-wrap gap-x-3 text-caption text-label-tertiary">
               {r.prevVisitors !== null && <DeltaText d={delta(r.visitors, r.prevVisitors)} />}
+              {showPageviews && r.pageviews !== undefined && <span className="tabular-nums">浏览量 {r.pageviews.toLocaleString()}</span>}
               {quality && r.bounceRate !== undefined && <span className="tabular-nums">跳出率 {formatPercent(r.bounceRate, 0)}</span>}
               {quality && !!r.leads && <span className="tabular-nums text-label-secondary">留资 {r.leads}</span>}
             </p>
