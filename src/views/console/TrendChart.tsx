@@ -13,6 +13,13 @@ export interface DailyPoint {
 
 export type Metric = 'uv' | 'pv' | 'leads';
 
+/** 分桶标签：按天为 YYYY-MM-DD，按小时为 YYYY-MM-DD HH（近 24 小时） */
+const isHour = (date: string) => date.length > 10;
+/** 坐标轴上的短标签：按天 MM-DD，按小时 HH:00 */
+const shortLabel = (date: string) => (isHour(date) ? `${date.slice(11)}:00` : date.slice(5));
+/** 悬浮提示与表格里的完整标签 */
+export const fullLabel = (date: string) => (isHour(date) ? `${date}:00` : date);
+
 export const METRIC_LABEL: Record<Metric, string> = { uv: '访客', pv: '浏览量', leads: '线索' };
 
 const SERIES = CONSOLE_COLORS.link;
@@ -21,12 +28,13 @@ const PREV = CONSOLE_COLORS.tertiary;
 const HEIGHT = 280;
 const PAD = { top: 12, right: 12, bottom: 28, left: 44 };
 
-/** 取整的刻度：1 / 2 / 5 × 10^n */
+/** 取整的刻度：1 / 2 / 5 × 10^n，最小间隔 1 */
 function niceTicks(max: number, count = 4): number[] {
   if (max <= 0) return [0, 1];
   const raw = max / count;
   const mag = 10 ** Math.floor(Math.log10(raw));
-  const step = [1, 2, 5, 10].map((m) => m * mag).find((s) => s >= raw) ?? raw;
+  // 计数都是整数，间隔至少为 1，否则取整后刻度会重复（如 0、0.5、1 → 0、1、1）
+  const step = Math.max(1, [1, 2, 5, 10].map((m) => m * mag).find((s) => s >= raw) ?? raw);
   const top = Math.max(step, Math.ceil(max / step) * step);
   const ticks: number[] = [];
   for (let v = 0; v <= top + step / 2; v += step) ticks.push(Math.round(v));
@@ -34,7 +42,7 @@ function niceTicks(max: number, count = 4): number[] {
 }
 
 /**
- * 单指标的每日趋势：2px 折线 + 10% 面积，悬停（或键盘左右键）显示十字线与当天三项数据。
+ * 单指标的趋势（按天，或近 24 小时按小时）：2px 折线 + 10% 面积，悬停（或键盘左右键）显示十字线与该时段三项数据。
  * 传入 prev 时叠加上一周期的灰色虚线（按天对齐）并显示图例；完整数据见表格视图。
  */
 export const TrendChart: React.FC<{ data: DailyPoint[]; metric: Metric; prev?: DailyPoint[] }> = ({ data, metric, prev }) => {
@@ -60,6 +68,7 @@ export const TrendChart: React.FC<{ data: DailyPoint[]; metric: Metric; prev?: D
   const plotW = Math.max(0, width - PAD.left - PAD.right);
   const plotH = HEIGHT - PAD.top - PAD.bottom;
   const n = data.length;
+  const hourly = n > 0 && isHour(data[0].date);
   const x = (i: number) => PAD.left + (n <= 1 ? plotW / 2 : (i / (n - 1)) * plotW);
   const y = (v: number) => PAD.top + plotH - (v / yMax) * plotH;
 
@@ -67,11 +76,11 @@ export const TrendChart: React.FC<{ data: DailyPoint[]; metric: Metric; prev?: D
   const area = n > 0 ? `${line}L${x(n - 1).toFixed(1)},${y(0)}L${x(0).toFixed(1)},${y(0)}Z` : '';
   const prevLine = prevValues?.map((v, i) => `${i === 0 ? 'M' : 'L'}${x(i).toFixed(1)},${y(v).toFixed(1)}`).join('') ?? '';
 
-  // x 轴最多 6 个日期标签（窄屏每 72px 一个），首尾必出
+  // x 轴最多 6 个时间标签（窄屏每 72px 一个），首尾必出
   const maxLabels = Math.max(2, Math.min(6, Math.floor(plotW / 72)));
   const labelEvery = Math.max(1, Math.ceil((n - 1) / (maxLabels - 1)));
   const xLabels = data
-    .map((d, i) => ({ i, text: d.date.slice(5) }))
+    .map((d, i) => ({ i, text: shortLabel(d.date) }))
     .filter(({ i }) => i === 0 || i === n - 1 || (i % labelEvery === 0 && n - 1 - i >= labelEvery * 0.6));
 
   const pick = (clientX: number) => {
@@ -119,9 +128,15 @@ export const TrendChart: React.FC<{ data: DailyPoint[]; metric: Metric; prev?: D
             height={HEIGHT}
             role="img"
             tabIndex={0}
-            aria-label={`近 ${n} 天每日${METRIC_LABEL[metric]}，合计 ${total}，单日最高 ${peak}${
-              prevValues ? `；上一周期合计 ${prevValues.reduce((a, b) => a + b, 0)}` : ''
-            }。可用左右方向键逐日查看。`}
+            aria-label={
+              hourly
+                ? `近 24 小时每小时${METRIC_LABEL[metric]}，合计 ${total}，单小时最高 ${peak}${
+                    prevValues ? `；上一周期合计 ${prevValues.reduce((a, b) => a + b, 0)}` : ''
+                  }。可用左右方向键逐小时查看。`
+                : `近 ${n} 天每日${METRIC_LABEL[metric]}，合计 ${total}，单日最高 ${peak}${
+                    prevValues ? `；上一周期合计 ${prevValues.reduce((a, b) => a + b, 0)}` : ''
+                  }。可用左右方向键逐日查看。`
+            }
             className="block rounded-[8px] outline-none focus-visible:outline-2 focus-visible:outline-link"
             onPointerMove={(e) => pick(e.clientX)}
             onPointerLeave={() => setActive(null)}
@@ -180,7 +195,7 @@ export const TrendChart: React.FC<{ data: DailyPoint[]; metric: Metric; prev?: D
               transform: `translateX(${tipLeft > width / 2 ? 'calc(-100% - 12px)' : '12px'})`,
             }}
           >
-            <p className="text-caption text-label-secondary tabular-nums">{point.date}</p>
+            <p className="text-caption text-label-secondary tabular-nums">{fullLabel(point.date)}</p>
             <p className="mt-1 flex items-center gap-2">
               <span className="h-0.5 w-3 rounded-full" style={{ background: SERIES }} />
               <span className="text-body font-semibold tabular-nums">{point[metric].toLocaleString()}</span>
@@ -194,7 +209,7 @@ export const TrendChart: React.FC<{ data: DailyPoint[]; metric: Metric; prev?: D
             </p>
             {prevPoint && (
               <p className="mt-1 text-caption text-label-secondary tabular-nums">
-                上期 {prevPoint.date.slice(5)}：{prevPoint[metric].toLocaleString()}
+                上期 {shortLabel(prevPoint.date)}：{prevPoint[metric].toLocaleString()}
               </p>
             )}
           </div>

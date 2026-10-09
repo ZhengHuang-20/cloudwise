@@ -67,6 +67,8 @@ export interface Config {
   auditDailyLimit: number;
   /** Vercel 访问令牌（只在服务端读取，用于查询 Web Analytics）；为空时不显示 Vercel 数据 */
   vercelToken: string;
+  /** Vercel Web Analytics 能查询的天数（Hobby 1 个月，Pro 12 个月，Web Analytics Plus / Enterprise 24 个月）；超出的时间段不向 Vercel 查询 */
+  vercelWindowDays: number;
 
   openaiKey: string;
   openaiModel: string;
@@ -96,6 +98,7 @@ export function config(): Config {
     showFDE: showFDE(),
     auditDailyLimit: envInt('GEMINI_AUDIT_DAILY_LIMIT', 100),
     vercelToken: env('VERCEL_API_TOKEN'),
+    vercelWindowDays: envInt('VERCEL_ANALYTICS_DAYS', 30),
 
     openaiKey: env('OPENAI_API_KEY'),
     openaiModel: env('OPENAI_MODEL', 'gpt-6-luna'),

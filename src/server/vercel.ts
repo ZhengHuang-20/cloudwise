@@ -11,7 +11,12 @@ import { config } from './config';
 
 const BASE = 'https://api.vercel.com/v1/query/web-analytics/visits';
 
-export type Unavailable = { available: false; reason: 'no_token' | 'not_configured' | 'request_failed' | 'unexpected_response' };
+export type Unavailable = {
+  available: false;
+  reason: 'no_token' | 'not_configured' | 'request_failed' | 'unexpected_response';
+  /** request_failed 时 Vercel 返回的状态码与错误说明（不含令牌等敏感信息） */
+  detail?: string;
+};
 
 export type VercelTotals = { available: true; pv: number; uv: number } | Unavailable;
 
@@ -24,8 +29,8 @@ export interface VercelGroup {
 
 export type VercelGroups = { available: true; rows: VercelGroup[] } | Unavailable;
 
-/** 按天的浏览量与访客，键为 UTC 日期 YYYY-MM-DD（Vercel 按 UTC 分天） */
-export type VercelDaily = { available: true; days: Map<string, { pv: number; uv: number }> } | Unavailable;
+/** 按天（Vercel 按 UTC 分天）或按小时的浏览量与访客，t 为分桶起点的 UTC 毫秒 */
+export type VercelSeries = { available: true; points: { t: number; pv: number; uv: number }[] } | Unavailable;
 
 export interface VercelSite {
   vercelTeamId: string;
@@ -34,6 +39,12 @@ export interface VercelSite {
 
 /** 站点关联了 Vercel 项目、服务端也有令牌时才去请求 */
 export const vercelEnabled = (site: VercelSite) => !!site.vercelProjectId && !!config().vercelToken;
+
+const HOUR_MS = 3600 * 1000;
+const DAY_MS = 24 * HOUR_MS;
+
+/** 从 since 起的数据是否都在 Vercel 的查询范围内（Hobby 只能查最近 1 个月，超出时 Vercel 报错或没有数据） */
+export const vercelCovers = (since: Date) => since.getTime() >= Date.now() - config().vercelWindowDays * DAY_MS;
 
 /** "Others" 是 limit 之外的合计，不是真实的维度值 */
 export const OTHERS = 'Others';
@@ -79,9 +90,15 @@ async function vercelGet(
     });
     if (!res.ok) {
       // Vercel 的错误体形如 { error: { code, message } }，记下来方便排查（令牌缺权限、项目或团队 ID 不对等）
-      const detail = await res.text().catch(() => '');
-      console.warn(`[vercel] web analytics ${path} 请求失败：HTTP ${res.status} ${detail.slice(0, 300)}`);
-      return { available: false, reason: 'request_failed' };
+      const text = await res.text().catch(() => '');
+      console.warn(`[vercel] web analytics ${path} 请求失败：HTTP ${res.status} ${text.slice(0, 300)}`);
+      let message = '';
+      try {
+        message = String(JSON.parse(text)?.error?.message ?? '');
+      } catch {
+        // 不是 JSON 时只给状态码
+      }
+      return { available: false, reason: 'request_failed', detail: `HTTP ${res.status}${message ? ` ${message.slice(0, 200)}` : ''}` };
     }
     return { ok: true, body: await res.json() };
   } catch (err) {
@@ -144,15 +161,20 @@ export async function vercelGroups(site: VercelSite, since: Date, until: Date, b
   };
 }
 
-/** 按天查询浏览量与访客数。 */
-export async function vercelDaily(site: VercelSite, since: Date, until: Date): Promise<VercelDaily> {
-  const res = await aggregateRows(site, since, until, [['by', 'day']]);
+/** 按天或按小时查询浏览量与访客数；limit 设为分桶数，避免默认的 10 条截断时间序列。返回每个分桶的起点（UTC 毫秒）。 */
+export async function vercelSeries(site: VercelSite, since: Date, until: Date, unit: 'day' | 'hour'): Promise<VercelSeries> {
+  const step = unit === 'hour' ? HOUR_MS : DAY_MS;
+  const buckets = Math.ceil((until.getTime() - since.getTime()) / step) + 1;
+  const res = await aggregateRows(site, since, until, [
+    ['by', unit],
+    ['limit', String(buckets)],
+  ]);
   if (!('ok' in res)) return res;
-  const days = new Map<string, { pv: number; uv: number }>();
+  const points: { t: number; pv: number; uv: number }[] = [];
   for (const { item, pv, uv } of res.rows) {
-    const t = new Date(item.timestamp as string);
-    if (Number.isNaN(t.getTime())) return unexpected('aggregate(day)', item);
-    days.set(t.toISOString().slice(0, 10), { pv, uv });
+    const t = new Date(item.timestamp as string).getTime();
+    if (Number.isNaN(t)) return unexpected(`aggregate(${unit})`, item);
+    points.push({ t, pv, uv });
   }
-  return { available: true, days };
+  return { available: true, points };
 }
