@@ -5,13 +5,14 @@
  */
 import { config } from './config';
 
-const ENDPOINT = 'https://api.vercel.com/v1/query/web-analytics/visits/aggregate';
+// 总量用 count 接口（返回 { data: { pageviews, visitors } }）；aggregate 接口必须带 by 分组参数，不适合取总数
+const ENDPOINT = 'https://api.vercel.com/v1/query/web-analytics/visits/count';
 
 export type VercelTotals =
   | { available: true; pv: number; uv: number }
   | { available: false; reason: 'no_token' | 'not_configured' | 'request_failed' | 'unexpected_response' };
 
-/** 在返回值里按候选字段名取数字（Vercel 的字段名以官方文档为准，这里兼容常见写法） */
+/** 在返回值里按候选字段名取数字（官方字段为 pageviews / visitors，这里兼容常见写法） */
 function pick(row: Record<string, unknown>, keys: string[]): number | null {
   for (const k of keys) {
     const v = row[k];
@@ -20,12 +21,13 @@ function pick(row: Record<string, unknown>, keys: string[]): number | null {
   return null;
 }
 
-/** 取汇总行：兼容 { data: [...] }、[...] 与单个对象三种返回形态 */
+/** 取汇总行：兼容 { data: {...} }、{ data: [...] }、[...] 与单个对象几种返回形态 */
 function totalRow(body: unknown): Record<string, unknown> | null {
   if (Array.isArray(body)) return (body[0] as Record<string, unknown>) ?? null;
   if (body && typeof body === 'object') {
     const b = body as Record<string, unknown>;
     if (Array.isArray(b.data)) return (b.data[0] as Record<string, unknown>) ?? null;
+    if (b.data && typeof b.data === 'object') return b.data as Record<string, unknown>;
     return b;
   }
   return null;
@@ -60,7 +62,9 @@ export async function vercelTotals(
       next: { revalidate: 600 },
     });
     if (!res.ok) {
-      console.warn(`[vercel] web analytics 请求失败：HTTP ${res.status}`);
+      // Vercel 的错误体形如 { error: { code, message } }，记下来方便排查（令牌缺权限、项目或团队 ID 不对等）
+      const detail = await res.text().catch(() => '');
+      console.warn(`[vercel] web analytics 请求失败：HTTP ${res.status} ${detail.slice(0, 300)}`);
       return { available: false, reason: 'request_failed' };
     }
     body = await res.json();
@@ -70,7 +74,7 @@ export async function vercelTotals(
   }
 
   const row = totalRow(body);
-  const pv = row ? pick(row, ['pageViews', 'pageviews', 'views', 'count']) : null;
+  const pv = row ? pick(row, ['pageviews', 'pageViews', 'views', 'count']) : null;
   const uv = row ? pick(row, ['visitors', 'uniqueVisitors', 'uv']) : null;
   if (pv === null || uv === null) {
     // 只记录返回的字段名，不记录内容
