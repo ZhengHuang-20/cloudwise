@@ -59,6 +59,8 @@ function showFDE() {
 export interface Config {
   geminiKey: string;
   geminiModel: string;
+  /** 文本模型（品牌识别、出题、事实抽取、AI 顾问）在 OpenRouter 上的模型名；配了 OPENROUTER_API_KEY 时使用 */
+  openrouterTextModel: string;
   /** 运行时连接串（Neon 的 pooled 地址）；为空表示未配置数据库 */
   databaseUrl: string;
   cookieSecure: boolean;
@@ -96,6 +98,7 @@ export function config(): Config {
   cached = {
     geminiKey: geminiKey(),
     geminiModel: env('GEMINI_MODEL', 'gemini-3.1-flash-lite'),
+    openrouterTextModel: env('OPENROUTER_TEXT_MODEL', 'anthropic/claude-haiku-5.5'),
     databaseUrl: databaseUrls().pooled,
     cookieSecure: env('COOKIE_SECURE') === 'true',
     showFDE: showFDE(),

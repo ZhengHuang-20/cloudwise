@@ -2,6 +2,7 @@
 import { db, dbStatus } from '../db';
 import { activeEngines } from '../engines';
 import { gemini } from '../gemini';
+import { textModel } from '../llm';
 import { json, route } from '../http';
 
 export const health = route(async () => {
@@ -9,6 +10,8 @@ export const health = route(async () => {
   return json({
     status: 'ok',
     hasGeminiKey: gemini() !== null,
+    // 文本模型（品牌识别、出题、事实抽取、AI 顾问）：OpenRouter 上的 Claude，未配置时为 Gemini
+    textModel: textModel()?.id ?? null,
     auditEngines: activeEngines().map((e) => e.id),
     hasDatabase: db() !== null,
     dbStatus: status,

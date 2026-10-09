@@ -2,7 +2,7 @@
  * /api/gemini/chat（AI 售前顾问）。修改 chat 响应字段时同步三处：提示词里的 JSON 模板、chatFallback、前端 AiConsultantModal 的 ChatMessage。
  */
 import { config } from '../config';
-import { gemini } from '../gemini';
+import { textModel } from '../llm';
 import { clientIP, json, readJSON, route, str } from '../http';
 import { limits } from '../ratelimit';
 import { serviceCountCN, systemKnowledge } from '../knowledge';
@@ -48,8 +48,8 @@ export const chat = route(async (req) => {
   if (!r.message) return json({ error: 'Message is required' }, 400);
   if (!(await limits.chat(clientIP(req)))) return json({ error: '咨询次数过多，请一小时后再试' }, 429);
 
-  const g = gemini();
-  if (g) {
+  const m = textModel();
+  if (m) {
     const frictions = r.frictions.length > 0 ? r.frictions.join(', ') : '未测评';
     const prompt = `
 访客上下文：
@@ -79,7 +79,12 @@ ${r.lang === 'en' ? '本次访客使用英文界面：answer、intentReason、ex
 }
 `;
     try {
-      const text = await g.generateJSON(systemKnowledge(config().showFDE), prompt, 0.7, AbortSignal.timeout(60_000));
+      const text = await m.generate(systemKnowledge(config().showFDE), prompt, {
+        maxTokens: 4096,
+        effort: 'medium',
+        temperature: 0.7,
+        signal: AbortSignal.timeout(60_000),
+      });
       const obj = asJSONObject(text);
       if (obj) return rawJSON(obj);
       return json({

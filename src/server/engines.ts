@@ -4,6 +4,7 @@
  */
 import { config } from './config';
 import { gemini, sleep, type Gemini, type WebSource } from './gemini';
+import { textModel } from './llm';
 
 export interface ProbeEngine {
   /** 稳定标识，写入报告与缓存签名 */
@@ -199,11 +200,11 @@ const withOnline = (model: string) => (model.endsWith(':online') ? model : model
 /**
  * 测评实际提问的平台，展示顺序 ChatGPT → Perplexity → Gemini。
  * 配了 OpenRouter 时三个平台统一经它提问（一把 key、一个出口），否则各走各的直连配置。
- * 分析依赖 Gemini，未配置 Gemini 时返回空（只出示例）。
+ * 分析依赖文本模型（llm.ts），没有可用的文本模型时返回空（只出示例）。Gemini 探测需要 Gemini key。
  */
 export function activeEngines(): ProbeEngine[] {
+  if (!textModel()) return [];
   const g = gemini();
-  if (!g) return [];
   const cfg = config();
   if (cfg.openrouterKey) {
     const base = cfg.openrouterBase.replace(/\/+$/, '');
@@ -216,8 +217,10 @@ export function activeEngines(): ProbeEngine[] {
   const out: ProbeEngine[] = [];
   if (cfg.openaiKey) out.push(openaiEngine(cfg.openaiKey, cfg.openaiModel, cfg.openaiBase, cfg.openaiEffort));
   if (cfg.perplexityKey) out.push(perplexityEngine(cfg.perplexityKey, cfg.perplexityModel, cfg.perplexityBase));
-  out.push(geminiEngine(g));
+  if (g) out.push(geminiEngine(g));
   return out;
 }
 
-export const engineSignature = (engines: ProbeEngine[]) => engines.map((e) => e.id).join(',');
+/** 探测平台 + 分析模型：任一变化都不复用旧缓存 */
+export const engineSignature = (engines: ProbeEngine[]) =>
+  [...engines.map((e) => e.id), `analysis:${textModel()?.id ?? ''}`].join(',');
