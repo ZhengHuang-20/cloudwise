@@ -1,10 +1,10 @@
 /**
- * /api/gemini/chat（AI 售前顾问）与 /api/gemini/visibility-test（旧的模拟测评，前端已不再调用）。
- * 修改 chat 响应字段时同步三处：提示词里的 JSON 模板、chatFallback、前端 AiConsultantModal 的 ChatMessage。
+ * /api/gemini/chat（AI 售前顾问）。修改 chat 响应字段时同步三处：提示词里的 JSON 模板、chatFallback、前端 AiConsultantModal 的 ChatMessage。
  */
 import { config } from '../config';
 import { gemini } from '../gemini';
-import { json, readJSON, route, str } from '../http';
+import { clientIP, json, readJSON, route, str } from '../http';
+import { limits } from '../ratelimit';
 import { serviceCountCN, systemKnowledge } from '../knowledge';
 import { CONTACTS } from '../../data/contactsData';
 
@@ -46,6 +46,7 @@ export const chat = route(async (req) => {
     frictions: Array.isArray(uc.frictions) ? uc.frictions.filter((f): f is string => typeof f === 'string') : [],
   };
   if (!r.message) return json({ error: 'Message is required' }, 400);
+  if (!(await limits.chat(clientIP(req)))) return json({ error: '咨询次数过多，请一小时后再试' }, 429);
 
   const g = gemini();
   if (g) {
@@ -242,109 +243,3 @@ function chatFallbackEn(r: ChatRequest) {
     sourceCitations: citations,
   };
 }
-
-export const visibilityTest = route(async (req) => {
-  const body = await readJSON(req);
-  const name = str(body.companyName);
-  const cat = str(body.category);
-  const website = str(body.website);
-  const targetMarket = str(body.targetMarket);
-  if (!name || !cat) return json({ error: 'Company name and category are required' }, 400);
-  let comps = Array.isArray(body.competitors) ? body.competitors.filter((c): c is string => typeof c === 'string' && c !== '') : [];
-  if (comps.length === 0) comps = ['Global Leader A', 'European Brand B', 'Asian Competitor C'];
-  const pick = (i: number, def: string) => comps[i] || def;
-
-  const g = gemini();
-  if (g) {
-    const prompt = `
-针对出海企业进行 AI 可见性（GEO）测评模拟：
-企业名称: ${name}
-企业官网: ${orDefault(website, '未填')}
-主营品类: ${cat}
-目标市场: ${orDefault(targetMarket, '北美/欧洲')}
-对比竞品: ${comps.join(', ')}
-
-请分析该品类海外买家向 ChatGPT, Perplexity, Gemini, Claude 提问时的典型场景，评估该企业与竞品的 AI 可见性表现。
-返回纯 JSON 格式：
-{
-  "visibilityScore": 48,
-  "rankingAverage": 4.2,
-  "sentimentScore": 72,
-  "competitorComparisons": [
-    { "name": "${name}", "score": 48, "rank": 4.2 },
-    { "name": "${pick(0, '竞品A')}", "score": 88, "rank": 1.4 },
-    { "name": "${pick(1, '竞品B')}", "score": 75, "rank": 2.1 }
-  ],
-  "samplePrompts": [
-    {
-      "platform": "ChatGPT-4o",
-      "prompt": "Top reliable ${cat} manufacturers with ISO certification in Asia",
-      "aiAnswerSnippet": "While European suppliers lead in market share, notable alternatives include...",
-      "mentionedCompany": false,
-      "sourcesCited": ["Wikipedia", "Industry Journal", "Global Sources"]
-    },
-    {
-      "platform": "Perplexity Pro",
-      "prompt": "Best B2B ${cat} suppliers for European standard projects",
-      "aiAnswerSnippet": "According to EN standards and municipal specs, primary suppliers include...",
-      "mentionedCompany": true,
-      "sourcesCited": ["Supplier Global Portal", "Trade Fair Catalog"]
-    }
-  ],
-  "weaknesses": [
-    "缺乏结构化英文白皮书与技术参数公开定义",
-    "第三方学术与行业媒体信源引用严重不足",
-    "官网未配置 Schema DefinedTerm 结构化数据导致 AI 检索难索引"
-  ],
-  "actionableSteps": [
-    "首月规划针对核心品类的 20 组海外买家问题簇",
-    "发布符合 Schema 规范的英文技术对比指南",
-    "在行业主流媒体与权威标准目录完成知识资产铺设"
-  ]
-}
-`;
-    try {
-      const obj = asJSONObject(await g.generateJSON('', prompt, 0.5, AbortSignal.timeout(60_000)));
-      if (obj) return rawJSON(obj);
-    } catch (err) {
-      console.warn('Gemini visibility fallback:', err);
-    }
-  }
-
-  return json({
-    visibilityScore: 42,
-    rankingAverage: 4.6,
-    sentimentScore: 68,
-    competitorComparisons: [
-      { name, score: 42, rank: 4.6 },
-      { name: pick(0, '国际头部竞品'), score: 89, rank: 1.3 },
-      { name: pick(1, '区域领先品牌'), score: 76, rank: 2.2 },
-    ],
-    samplePrompts: [
-      {
-        platform: 'ChatGPT',
-        prompt: `Who are the leading manufacturers of ${cat} for industrial applications?`,
-        aiAnswerSnippet: `Top recognized suppliers in the international market include tier-1 global brands. For Asian manufacturers, certain certified suppliers are noted, but detailed technical documentation for ${name} is currently sparse in the primary training corpus.`,
-        mentionedCompany: false,
-        sourcesCited: ['Industry Benchmark Report 2025', 'ThomasNet', 'Global Trade Association'],
-      },
-      {
-        platform: 'Perplexity',
-        prompt: `Recommended certified suppliers for ${cat} meeting CE/FDA standards`,
-        aiAnswerSnippet: `Based on public citations, European and US manufacturers are heavily indexed. ${name} has partial indexing from exhibition listings, but lacks dedicated technical case studies.`,
-        mentionedCompany: true,
-        sourcesCited: ['Exhibition Directory', 'ISO Certification Registry'],
-      },
-    ],
-    weaknesses: [
-      '缺乏有定义、有数据、有结构的海外英文技术内容',
-      '第三方权威信源（学术期刊、行业测评、海外展会）缺少指回官网的引用链路',
-      '官网技术底座未做 AI 爬虫优化，robots.txt 与服务端渲染不完善',
-    ],
-    actionableSteps: [
-      '通过决策者建模梳理 30+ 真实海外买家问题簇',
-      '发布 10 篇以上带数据表格的高权重白皮书与对比指南',
-      '在 LinkedIn、行业权威媒体同步发布口径一致的知识资产',
-    ],
-  });
-});

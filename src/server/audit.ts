@@ -4,6 +4,7 @@
  * 分数由代码按公式计算。品牌识别、问题生成与结果分析统一用 Gemini，所以未配置 Gemini 时只有示例。
  * 一次测评要调用几十次模型，所以做成异步任务：POST 创建（after() 在响应后继续执行），GET 轮询进度与结果。
  */
+import { config } from './config';
 import { asciiRatio, checkSite, resolveDomain, type SiteCheck } from './auditSite';
 import { auditStore } from './auditStore';
 import { engineSignature, type ProbeEngine } from './engines';
@@ -11,8 +12,13 @@ import { gemini, parseModelJSON, type WebSource } from './gemini';
 import { clip } from './http';
 
 const AUDIT_UNBRANDED = 6; // 不带品牌名的买家问题数
-const AUDIT_SAMPLES = 2; // 每个问题问几次（AI 回答有随机性，按比例统计）
+const AUDIT_BRANDED = 2; // 带品牌名的问题数（固定模板）
 const AUDIT_CONCURRENCY = 8; // 单个任务内每个平台同时提问数
+/** 每个问题问几次（AI 回答有随机性，多问几次更稳，但每次都是付费的联网提问；默认 1，AUDIT_SAMPLES 可调） */
+const auditSamples = () => config().auditSamples;
+
+/** 一次测评要发出的联网提问数：平台 × 问题 × 采样。用于每日额度计数。 */
+export const auditProbeCount = (engineCount: number) => engineCount * (AUDIT_UNBRANDED + AUDIT_BRANDED) * auditSamples();
 
 // Vercel 函数的最长执行时间是 300 秒（Hobby 与 Pro 默认上限），整个任务要在此之前写完结果：
 // 提问最晚在开始后 210 秒截止（未完成的记为超时），其余时间留给分析与写库。
@@ -150,7 +156,7 @@ export async function runAudit(id: string, domainIn: string, brand: string, engi
       engineSet: engineSignature(engines),
       engines: [],
       questions: 0,
-      samples: AUDIT_SAMPLES,
+      samples: auditSamples(),
       answers: 0,
       shareOfVoice: [],
       evidence: [],
@@ -171,7 +177,7 @@ export async function runAudit(id: string, domainIn: string, brand: string, engi
       rep.questions = questions.length;
 
       // ④ 真实提问
-      await store.setStep(id, 4, { engines: names, total: engines.length * questions.length * AUDIT_SAMPLES });
+      await store.setStep(id, 4, { engines: names, total: engines.length * questions.length * auditSamples() });
       const probeSignal = AbortSignal.any([jobSignal, AbortSignal.timeout(Math.max(0, started + PROBE_DEADLINE_MS - Date.now()))]);
       const { answers, log } = await probe(id, engines, questions, probeSignal);
 
@@ -357,7 +363,7 @@ Return JSON only: {"questions": ["..."]}`;
   const withDomain = domain ? ` (${domain})` : '';
   return [
     ...unbranded.map((text) => ({ text, branded: false })),
-    // 带品牌名的问题用固定模板，测的是 AI 对品牌本身的认知。
+    // 带品牌名的问题用固定模板，测的是 AI 对品牌本身的认知（AUDIT_BRANDED 条，改模板时同步改这个数）。
     { text: `What do you know about ${e.brand}${withDomain}? What products do they make?`, branded: true },
     { text: `Is ${e.brand} a reliable supplier of ${e.categoryEn}? What are its strengths and weaknesses?`, branded: true },
   ];
@@ -420,7 +426,7 @@ async function probe(
     engines.map(async (engine) => {
       const tasks: { q: AuditQuestion; qi: number; sample: number; slot: number }[] = [];
       qs.forEach((q, qi) => {
-        for (let s = 0; s < AUDIT_SAMPLES; s++) {
+        for (let s = 0; s < auditSamples(); s++) {
           tasks.push({ q, qi, sample: s, slot: answers.length });
           answers.push({ engine, q, text: '', sources: [], error: new Error('not run') });
         }

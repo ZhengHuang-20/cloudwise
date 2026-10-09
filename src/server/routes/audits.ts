@@ -3,7 +3,7 @@
  * 测评必须填写联系人姓名与手机号，每次提交都写入 audit_contacts，因此依赖数据库。
  */
 import { after } from 'next/server';
-import { runAudit } from '../audit';
+import { auditProbeCount, runAudit } from '../audit';
 import { parseAuditInput } from '../auditSite';
 import { auditStore, withStale, type AuditJob } from '../auditStore';
 import { config } from '../config';
@@ -55,13 +55,13 @@ export const createAudit = route(async (req) => {
   const cached = await store.findCached(key, engineSignature(engines));
   if (cached) return json({ id: cached, cached: true });
 
-  // 同一目标正在测评时，合并到同一个任务；否则占用当日（UTC）一次真实探测额度后创建
+  // 同一目标正在测评时，合并到同一个任务；否则按本次要发出的探测数占用当日（UTC）额度后创建
   const id = randomHex(16);
   const res = await store.create(id, key);
   if (!res.created) return json({ id: res.id }, 202);
   if (engines.length > 0) {
     const day = new Date().toISOString().slice(0, 10);
-    if ((await hit(`audit_budget:${day}`, 86_400)) > config().auditDailyLimit) {
+    if ((await hit(`audit_budget:${day}`, 86_400, auditProbeCount(engines.length))) > config().auditDailyLimit) {
       await store.fail(id, '今日免费测评名额已用完');
       return apiError(429, 'budget_exhausted', '今日免费测评名额已用完，请明天再试，或预约诊断会');
     }
