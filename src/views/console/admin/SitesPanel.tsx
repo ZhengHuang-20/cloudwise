@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { App as AntApp, Button, Card, Drawer, Form, Input, Modal, Select, Table, Tag, Typography } from 'antd';
-import { BookOpen, ChartColumn, Code, Copy, Plus } from 'lucide-react';
+import { BookOpen, ChartColumn, Code, Copy, Plus, Triangle } from 'lucide-react';
 import { api } from '../../../lib/api';
 import { useConsole } from '../ConsoleContext';
 import { InstallGuide, installGuideText, installSnippets } from '../InstallPanel';
@@ -15,6 +15,11 @@ interface CreateValues {
   hosting: string;
 }
 
+interface VercelValues {
+  vercelTeamId: string;
+  vercelProjectId: string;
+}
+
 export const SitesPanel: React.FC = () => {
   const { selectSite, go, reloadSites } = useConsole();
   const { message, modal } = AntApp.useApp();
@@ -24,6 +29,8 @@ export const SitesPanel: React.FC = () => {
   const [createOpen, setCreateOpen] = useState(false);
   const [grantSite, setGrantSite] = useState<Site | null>(null);
   const [guideSite, setGuideSite] = useState<Site | null>(null);
+  const [vercelSite, setVercelSite] = useState<Site | null>(null);
+  const [vercelForm] = Form.useForm<VercelValues>();
   const [grantIds, setGrantIds] = useState<number[]>([]);
   const [busy, setBusy] = useState(false);
   const [form] = Form.useForm<CreateValues>();
@@ -55,6 +62,25 @@ export const SitesPanel: React.FC = () => {
       message.success(`站点「${res.site.name}」已创建，把接入说明发给客户的技术人员即可`);
       setCreateOpen(false);
       setGuideSite({ ...res.site, memberIds: [] });
+      refresh();
+    } catch (e: any) {
+      message.error(e.message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const saveVercel = async () => {
+    if (!vercelSite) return;
+    const v = await vercelForm.validateFields();
+    setBusy(true);
+    try {
+      await api(`/api/admin/sites/${vercelSite.id}`, {
+        method: 'PATCH',
+        body: { vercelTeamId: v.vercelTeamId.trim(), vercelProjectId: v.vercelProjectId.trim() },
+      });
+      message.success('Vercel 关联已保存，数据概览约 10 分钟内生效');
+      setVercelSite(null);
       refresh();
     } catch (e: any) {
       message.error(e.message);
@@ -217,12 +243,23 @@ export const SitesPanel: React.FC = () => {
             {
               title: '操作',
               key: 'actions',
-              width: 220,
+              width: 300,
               fixed: 'right',
               render: (_, s) => (
                 <div className="flex whitespace-nowrap">
                   <Button type="link" size="small" icon={<BookOpen size={14} />} onClick={() => setGuideSite(s)}>
                     接入说明
+                  </Button>
+                  <Button
+                    type="link"
+                    size="small"
+                    icon={<Triangle size={14} />}
+                    onClick={() => {
+                      vercelForm.setFieldsValue({ vercelTeamId: s.vercelTeamId ?? '', vercelProjectId: s.vercelProjectId ?? '' });
+                      setVercelSite(s);
+                    }}
+                  >
+                    Vercel
                   </Button>
                   <Button
                     type="link"
@@ -264,6 +301,37 @@ export const SitesPanel: React.FC = () => {
           </Form.Item>
           <Form.Item name="hosting" label="接入方式">
             <Select options={Object.entries(HOSTING).map(([value, label]) => ({ value, label }))} />
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      <Modal
+        title={vercelSite ? `Vercel 关联：${vercelSite.name}` : ''}
+        open={!!vercelSite}
+        onCancel={() => setVercelSite(null)}
+        onOk={saveVercel}
+        okText="保存"
+        confirmLoading={busy}
+        destroyOnHidden
+        width={480}
+      >
+        <Form form={vercelForm} layout="vertical" requiredMark={false} style={{ paddingTop: 8 }}>
+          <p className="mb-4 text-caption text-label-secondary">
+            仅适用于部署在 Vercel 上的站点。关联后，「数据概览」会显示 Vercel Web Analytics 的同期汇总作参考。两个 ID 留空即取消关联。ID 在 Vercel 的团队 Settings → General 与项目 Settings → General 里找到。
+          </p>
+          <Form.Item
+            name="vercelTeamId"
+            label="团队 ID（Team ID）"
+            rules={[{ pattern: /^(team_[A-Za-z0-9]{8,64})?$/, message: '应以 team_ 开头' }]}
+          >
+            <Input placeholder="team_xxxxxxxx" className="tabular-nums" />
+          </Form.Item>
+          <Form.Item
+            name="vercelProjectId"
+            label="项目 ID（Project ID）"
+            rules={[{ pattern: /^(prj_[A-Za-z0-9]{8,64})?$/, message: '应以 prj_ 开头' }]}
+          >
+            <Input placeholder="prj_xxxxxxxx" className="tabular-nums" />
           </Form.Item>
         </Form>
       </Modal>

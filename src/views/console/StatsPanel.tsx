@@ -34,6 +34,42 @@ interface Stats {
 
 type Days = 7 | 30 | 90;
 
+type VercelResult = { available: true; pv: number; uv: number } | { available: false; reason: string };
+
+/**
+ * Vercel Web Analytics 的同期汇总，与采集脚本的口径不同（Vercel 不过滤线索来源、会话等），只作参考。
+ * 站点没有关联 Vercel 或取数失败时整张卡片不显示，不影响页面其他内容。
+ */
+const VercelCard: React.FC<{ siteId: number; days: Days; ours: { pv: number; uv: number } }> = ({ siteId, days, ours }) => {
+  const [v, setV] = useState<VercelResult | null>(null);
+  useEffect(() => {
+    let alive = true;
+    setV(null);
+    api<VercelResult>(`/api/sites/${siteId}/stats/vercel?days=${days}`)
+      .then((r) => alive && setV(r))
+      .catch(() => alive && setV({ available: false, reason: 'error' }));
+    return () => {
+      alive = false;
+    };
+  }, [siteId, days]);
+  if (!v || !v.available) return null;
+  const item = (label: string, theirs: number, mine: number) => (
+    <div>
+      <p className="text-caption text-label-secondary">{label}</p>
+      <p className="text-[1.25rem] font-semibold tabular-nums">{theirs.toLocaleString()}</p>
+      <p className="text-caption text-label-tertiary tabular-nums">本站统计 {mine.toLocaleString()}</p>
+    </div>
+  );
+  return (
+    <Card variant="borderless" title="Vercel 流量（参考）" extra={<span className="text-caption text-label-tertiary">口径与本站统计不同</span>}>
+      <div className="grid grid-cols-2 gap-6 md:max-w-xl">
+        {item('浏览量', v.pv, ours.pv)}
+        {item('访客', v.uv, ours.uv)}
+      </div>
+    </Card>
+  );
+};
+
 /** 迷你趋势线：KPI 卡片里只看走势，具体数值看下方趋势图。没有数据的日子断开。 */
 const Sparkline: React.FC<{ values: (number | null | undefined)[] }> = ({ values }) => {
   const W = 88;
@@ -283,6 +319,8 @@ export const StatsPanel: React.FC<{ site: Site }> = ({ site }) => {
               d={delta(cur.conversionRate, prev.conversionRate, true)}
             />
           </div>
+
+          <VercelCard siteId={site.id} days={days} ours={{ pv: cur.pv, uv: cur.uv }} />
 
           <div className="grid gap-4 xl:grid-cols-3">
             <Card
