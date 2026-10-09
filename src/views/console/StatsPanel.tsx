@@ -2,9 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { Alert, App as AntApp, Badge, Button, Card, Empty, Segmented, Spin, Switch, Table, Tooltip } from 'antd';
 import { ArrowRight, ChartLine, Info, Table2 } from 'lucide-react';
 import { api, formatTime } from '../../lib/api';
-import { BreakdownCard, DeltaText, PagesCard, RankList } from './Breakdown';
+import { BreakdownCard, DeltaText, PagesCard } from './Breakdown';
 import { useConsole } from './ConsoleContext';
-import { CHANNEL_LABEL, countryName, delta, DEVICE_LABEL, formatDuration, formatPercent, languageName, prettyPath } from './labels';
+import { CHANNEL_LABEL, countryName, delta, DEVICE_LABEL, formatDuration, formatPercent, languageName } from './labels';
 import { PageTitle } from './parts';
 import { CONSOLE_COLORS } from './theme';
 import { METRIC_LABEL, TrendChart, type DailyPoint, type Metric } from './TrendChart';
@@ -26,6 +26,12 @@ interface Kpis {
 
 interface Stats {
   days: number;
+  /** 访客、浏览量与趋势的来源：vercel = Vercel Web Analytics 为准，script = 采集脚本 */
+  source: 'vercel' | 'script';
+  /** 站点关联了 Vercel 却读不到时的原因 */
+  vercelIssue: string | null;
+  /** 采集脚本自己统计的访客与浏览量（Vercel 为准时作对照） */
+  script: { pv: number; uv: number };
   current: Kpis;
   previous: Kpis;
   daily: DailyPoint[];
@@ -33,114 +39,6 @@ interface Stats {
 }
 
 type Days = 7 | 30 | 90;
-
-type VercelResult = { available: true; pv: number; uv: number } | { available: false; reason: string };
-
-type VercelBreakdown =
-  | { available: true; dim: string; total: number | null; rows: { name: string; pv: number; uv: number }[] }
-  | { available: false; dim: string; reason: string };
-
-/** Vercel 把 limit 之外的值归为 "Others"；空值在来源维度表示直接访问 */
-const vercelName = (fn: (v: string) => string) => (v: string) => (v === 'Others' ? '其他' : fn(v));
-
-const VERCEL_TABS: { dim: string; label: string; name: (v: string) => string }[] = [
-  { dim: 'referrer', label: '来源', name: vercelName((v) => v || '直接访问') },
-  { dim: 'country', label: '国家', name: vercelName(countryName) },
-  { dim: 'page', label: '页面', name: vercelName((v) => prettyPath(v) || '未知') },
-  { dim: 'device', label: '设备', name: vercelName((v) => DEVICE_LABEL[v] ?? (v || '未知')) },
-  { dim: 'browser', label: '浏览器', name: vercelName((v) => v || '未知') },
-  { dim: 'os', label: '系统', name: vercelName((v) => v || '未知') },
-  { dim: 'utm_source', label: 'UTM 来源', name: vercelName((v) => v || '无') },
-];
-
-/** Vercel 的按维度分组：切换维度时保留上一次的结果，读取失败只在卡片内提示。 */
-const VercelGroups: React.FC<{ siteId: number; days: Days }> = ({ siteId, days }) => {
-  const [dim, setDim] = useState(VERCEL_TABS[0].dim);
-  const [data, setData] = useState<VercelBreakdown | null>(null);
-  const [loading, setLoading] = useState(true);
-  useEffect(() => {
-    let alive = true;
-    setLoading(true);
-    api<VercelBreakdown>(`/api/sites/${siteId}/stats/vercel/breakdown?days=${days}&dim=${dim}&limit=8`)
-      .then((r) => alive && setData(r))
-      .catch(() => alive && setData({ available: false, dim, reason: 'error' }))
-      .finally(() => alive && setLoading(false));
-    return () => {
-      alive = false;
-    };
-  }, [siteId, days, dim]);
-  const tab = VERCEL_TABS.find((t) => t.dim === dim) ?? VERCEL_TABS[0];
-  const ready = data?.dim === dim ? data : null;
-  return (
-    <div className="min-w-0">
-      <Segmented
-        size="small"
-        aria-label="Vercel 数据维度"
-        value={dim}
-        onChange={(v) => setDim(v as string)}
-        options={VERCEL_TABS.map((t) => ({ value: t.dim, label: t.label }))}
-        style={{ marginBottom: 16, maxWidth: '100%', overflowX: 'auto' }}
-      />
-      {!ready ? (
-        <div className="flex justify-center py-10">{loading && <Spin />}</div>
-      ) : !ready.available ? (
-        <p className="py-8 text-center text-caption text-label-secondary">暂时无法读取 Vercel 的{tab.label}数据</p>
-      ) : !ready.rows.length ? (
-        <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无数据" style={{ paddingBlock: 24 }} />
-      ) : (
-        <div className="transition-opacity duration-200" style={{ opacity: loading ? 0.55 : 1 }}>
-          <RankList
-            showPageviews
-            name={tab.name}
-            data={{
-              dim,
-              total: ready.total ?? Math.max(1, ...ready.rows.map((r) => r.uv)),
-              rows: ready.rows.map((r) => ({ name: r.name, visitors: r.uv, pageviews: r.pv, prevVisitors: null, avgEngagedMs: null })),
-            }}
-          />
-        </div>
-      )}
-    </div>
-  );
-};
-
-/**
- * Vercel Web Analytics 的同期汇总与按维度分组，与采集脚本的口径不同（Vercel 不统计线索、会话与参与时长），只作参考。
- * 从项目开启 Web Analytics 起就有数据，可以补上统计升级前没有来源、地区与设备的那段时间。
- * 站点没有关联 Vercel 或取数失败时整张卡片不显示，不影响页面其他内容。
- */
-const VercelCard: React.FC<{ siteId: number; days: Days; ours: { pv: number; uv: number } }> = ({ siteId, days, ours }) => {
-  const [v, setV] = useState<VercelResult | null>(null);
-  useEffect(() => {
-    let alive = true;
-    setV(null);
-    api<VercelResult>(`/api/sites/${siteId}/stats/vercel?days=${days}`)
-      .then((r) => alive && setV(r))
-      .catch(() => alive && setV({ available: false, reason: 'error' }));
-    return () => {
-      alive = false;
-    };
-  }, [siteId, days]);
-  if (!v || !v.available) return null;
-  const item = (label: string, theirs: number, mine: number) => (
-    <div>
-      <p className="text-caption text-label-secondary">{label}</p>
-      <p className="text-[1.25rem] font-semibold tabular-nums">{theirs.toLocaleString()}</p>
-      <p className="text-caption text-label-tertiary tabular-nums">本站统计 {mine.toLocaleString()}</p>
-    </div>
-  );
-  return (
-    <Card variant="borderless" title="Vercel 流量（参考）" extra={<span className="text-caption text-label-tertiary">口径与本站统计不同</span>}>
-      <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
-        <div className="grid h-fit grid-cols-2 gap-6">
-          {item('浏览量', v.pv, ours.pv)}
-          {item('访客', v.uv, ours.uv)}
-        </div>
-        <VercelGroups siteId={siteId} days={days} />
-      </div>
-    </Card>
-  );
-};
 
 /** 迷你趋势线：KPI 卡片里只看走势，具体数值看下方趋势图。没有数据的日子断开。 */
 const Sparkline: React.FC<{ values: (number | null | undefined)[] }> = ({ values }) => {
@@ -169,6 +67,12 @@ const Sparkline: React.FC<{ values: (number | null | undefined)[] }> = ({ values
       <path d={d} fill="none" stroke={CONSOLE_COLORS.link} strokeWidth={1.5} strokeLinejoin="round" strokeLinecap="round" />
     </svg>
   );
+};
+
+const VERCEL_ISSUE: Record<string, string> = {
+  no_token: '服务端没有配置 VERCEL_API_TOKEN',
+  request_failed: '请求 Vercel 失败，请检查令牌权限与团队 / 项目 ID',
+  unexpected_response: 'Vercel 返回的格式无法识别',
 };
 
 const Kpi: React.FC<{
@@ -309,12 +213,18 @@ export const StatsPanel: React.FC<{ site: Site }> = ({ site }) => {
   const prev = stats?.previous;
   // 上一周期含统计升级前的访问时，会话类指标（跳出率、时长、AI 来源）的上期数据不完整，不做比较
   const prevHasSessions = !!prev && prev.sessions > 0 && prev.legacyPv === 0;
+  const fromVercel = stats?.source === 'vercel';
+  const scriptNote = (n: number) => <span className="text-label-tertiary tabular-nums">采集脚本统计 {n.toLocaleString()}</span>;
 
   return (
     <>
       <PageTitle
         title="数据概览"
-        description={`${site.name} · ${site.domain} · 按北京时间统计，与上一周期对比`}
+        description={
+          fromVercel
+            ? `${site.name} · ${site.domain} · 访客、浏览量与来源 / 地区 / 页面 / 设备以 Vercel Web Analytics 为准，线索、跳出与参与时长来自采集脚本 · 与上一周期对比`
+            : `${site.name} · ${site.domain} · 按北京时间统计，与上一周期对比`
+        }
         extra={
           <>
             <label className="flex items-center gap-2 text-caption text-label-secondary">
@@ -339,20 +249,47 @@ export const StatsPanel: React.FC<{ site: Site }> = ({ site }) => {
         <div className="flex justify-center py-24"><Spin /></div>
       ) : (
         <div className="space-y-4 transition-opacity duration-200" style={{ opacity: reloading ? 0.55 : 1 }}>
+          {stats.vercelIssue && (
+            <div>
+              <Alert
+                type="warning"
+                showIcon
+                title={`站点已关联 Vercel 项目，但暂时读不到 Vercel 的数据（${VERCEL_ISSUE[stats.vercelIssue] ?? stats.vercelIssue}），当前显示采集脚本的统计。`}
+              />
+            </div>
+          )}
           {cur.legacyPv > 0 && (
             <div>
               <Alert
                 type="info"
                 showIcon
                 closable
-                title={`所选时间内有 ${cur.legacyPv.toLocaleString()} 次浏览发生在统计升级之前：这部分只计入访客与浏览量，来源渠道、国家地区、跳出率与参与时长从升级后开始统计。`}
+                title={
+                  fromVercel
+                    ? `所选时间内有 ${cur.legacyPv.toLocaleString()} 次浏览发生在采集脚本升级之前：跳出率、参与时长、入口 / 退出页与浏览器语言从升级后开始统计（访客、浏览量与来源等来自 Vercel，不受影响）。`
+                    : `所选时间内有 ${cur.legacyPv.toLocaleString()} 次浏览发生在统计升级之前：这部分只计入访客与浏览量，来源渠道、国家地区、跳出率与参与时长从升级后开始统计。`
+                }
               />
             </div>
           )}
 
           <div className="grid grid-cols-2 gap-4 md:grid-cols-3 2xl:grid-cols-6">
-            <Kpi title="访客" tip="按浏览器去重的访客数" value={cur.uv.toLocaleString()} d={delta(cur.uv, prev.uv)} spark={stats.daily.map((x) => x.uv)} />
-            <Kpi title="浏览量" tip="页面被打开的次数" value={cur.pv.toLocaleString()} d={delta(cur.pv, prev.pv)} spark={stats.daily.map((x) => x.pv)} />
+            <Kpi
+              title="访客"
+              tip={fromVercel ? 'Vercel Web Analytics 统计的访客数（按天匿名去重）' : '按浏览器去重的访客数'}
+              value={cur.uv.toLocaleString()}
+              d={delta(cur.uv, prev.uv)}
+              spark={stats.daily.map((x) => x.uv)}
+              extra={fromVercel ? scriptNote(stats.script.uv) : undefined}
+            />
+            <Kpi
+              title="浏览量"
+              tip={fromVercel ? 'Vercel Web Analytics 统计的页面浏览次数' : '页面被打开的次数'}
+              value={cur.pv.toLocaleString()}
+              d={delta(cur.pv, prev.pv)}
+              spark={stats.daily.map((x) => x.pv)}
+              extra={fromVercel ? scriptNote(stats.script.pv) : undefined}
+            />
             <Kpi
               title="跳出率"
               tip="只看了 1 个页面、停留不到 10 秒且没有留资的访问占比，越低越好"
@@ -386,13 +323,11 @@ export const StatsPanel: React.FC<{ site: Site }> = ({ site }) => {
             />
             <Kpi
               title="留资转化率"
-              tip="留下线索的访客 ÷ 访客"
+              tip={fromVercel ? '留下线索的访客 ÷ 访客（访客取 Vercel 的数据）' : '留下线索的访客 ÷ 访客'}
               value={formatPercent(cur.conversionRate)}
               d={delta(cur.conversionRate, prev.conversionRate, true)}
             />
           </div>
-
-          <VercelCard siteId={site.id} days={days} ours={{ pv: cur.pv, uv: cur.uv }} />
 
           <div className="grid gap-4 xl:grid-cols-3">
             <Card
@@ -431,7 +366,12 @@ export const StatsPanel: React.FC<{ site: Site }> = ({ site }) => {
                     <Button onClick={() => go('install')}>查看接入代码</Button>
                   </Empty>
                 ) : (
-                  <TrendChart data={stats.daily} metric={metric} prev={compare ? stats.prevDaily : undefined} />
+                  <>
+                    <TrendChart data={stats.daily} metric={metric} prev={compare ? stats.prevDaily : undefined} />
+                    {fromVercel && metric !== 'leads' && (
+                      <p className="mt-2 text-caption text-label-tertiary">来自 Vercel Web Analytics，按 UTC 日期分天</p>
+                    )}
+                  </>
                 )
               ) : (
                 <Table
@@ -466,7 +406,7 @@ export const StatsPanel: React.FC<{ site: Site }> = ({ site }) => {
                 { dim: 'utm_campaign', label: '活动', empty: '暂无带 utm_campaign 参数的访问' },
               ]}
             />
-            <AiCard site={site} days={days} stats={stats} comparable={prevHasSessions} />
+            <AiCard site={site} days={days} stats={stats} comparable={fromVercel || prevHasSessions} />
             <BreakdownCard
               title="国家 / 地区"
               siteId={site.id}

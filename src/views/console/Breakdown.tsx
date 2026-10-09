@@ -20,6 +20,8 @@ export interface BreakdownRow {
 
 export interface Breakdown {
   dim: string;
+  /** vercel = Vercel Web Analytics 的分组（只有访客、浏览量与环比），script = 采集脚本 */
+  source: 'vercel' | 'script';
   total: number;
   rows: BreakdownRow[];
 }
@@ -66,6 +68,12 @@ export interface Tab {
   empty?: string;
 }
 
+/** 数据来自 Vercel 时在卡片底部注明（跳出率、留资等只有采集脚本有，此时不显示） */
+const SourceNote: React.FC<{ data: Breakdown | null }> = ({ data }) =>
+  data?.source === 'vercel' && data.rows.length ? (
+    <p className="mt-4 text-caption text-label-tertiary">来自 Vercel Web Analytics</p>
+  ) : null;
+
 const CardBody: React.FC<{ loading: boolean; error: string; ready: boolean; empty: boolean; emptyText: string; children: React.ReactNode }> = ({
   loading,
   error,
@@ -80,13 +88,8 @@ const CardBody: React.FC<{ loading: boolean; error: string; ready: boolean; empt
   return <div className="transition-opacity duration-200" style={{ opacity: loading ? 0.55 : 1 }}>{children}</div>;
 };
 
-/** 排行列表：名称、访客数与占比、比例条；quality 时再显示环比、跳出率与留资，showPageviews 时显示浏览量。 */
-export const RankList: React.FC<{ data: Breakdown; name?: (v: string) => string; quality?: boolean; showPageviews?: boolean }> = ({
-  data,
-  name,
-  quality,
-  showPageviews,
-}) => {
+/** 排行列表：名称、访客数与占比、比例条；quality 时再显示环比、跳出率与留资。 */
+export const RankList: React.FC<{ data: Breakdown; name?: (v: string) => string; quality?: boolean }> = ({ data, name, quality }) => {
   const max = Math.max(1, ...data.rows.map((r) => r.visitors));
   return (
     <ul className="space-y-4">
@@ -108,7 +111,6 @@ export const RankList: React.FC<{ data: Breakdown; name?: (v: string) => string;
             </div>
             <p className="mt-1.5 flex flex-wrap gap-x-3 text-caption text-label-tertiary">
               {r.prevVisitors !== null && <DeltaText d={delta(r.visitors, r.prevVisitors)} />}
-              {showPageviews && r.pageviews !== undefined && <span className="tabular-nums">浏览量 {r.pageviews.toLocaleString()}</span>}
               {quality && r.bounceRate !== undefined && <span className="tabular-nums">跳出率 {formatPercent(r.bounceRate, 0)}</span>}
               {quality && !!r.leads && <span className="tabular-nums text-label-secondary">留资 {r.leads}</span>}
             </p>
@@ -149,6 +151,7 @@ export const BreakdownCard: React.FC<{
       <CardBody loading={loading} error={error} ready={!!data} empty={!data?.rows.length} emptyText={tab.empty ?? '暂无数据'}>
         {data && <RankList data={data} name={tab.name} quality={quality} />}
       </CardBody>
+      <SourceNote data={data} />
       {!loading && data && !data.rows.length && emptyExtra}
     </Card>
   );
@@ -210,6 +213,9 @@ export const PagesCard: React.FC<{ siteId: number; days: number }> = ({ siteId, 
       <CardBody loading={loading} error={error} ready={!!data} empty={!data?.rows.length} emptyText={dim === 'page' ? '暂无数据' : '入口页与退出页从统计升级后开始记录'}>
         <Table<BreakdownRow> size="small" rowKey="name" columns={columns} dataSource={data?.rows ?? []} pagination={false} tableLayout="fixed" scroll={{ x: 560 }} />
       </CardBody>
+      {data?.source === 'vercel' && !!data.rows.length && (
+        <p className="mt-4 text-caption text-label-tertiary">访客与浏览量来自 Vercel Web Analytics，平均参与时长来自采集脚本</p>
+      )}
     </Card>
   );
 };
