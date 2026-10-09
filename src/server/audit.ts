@@ -1,15 +1,16 @@
 /**
  * AI 可见性测评：抓取官网做确定性检查 → 模型识别品牌与行业 → 生成海外买家问题 →
  * 向各探测平台（ChatGPT、Perplexity、Gemini，均开启联网搜索）真实提问 → 统计提及、排位与引用，
- * 分数由代码按公式计算。品牌识别、问题生成与结果分析统一用 Gemini，所以未配置 Gemini 时只有示例。
+ * 分数由代码按公式计算。品牌识别、问题生成与结果分析统一用文本模型（llm.ts：OpenRouter 上的 Claude Haiku 5.5，未配置时为 Gemini），所以未配置文本模型时只有示例。
  * 一次测评要调用几十次模型，所以做成异步任务：POST 创建（after() 在响应后继续执行），GET 轮询进度与结果。
  */
 import { config } from './config';
 import { asciiRatio, checkSite, resolveDomain, type SiteCheck } from './auditSite';
 import { auditStore } from './auditStore';
 import { engineSignature, type ProbeEngine } from './engines';
-import { gemini, parseModelJSON, type WebSource } from './gemini';
+import { parseModelJSON, type WebSource } from './gemini';
 import { clip } from './http';
+import { textModel } from './llm';
 
 const AUDIT_UNBRANDED = 6; // 不带品牌名的买家问题数
 const AUDIT_BRANDED = 2; // 带品牌名的问题数（固定模板）
@@ -278,8 +279,8 @@ async function identifyEntity(
   signal: AbortSignal,
 ): Promise<AuditEntity> {
   const fb = heuristicEntity(domain, brand, site);
-  const g = gemini();
-  if (!g) return fb;
+  const m = textModel();
+  if (!m) return fb;
   const info: string[] = [];
   if (brand) info.push('用户输入的品牌名：' + brand);
   if (site?.reachable) {
@@ -304,7 +305,9 @@ ${info.join('\n')}
 }`;
   let e: Record<string, unknown> | null = null;
   try {
-    e = parseModelJSON<Record<string, unknown>>(await g.generateJSON('', prompt, 0.2, timeout(signal, 40_000)));
+    e = parseModelJSON<Record<string, unknown>>(
+      await m.generate('', prompt, { maxTokens: 1024, effort: 'low', temperature: 0.2, signal: timeout(signal, 40_000) }),
+    );
   } catch (err) {
     console.warn('测评品牌识别失败:', err);
   }
@@ -354,7 +357,9 @@ Rules:
 - Never mention any specific company or brand name.
 Return JSON only: {"questions": ["..."]}`;
   try {
-    const out = parseModelJSON<{ questions?: unknown }>(await gemini()!.generateJSON('', prompt, 0.4, timeout(signal, 40_000)));
+    const out = parseModelJSON<{ questions?: unknown }>(
+      await textModel()!.generate('', prompt, { maxTokens: 1024, effort: 'low', temperature: 0.4, signal: timeout(signal, 40_000) }),
+    );
     const qs = cleanList(out?.questions, AUDIT_UNBRANDED, 300);
     if (qs.length === AUDIT_UNBRANDED) unbranded = qs;
   } catch (err) {
@@ -518,7 +523,9 @@ For every answer below, extract facts. Return JSON only:
 {"results": [{"i": <answer number>, "mentioned": <true if the target company is mentioned>, "position": <1-based position of the target company among the companies the answer recommends or lists, 0 if not listed>, "sentiment": "positive|neutral|negative (how the answer describes the target company; neutral if not mentioned)", "knowsBrand": <true only if the answer gives specific, concrete information about the target company itself rather than saying it has no information or talking generically>, "brands": ["company or brand names the answer recommends or lists, in order, at most 10; exclude marketplaces, directories and media such as Alibaba, Made-in-China, Thomasnet, Wikipedia"]}]}
 ${sb}`;
   try {
-    const parsed = parseModelJSON<{ results?: AnswerFacts[] }>(await gemini()!.generateJSON('', prompt, 0, timeout(signal, 60_000)));
+    const parsed = parseModelJSON<{ results?: AnswerFacts[] }>(
+      await textModel()!.generate('', prompt, { maxTokens: 4096, effort: 'low', temperature: 0, signal: timeout(signal, 60_000) }),
+    );
     for (const f of parsed?.results ?? []) if (f && typeof f.i === 'number') out.set(f.i, f);
   } catch (err) {
     console.warn('测评结果分析失败:', err);

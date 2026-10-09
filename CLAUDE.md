@@ -36,7 +36,7 @@ bun run create-admin <email>   # 创建管理员并打印一次性初始密码
 - 构建命令就是 `bun run build`：先执行 `scripts/migrate.ts`（advisory lock 防并发，每个迁移文件一个事务；迁移失败会让部署失败），再 `next build`。设置 `SKIP_DB_MIGRATE=1` 可跳过迁移。迁移后若设置了 `CW_ADMIN_EMAIL` / `CW_ADMIN_PASSWORD`，会创建首个管理员（只创建不修改）。
 - 其余运行时配置（Gemini / OpenRouter / OpenAI / Perplexity 的 key 与模型、`GEMINI_AUDIT_DAILY_LIMIT`、`SHOW_FDE`、`NEXT_PUBLIC_SITE_URL`、各站长平台验证码）都在 Vercel 的 Environment Variables 里配置，清单见 `.env.example`。改了环境变量要重新部署才生效（页面是构建时静态生成的）。
 - 预览部署（`VERCEL_ENV=preview`）的 robots.txt 整站 `Disallow` 并加 `X-Robots-Tag: noindex`，只有生产部署允许收录；canonical 一律指向正式域名。
-- `/api/health` 返回 `hasGeminiKey`、`auditEngines`（实际启用的测评平台）、`hasDatabase`、`dbStatus`（`unconfigured` / `ok` / `failed`）与 `dbIssue`（阶段 + SQLSTATE，不含敏感信息），部署后用它确认配置是否生效。
+- `/api/health` 返回 `hasGeminiKey`、`textModel`（当前文本模型标识）、`auditEngines`（实际启用的测评平台）、`hasDatabase`、`dbStatus`（`unconfigured` / `ok` / `failed`）与 `dbIssue`（阶段 + SQLSTATE，不含敏感信息），部署后用它确认配置是否生效。
 
 ### 服务端（`app/api/**` + `src/server/`）
 
@@ -48,8 +48,8 @@ bun run create-admin <email>   # 创建管理员并打印一次性初始密码
 
 ### AI 售前顾问
 
-- Gemini 只在服务端调用（`src/server/gemini.ts`，REST + `x-goog-api-key`），key 不暴露给前端。模型默认 `gemini-3.1-flash-lite`（`GEMINI_MODEL` 可覆盖），使用 `responseMimeType: 'application/json'`，提示词中内嵌期望的 JSON 结构。
-- **每个 Gemini 接口都有确定性 fallback**：key 缺失（或仍为占位值 `MY_GEMINI_API_KEY`）、调用报错或 JSON 解析失败时，返回关键词匹配（chat）的结果。因此不配 key 应用也能完整运行。
+- 文本模型（品牌识别、出题、事实抽取、AI 顾问）统一经 `src/server/llm.ts` 的 `textModel()` 调用：配了 `OPENROUTER_API_KEY` 时走 OpenRouter 上的 Claude Haiku 5.5（模型 `OPENROUTER_TEXT_MODEL`，默认 `anthropic/claude-haiku-5.5`，`reasoning.effort` 按调用传 `low`/`medium`，不发送 temperature）；未配时回退 Gemini（`src/server/gemini.ts`，`GEMINI_MODEL` 默认 `gemini-3.1-flash-lite`，`responseMimeType: 'application/json'`）。所有 key 都只在服务端使用。联网搜索（域名查找、测评里的 Gemini 探测）仍走 Gemini。
+- **每个 AI 接口都有确定性 fallback**：文本模型与 Gemini 的 key 都缺失（或仍为占位值 `MY_GEMINI_API_KEY`）、调用报错或 JSON 解析失败时，返回关键词匹配（chat）的结果。因此不配 key 应用也能完整运行。
 - 修改 chat 响应字段时需同步三处：`src/server/routes/ai.ts` 里提示词的 JSON 模板、`chatFallback`、前端消费方（`src/components/AiConsultantModal.tsx` 的 `ChatMessage`）。
 - `src/server/knowledge.ts` 的 `systemKnowledge` 是 AI 顾问的「知识库」（服务、案例、报价规则、话术规则）。同样的业务事实还散落在 fallback 文案、`src/data/servicePackages.ts`、`src/data/caseStudiesData.ts` 和各 view 的文案中——改服务或案例时要一并更新。
 - **站点不展示任何价格**：服务、套餐、方案空间、课程与 AI 顾问都不出现金额、预算区间、折扣或付款比例；知识库要求模型不报价，问到费用时引导到方案规划与诊断会。新增内容也不要写价格。
@@ -67,8 +67,8 @@ bun run create-admin <email>   # 创建管理员并打印一次性初始密码
 
 - `POST /api/public/audits {target, contactName, contactPhone}` 创建异步任务，`GET /api/public/audits/{id}` 轮询进度与报告。联系人姓名与 11 位手机号必填（`src/lib/contact.ts` 前后端共用校验），每次提交都写入 `audit_contacts`（迁移 `004_audit_contacts.sql`，包括复用已有报告的提交），只通过服务端写入、没有公开的读取接口。POST 返回后测评用 Next 的 `after()` 在同一次函数调用里继续执行，受该路由 `maxDuration = 300` 限制：提问最晚在开始后 210 秒截止（未完成的记为超时），整个任务 280 秒内写完结果；超过 6 分钟没有进度更新的任务按「测评超时」失败处理。任务进度、提问日志与报告都写在 `audits` 表，所以轮询可以落在任意实例。
 - 输入可以是官网域名或品牌名称（`parseAuditInput`：像 ASCII 域名的按域名处理，否则当作 2～60 字的品牌名）；只给品牌名时第①步先用 Gemini 联网搜索查找官网（`resolveDomain`，排除平台、目录与社交网站），报告的 `domainSource` 标明 `input` / `resolved` / `none`，找不到官网时跳过官网检查、总分只按 AI 部分计算，用户输入的品牌名会加进别名用于匹配。
-- 流程：① 抓取官网做确定性检查（AI 爬虫的 robots.txt 权限、不执行 JS 时的正文、语言、JSON-LD、sitemap、llms.txt、首字节耗时；抓取用 `node:http(s)` + 自定义 DNS lookup，只连公网 IP 的 80/443，防 SSRF）→ ② 模型识别品牌/行业/市场 → ③ 生成 6 个不带品牌名的买家问题 + 2 个固定模板的带品牌问题 → ④ 向各探测平台每题问 `AUDIT_SAMPLES` 次（默认 1）、每个平台 8 路并发（ChatGPT 用 OpenAI Responses API + `web_search`（默认 `gpt-6-luna`、推理强度 `low`），Perplexity 用 Sonar（可直连，也可经 OpenRouter：`PERPLEXITY_BASE_URL=https://openrouter.ai/api/v1`，模型名自动补 `perplexity/` 前缀），Gemini 用 Google 搜索 grounding；配了 `OPENROUTER_API_KEY` 时三个平台统一经 OpenRouter 提问并优先于直连配置）→ ⑤ Gemini 按平台分组只抽取事实（是否提及、排位、推荐了哪些品牌），代码分平台计算指标，总体指标取各平台平均。
-- 品牌识别、出题与分析都依赖 Gemini，未配 `GEMINI_API_KEY` 时其他平台也不启用。报告 `mode`：`live` 真实探测、`sample` 未配 key（AI 部分为示例，前端标注）、`site_only` 提问全部失败。成本控制：按 IP 每小时 6 次、`GEMINI_AUDIT_DAILY_LIMIT`（默认 24）每日联网提问次数上限，按「平台 × 问题 × `AUDIT_SAMPLES`」计（计数在数据库）；`/api/gemini/chat` 按 IP 每小时 30 次、同一域名（或同一品牌名）24 小时内复用 `live` 结果（平台组合变化后不复用，`engineSet` 签名）、同一目标同时只跑一个任务（`uq_audits_running` 部分唯一索引）。
+- 流程：① 抓取官网做确定性检查（AI 爬虫的 robots.txt 权限、不执行 JS 时的正文、语言、JSON-LD、sitemap、llms.txt、首字节耗时；抓取用 `node:http(s)` + 自定义 DNS lookup，只连公网 IP 的 80/443，防 SSRF）→ ② 文本模型识别品牌/行业/市场 → ③ 生成 6 个不带品牌名的买家问题 + 2 个固定模板的带品牌问题 → ④ 向各探测平台每题问 `AUDIT_SAMPLES` 次（默认 1）、每个平台 8 路并发（ChatGPT 用 OpenAI Responses API + `web_search`（默认 `gpt-6-luna`、推理强度 `low`），Perplexity 用 Sonar（可直连，也可经 OpenRouter：`PERPLEXITY_BASE_URL=https://openrouter.ai/api/v1`，模型名自动补 `perplexity/` 前缀），Gemini 用 Google 搜索 grounding；配了 `OPENROUTER_API_KEY` 时三个平台统一经 OpenRouter 提问并优先于直连配置）→ ⑤ 文本模型按平台分组只抽取事实（是否提及、排位、推荐了哪些品牌），代码分平台计算指标，总体指标取各平台平均。
+- 品牌识别、出题与分析都依赖文本模型（`OPENROUTER_API_KEY` 或 `GEMINI_API_KEY`），两者都未配时没有任何平台启用；Gemini 探测本身还需要 `GEMINI_API_KEY`。报告 `mode`：`live` 真实探测、`sample` 未配 key（AI 部分为示例，前端标注）、`site_only` 提问全部失败。成本控制：按 IP 每小时 6 次、`GEMINI_AUDIT_DAILY_LIMIT`（默认 24）每日联网提问次数上限，按「平台 × 问题 × `AUDIT_SAMPLES`」计（计数在数据库）；`/api/gemini/chat` 按 IP 每小时 30 次、同一域名（或同一品牌名）24 小时内复用 `live` 结果（平台组合变化后不复用，`engineSet` 签名）、同一目标同时只跑一个任务（`uq_audits_running` 部分唯一索引）。
 
 ### 页面与路由（服务端渲染，SEO / GEO 的底座）
 
