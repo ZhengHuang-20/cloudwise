@@ -12,31 +12,46 @@ import { classify } from '../channels';
 import { query, queryOne } from '../db';
 import { apiError, json } from '../http';
 import { config } from '../config';
-import { OTHERS, vercelCovers, vercelDaily, vercelEnabled, vercelGroups, vercelTotals, type VercelGroup, type VercelSite } from '../vercel';
+import { OTHERS, vercelCovers, vercelEnabled, vercelSeries, vercelGroups, vercelTotals, type VercelGroup, type VercelSite } from '../vercel';
 import { CN_OFFSET_MS, originAllowed, withSite } from './analytics';
 
 const DAY_MS = 24 * 3600 * 1000;
-const CN_DAY = (col: string) => `to_char(${col} AT TIME ZONE 'Asia/Shanghai', 'YYYY-MM-DD')`;
+const HOUR_MS = 3600 * 1000;
+/** 按北京时间分桶：天为 YYYY-MM-DD，小时为 YYYY-MM-DD HH */
+const CN_BUCKET = (col: string, unit: 'day' | 'hour') =>
+  `to_char(${col} AT TIME ZONE 'Asia/Shanghai', '${unit === 'hour' ? 'YYYY-MM-DD HH24' : 'YYYY-MM-DD'}')`;
+/** 分桶起点（北京时间按 UTC 表示的毫秒）→ 分桶键，与 CN_BUCKET 一致 */
+const bucketKey = (cn: number, unit: 'day' | 'hour') =>
+  unit === 'hour' ? new Date(cn).toISOString().slice(0, 13).replace('T', ' ') : new Date(cn).toISOString().slice(0, 10);
 const BOUNCE = `pageviews = 1 AND engaged_ms < 10000 AND NOT has_lead`;
 
 interface Range {
+  /** 1 表示近 24 小时（按小时分桶），7 / 30 / 90 按天分桶 */
   days: number;
-  /** 当前周期起点（北京时间的零点，换成 UTC） */
+  unit: 'day' | 'hour';
+  /** 分桶数与每桶时长 */
+  buckets: number;
+  step: number;
+  /** 当前周期起点（北京时间的零点或整点，换成 UTC） */
   from: Date;
   to: Date;
   /** 上一周期：紧挨着当前周期、等长 */
   prevFrom: Date;
-  /** 当前周期第一天的北京时间零点（毫秒，按 UTC 表示），用于生成日期序列 */
+  /** 当前周期第一个分桶的北京时间起点（毫秒，按 UTC 表示），用于生成序列 */
   startCN: number;
 }
 
 function rangeOf(req: Request): Range {
   const d = Number(new URL(req.url).searchParams.get('days'));
-  const days = d === 7 || d === 30 || d === 90 ? d : 7;
+  const days = d === 1 || d === 7 || d === 30 || d === 90 ? d : 7;
+  const unit = days === 1 ? 'hour' : 'day';
+  const step = unit === 'hour' ? HOUR_MS : DAY_MS;
+  const buckets = unit === 'hour' ? 24 : days;
   const nowCN = Date.now() + CN_OFFSET_MS;
-  const startCN = Math.floor(nowCN / DAY_MS) * DAY_MS - (days - 1) * DAY_MS;
+  const startCN = Math.floor(nowCN / step) * step - (buckets - 1) * step;
   const from = new Date(startCN - CN_OFFSET_MS);
-  return { days, from, to: new Date(Date.now() + 60_000), prevFrom: new Date(from.getTime() - days * DAY_MS), startCN };
+  const span = buckets * step;
+  return { days, unit, buckets, step, from, to: new Date(Date.now() + 60_000), prevFrom: new Date(from.getTime() - span), startCN };
 }
 
 const rate = (n: number, d: number) => (d > 0 ? n / d : null);
@@ -142,6 +157,8 @@ const VERCEL_BY: Record<string, string> = {
   browser: 'browserName',
   os: 'osName',
   page: 'requestPath',
+  // 路由（如 /blog/[slug]）只有 Vercel 有
+  route: 'route',
 };
 const ATTRIBUTED_DIMS = new Set(['channel', 'source', 'ai']);
 
@@ -182,26 +199,31 @@ async function vercelAiVisitors(site: SiteInfo, from: Date, to: Date): Promise<n
 async function vercelCore(site: SiteInfo, r: Range) {
   if (!vercelEnabled(site)) return { ok: false as const, reason: site.vercelProjectId ? 'no_token' : 'not_configured', detail: null };
   if (!vercelCovers(r.from)) return { ok: false as const, reason: 'out_of_window', detail: null };
-  const span = r.days * DAY_MS;
+  const span = r.buckets * r.step;
   const withPrev = vercelCovers(r.prevFrom);
+  // 按天时 Vercel 按 UTC 分天，起点取第一个日期标签的 UTC 零点；按小时时整点在两个时区一致，直接用 from
+  const seriesFrom = r.unit === 'day' ? new Date(r.startCN) : r.from;
   const [cur, daily, ai, prev, prevDaily, prevAi] = await Promise.all([
     vercelTotals(site, r.from, r.to),
-    vercelDaily(site, new Date(r.startCN), r.to),
+    vercelSeries(site, seriesFrom, r.to, r.unit),
     vercelAiVisitors(site, r.from, r.to),
     withPrev ? vercelTotals(site, r.prevFrom, r.from) : null,
-    withPrev ? vercelDaily(site, new Date(r.startCN - span), new Date(r.startCN - 1)) : null,
+    withPrev ? vercelSeries(site, new Date(seriesFrom.getTime() - span), new Date(seriesFrom.getTime() - 1), r.unit) : null,
     withPrev ? vercelAiVisitors(site, r.prevFrom, r.from) : null,
   ]);
   if (!cur.available) return { ok: false as const, reason: cur.reason, detail: cur.detail ?? null };
   if (!daily.available) return { ok: false as const, reason: daily.reason, detail: daily.detail ?? null };
   const prevOk = !!prev?.available && !!prevDaily?.available;
+  // 分桶键：按天用 UTC 日期（与北京时间的日期标签同名），按小时换成北京时间的整点
+  const keyed = (points: { t: number; pv: number; uv: number }[]) =>
+    new Map(points.map((x) => [r.unit === 'day' ? bucketKey(x.t, 'day') : bucketKey(x.t + CN_OFFSET_MS, 'hour'), x]));
   return {
     ok: true as const,
     cur,
-    daily: daily.days,
+    daily: keyed(daily.points),
     ai,
     prev: prevOk && prev.available ? prev : null,
-    prevDaily: prevOk && prevDaily.available ? prevDaily.days : null,
+    prevDaily: prevOk && prevDaily.available ? keyed(prevDaily.points) : null,
     prevAi,
   };
 }
@@ -221,7 +243,7 @@ function withVercel<T extends Kpis>(k: T, t: { pv: number; uv: number } | null, 
   };
 }
 
-/** GET /api/sites/{id}/stats?days=7|30|90：核心指标（当前与上一周期）与每日序列。 */
+/** GET /api/sites/{id}/stats?days=1|7|30|90：核心指标（当前与上一周期）与趋势序列（days=1 为近 24 小时、按小时）。 */
 export const siteStats = withSite(async (req, _u, siteId) => {
   const r = rangeOf(req);
   const args = [siteId, r.prevFrom, r.to];
@@ -230,18 +252,18 @@ export const siteStats = withSite(async (req, _u, siteId) => {
     kpis(siteId, r.from, r.to),
     kpis(siteId, r.prevFrom, r.from),
     query(
-      `SELECT ${CN_DAY('created_at')} AS d, COUNT(*) AS pv, COUNT(DISTINCT visitor_id) AS uv FROM visits
+      `SELECT ${CN_BUCKET('created_at', r.unit)} AS d, COUNT(*) AS pv, COUNT(DISTINCT visitor_id) AS uv FROM visits
        WHERE site_id = $1 AND created_at >= $2 AND created_at < $3 GROUP BY d`,
       args,
     ),
     query(
-      `SELECT ${CN_DAY('started_at')} AS d, COUNT(*) AS sessions, COUNT(*) FILTER (WHERE ${BOUNCE}) AS bounces,
+      `SELECT ${CN_BUCKET('started_at', r.unit)} AS d, COUNT(*) AS sessions, COUNT(*) FILTER (WHERE ${BOUNCE}) AS bounces,
          COALESCE(SUM(engaged_ms), 0)::float8 AS engaged
        FROM visit_sessions WHERE site_id = $1 AND started_at >= $2 AND started_at < $3 GROUP BY d`,
       args,
     ),
     query(
-      `SELECT ${CN_DAY('created_at')} AS d, COUNT(*) AS n FROM leads WHERE site_id = $1 AND created_at >= $2 AND created_at < $3 GROUP BY d`,
+      `SELECT ${CN_BUCKET('created_at', r.unit)} AS d, COUNT(*) AS n FROM leads WHERE site_id = $1 AND created_at >= $2 AND created_at < $3 GROUP BY d`,
       args,
     ),
   ]);
@@ -251,8 +273,8 @@ export const siteStats = withSite(async (req, _u, siteId) => {
   const sm = new Map(sessionDays.map((x) => [x.d, x]));
   const lm = new Map(leadDays.map((x) => [x.d, x.n]));
   const series = (startCN: number, vm: Map<string, { pv: number; uv: number }>) =>
-    Array.from({ length: r.days }, (_, i) => {
-      const date = new Date(startCN + i * DAY_MS).toISOString().slice(0, 10);
+    Array.from({ length: r.buckets }, (_, i) => {
+      const date = bucketKey(startCN + i * r.step, r.unit);
       const v = vm.get(date);
       const s = sm.get(date);
       const sessions = s?.sessions ?? 0;
@@ -284,7 +306,7 @@ export const siteStats = withSite(async (req, _u, siteId) => {
       current,
       previous,
       daily: series(r.startCN, scriptDays),
-      prevDaily: series(r.startCN - r.days * DAY_MS, scriptDays),
+      prevDaily: series(r.startCN - r.buckets * r.step, scriptDays),
     });
   }
   return json({
@@ -296,7 +318,7 @@ export const siteStats = withSite(async (req, _u, siteId) => {
     previous: withVercel(previous, v.prev, v.prevAi),
     daily: series(r.startCN, v.daily),
     // 上一周期没有 Vercel 数据时不给序列，趋势图不叠加上一周期
-    prevDaily: v.prevDaily ? series(r.startCN - r.days * DAY_MS, v.prevDaily) : [],
+    prevDaily: v.prevDaily ? series(r.startCN - r.buckets * r.step, v.prevDaily) : [],
   });
 });
 
@@ -379,6 +401,9 @@ export const siteBreakdown = withSite(async (req, _u, siteId) => {
     }
   }
 
+  // 路由只有 Vercel 有：读不到时返回空列表，页面提示原因
+  if (dim === 'route') return json({ dim, source: 'script', total: 0, rows: [] });
+
   if (dim === 'page') {
     const base = `FROM visits WHERE site_id = $1 AND created_at >= $2 AND created_at < $3`;
     const [rows, total] = await Promise.all([
@@ -451,6 +476,17 @@ export const siteBreakdown = withSite(async (req, _u, siteId) => {
       leads: x.leads,
     })),
   });
+});
+
+/**
+ * GET /api/sites/{id}/stats/online：当前在线的访客数（采集脚本 5 分钟内有浏览的访客；Vercel 的查询接口不提供实时数据）。
+ */
+export const siteOnline = withSite(async (_req, _u, siteId) => {
+  const row = await queryOne(
+    `SELECT COUNT(DISTINCT visitor_id) AS n FROM visit_sessions WHERE site_id = $1 AND started_at > now() - interval '1 day' AND last_at > now() - interval '5 minutes'`,
+    [siteId],
+  );
+  return json({ online: row?.n ?? 0 });
 });
 
 /**

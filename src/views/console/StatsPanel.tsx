@@ -7,7 +7,7 @@ import { useConsole } from './ConsoleContext';
 import { CHANNEL_LABEL, countryName, delta, DEVICE_LABEL, formatDuration, formatPercent, languageName } from './labels';
 import { PageTitle } from './parts';
 import { CONSOLE_COLORS } from './theme';
-import { METRIC_LABEL, TrendChart, type DailyPoint, type Metric } from './TrendChart';
+import { fullLabel, METRIC_LABEL, TrendChart, type DailyPoint, type Metric } from './TrendChart';
 import { LEAD_BADGE, LEAD_STATUS, type Lead, type Site } from './types';
 
 interface Kpis {
@@ -45,7 +45,8 @@ interface Stats {
   prevDaily: DailyPoint[];
 }
 
-type Days = 7 | 30 | 90;
+/** 1 = 近 24 小时（按小时） */
+type Days = 1 | 7 | 30 | 90;
 
 /** 迷你趋势线：KPI 卡片里只看走势，具体数值看下方趋势图。没有数据的日子断开。 */
 const Sparkline: React.FC<{ values: (number | null | undefined)[] }> = ({ values }) => {
@@ -73,6 +74,34 @@ const Sparkline: React.FC<{ values: (number | null | undefined)[] }> = ({ values
     <svg width={W} height={H} aria-hidden="true" className="block shrink-0">
       <path d={d} fill="none" stroke={CONSOLE_COLORS.link} strokeWidth={1.5} strokeLinejoin="round" strokeLinecap="round" />
     </svg>
+  );
+};
+
+/** 在线人数：采集脚本 5 分钟内有浏览的访客（Vercel 的查询接口不提供实时数据），每分钟刷新一次 */
+const Online: React.FC<{ siteId: number }> = ({ siteId }) => {
+  const [n, setN] = useState<number | null>(null);
+  useEffect(() => {
+    let alive = true;
+    setN(null);
+    const load = () =>
+      api<{ online: number }>(`/api/sites/${siteId}/stats/online`)
+        .then((r) => alive && setN(r.online))
+        .catch(() => alive && setN(null));
+    load();
+    const timer = window.setInterval(load, 60_000);
+    return () => {
+      alive = false;
+      window.clearInterval(timer);
+    };
+  }, [siteId]);
+  if (n === null) return null;
+  return (
+    <Tooltip title="5 分钟内有浏览的访客（采集脚本统计），每分钟刷新">
+      <span className="inline-flex items-center gap-1.5 text-caption text-label-secondary tabular-nums">
+        <span className={`inline-block h-2 w-2 rounded-full ${n > 0 ? 'bg-success' : 'bg-fill'}`} aria-hidden="true" />
+        {n} 人在线
+      </span>
+    </Tooltip>
   );
 };
 
@@ -234,6 +263,7 @@ export const StatsPanel: React.FC<{ site: Site }> = ({ site }) => {
         }
         extra={
           <>
+            <Online siteId={site.id} />
             <label className="flex items-center gap-2 text-caption text-label-secondary">
               <Switch size="small" checked={compare} onChange={setCompare} />
               趋势叠加上一周期
@@ -243,6 +273,7 @@ export const StatsPanel: React.FC<{ site: Site }> = ({ site }) => {
               value={days}
               onChange={(v) => setDays(v as Days)}
               options={[
+                { value: 1, label: '近 24 小时' },
                 { value: 7, label: '近 7 天' },
                 { value: 30, label: '近 30 天' },
                 { value: 90, label: '近 90 天' },
@@ -351,7 +382,7 @@ export const StatsPanel: React.FC<{ site: Site }> = ({ site }) => {
             <Card
               variant="borderless"
               className="xl:col-span-2"
-              title={`每日${METRIC_LABEL[metric]}`}
+              title={`${days === 1 ? '每小时' : '每日'}${METRIC_LABEL[metric]}`}
               extra={
                 <div className="flex items-center gap-2">
                   <Segmented
@@ -387,7 +418,9 @@ export const StatsPanel: React.FC<{ site: Site }> = ({ site }) => {
                   <>
                     <TrendChart data={stats.daily} metric={metric} prev={compare ? stats.prevDaily : undefined} />
                     {fromVercel && metric !== 'leads' && (
-                      <p className="mt-2 text-caption text-label-tertiary">来自 Vercel Web Analytics，按 UTC 日期分天</p>
+                      <p className="mt-2 text-caption text-label-tertiary">
+                        {days === 1 ? '来自 Vercel Web Analytics' : '来自 Vercel Web Analytics，按 UTC 日期分天'}
+                      </p>
                     )}
                   </>
                 )
@@ -399,7 +432,7 @@ export const StatsPanel: React.FC<{ site: Site }> = ({ site }) => {
                   pagination={{ pageSize: 10, hideOnSinglePage: true, showSizeChanger: false }}
                   scroll={{ x: 520 }}
                   columns={[
-                    { title: '日期', dataIndex: 'date', className: 'tabular-nums' },
+                    { title: days === 1 ? '时间' : '日期', dataIndex: 'date', className: 'tabular-nums', render: (v: string) => fullLabel(v) },
                     { title: '访客', dataIndex: 'uv', align: 'right', className: 'tabular-nums' },
                     { title: '浏览量', dataIndex: 'pv', align: 'right', className: 'tabular-nums' },
                     { title: '跳出率', dataIndex: 'bounceRate', align: 'right', className: 'tabular-nums', render: (v) => formatPercent(v, 0) },
@@ -439,7 +472,7 @@ export const StatsPanel: React.FC<{ site: Site }> = ({ site }) => {
 
           <div className="grid gap-4 xl:grid-cols-3">
             <div className="min-w-0 xl:col-span-2">
-              <PagesCard siteId={site.id} days={days} />
+              <PagesCard siteId={site.id} days={days} withRoutes={fromVercel} />
             </div>
             <BreakdownCard
               title="访客环境"

@@ -159,18 +159,22 @@ export const BreakdownCard: React.FC<{
 
 const PAGE_TABS = [
   { dim: 'page', label: '热门页面' },
+  // 路由（如 /blog/[slug]）只有 Vercel 有
+  { dim: 'route', label: '路由', vercel: true },
   { dim: 'entry', label: '入口页' },
   { dim: 'exit', label: '退出页' },
 ];
 
-/** 页面表：热门页面看浏览量与参与时长，入口页看跳出率与留资，退出页看访客从哪里离开。 */
-export const PagesCard: React.FC<{ siteId: number; days: number }> = ({ siteId, days }) => {
-  const [dim, setDim] = useState('page');
+/** 页面表：热门页面看浏览量与参与时长，路由把动态页面合成一行（Vercel），入口页看跳出率与留资，退出页看访客从哪里离开。 */
+export const PagesCard: React.FC<{ siteId: number; days: number; withRoutes: boolean }> = ({ siteId, days, withRoutes }) => {
+  const tabs = PAGE_TABS.filter((t) => !t.vercel || withRoutes);
+  const [picked, setDim] = useState('page');
+  const dim = tabs.some((t) => t.dim === picked) ? picked : 'page';
   const { data, error, loading } = useBreakdown(siteId, days, dim, 10);
   const num = (v?: number) => <span className="tabular-nums">{(v ?? 0).toLocaleString()}</span>;
   const columns: TableColumnsType<BreakdownRow> = [
     {
-      title: '页面',
+      title: dim === 'route' ? '路由' : '页面',
       dataIndex: 'name',
       ellipsis: true,
       render: (v: string) => <span title={prettyPath(v)}>{prettyPath(v)}</span>,
@@ -191,10 +195,13 @@ export const PagesCard: React.FC<{ siteId: number; days: number }> = ({ siteId, 
         </div>
       ),
     },
-    ...(dim === 'page'
+    ...(dim === 'page' || dim === 'route'
       ? ([
           { title: '浏览量', dataIndex: 'pageviews', align: 'right', width: 96, render: (v: number) => num(v) },
-          { title: '平均参与时长', dataIndex: 'avgEngagedMs', align: 'right', width: 132, render: (v: number | null) => <span className="tabular-nums">{formatDuration(v)}</span> },
+          // 参与时长来自采集脚本，按路径统计，路由没有
+          ...(dim === 'page'
+            ? [{ title: '平均参与时长', dataIndex: 'avgEngagedMs', align: 'right', width: 132, render: (v: number | null) => <span className="tabular-nums">{formatDuration(v)}</span> }]
+            : []),
         ] as TableColumnsType<BreakdownRow>)
       : ([
           { title: dim === 'entry' ? '进入次数' : '离开次数', dataIndex: 'sessions', align: 'right', width: 104, render: (v: number) => num(v) },
@@ -208,13 +215,15 @@ export const PagesCard: React.FC<{ siteId: number; days: number }> = ({ siteId, 
       title="页面"
       className="h-full"
       styles={{ body: { paddingTop: 4 } }}
-      extra={<Segmented size="small" aria-label="页面维度" value={dim} onChange={(v) => setDim(v as string)} options={PAGE_TABS.map((t) => ({ value: t.dim, label: t.label }))} />}
+      extra={<Segmented size="small" aria-label="页面维度" value={dim} onChange={(v) => setDim(v as string)} options={tabs.map((t) => ({ value: t.dim, label: t.label }))} />}
     >
-      <CardBody loading={loading} error={error} ready={!!data} empty={!data?.rows.length} emptyText={dim === 'page' ? '暂无数据' : '入口页与退出页从统计升级后开始记录'}>
+      <CardBody loading={loading} error={error} ready={!!data} empty={!data?.rows.length} emptyText={dim === 'page' ? '暂无数据' : dim === 'route' ? '暂时读不到 Vercel 的路由数据' : '入口页与退出页从统计升级后开始记录'}>
         <Table<BreakdownRow> size="small" rowKey="name" columns={columns} dataSource={data?.rows ?? []} pagination={false} tableLayout="fixed" scroll={{ x: 560 }} />
       </CardBody>
       {data?.source === 'vercel' && !!data.rows.length && (
-        <p className="mt-4 text-caption text-label-tertiary">访客与浏览量来自 Vercel Web Analytics，平均参与时长来自采集脚本</p>
+        <p className="mt-4 text-caption text-label-tertiary">
+          {dim === 'page' ? '访客与浏览量来自 Vercel Web Analytics，平均参与时长来自采集脚本' : '来自 Vercel Web Analytics'}
+        </p>
       )}
     </Card>
   );
