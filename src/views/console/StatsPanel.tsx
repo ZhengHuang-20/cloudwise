@@ -24,16 +24,23 @@ interface Kpis {
   conversionRate: number | null;
 }
 
+/** 上一周期：以 Vercel 为准但上一周期超出 Vercel 的查询范围时，访客、浏览量、AI 访客与转化率为 null（不做环比） */
+type PrevKpis = Omit<Kpis, 'pv' | 'uv' | 'aiVisitors'> & { pv: number | null; uv: number | null; aiVisitors: number | null };
+
 interface Stats {
   days: number;
   /** 访客、浏览量与趋势的来源：vercel = Vercel Web Analytics 为准，script = 采集脚本 */
   source: 'vercel' | 'script';
   /** 站点关联了 Vercel 却读不到时的原因 */
   vercelIssue: string | null;
+  /** 请求失败时 Vercel 返回的状态码与说明 */
+  vercelDetail: string | null;
+  /** Vercel 能查询的天数（Hobby 30） */
+  vercelWindowDays: number;
   /** 采集脚本自己统计的访客与浏览量（Vercel 为准时作对照） */
   script: { pv: number; uv: number };
   current: Kpis;
-  previous: Kpis;
+  previous: PrevKpis;
   daily: DailyPoint[];
   prevDaily: DailyPoint[];
 }
@@ -249,14 +256,25 @@ export const StatsPanel: React.FC<{ site: Site }> = ({ site }) => {
         <div className="flex justify-center py-24"><Spin /></div>
       ) : (
         <div className="space-y-4 transition-opacity duration-200" style={{ opacity: reloading ? 0.55 : 1 }}>
-          {stats.vercelIssue && (
+          {stats.vercelIssue === 'out_of_window' ? (
             <div>
               <Alert
-                type="warning"
+                type="info"
                 showIcon
-                title={`站点已关联 Vercel 项目，但暂时读不到 Vercel 的数据（${VERCEL_ISSUE[stats.vercelIssue] ?? stats.vercelIssue}），当前显示采集脚本的统计。`}
+                closable
+                title={`Vercel 只能查询最近 ${stats.vercelWindowDays} 天的数据，近 ${stats.days} 天的访客、浏览量与来源等显示采集脚本的统计。`}
               />
             </div>
+          ) : (
+            stats.vercelIssue && (
+              <div>
+                <Alert
+                  type="warning"
+                  showIcon
+                  title={`站点已关联 Vercel 项目，但暂时读不到 Vercel 的数据（${VERCEL_ISSUE[stats.vercelIssue] ?? stats.vercelIssue}${stats.vercelDetail ? `：${stats.vercelDetail}` : ''}），当前显示采集脚本的统计。`}
+                />
+              </div>
+            )
           )}
           {cur.legacyPv > 0 && (
             <div>

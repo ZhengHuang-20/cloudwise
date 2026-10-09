@@ -11,7 +11,8 @@
 import { classify } from '../channels';
 import { query, queryOne } from '../db';
 import { apiError, json } from '../http';
-import { OTHERS, vercelDaily, vercelEnabled, vercelGroups, vercelTotals, type VercelGroup, type VercelSite } from '../vercel';
+import { config } from '../config';
+import { OTHERS, vercelCovers, vercelDaily, vercelEnabled, vercelGroups, vercelTotals, type VercelGroup, type VercelSite } from '../vercel';
 import { CN_OFFSET_MS, originAllowed, withSite } from './analytics';
 
 const DAY_MS = 24 * 3600 * 1000;
@@ -174,29 +175,43 @@ async function vercelAiVisitors(site: SiteInfo, from: Date, to: Date): Promise<n
 }
 
 /**
- * Vercel 的核心数据：当前与上一周期的总数和每日序列（键为 UTC 日期，与北京时间的日期标签对齐），以及 AI 访客。
- * 总数与序列任一读不到就返回 null，整体回退到脚本数据，避免两种口径混在一张图里。
+ * Vercel 的核心数据：当前周期的总数、每日序列（键为 UTC 日期，与北京时间的日期标签对齐）与 AI 访客，以及上一周期的同类数据。
+ * 当前周期超出 Vercel 的查询范围、或总数与序列任一读不到时整体回退到脚本数据，避免两种口径混在一张图里；
+ * 上一周期超出范围或读不到时只是不做环比（prev 为 null）。
  */
 async function vercelCore(site: SiteInfo, r: Range) {
-  if (!vercelEnabled(site)) return { ok: false as const, reason: site.vercelProjectId ? 'no_token' : 'not_configured' };
+  if (!vercelEnabled(site)) return { ok: false as const, reason: site.vercelProjectId ? 'no_token' : 'not_configured', detail: null };
+  if (!vercelCovers(r.from)) return { ok: false as const, reason: 'out_of_window', detail: null };
   const span = r.days * DAY_MS;
-  const [cur, prev, daily, prevDaily, ai, prevAi] = await Promise.all([
+  const withPrev = vercelCovers(r.prevFrom);
+  const [cur, daily, ai, prev, prevDaily, prevAi] = await Promise.all([
     vercelTotals(site, r.from, r.to),
-    vercelTotals(site, r.prevFrom, r.from),
     vercelDaily(site, new Date(r.startCN), r.to),
-    vercelDaily(site, new Date(r.startCN - span), new Date(r.startCN - 1)),
     vercelAiVisitors(site, r.from, r.to),
-    vercelAiVisitors(site, r.prevFrom, r.from),
+    withPrev ? vercelTotals(site, r.prevFrom, r.from) : null,
+    withPrev ? vercelDaily(site, new Date(r.startCN - span), new Date(r.startCN - 1)) : null,
+    withPrev ? vercelAiVisitors(site, r.prevFrom, r.from) : null,
   ]);
-  if (!cur.available) return { ok: false as const, reason: cur.reason };
-  if (!prev.available) return { ok: false as const, reason: prev.reason };
-  if (!daily.available) return { ok: false as const, reason: daily.reason };
-  if (!prevDaily.available) return { ok: false as const, reason: prevDaily.reason };
-  return { ok: true as const, cur, prev, daily: daily.days, prevDaily: prevDaily.days, ai, prevAi };
+  if (!cur.available) return { ok: false as const, reason: cur.reason, detail: cur.detail ?? null };
+  if (!daily.available) return { ok: false as const, reason: daily.reason, detail: daily.detail ?? null };
+  const prevOk = !!prev?.available && !!prevDaily?.available;
+  return {
+    ok: true as const,
+    cur,
+    daily: daily.days,
+    ai,
+    prev: prevOk && prev.available ? prev : null,
+    prevDaily: prevOk && prevDaily.available ? prevDaily.days : null,
+    prevAi,
+  };
 }
 
-/** 用 Vercel 的访客与浏览量替换脚本的数据；转化率的分母随之换成 Vercel 的访客 */
-function withVercel(k: Kpis, t: { pv: number; uv: number }, ai: number | null): Kpis {
+/**
+ * 用 Vercel 的访客与浏览量替换脚本的数据；转化率的分母随之换成 Vercel 的访客。
+ * 上一周期没有 Vercel 数据时（t 为 null）访客、浏览量、AI 访客与转化率记为 null，页面不做这几项的环比。
+ */
+function withVercel<T extends Kpis>(k: T, t: { pv: number; uv: number } | null, ai: number | null) {
+  if (!t) return { ...k, pv: null, uv: null, aiVisitors: null, conversionRate: null };
   return {
     ...k,
     pv: t.pv,
@@ -257,13 +272,15 @@ export const siteStats = withSite(async (req, _u, siteId) => {
     days: r.days,
     // 脚本自己统计的访客与浏览量，Vercel 为准时作对照
     script: { pv: current.pv, uv: current.uv },
+    vercelWindowDays: config().vercelWindowDays,
   };
   if (!v.ok) {
     return json({
       ...base,
       source: 'script',
-      // 站点关联了 Vercel 却读不到时给出原因，页面据此提示
+      // 站点关联了 Vercel 却读不到时给出原因（超出查询范围、请求失败等），页面据此提示
       vercelIssue: site.vercelProjectId ? v.reason : null,
+      vercelDetail: site.vercelProjectId ? v.detail : null,
       current,
       previous,
       daily: series(r.startCN, scriptDays),
@@ -274,10 +291,12 @@ export const siteStats = withSite(async (req, _u, siteId) => {
     ...base,
     source: 'vercel',
     vercelIssue: null,
+    vercelDetail: null,
     current: withVercel(current, v.cur, v.ai),
     previous: withVercel(previous, v.prev, v.prevAi),
     daily: series(r.startCN, v.daily),
-    prevDaily: series(r.startCN - r.days * DAY_MS, v.prevDaily),
+    // 上一周期没有 Vercel 数据时不给序列，趋势图不叠加上一周期
+    prevDaily: v.prevDaily ? series(r.startCN - r.days * DAY_MS, v.prevDaily) : [],
   });
 });
 
@@ -303,12 +322,14 @@ const SESSION_DIMS: Record<string, { col: string; where?: string }> = {
 
 /**
  * 用 Vercel 的分组回答一个维度：访客、浏览量与上一周期访客；dim=page 时再合并脚本统计的平均参与时长。
- * total 是同期 Vercel 的访客总数（用于算占比）。当前周期读不到时返回 null，由调用方回退到脚本数据。
+ * total 是同期 Vercel 的访客总数（用于算占比）。当前周期超出 Vercel 的查询范围或读不到时返回 null，由调用方回退到脚本数据。
  */
 async function vercelBreakdown(siteId: number, site: SiteInfo, dim: string, r: Range, limit: number) {
+  if (!vercelCovers(r.from)) return null;
   const [cur, prev, totals] = await Promise.all([
     vercelDim(site, dim, r.from, r.to),
-    vercelDim(site, dim, r.prevFrom, r.from),
+    // 上一周期超出 Vercel 的查询范围时不做环比
+    vercelCovers(r.prevFrom) ? vercelDim(site, dim, r.prevFrom, r.from) : null,
     vercelTotals(site, r.from, r.to),
   ]);
   if (!cur) return null;
