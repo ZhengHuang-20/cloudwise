@@ -44,12 +44,12 @@ bun run create-admin <email>   # 创建管理员并打印一次性初始密码
 - `src/server/` 只在服务端使用，不要从前端代码 import：`config.ts`（环境变量）、`db.ts`（`pg` 连接池 + `attachDatabasePool`，`query` / `queryOne` / `exec` / `tx`；BIGINT 已解析为 number）、`http.ts`（`route()` 包装、`json` / `apiError`、`readJSON`、`clientIP`）、`auth.ts`（argon2id、会话、`authed()` 鉴权包装、`siteAccess`）、`ratelimit.ts`、`channels.ts`（访问来源归类）、`useragent.ts`（设备 / 浏览器 / 系统 / 爬虫识别）、`vercel.ts`（读取 Vercel Web Analytics，数据概览以它为准）、`gemini.ts`、`knowledge.ts`、`engines.ts`、`audit*.ts`、`migrate.ts`。
 - 错误响应统一为 `{ error: 中文说明, code }`，前端 `src/lib/api.ts` 依赖这个格式。处理函数里 `throw new HttpError(...)` 或直接 `return apiError(...)`；其他异常由 `route()` 记日志并返回 500。
 - **Serverless 约束**：函数实例之间不共享内存（创建测评的 POST 与轮询的 GET 常落在不同实例），所以限流计数（`rate_limits` 表）、测评任务状态（`audits` 表）都放数据库；测评必须配置数据库（联系方式要入库，未配置时 POST 返回 503），所以不再有进程内的测评实现，任务状态一律走数据库。不要再引入只存内存、却需要跨请求一致的状态。
-- 接口：`GET /api/health`、`POST /api/gemini/chat`（AI 售前顾问）、`POST /api/gemini/visibility-test`（旧的模拟测评，前端已不调用）、`/api/auth/*`（登录、登出、me、改密）、`/api/sites`（我的站点）、`/api/admin/*`（公司、账号、站点、授权）、`/api/public/*`（采集、线索、测评）。
+- 接口：`GET /api/health`、`POST /api/gemini/chat`（AI 售前顾问）、`/api/auth/*`（登录、登出、me、改密）、`/api/sites`（我的站点）、`/api/admin/*`（公司、账号、站点、授权）、`/api/public/*`（采集、线索、测评）。
 
 ### AI 售前顾问
 
 - Gemini 只在服务端调用（`src/server/gemini.ts`，REST + `x-goog-api-key`），key 不暴露给前端。模型默认 `gemini-3.1-flash-lite`（`GEMINI_MODEL` 可覆盖），使用 `responseMimeType: 'application/json'`，提示词中内嵌期望的 JSON 结构。
-- **每个 Gemini 接口都有确定性 fallback**：key 缺失（或仍为占位值 `MY_GEMINI_API_KEY`）、调用报错或 JSON 解析失败时，返回关键词匹配（chat）或固定 mock（visibility-test）的结果。因此不配 key 应用也能完整运行。
+- **每个 Gemini 接口都有确定性 fallback**：key 缺失（或仍为占位值 `MY_GEMINI_API_KEY`）、调用报错或 JSON 解析失败时，返回关键词匹配（chat）的结果。因此不配 key 应用也能完整运行。
 - 修改 chat 响应字段时需同步三处：`src/server/routes/ai.ts` 里提示词的 JSON 模板、`chatFallback`、前端消费方（`src/components/AiConsultantModal.tsx` 的 `ChatMessage`）。
 - `src/server/knowledge.ts` 的 `systemKnowledge` 是 AI 顾问的「知识库」（服务、案例、报价规则、话术规则）。同样的业务事实还散落在 fallback 文案、`src/data/servicePackages.ts`、`src/data/caseStudiesData.ts` 和各 view 的文案中——改服务或案例时要一并更新。
 - **站点不展示任何价格**：服务、套餐、方案空间、课程与 AI 顾问都不出现金额、预算区间、折扣或付款比例；知识库要求模型不报价，问到费用时引导到方案规划与诊断会。新增内容也不要写价格。
@@ -67,8 +67,8 @@ bun run create-admin <email>   # 创建管理员并打印一次性初始密码
 
 - `POST /api/public/audits {target, contactName, contactPhone}` 创建异步任务，`GET /api/public/audits/{id}` 轮询进度与报告。联系人姓名与 11 位手机号必填（`src/lib/contact.ts` 前后端共用校验），每次提交都写入 `audit_contacts`（迁移 `004_audit_contacts.sql`，包括复用已有报告的提交），只通过服务端写入、没有公开的读取接口。POST 返回后测评用 Next 的 `after()` 在同一次函数调用里继续执行，受该路由 `maxDuration = 300` 限制：提问最晚在开始后 210 秒截止（未完成的记为超时），整个任务 280 秒内写完结果；超过 6 分钟没有进度更新的任务按「测评超时」失败处理。任务进度、提问日志与报告都写在 `audits` 表，所以轮询可以落在任意实例。
 - 输入可以是官网域名或品牌名称（`parseAuditInput`：像 ASCII 域名的按域名处理，否则当作 2～60 字的品牌名）；只给品牌名时第①步先用 Gemini 联网搜索查找官网（`resolveDomain`，排除平台、目录与社交网站），报告的 `domainSource` 标明 `input` / `resolved` / `none`，找不到官网时跳过官网检查、总分只按 AI 部分计算，用户输入的品牌名会加进别名用于匹配。
-- 流程：① 抓取官网做确定性检查（AI 爬虫的 robots.txt 权限、不执行 JS 时的正文、语言、JSON-LD、sitemap、llms.txt、首字节耗时；抓取用 `node:http(s)` + 自定义 DNS lookup，只连公网 IP 的 80/443，防 SSRF）→ ② 模型识别品牌/行业/市场 → ③ 生成 6 个不带品牌名的买家问题 + 2 个固定模板的带品牌问题 → ④ 向各探测平台每题问 2 次、每个平台 8 路并发（ChatGPT 用 OpenAI Responses API + `web_search`（默认 `gpt-6-luna`、推理强度 `low`），Perplexity 用 Sonar（可直连，也可经 OpenRouter：`PERPLEXITY_BASE_URL=https://openrouter.ai/api/v1`，模型名自动补 `perplexity/` 前缀），Gemini 用 Google 搜索 grounding；配了 `OPENROUTER_API_KEY` 时三个平台统一经 OpenRouter 提问并优先于直连配置）→ ⑤ Gemini 按平台分组只抽取事实（是否提及、排位、推荐了哪些品牌），代码分平台计算指标，总体指标取各平台平均。
-- 品牌识别、出题与分析都依赖 Gemini，未配 `GEMINI_API_KEY` 时其他平台也不启用。报告 `mode`：`live` 真实探测、`sample` 未配 key（AI 部分为示例，前端标注）、`site_only` 提问全部失败。成本控制：按 IP 每小时 6 次、`GEMINI_AUDIT_DAILY_LIMIT`（默认 100）每日真实探测上限（计数在数据库）、同一域名（或同一品牌名）7 天内复用 `live` 结果（平台组合变化后不复用，`engineSet` 签名）、同一目标同时只跑一个任务（`uq_audits_running` 部分唯一索引）。
+- 流程：① 抓取官网做确定性检查（AI 爬虫的 robots.txt 权限、不执行 JS 时的正文、语言、JSON-LD、sitemap、llms.txt、首字节耗时；抓取用 `node:http(s)` + 自定义 DNS lookup，只连公网 IP 的 80/443，防 SSRF）→ ② 模型识别品牌/行业/市场 → ③ 生成 6 个不带品牌名的买家问题 + 2 个固定模板的带品牌问题 → ④ 向各探测平台每题问 `AUDIT_SAMPLES` 次（默认 1）、每个平台 8 路并发（ChatGPT 用 OpenAI Responses API + `web_search`（默认 `gpt-6-luna`、推理强度 `low`），Perplexity 用 Sonar（可直连，也可经 OpenRouter：`PERPLEXITY_BASE_URL=https://openrouter.ai/api/v1`，模型名自动补 `perplexity/` 前缀），Gemini 用 Google 搜索 grounding；配了 `OPENROUTER_API_KEY` 时三个平台统一经 OpenRouter 提问并优先于直连配置）→ ⑤ Gemini 按平台分组只抽取事实（是否提及、排位、推荐了哪些品牌），代码分平台计算指标，总体指标取各平台平均。
+- 品牌识别、出题与分析都依赖 Gemini，未配 `GEMINI_API_KEY` 时其他平台也不启用。报告 `mode`：`live` 真实探测、`sample` 未配 key（AI 部分为示例，前端标注）、`site_only` 提问全部失败。成本控制：按 IP 每小时 6 次、`GEMINI_AUDIT_DAILY_LIMIT`（默认 24）每日联网提问次数上限，按「平台 × 问题 × `AUDIT_SAMPLES`」计（计数在数据库）；`/api/gemini/chat` 按 IP 每小时 30 次、同一域名（或同一品牌名）7 天内复用 `live` 结果（平台组合变化后不复用，`engineSet` 签名）、同一目标同时只跑一个任务（`uq_audits_running` 部分唯一索引）。
 
 ### 页面与路由（服务端渲染，SEO / GEO 的底座）
 
@@ -79,7 +79,7 @@ bun run create-admin <email>   # 创建管理员并打印一次性初始密码
 - `RouteView`（`'use client'`）按路由渲染 `src/views/*`。views 本身不写 `'use client'`，因为只从 RouteView 引入；它们会在服务端预渲染，所以**渲染阶段不能读 `window` / `localStorage`**（放到 effect 或事件里），日期等也不能用依赖区域设置的格式化，否则水合不一致。服务端代码（`src/site/meta.ts`、`schema.ts`、`llms.ts`、`app/*.ts`）不能 import 调用 `createContext` 的模块，双语类型与 `pick` 从 `src/lib/i18n.ts` 引入。
 - 页面间跳转：链接一律用 `next/link` 的 `<Link href={path('/services')}>`（真实 `<a href>`，爬虫能顺着走）；需要逻辑的跳转用 `useSite()`（`src/site/SiteContext.ts`）的 `navigate(path)`、`openBooking`、`goToAudit`（去 `/audit`）、`goToConfigurator(prefill)`、`goToCourseTarget`。学院里的课时链接普通点击打开课程弹窗，新标签页或爬虫进入课时页。
 - 导航分组（了解 / 决策）与短标签、全称、`href` 只定义在 `src/components/navigation.ts`，`Header`、`Footer` 共用。
-- **站内唯一的自测工具是 AI 可见性测评**（组件 `src/views/home/VisibilityAudit.tsx`，同时用在首页的 `#audit` 区块与独立页 `/audit`；接口封装在 `src/lib/audit.ts`，调用服务端的真实测评；接口不可用时显示错误提示，不展示本地示例报告，避免联系方式没入库却看到结果）。其他页面与课程要引导自测时用 `useSite().goToAudit`（进入 `/audit`）；课程「下一步」的目标由 `goToCourseTarget` 分流（方案规划 / 预约 / 测评）。旧的 `/api/gemini/visibility-test`（让模型“模拟”结果）仍保留，但前端不再调用。
+- **站内唯一的自测工具是 AI 可见性测评**（组件 `src/views/home/VisibilityAudit.tsx`，同时用在首页的 `#audit` 区块与独立页 `/audit`；接口封装在 `src/lib/audit.ts`，调用服务端的真实测评；接口不可用时显示错误提示，不展示本地示例报告，避免联系方式没入库却看到结果）。其他页面与课程要引导自测时用 `useSite().goToAudit`（进入 `/audit`）；课程「下一步」的目标由 `goToCourseTarget` 分流（方案规划 / 预约 / 测评）。
 - 新增页面：在 `src/site/routes.ts` 加路由、在 `src/site/meta.ts` 写标题与描述、在 `RouteView` 加渲染分支、新建 view（以 `PageHeader` 开头，详情页传 `breadcrumbs`）；需要结构化数据时在 `schema.ts` 补一类；要进导航再改 `navigation.ts`。sitemap 与 llms.txt 从路由表和数据自动生成。
 - 全局弹窗都在 `SiteShell` 渲染，外壳统一用 `src/components/ui/Dialog.tsx`（Esc、焦点圈定、滚动锁定已内置）。`AiConsultantModal` 由 context 控制（`setAiAdvisorOpen` / `triggerAiAdvisorWithQuery(query)` 可带预设问题打开，CRM 透视开关在弹窗标题栏），预约与「我的空间」弹窗由 `useSite()` 打开。
 - `Header` 的移动端菜单渲染在 `<header>` 之外：`backdrop-filter` 会让 header 成为 fixed 子元素的定位容器。

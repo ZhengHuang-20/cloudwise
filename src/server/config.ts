@@ -64,7 +64,10 @@ export interface Config {
   cookieSecure: boolean;
   showFDE: boolean;
   /** AI 可见性测评每日真实探测次数上限（控制模型费用） */
+  /** 每日（UTC）测评探测次数上限，按「平台 × 问题 × 采样」计，不是按测评次数计 */
   auditDailyLimit: number;
+  /** 每个问题问几次 */
+  auditSamples: number;
   /** Vercel 访问令牌（只在服务端读取，用于查询 Web Analytics）；为空时不显示 Vercel 数据 */
   vercelToken: string;
   /** Vercel Web Analytics 能查询的天数（Hobby 1 个月，Pro 12 个月，Web Analytics Plus / Enterprise 24 个月）；超出的时间段不向 Vercel 查询 */
@@ -96,7 +99,8 @@ export function config(): Config {
     databaseUrl: databaseUrls().pooled,
     cookieSecure: env('COOKIE_SECURE') === 'true',
     showFDE: showFDE(),
-    auditDailyLimit: envInt('GEMINI_AUDIT_DAILY_LIMIT', 100),
+    auditDailyLimit: envInt('GEMINI_AUDIT_DAILY_LIMIT', 24),
+    auditSamples: envInt('AUDIT_SAMPLES', 1),
     vercelToken: env('VERCEL_API_TOKEN'),
     vercelWindowDays: envInt('VERCEL_ANALYTICS_DAYS', 30),
 
