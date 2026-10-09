@@ -9,7 +9,7 @@ import { auditStore, withStale, type AuditJob } from '../auditStore';
 import { config } from '../config';
 import { activeEngines, engineSignature } from '../engines';
 import { apiError, clientIP, json, readJSON, route, str } from '../http';
-import { randomHex } from '../auth';
+import { currentUser, randomHex } from '../auth';
 import { hit, limits } from '../ratelimit';
 import { db, exec } from '../db';
 import { parseContact } from '../../lib/contact';
@@ -37,7 +37,9 @@ export const createAudit = route(async (req) => {
   const contact = parseContact(str(body.contactName), str(body.contactPhone));
   if (!contact.ok) return apiError(400, 'bad_contact', contact.message);
   if (!db()) return apiError(503, 'db_unavailable', '测评服务暂未开放，请稍后再试，或直接预约诊断会');
-  if (!(await limits.audit(clientIP(req)))) return apiError(429, 'rate_limited', '测评次数过多，请一小时后再试');
+  // 登录的客户不受每小时次数、当日名额与 24 小时复用的限制，每次都重新测评
+  const unlimited = (await currentUser(req)) !== null;
+  if (!unlimited && !(await limits.audit(clientIP(req)))) return apiError(429, 'rate_limited', '测评次数过多，请一小时后再试');
 
   const { domain, brand } = input;
   // 联系方式每次提交都入库，包括复用已有报告的提交
@@ -51,15 +53,15 @@ export const createAudit = route(async (req) => {
   const engines = activeEngines();
   const store = auditStore();
 
-  // 24 小时内测过的目标直接读库返回
-  const cached = await store.findCached(key, engineSignature(engines));
+  // 24 小时内测过的目标直接读库返回（登录的客户跳过，每次都重新测）
+  const cached = unlimited ? null : await store.findCached(key, engineSignature(engines));
   if (cached) return json({ id: cached, cached: true });
 
   // 同一目标正在测评时，合并到同一个任务；否则按本次要发出的探测数占用当日（UTC）额度后创建
   const id = randomHex(16);
   const res = await store.create(id, key);
   if (!res.created) return json({ id: res.id }, 202);
-  if (engines.length > 0) {
+  if (!unlimited && engines.length > 0) {
     const day = new Date().toISOString().slice(0, 10);
     if ((await hit(`audit_budget:${day}`, 86_400, auditProbeCount(engines.length))) > config().auditDailyLimit) {
       await store.fail(id, '今日免费测评名额已用完');
