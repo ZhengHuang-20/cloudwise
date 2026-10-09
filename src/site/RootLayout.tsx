@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { Analytics } from '@vercel/analytics/next';
 import type { Lang } from '../lib/i18n';
-import { BRAND, SITE_URL } from '../lib/site';
+import { ANALYTICS_SITE_KEY, BRAND, SITE_URL } from '../lib/site';
 import { SiteShell } from './SiteShell';
 import '../index.css';
 
@@ -45,11 +45,15 @@ export const rootViewport: Viewport = {
 // 脚本可用时给 <html> 加 js 类：.reveal 动画只在有脚本时先隐藏（src/index.css）
 const JS_FLAG = "document.documentElement.classList.add('js')";
 
+// 访问统计（public/cw.js）只在正式部署上报：本地开发与预览部署的域名不在站点登记里，上报会被拒绝
+const ANALYTICS_ON = process.env.VERCEL_ENV === 'production';
+
 export function RootLayout({ lang, children }: { lang: Lang; children: React.ReactNode }) {
   return (
     <html lang={lang === 'en' ? 'en' : 'zh-CN'} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: JS_FLAG }} />
+        {ANALYTICS_ON && <script async src="/cw.js" data-site={ANALYTICS_SITE_KEY} />}
         <link rel="alternate" type="text/plain" href="/llms.txt" title="llms.txt" />
       </head>
       <body>

@@ -25,6 +25,9 @@ export const TAGLINE = SHOW_FDE
 
 export const ICP_RECORD = '苏ICP备20260928号-1';
 
+/** 官网自己的访问统计站点标识（公开，写在页面的 cw.js 标签里），对应客户后台「站点与授权」中的官网 */
+export const ANALYTICS_SITE_KEY = 'sk_b7b2303ec24b731047210b7e';
+
 /** 官方账号（Organization.sameAs）。新开账号后加到这里 */
 export const SAME_AS: string[] = ['https://space.bilibili.com/375232709'];
 
