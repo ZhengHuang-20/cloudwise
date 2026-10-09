@@ -61,6 +61,36 @@ function pick(row: Record<string, unknown>, keys: string[]): number | null {
 const pvOf = (row: Record<string, unknown>) => pick(row, ['pageviews', 'pageViews', 'views', 'count']);
 const uvOf = (row: Record<string, unknown>) => pick(row, ['visitors', 'uniqueVisitors', 'uv']);
 
+function buildParams(site: VercelSite, since: Date, until: Date, extra: [string, string][]) {
+  const params = new URLSearchParams({
+    projectId: site.vercelProjectId,
+    since: since.toISOString(),
+    until: until.toISOString(),
+  });
+  // by 可以有两个，按 form 方式重复参数名
+  for (const [k, v] of extra) params.append(k, v);
+  if (site.vercelTeamId) params.set('teamId', site.vercelTeamId);
+  return params;
+}
+
+/** 请求的简短描述（接口、分组、起点），写进错误说明，方便看出是哪一个请求失败 */
+function describe(path: string, since: Date, extra: [string, string][]) {
+  const args = extra.map(([k, v]) => `${k}=${v}`).join('&');
+  return `${path}${args ? `?${args}` : ''}（${since.toISOString().slice(0, 16).replace('T', ' ')} UTC 起）`;
+}
+
+/** Vercel 的错误体形如 { error: { code, message } }；取出说明，不是 JSON 时为空 */
+async function errorMessage(res: Response) {
+  const text = await res.text().catch(() => '');
+  let message = '';
+  try {
+    message = String(JSON.parse(text)?.error?.message ?? '');
+  } catch {
+    // 不是 JSON 时只给状态码
+  }
+  return { text, message: message.slice(0, 200) };
+}
+
 /** 请求 Vercel；失败时返回不可用的原因。同一参数的结果缓存 10 分钟，避免每次打开后台都请求 Vercel。 */
 async function vercelGet(
   path: 'count' | 'aggregate',
@@ -73,37 +103,63 @@ async function vercelGet(
   if (!token) return { available: false, reason: 'no_token' };
   if (!site.vercelProjectId) return { available: false, reason: 'not_configured' };
 
-  const params = new URLSearchParams({
-    projectId: site.vercelProjectId,
-    since: since.toISOString(),
-    until: until.toISOString(),
-  });
-  // by 可以有两个，按 form 方式重复参数名
-  for (const [k, v] of extra) params.append(k, v);
-  if (site.vercelTeamId) params.set('teamId', site.vercelTeamId);
-
   try {
-    const res = await fetch(`${BASE}/${path}?${params}`, {
+    const res = await fetch(`${BASE}/${path}?${buildParams(site, since, until, extra)}`, {
       headers: { Authorization: `Bearer ${token}` },
       signal: AbortSignal.timeout(8000),
       next: { revalidate: 600 },
     });
     if (!res.ok) {
-      // Vercel 的错误体形如 { error: { code, message } }，记下来方便排查（令牌缺权限、项目或团队 ID 不对等）
-      const text = await res.text().catch(() => '');
-      console.warn(`[vercel] web analytics ${path} 请求失败：HTTP ${res.status} ${text.slice(0, 300)}`);
-      let message = '';
-      try {
-        message = String(JSON.parse(text)?.error?.message ?? '');
-      } catch {
-        // 不是 JSON 时只给状态码
-      }
-      return { available: false, reason: 'request_failed', detail: `HTTP ${res.status}${message ? ` ${message.slice(0, 200)}` : ''}` };
+      // 记下错误说明，方便排查（令牌缺权限、项目或团队 ID 不对、查询参数不被接受等）
+      const { text, message } = await errorMessage(res);
+      const what = describe(path, since, extra);
+      console.warn(`[vercel] web analytics ${what} 请求失败：HTTP ${res.status} ${text.slice(0, 300)}`);
+      return { available: false, reason: 'request_failed', detail: `${what}：HTTP ${res.status}${message ? ` ${message}` : ''}` };
     }
     return { ok: true, body: await res.json() };
   } catch (err) {
     console.warn(`[vercel] web analytics ${path} 请求异常`, err instanceof Error ? err.name : 'unknown');
     return { available: false, reason: 'request_failed' };
+  }
+}
+
+export interface ProbeResult {
+  name: string;
+  request: string;
+  ok: boolean;
+  status: number | null;
+  /** 失败时 Vercel 的错误说明；成功时为返回的行数与字段名 */
+  message: string;
+}
+
+/** 诊断用：不走缓存地发一次请求，返回状态码与错误说明或返回内容的概况（不含数值以外的访客数据） */
+export async function vercelProbe(
+  site: VercelSite,
+  name: string,
+  path: 'count' | 'aggregate',
+  since: Date,
+  until: Date,
+  extra: [string, string][] = [],
+): Promise<ProbeResult> {
+  const request = describe(path, since, extra);
+  const token = config().vercelToken;
+  if (!token) return { name, request, ok: false, status: null, message: '服务端没有配置 VERCEL_API_TOKEN' };
+  try {
+    const res = await fetch(`${BASE}/${path}?${buildParams(site, since, until, extra)}`, {
+      headers: { Authorization: `Bearer ${token}` },
+      signal: AbortSignal.timeout(8000),
+      cache: 'no-store',
+    });
+    if (!res.ok) {
+      const { message } = await errorMessage(res);
+      return { name, request, ok: false, status: res.status, message };
+    }
+    const data = dataOf(await res.json());
+    const first = Array.isArray(data) ? data[0] : data;
+    const fields = first && typeof first === 'object' ? Object.keys(first).join(', ') : '(空)';
+    return { name, request, ok: true, status: res.status, message: `${Array.isArray(data) ? `${data.length} 行` : '1 行'}；字段：${fields}` };
+  } catch (err) {
+    return { name, request, ok: false, status: null, message: err instanceof Error ? err.name : 'unknown' };
   }
 }
 

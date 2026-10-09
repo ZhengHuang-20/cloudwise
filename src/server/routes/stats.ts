@@ -12,7 +12,7 @@ import { classify } from '../channels';
 import { query, queryOne } from '../db';
 import { apiError, json } from '../http';
 import { config } from '../config';
-import { OTHERS, vercelCovers, vercelEnabled, vercelSeries, vercelGroups, vercelTotals, type VercelGroup, type VercelSite } from '../vercel';
+import { OTHERS, vercelCovers, vercelProbe, vercelEnabled, vercelSeries, vercelGroups, vercelTotals, type VercelGroup, type VercelSite } from '../vercel';
 import { CN_OFFSET_MS, originAllowed, withSite } from './analytics';
 
 const DAY_MS = 24 * 3600 * 1000;
@@ -496,4 +496,40 @@ export const siteVercel = withSite(async (req, _u, siteId) => {
   const r = rangeOf(req);
   const result = await vercelTotals(await siteInfo(siteId), r.from, r.to);
   return json({ days: r.days, ...result });
+});
+
+/**
+ * GET /api/sites/{id}/stats/vercel/check：诊断 Vercel 接入（仅管理员）。把数据概览会发出的各类请求不走缓存地逐一发一次，
+ * 返回每个请求的状态码与 Vercel 的错误说明（成功时只给行数与字段名），用来定位是令牌、ID、查询范围还是某个参数被拒。
+ */
+export const siteVercelCheck = withSite(async (_req, user, siteId) => {
+  if (user.role !== 'admin') return apiError(404, 'not_found', '接口不存在');
+  const site = await siteInfo(siteId);
+  if (!site.vercelProjectId) return json({ configured: false, results: [] });
+  const now = Date.now();
+  const to = new Date(now + 60_000);
+  const ago = (ms: number) => new Date(now - ms);
+  const h24 = new Date(Math.floor((now - 23 * HOUR_MS) / HOUR_MS) * HOUR_MS);
+  const d7 = ago(7 * DAY_MS);
+  const probes = [
+    vercelProbe(site, '总数 · 近 24 小时', 'count', h24, to),
+    vercelProbe(site, '总数 · 近 7 天', 'count', d7, to),
+    vercelProbe(site, '总数 · 近 29 天', 'count', ago(29 * DAY_MS), to),
+    vercelProbe(site, '总数 · 35 天前起（超出 Hobby 查询范围）', 'count', ago(35 * DAY_MS), to),
+    vercelProbe(site, '按天 · 近 7 天（不带 limit）', 'aggregate', d7, to, [['by', 'day']]),
+    vercelProbe(site, '按天 · 近 7 天（limit=8）', 'aggregate', d7, to, [['by', 'day'], ['limit', '8']]),
+    vercelProbe(site, '按小时 · 近 24 小时（不带 limit）', 'aggregate', h24, to, [['by', 'hour']]),
+    vercelProbe(site, '按小时 · 近 24 小时（limit=25）', 'aggregate', h24, to, [['by', 'hour'], ['limit', '25']]),
+    vercelProbe(site, '国家 · 近 7 天', 'aggregate', d7, to, [['by', 'country'], ['limit', '50']]),
+    vercelProbe(site, '来源 × UTM 来源 · 近 7 天', 'aggregate', d7, to, [['by', 'referrerHostname'], ['by', 'utmSource'], ['limit', '100']]),
+    vercelProbe(site, '页面 · 近 7 天', 'aggregate', d7, to, [['by', 'requestPath'], ['limit', '50']]),
+    vercelProbe(site, '路由 · 近 7 天', 'aggregate', d7, to, [['by', 'route'], ['limit', '50']]),
+  ];
+  return json({
+    configured: true,
+    teamId: site.vercelTeamId,
+    projectId: site.vercelProjectId,
+    windowDays: config().vercelWindowDays,
+    results: await Promise.all(probes),
+  });
 });
