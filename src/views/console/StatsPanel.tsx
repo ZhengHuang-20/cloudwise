@@ -2,9 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { Alert, App as AntApp, Badge, Button, Card, Empty, Segmented, Spin, Switch, Table, Tooltip } from 'antd';
 import { ArrowRight, ChartLine, Info, Table2 } from 'lucide-react';
 import { api, formatTime } from '../../lib/api';
-import { BreakdownCard, DeltaText, PagesCard } from './Breakdown';
+import { BreakdownCard, DeltaText, PagesCard, RankList } from './Breakdown';
 import { useConsole } from './ConsoleContext';
-import { CHANNEL_LABEL, countryName, delta, DEVICE_LABEL, formatDuration, formatPercent, languageName } from './labels';
+import { CHANNEL_LABEL, countryName, delta, DEVICE_LABEL, formatDuration, formatPercent, languageName, prettyPath } from './labels';
 import { PageTitle } from './parts';
 import { CONSOLE_COLORS } from './theme';
 import { METRIC_LABEL, TrendChart, type DailyPoint, type Metric } from './TrendChart';
@@ -36,8 +36,77 @@ type Days = 7 | 30 | 90;
 
 type VercelResult = { available: true; pv: number; uv: number } | { available: false; reason: string };
 
+type VercelBreakdown =
+  | { available: true; dim: string; total: number | null; rows: { name: string; pv: number; uv: number }[] }
+  | { available: false; dim: string; reason: string };
+
+/** Vercel 把 limit 之外的值归为 "Others"；空值在来源维度表示直接访问 */
+const vercelName = (fn: (v: string) => string) => (v: string) => (v === 'Others' ? '其他' : fn(v));
+
+const VERCEL_TABS: { dim: string; label: string; name: (v: string) => string }[] = [
+  { dim: 'referrer', label: '来源', name: vercelName((v) => v || '直接访问') },
+  { dim: 'country', label: '国家', name: vercelName(countryName) },
+  { dim: 'page', label: '页面', name: vercelName((v) => prettyPath(v) || '未知') },
+  { dim: 'device', label: '设备', name: vercelName((v) => DEVICE_LABEL[v] ?? (v || '未知')) },
+  { dim: 'browser', label: '浏览器', name: vercelName((v) => v || '未知') },
+  { dim: 'os', label: '系统', name: vercelName((v) => v || '未知') },
+  { dim: 'utm_source', label: 'UTM 来源', name: vercelName((v) => v || '无') },
+];
+
+/** Vercel 的按维度分组：切换维度时保留上一次的结果，读取失败只在卡片内提示。 */
+const VercelGroups: React.FC<{ siteId: number; days: Days }> = ({ siteId, days }) => {
+  const [dim, setDim] = useState(VERCEL_TABS[0].dim);
+  const [data, setData] = useState<VercelBreakdown | null>(null);
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    let alive = true;
+    setLoading(true);
+    api<VercelBreakdown>(`/api/sites/${siteId}/stats/vercel/breakdown?days=${days}&dim=${dim}&limit=8`)
+      .then((r) => alive && setData(r))
+      .catch(() => alive && setData({ available: false, dim, reason: 'error' }))
+      .finally(() => alive && setLoading(false));
+    return () => {
+      alive = false;
+    };
+  }, [siteId, days, dim]);
+  const tab = VERCEL_TABS.find((t) => t.dim === dim) ?? VERCEL_TABS[0];
+  const ready = data?.dim === dim ? data : null;
+  return (
+    <div className="min-w-0">
+      <Segmented
+        size="small"
+        aria-label="Vercel 数据维度"
+        value={dim}
+        onChange={(v) => setDim(v as string)}
+        options={VERCEL_TABS.map((t) => ({ value: t.dim, label: t.label }))}
+        style={{ marginBottom: 16, maxWidth: '100%', overflowX: 'auto' }}
+      />
+      {!ready ? (
+        <div className="flex justify-center py-10">{loading && <Spin />}</div>
+      ) : !ready.available ? (
+        <p className="py-8 text-center text-caption text-label-secondary">暂时无法读取 Vercel 的{tab.label}数据</p>
+      ) : !ready.rows.length ? (
+        <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无数据" style={{ paddingBlock: 24 }} />
+      ) : (
+        <div className="transition-opacity duration-200" style={{ opacity: loading ? 0.55 : 1 }}>
+          <RankList
+            showPageviews
+            name={tab.name}
+            data={{
+              dim,
+              total: ready.total ?? Math.max(1, ...ready.rows.map((r) => r.uv)),
+              rows: ready.rows.map((r) => ({ name: r.name, visitors: r.uv, pageviews: r.pv, prevVisitors: null, avgEngagedMs: null })),
+            }}
+          />
+        </div>
+      )}
+    </div>
+  );
+};
+
 /**
- * Vercel Web Analytics 的同期汇总，与采集脚本的口径不同（Vercel 不过滤线索来源、会话等），只作参考。
+ * Vercel Web Analytics 的同期汇总与按维度分组，与采集脚本的口径不同（Vercel 不统计线索、会话与参与时长），只作参考。
+ * 从项目开启 Web Analytics 起就有数据，可以补上统计升级前没有来源、地区与设备的那段时间。
  * 站点没有关联 Vercel 或取数失败时整张卡片不显示，不影响页面其他内容。
  */
 const VercelCard: React.FC<{ siteId: number; days: Days; ours: { pv: number; uv: number } }> = ({ siteId, days, ours }) => {
@@ -62,9 +131,12 @@ const VercelCard: React.FC<{ siteId: number; days: Days; ours: { pv: number; uv:
   );
   return (
     <Card variant="borderless" title="Vercel 流量（参考）" extra={<span className="text-caption text-label-tertiary">口径与本站统计不同</span>}>
-      <div className="grid grid-cols-2 gap-6 md:max-w-xl">
-        {item('浏览量', v.pv, ours.pv)}
-        {item('访客', v.uv, ours.uv)}
+      <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
+        <div className="grid h-fit grid-cols-2 gap-6">
+          {item('浏览量', v.pv, ours.pv)}
+          {item('访客', v.uv, ours.uv)}
+        </div>
+        <VercelGroups siteId={siteId} days={days} />
       </div>
     </Card>
   );

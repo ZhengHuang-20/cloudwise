@@ -6,7 +6,7 @@
  */
 import { query, queryOne } from '../db';
 import { apiError, json } from '../http';
-import { vercelTotals } from '../vercel';
+import { VERCEL_DIMS, vercelGroups, vercelTotals } from '../vercel';
 import { CN_OFFSET_MS, withSite } from './analytics';
 
 const DAY_MS = 24 * 3600 * 1000;
@@ -237,11 +237,27 @@ export const siteBreakdown = withSite(async (req, _u, siteId) => {
  */
 export const siteVercel = withSite(async (req, _u, siteId) => {
   const r = rangeOf(req);
-  const site = await queryOne(`SELECT vercel_team_id, vercel_project_id FROM sites WHERE id = $1`, [siteId]);
-  const result = await vercelTotals(
-    { vercelTeamId: site?.vercel_team_id ?? '', vercelProjectId: site?.vercel_project_id ?? '' },
-    r.from,
-    r.to,
-  );
+  const result = await vercelTotals(await vercelSite(siteId), r.from, r.to);
   return json({ days: r.days, ...result });
+});
+
+async function vercelSite(siteId: number) {
+  const site = await queryOne(`SELECT vercel_team_id, vercel_project_id FROM sites WHERE id = $1`, [siteId]);
+  return { vercelTeamId: site?.vercel_team_id ?? '', vercelProjectId: site?.vercel_project_id ?? '' };
+}
+
+/**
+ * GET /api/sites/{id}/stats/vercel/breakdown?days=&dim=&limit=：Vercel Web Analytics 按维度分组（来源、国家、页面、设备等），只作参考。
+ * dim 见 VERCEL_DIMS；total 是同期的访客总数（用于算占比）。
+ */
+export const siteVercelBreakdown = withSite(async (req, _u, siteId) => {
+  const r = rangeOf(req);
+  const sp = new URL(req.url).searchParams;
+  const dim = sp.get('dim') ?? '';
+  if (!VERCEL_DIMS[dim]) return apiError(400, 'bad_request', '不支持的维度');
+  const limit = Math.min(50, Math.max(1, Number.parseInt(sp.get('limit') ?? '', 10) || 10));
+  const site = await vercelSite(siteId);
+  const [groups, totals] = await Promise.all([vercelGroups(site, r.from, r.to, dim, limit), vercelTotals(site, r.from, r.to)]);
+  if (!groups.available) return json({ days: r.days, dim, ...groups });
+  return json({ days: r.days, dim, available: true, total: totals.available ? totals.uv : null, rows: groups.rows });
 });
