@@ -123,13 +123,37 @@ const siteJSON = (r: any) => ({
 });
 
 export const listSites = authed(adminOnly, async () => {
-  // 管理视角额外返回已授权的账号 ID，用于展示与撤销授权
+  // 管理视角额外返回已授权的账号 ID（用于展示与撤销授权）与 Vercel 项目关联
   const rows = await query(
-    `SELECT ${SITE_COLS},
+    `SELECT ${SITE_COLS}, s.vercel_team_id, s.vercel_project_id,
        COALESCE((SELECT array_agg(m.user_id::int ORDER BY m.user_id) FROM site_members m WHERE m.site_id = s.id), '{}') AS member_ids
      FROM sites s ORDER BY s.id DESC`,
   );
-  return json({ sites: rows.map((r) => ({ ...siteJSON(r), memberIds: r.member_ids as number[] })) });
+  return json({
+    sites: rows.map((r) => ({
+      ...siteJSON(r),
+      vercelTeamId: r.vercel_team_id,
+      vercelProjectId: r.vercel_project_id,
+      memberIds: r.member_ids as number[],
+    })),
+  });
+});
+
+const VERCEL_TEAM_RE = /^team_[A-Za-z0-9]{8,64}$/;
+const VERCEL_PROJECT_RE = /^prj_[A-Za-z0-9]{8,64}$/;
+
+/** PATCH /api/admin/sites/{id}：设置站点关联的 Vercel 团队 ID 与项目 ID（留空表示不关联）。 */
+export const updateSite = authed(adminOnly, async (req, _u, params) => {
+  const id = pathID(params.id);
+  if (!id) return apiError(400, 'bad_request', '无效的站点 ID');
+  const body = await readJSON(req);
+  const teamId = str(body.vercelTeamId).trim();
+  const projectId = str(body.vercelProjectId).trim();
+  if (teamId && !VERCEL_TEAM_RE.test(teamId)) return apiError(400, 'bad_request', '团队 ID 应以 team_ 开头');
+  if (projectId && !VERCEL_PROJECT_RE.test(projectId)) return apiError(400, 'bad_request', '项目 ID 应以 prj_ 开头');
+  const n = await exec(`UPDATE sites SET vercel_team_id = $2, vercel_project_id = $3 WHERE id = $1`, [id, teamId, projectId]);
+  if (n === 0) return apiError(404, 'not_found', '站点不存在');
+  return json({ ok: true });
 });
 
 export const createSite = authed(adminOnly, async (req) => {

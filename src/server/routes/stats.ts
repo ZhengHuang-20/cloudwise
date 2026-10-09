@@ -6,6 +6,7 @@
  */
 import { query, queryOne } from '../db';
 import { apiError, json } from '../http';
+import { vercelTotals } from '../vercel';
 import { CN_OFFSET_MS, withSite } from './analytics';
 
 const DAY_MS = 24 * 3600 * 1000;
@@ -228,4 +229,19 @@ export const siteBreakdown = withSite(async (req, _u, siteId) => {
       leads: x.leads,
     })),
   });
+});
+
+/**
+ * GET /api/sites/{id}/stats/vercel?days=：Vercel Web Analytics 的同期汇总，只作参考。
+ * 站点没有配置 Vercel 项目、服务端没有令牌或请求失败时返回 available: false，页面据此隐藏该卡片。
+ */
+export const siteVercel = withSite(async (req, _u, siteId) => {
+  const r = rangeOf(req);
+  const site = await queryOne(`SELECT vercel_team_id, vercel_project_id FROM sites WHERE id = $1`, [siteId]);
+  const result = await vercelTotals(
+    { vercelTeamId: site?.vercel_team_id ?? '', vercelProjectId: site?.vercel_project_id ?? '' },
+    r.from,
+    r.to,
+  );
+  return json({ days: r.days, ...result });
 });

@@ -8,6 +8,9 @@ export interface Site {
   createdAt: string;
   /** 仅管理接口 /api/admin/sites 返回：已授权的客户账号 */
   memberIds?: number[];
+  /** 仅管理接口返回：关联的 Vercel 团队 / 项目 ID（留空表示未关联） */
+  vercelTeamId?: string;
+  vercelProjectId?: string;
 }
 
 export interface Org {

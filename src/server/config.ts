@@ -65,6 +65,8 @@ export interface Config {
   showFDE: boolean;
   /** AI 可见性测评每日真实探测次数上限（控制模型费用） */
   auditDailyLimit: number;
+  /** Vercel 访问令牌（只在服务端读取，用于查询 Web Analytics）；为空时不显示 Vercel 数据 */
+  vercelToken: string;
 
   openaiKey: string;
   openaiModel: string;
@@ -93,6 +95,7 @@ export function config(): Config {
     cookieSecure: env('COOKIE_SECURE') === 'true',
     showFDE: showFDE(),
     auditDailyLimit: envInt('GEMINI_AUDIT_DAILY_LIMIT', 100),
+    vercelToken: env('VERCEL_API_TOKEN'),
 
     openaiKey: env('OPENAI_API_KEY'),
     openaiModel: env('OPENAI_MODEL', 'gpt-6-luna'),
