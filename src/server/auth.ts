@@ -150,6 +150,13 @@ async function loadUser(req: NextRequest): Promise<AuthedUser | null> {
   };
 }
 
+/** 可选登录：已登录且改过初始密码时返回用户，否则返回 null。只读身份用，不校验 CSRF，公开接口可以用它放宽限制 */
+export async function currentUser(req: NextRequest): Promise<AuthedUser | null> {
+  if (!db()) return null;
+  const user = await loadUser(req);
+  return user && !user.mustChange ? user : null;
+}
+
 function safeEqual(a: string, b: string) {
   const x = Buffer.from(a);
   const y = Buffer.from(b);
