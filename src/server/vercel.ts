@@ -16,6 +16,8 @@ export type Unavailable = {
   reason: 'no_token' | 'not_configured' | 'request_failed' | 'unexpected_response';
   /** request_failed 时 Vercel 返回的状态码与错误说明（不含令牌等敏感信息） */
   detail?: string;
+  /** request_failed 时的 HTTP 状态码（如 402：UTM 维度需要 Web Analytics Plus 或 Enterprise） */
+  status?: number;
 };
 
 export type VercelTotals = { available: true; pv: number; uv: number } | Unavailable;
@@ -114,7 +116,12 @@ async function vercelGet(
       const { text, message } = await errorMessage(res);
       const what = describe(path, since, extra);
       console.warn(`[vercel] web analytics ${what} 请求失败：HTTP ${res.status} ${text.slice(0, 300)}`);
-      return { available: false, reason: 'request_failed', detail: `${what}：HTTP ${res.status}${message ? ` ${message}` : ''}` };
+      return {
+        available: false,
+        reason: 'request_failed',
+        status: res.status,
+        detail: `${what}：HTTP ${res.status}${message ? ` ${message}` : ''}`,
+      };
     }
     return { ok: true, body: await res.json() };
   } catch (err) {
