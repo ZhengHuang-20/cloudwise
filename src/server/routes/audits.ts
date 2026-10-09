@@ -1,6 +1,6 @@
 /**
  * /api/public/audits：AI 可见性测评（首页）。POST 创建异步任务，GET 轮询进度与报告。
- * 测评必须填写联系人姓名与手机号，每次提交都写入 audit_contacts，因此依赖数据库。
+ * 测评必须填写联系人姓名与手机号，每次提交都写入 audit_contacts 与官网的线索（leads），因此依赖数据库。
  */
 import { after } from 'next/server';
 import { auditProbeCount, runAudit } from '../audit';
@@ -8,13 +8,23 @@ import { parseAuditInput } from '../auditSite';
 import { auditStore, withStale, type AuditJob } from '../auditStore';
 import { config } from '../config';
 import { activeEngines, engineSignature } from '../engines';
-import { apiError, clientIP, json, readJSON, route, str } from '../http';
+import { apiError, clientIP, clip, json, readJSON, route, str, userAgent } from '../http';
 import { currentUser, randomHex } from '../auth';
 import { hit, limits } from '../ratelimit';
-import { db, exec } from '../db';
+import { db, exec, queryOne } from '../db';
 import { parseContact } from '../../lib/contact';
+import { ANALYTICS_SITE_KEY } from '../../lib/site';
 
 const AUDIT_ID_RE = /^[0-9a-f]{32}$/;
+
+/** 测评是从哪个页面提交的（首页 # 区块或 /audit），取 Referer 的路径写进线索的来源页面 */
+function sourcePageOf(req: Request): string {
+  try {
+    return clip(new URL(req.headers.get('referer') ?? '').pathname, 512);
+  } catch {
+    return '';
+  }
+}
 
 const jobJSON = (j: AuditJob) => ({
   id: j.id,
@@ -48,6 +58,23 @@ export const createAudit = route(async (req) => {
     contact.name,
     contact.phone,
   ]);
+  // 同时进入官网的线索管理。官网站点未登记时不写入（测评照常进行）
+  const official = await queryOne(`SELECT id FROM sites WHERE site_key = $1`, [ANALYTICS_SITE_KEY]);
+  if (official) {
+    await exec(
+      `INSERT INTO leads (site_id, name, phone, message, source_page, ip, user_agent)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+      [
+        official.id,
+        contact.name,
+        contact.phone,
+        clip(`AI 可见性测评：${domain || brand}`, 2000),
+        sourcePageOf(req),
+        clientIP(req),
+        clip(userAgent(req), 255),
+      ],
+    );
+  }
 
   const key = domain ? domain.replace(/^www\./, '') : 'brand:' + brand.toLowerCase();
   const engines = activeEngines();
