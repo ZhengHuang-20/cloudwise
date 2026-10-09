@@ -51,7 +51,7 @@ export const createAudit = route(async (req) => {
   const engines = activeEngines();
   const store = auditStore();
 
-  // 7 天内测过的目标直接复用
+  // 24 小时内测过的目标直接读库返回
   const cached = await store.findCached(key, engineSignature(engines));
   if (cached) return json({ id: cached, cached: true });
 

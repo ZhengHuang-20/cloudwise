@@ -153,7 +153,7 @@ export const parseAuditInput = (input: string): { domain: string } | { brand: st
   return { brand };
 };
 
-/** 返回任务 id；7 天内测过的目标返回 cached，仍需轮询一次拿到报告。 */
+/** 返回任务 id；24 小时内测过的目标返回 cached，仍需轮询一次拿到报告。 */
 export const startAudit = (input: { target: string; contactName: string; contactPhone: string }) =>
   api<{ id: string; cached?: boolean }>('/api/public/audits', {
     method: 'POST',

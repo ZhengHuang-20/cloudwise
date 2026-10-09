@@ -20,15 +20,15 @@ export interface AuditJob {
   updatedAt: Date;
 }
 
-/** 同一目标 7 天内复用 live 结果 */
-export const AUDIT_CACHE_TTL_MS = 7 * 24 * 3600 * 1000;
+/** 同一目标 24 小时内复用 live 结果（一天只真实测评一次，之后直接读库） */
+export const AUDIT_CACHE_TTL_MS = 24 * 3600 * 1000;
 /** 超过这么久没有进度更新的任务视为已中断（函数超时或实例被回收） */
 export const AUDIT_STALE_MS = 6 * 60 * 1000;
 const STALE_ERROR = '测评超时，请重新测评';
 const MEM_TTL_MS = 24 * 3600 * 1000;
 
 export interface AuditStore {
-  /** 7 天内平台组合相同的 live 结果 */
+  /** 24 小时内平台组合相同的 live 结果 */
   findCached(key: string, engineSet: string): Promise<string | null>;
   /** 创建任务；同一目标已有进行中的任务时返回该任务的 id（created=false） */
   create(id: string, key: string): Promise<{ id: string; created: boolean }>;
