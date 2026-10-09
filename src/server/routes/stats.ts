@@ -109,8 +109,12 @@ async function siteInfo(siteId: number): Promise<SiteInfo> {
   return { domain: site?.domain ?? '', vercelTeamId: site?.vercel_team_id ?? '', vercelProjectId: site?.vercel_project_id ?? '' };
 }
 
-/** 渠道归类用的分组：来源主机名 × utm_source（与脚本共用 classify 规则；Vercel 没有 utm_medium 与广告点击 ID，付费流量识别不到） */
+/**
+ * 渠道归类用的分组：来源主机名 × utm_source（与脚本共用 classify 规则；Vercel 没有 utm_medium 与广告点击 ID，付费流量识别不到）。
+ * UTM 维度需要 Web Analytics Plus 或 Enterprise，其他套餐返回 402，这时只按来源主机名归类（只带 utm_source、没有来源的访问算直接访问）。
+ */
 const ATTR_BY = ['referrerHostname', 'utmSource'];
+const ATTR_BY_NO_UTM = ['referrerHostname'];
 const ATTR_LIMIT = 100;
 
 interface Attributed {
@@ -165,7 +169,8 @@ const ATTRIBUTED_DIMS = new Set(['channel', 'source', 'ai']);
 /** 一个维度在 [from, to) 内的 Vercel 分组（名称 → 浏览量与访客）；读取失败返回 null */
 async function vercelDim(site: SiteInfo, dim: string, from: Date, to: Date): Promise<Map<string, { pv: number; uv: number }> | null> {
   if (ATTRIBUTED_DIMS.has(dim)) {
-    const g = await vercelGroups(site, from, to, ATTR_BY, ATTR_LIMIT);
+    let g = await vercelGroups(site, from, to, ATTR_BY, ATTR_LIMIT);
+    if (!g.available && g.status === 402) g = await vercelGroups(site, from, to, ATTR_BY_NO_UTM, ATTR_LIMIT);
     if (!g.available) return null;
     const rows = attribute(g.rows, site.domain);
     if (dim === 'channel') return sumBy(rows, (r) => r.channel);
@@ -521,7 +526,9 @@ export const siteVercelCheck = withSite(async (_req, user, siteId) => {
     vercelProbe(site, '按小时 · 近 24 小时（不带 limit）', 'aggregate', h24, to, [['by', 'hour']]),
     vercelProbe(site, '按小时 · 近 24 小时（limit=25）', 'aggregate', h24, to, [['by', 'hour'], ['limit', '25']]),
     vercelProbe(site, '国家 · 近 7 天', 'aggregate', d7, to, [['by', 'country'], ['limit', '50']]),
-    vercelProbe(site, '来源 × UTM 来源 · 近 7 天', 'aggregate', d7, to, [['by', 'referrerHostname'], ['by', 'utmSource'], ['limit', '100']]),
+    vercelProbe(site, '来源 × UTM 来源 · 近 7 天（需 Web Analytics Plus）', 'aggregate', d7, to, [['by', 'referrerHostname'], ['by', 'utmSource'], ['limit', '100']]),
+    vercelProbe(site, '来源 · 近 7 天（没有 Plus 时用它归类渠道）', 'aggregate', d7, to, [['by', 'referrerHostname'], ['limit', '100']]),
+    vercelProbe(site, 'UTM 活动 · 近 7 天（需 Web Analytics Plus）', 'aggregate', d7, to, [['by', 'utmCampaign'], ['limit', '50']]),
     vercelProbe(site, '页面 · 近 7 天', 'aggregate', d7, to, [['by', 'requestPath'], ['limit', '50']]),
     vercelProbe(site, '路由 · 近 7 天', 'aggregate', d7, to, [['by', 'route'], ['limit', '50']]),
   ];
