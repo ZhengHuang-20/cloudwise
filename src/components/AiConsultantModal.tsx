@@ -50,7 +50,7 @@ export const AiConsultantModal: React.FC = () => {
     id: 'welcome',
     sender: 'assistant',
     text: t(
-      `您好！我是云端智荐官方 AI 售前顾问。\n\n我们专为中国出海企业打通“独立站、SEO、GEO、AI 客服${SHOW_FDE ? '及 FDE 驻场' : '及系统对接'}”，覆盖从获客到转化的各个环节。您可以向我询问技术方案、爱康医疗实战案例、交付周期与实施路径，或告诉我您目前的出海痛点。`,
+      `您好！我是云端智荐官方 AI 售前顾问。\n\n我们专为中国出海企业打通“GEO、${SHOW_FDE ? 'FDE 驻场、' : ''}独立站、SEO 与 AI 客服”，覆盖从获客到转化的各个环节。您可以向我询问技术方案、爱康医疗实战案例、交付周期与实施路径，或告诉我您目前的出海痛点。`,
       `Hello, and welcome. I am the official AI pre-sales advisor for ChinGEO.\n\nWe connect ${SERVICE_COUNT_EN.toLowerCase()} services for Chinese companies going global: websites, SEO, GEO, AI customer service${SHOW_FDE ? ' and FDE on-site engineering' : ' and system integration'}, covering every step from lead generation to conversion. Ask me about technical plans, the Aikang Medical case, delivery timelines and implementation paths, or tell me about the export challenges you face today.`
     ),
     timestamp: 'now',

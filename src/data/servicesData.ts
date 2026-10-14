@@ -26,7 +26,104 @@ export interface Service {
   faqs: { q: Bi; a: Bi }[];
 }
 
+/** 顺序即展示顺序：GEO 与 FDE 是主推服务，排在最前（code 与课程字母保持不变） */
 const ALL_SERVICES: Service[] = [
+  {
+    key: 'geo',
+    slug: 'geo',
+    code: 'C',
+    title: { zh: '出海 GEO：让 AI 引用你的资料', en: 'Export GEO: get AI to cite your material' },
+    friction: { zh: '不被信', en: 'Not trusted' },
+    oneLiner: {
+      zh: '把企业的专利、认证与工程案例整理成 AI 能查证、愿意引用的公开资料。',
+      en: 'We organise your patents, certifications and engineering cases into public material that AI can verify and is willing to cite.',
+    },
+    desc: {
+      zh: '海外买家向 ChatGPT、Perplexity 或 Google AI 概览询问推荐供应商时，AI 会引用它能查到的公开资料。我们通过第三方学术索引、认证与评测机构、真实工程案例，整理你的证据链，提高被引用的机会。我们无法保证 AI 一定推荐你，所以每月用同一组问题复测并汇报。',
+      en: 'When overseas buyers ask ChatGPT, Perplexity or Google AI Overviews to recommend suppliers, the AI cites public material it can find. We build your evidence chain through third-party academic indexes, certification and testing bodies, and real engineering cases, which raises the chance of being cited. We cannot guarantee that AI will recommend you, so we re-test with the same question set every month and report back.',
+    },
+    deliverables: [
+      { zh: '整理海外决策者会问 AI 的问题（问题簇）', en: 'Map the questions overseas decision-makers ask AI (question clusters)' },
+      { zh: '全年技术资料与第三方背书规划', en: 'Annual technical content and third-party endorsement plan' },
+      { zh: '在行业媒体与评测报告中建立可被引用的公开来源', en: 'Citable public sources built in trade media and test reports' },
+      { zh: '每月用固定问题集测试主流 AI 平台，并与竞品对比的月报', en: 'Monthly report testing major AI platforms with a fixed question set, compared against competitors' },
+    ],
+    courseId: 'C',
+    seo: {
+      title: { zh: '出海 GEO 优化：让 ChatGPT、Perplexity、Gemini 引用你的品牌', en: 'GEO services for exporters: get ChatGPT, Perplexity and Gemini to cite your brand' },
+      description: { zh: 'GEO（生成式引擎优化）把企业的专利、认证与工程案例整理成 AI 能查证、愿意引用的公开资料，提高海外买家问 AI 时你被推荐的机会，并每月复测。', en: 'GEO (generative engine optimisation) turns your patents, certifications and engineering cases into public material AI can verify and cite, so you are more likely to be recommended when overseas buyers ask AI. Re-tested monthly.' },
+    },
+    faqs: [
+      {
+        q: { zh: 'GEO 能保证 AI 一定推荐我们吗？', en: 'Can GEO guarantee that AI will recommend us?' },
+        a: { zh: '不能。AI 的回答取决于它能查到的公开来源，任何人都无法保证结果。我们能做的是建设可查证的证据链、提高被引用的机会，并每月用同一组问题在主流 AI 平台复测，把变化如实汇报给你。', en: 'No. AI answers depend on the public sources it can find, and nobody can guarantee the outcome. What we do is build a verifiable evidence chain that raises the chance of being cited, then re-test every month with the same question set on the major AI platforms and report the changes honestly.' },
+      },
+      {
+        q: { zh: '做 GEO 需要企业提供哪些资料？', en: 'What material does a company need to provide for GEO?' },
+        a: { zh: '可以被第三方查证的资料：专利、认证与检测报告、产品参数与公差、真实的工程案例和客户应用。我们把它们整理成结构清楚、带出处的公开内容，并在行业媒体、评测与目录等第三方来源建立引用。', en: 'Material a third party can verify: patents, certifications and test reports, product parameters and tolerances, and real engineering cases and customer applications. We organise it into well-structured public content with sources, and build citations in third-party places such as trade media, reviews and directories.' },
+      },
+      {
+        q: { zh: 'GEO 的效果怎么衡量？', en: 'How are GEO results measured?' },
+        a: { zh: '用固定的买家问题集，定期在 ChatGPT、Perplexity、Gemini 等平台提问，统计品牌被提及的比例、排位与引用的来源，并与竞品对比；同时看来自 AI 平台的引荐访问与询盘。', en: 'With a fixed set of buyer questions asked regularly on ChatGPT, Perplexity, Gemini and other platforms, we track how often the brand is mentioned, where it ranks and which sources are cited, compared with competitors. Referral visits and enquiries from AI platforms are tracked too.' },
+      },
+    ],
+    caseName: {
+      zh: '爱康医疗：ChatGPT、Perplexity 数月持续带来引荐访问',
+      en: 'Aikang Medical: ChatGPT and Perplexity have sent referral traffic consistently for several months',
+    },
+    judgement: {
+      zh: '没有出处的说法，AI 不会引用，采购方也不会采信。',
+      en: 'A claim without a source will not be cited by AI, and buyers will not trust it either.',
+    },
+  },
+  {
+    key: 'fde',
+    slug: 'fde',
+    code: 'E',
+    title: { zh: 'AI 驱动的三层建设（FDE 驻场）', en: 'AI-driven three-layer build (FDE on-site)' },
+    friction: { zh: '连不上', en: 'Not connected' },
+    oneLiner: {
+      zh: '带着 AI 下到业务一线，把经验写成标准，把标准装进系统，再让 AI 在系统上干活',
+      en: 'Go to the front line with AI: write experience down as standards, load the standards into systems, then let AI work on those systems.',
+    },
+    desc: {
+      zh: 'FDE（前线部署工程师）源自 Palantir，如今 OpenAI、Anthropic 也在用它跨越“演示惊艳、上线艰难”的鸿沟。多数外贸企业的流程写在老业务员的经验和微信里，直接上 AI 只能做出演示。FDE 驻场跟岗，用 AI 加速完成标准化、信息化、智能化三层建设，对业务结果负责，离场时把标准、系统、数据和会用的人一起留给企业。',
+      en: 'FDE (Forward Deployed Engineer) originated at Palantir, and OpenAI and Anthropic now use it to bridge the gap between an impressive demo and a launch that actually works. Most export businesses keep their processes in veteran salespeople\'s experience and in WeChat chats, so putting AI on top only produces a demo. FDE engineers work on site alongside your team and use AI to speed up three layers of build: standardisation, digitisation and intelligence. They are accountable for business results, and when they leave, the standards, systems, data and trained people stay with your company.',
+    },
+    deliverables: [
+      { zh: '从一个高价值场景切入，2 ~ 4 周跑通第一个闭环', en: 'Start from one high-value scenario and complete the first closed loop in 2 to 4 weeks' },
+      { zh: '每周一轮“观察-原型-试用-沉淀”，每周都有可用成果', en: 'One observe–prototype–trial–consolidate cycle each week, with usable output every week' },
+      { zh: '按层验收：规则经业务审定、数据自动入库、AI 达到评测指标', en: 'Accepted layer by layer: rules approved by the business, data stored automatically, AI meets evaluation targets' },
+      { zh: '源码、数据与文档归企业，同步培养内部 AI 骨干', en: 'Source code, data and documentation belong to your company, and internal AI leads are trained alongside' },
+    ],
+    courseId: 'E',
+    seo: {
+      title: { zh: 'FDE 驻场工程师：AI 驱动的标准化、信息化、智能化三层建设', en: 'Forward deployed engineers (FDE): an AI-driven three-layer build for exporters' },
+      description: { zh: 'FDE 带着 AI 驻场业务一线，自下而上完成标准化、信息化、智能化三层建设，每周一轮“观察-原型-试用-沉淀”，离场时把标准、系统、数据和会用的人留给企业。', en: 'FDE engineers work on site with AI and build three layers from the bottom up: standardisation, digitisation and intelligence, with a weekly observe–prototype–trial–consolidate cycle. Standards, systems, data and trained people stay with you.' },
+    },
+    faqs: [
+      {
+        q: { zh: 'FDE 和驻场外包有什么不同？', en: 'How is an FDE different from on-site outsourcing?' },
+        a: { zh: '外包对需求文档负责，FDE 对业务结果负责，并要把能力留给企业：源码、数据、文档归企业，同时培养内部 AI 骨干。', en: 'Outsourcing is accountable for a requirements document; an FDE is accountable for business results and leaves the capability behind: source code, data and documentation belong to you, and internal AI leads are trained alongside.' },
+      },
+      {
+        q: { zh: '为什么不直接上 AI，而要先做标准化和信息化？', en: 'Why not go straight to AI instead of standardising and digitising first?' },
+        a: { zh: '没有清晰的规则和干净的数据，AI 只能做演示，上线后答错了没人兜底。没有标准化的智能化，只是把混乱自动化。', en: 'Without clear rules and clean data, AI can only produce a demo, and nobody catches its mistakes after launch. Intelligence without standardisation just automates the mess.' },
+      },
+      {
+        q: { zh: 'FDE 项目从哪里开始？', en: 'Where does an FDE project start?' },
+        a: { zh: '从一个高价值场景切入，例如询盘分级或报价，2 ~ 4 周跑通第一个闭环，再按层验收、逐步扩展。', en: 'From one high-value scenario, such as enquiry grading or quoting. The first closed loop runs in 2 to 4 weeks, then the work is accepted layer by layer and extended step by step.' },
+      },
+    ],
+    caseName: {
+      zh: '示例：一周内，询盘分级从凭经验判断变为 AI 按规则打标',
+      en: 'Example: within one week, enquiry grading moves from gut feel to AI tagging by rules',
+    },
+    judgement: {
+      zh: '没有标准化的智能化，只是把混乱自动化。AI 只会放大企业已有的秩序。',
+      en: 'Intelligence without standardisation just automates the mess. AI only amplifies the order a company already has.',
+    },
+  },
   {
     key: 'site',
     slug: 'website',
@@ -124,54 +221,6 @@ const ALL_SERVICES: Service[] = [
     },
   },
   {
-    key: 'geo',
-    slug: 'geo',
-    code: 'C',
-    title: { zh: '出海 GEO：让 AI 引用你的资料', en: 'Export GEO: get AI to cite your material' },
-    friction: { zh: '不被信', en: 'Not trusted' },
-    oneLiner: {
-      zh: '把企业的专利、认证与工程案例整理成 AI 能查证、愿意引用的公开资料。',
-      en: 'We organise your patents, certifications and engineering cases into public material that AI can verify and is willing to cite.',
-    },
-    desc: {
-      zh: '海外买家向 ChatGPT、Perplexity 或 Google AI 概览询问推荐供应商时，AI 会引用它能查到的公开资料。我们通过第三方学术索引、认证与评测机构、真实工程案例，整理你的证据链，提高被引用的机会。我们无法保证 AI 一定推荐你，所以每月用同一组问题复测并汇报。',
-      en: 'When overseas buyers ask ChatGPT, Perplexity or Google AI Overviews to recommend suppliers, the AI cites public material it can find. We build your evidence chain through third-party academic indexes, certification and testing bodies, and real engineering cases, which raises the chance of being cited. We cannot guarantee that AI will recommend you, so we re-test with the same question set every month and report back.',
-    },
-    deliverables: [
-      { zh: '整理海外决策者会问 AI 的问题（问题簇）', en: 'Map the questions overseas decision-makers ask AI (question clusters)' },
-      { zh: '全年技术资料与第三方背书规划', en: 'Annual technical content and third-party endorsement plan' },
-      { zh: '在行业媒体与评测报告中建立可被引用的公开来源', en: 'Citable public sources built in trade media and test reports' },
-      { zh: '每月用固定问题集测试主流 AI 平台，并与竞品对比的月报', en: 'Monthly report testing major AI platforms with a fixed question set, compared against competitors' },
-    ],
-    courseId: 'C',
-    seo: {
-      title: { zh: '出海 GEO 优化：让 ChatGPT、Perplexity、Gemini 引用你的品牌', en: 'GEO services for exporters: get ChatGPT, Perplexity and Gemini to cite your brand' },
-      description: { zh: 'GEO（生成式引擎优化）把企业的专利、认证与工程案例整理成 AI 能查证、愿意引用的公开资料，提高海外买家问 AI 时你被推荐的机会，并每月复测。', en: 'GEO (generative engine optimisation) turns your patents, certifications and engineering cases into public material AI can verify and cite, so you are more likely to be recommended when overseas buyers ask AI. Re-tested monthly.' },
-    },
-    faqs: [
-      {
-        q: { zh: 'GEO 能保证 AI 一定推荐我们吗？', en: 'Can GEO guarantee that AI will recommend us?' },
-        a: { zh: '不能。AI 的回答取决于它能查到的公开来源，任何人都无法保证结果。我们能做的是建设可查证的证据链、提高被引用的机会，并每月用同一组问题在主流 AI 平台复测，把变化如实汇报给你。', en: 'No. AI answers depend on the public sources it can find, and nobody can guarantee the outcome. What we do is build a verifiable evidence chain that raises the chance of being cited, then re-test every month with the same question set on the major AI platforms and report the changes honestly.' },
-      },
-      {
-        q: { zh: '做 GEO 需要企业提供哪些资料？', en: 'What material does a company need to provide for GEO?' },
-        a: { zh: '可以被第三方查证的资料：专利、认证与检测报告、产品参数与公差、真实的工程案例和客户应用。我们把它们整理成结构清楚、带出处的公开内容，并在行业媒体、评测与目录等第三方来源建立引用。', en: 'Material a third party can verify: patents, certifications and test reports, product parameters and tolerances, and real engineering cases and customer applications. We organise it into well-structured public content with sources, and build citations in third-party places such as trade media, reviews and directories.' },
-      },
-      {
-        q: { zh: 'GEO 的效果怎么衡量？', en: 'How are GEO results measured?' },
-        a: { zh: '用固定的买家问题集，定期在 ChatGPT、Perplexity、Gemini 等平台提问，统计品牌被提及的比例、排位与引用的来源，并与竞品对比；同时看来自 AI 平台的引荐访问与询盘。', en: 'With a fixed set of buyer questions asked regularly on ChatGPT, Perplexity, Gemini and other platforms, we track how often the brand is mentioned, where it ranks and which sources are cited, compared with competitors. Referral visits and enquiries from AI platforms are tracked too.' },
-      },
-    ],
-    caseName: {
-      zh: '爱康医疗：ChatGPT、Perplexity 数月持续带来引荐访问',
-      en: 'Aikang Medical: ChatGPT and Perplexity have sent referral traffic consistently for several months',
-    },
-    judgement: {
-      zh: '没有出处的说法，AI 不会引用，采购方也不会采信。',
-      en: 'A claim without a source will not be cited by AI, and buyers will not trust it either.',
-    },
-  },
-  {
     key: 'chat',
     slug: 'ai-customer-service',
     code: 'D',
@@ -217,54 +266,6 @@ const ALL_SERVICES: Service[] = [
     judgement: {
       zh: '买家等不到回复，就会去问别人。所以第一次回复要快，而且要答对。',
       en: 'Buyers who do not get a reply go elsewhere. So the first reply must be fast, and it must be right.',
-    },
-  },
-  {
-    key: 'fde',
-    slug: 'fde',
-    code: 'E',
-    title: { zh: 'AI 驱动的三层建设（FDE 驻场）', en: 'AI-driven three-layer build (FDE on-site)' },
-    friction: { zh: '连不上', en: 'Not connected' },
-    oneLiner: {
-      zh: '带着 AI 下到业务一线，把经验写成标准，把标准装进系统，再让 AI 在系统上干活',
-      en: 'Go to the front line with AI: write experience down as standards, load the standards into systems, then let AI work on those systems.',
-    },
-    desc: {
-      zh: 'FDE（前线部署工程师）源自 Palantir，如今 OpenAI、Anthropic 也在用它跨越“演示惊艳、上线艰难”的鸿沟。多数外贸企业的流程写在老业务员的经验和微信里，直接上 AI 只能做出演示。FDE 驻场跟岗，用 AI 加速完成标准化、信息化、智能化三层建设，对业务结果负责，离场时把标准、系统、数据和会用的人一起留给企业。',
-      en: 'FDE (Forward Deployed Engineer) originated at Palantir, and OpenAI and Anthropic now use it to bridge the gap between an impressive demo and a launch that actually works. Most export businesses keep their processes in veteran salespeople\'s experience and in WeChat chats, so putting AI on top only produces a demo. FDE engineers work on site alongside your team and use AI to speed up three layers of build: standardisation, digitisation and intelligence. They are accountable for business results, and when they leave, the standards, systems, data and trained people stay with your company.',
-    },
-    deliverables: [
-      { zh: '从一个高价值场景切入，2 ~ 4 周跑通第一个闭环', en: 'Start from one high-value scenario and complete the first closed loop in 2 to 4 weeks' },
-      { zh: '每周一轮“观察-原型-试用-沉淀”，每周都有可用成果', en: 'One observe–prototype–trial–consolidate cycle each week, with usable output every week' },
-      { zh: '按层验收：规则经业务审定、数据自动入库、AI 达到评测指标', en: 'Accepted layer by layer: rules approved by the business, data stored automatically, AI meets evaluation targets' },
-      { zh: '源码、数据与文档归企业，同步培养内部 AI 骨干', en: 'Source code, data and documentation belong to your company, and internal AI leads are trained alongside' },
-    ],
-    courseId: 'E',
-    seo: {
-      title: { zh: 'FDE 驻场工程师：AI 驱动的标准化、信息化、智能化三层建设', en: 'Forward deployed engineers (FDE): an AI-driven three-layer build for exporters' },
-      description: { zh: 'FDE 带着 AI 驻场业务一线，自下而上完成标准化、信息化、智能化三层建设，每周一轮“观察-原型-试用-沉淀”，离场时把标准、系统、数据和会用的人留给企业。', en: 'FDE engineers work on site with AI and build three layers from the bottom up: standardisation, digitisation and intelligence, with a weekly observe–prototype–trial–consolidate cycle. Standards, systems, data and trained people stay with you.' },
-    },
-    faqs: [
-      {
-        q: { zh: 'FDE 和驻场外包有什么不同？', en: 'How is an FDE different from on-site outsourcing?' },
-        a: { zh: '外包对需求文档负责，FDE 对业务结果负责，并要把能力留给企业：源码、数据、文档归企业，同时培养内部 AI 骨干。', en: 'Outsourcing is accountable for a requirements document; an FDE is accountable for business results and leaves the capability behind: source code, data and documentation belong to you, and internal AI leads are trained alongside.' },
-      },
-      {
-        q: { zh: '为什么不直接上 AI，而要先做标准化和信息化？', en: 'Why not go straight to AI instead of standardising and digitising first?' },
-        a: { zh: '没有清晰的规则和干净的数据，AI 只能做演示，上线后答错了没人兜底。没有标准化的智能化，只是把混乱自动化。', en: 'Without clear rules and clean data, AI can only produce a demo, and nobody catches its mistakes after launch. Intelligence without standardisation just automates the mess.' },
-      },
-      {
-        q: { zh: 'FDE 项目从哪里开始？', en: 'Where does an FDE project start?' },
-        a: { zh: '从一个高价值场景切入，例如询盘分级或报价，2 ~ 4 周跑通第一个闭环，再按层验收、逐步扩展。', en: 'From one high-value scenario, such as enquiry grading or quoting. The first closed loop runs in 2 to 4 weeks, then the work is accepted layer by layer and extended step by step.' },
-      },
-    ],
-    caseName: {
-      zh: '示例：一周内，询盘分级从凭经验判断变为 AI 按规则打标',
-      en: 'Example: within one week, enquiry grading moves from gut feel to AI tagging by rules',
-    },
-    judgement: {
-      zh: '没有标准化的智能化，只是把混乱自动化。AI 只会放大企业已有的秩序。',
-      en: 'Intelligence without standardisation just automates the mess. AI only amplifies the order a company already has.',
     },
   },
 ];

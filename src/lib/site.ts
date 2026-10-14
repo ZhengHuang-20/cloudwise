@@ -15,12 +15,12 @@ export const BRAND = {
 /** 一句话定位：页面描述、Organization schema、llms.txt 共用 */
 export const TAGLINE = SHOW_FDE
   ? {
-      zh: '面向中国出海企业的 AI 售前支持系统：独立站、SEO、GEO、AI 客服与 FDE 驻场',
-      en: 'AI pre-sales support for Chinese companies going global: websites, SEO, GEO, AI customer service and FDE on-site engineering',
+      zh: '面向中国出海企业的 AI 售前支持系统：GEO、FDE 驻场、独立站、SEO 与 AI 客服',
+      en: 'AI pre-sales support for Chinese companies going global: GEO, FDE on-site engineering, websites, SEO and AI customer service',
     }
   : {
-      zh: '面向中国出海企业的 AI 售前支持系统：独立站、SEO、GEO 与 AI 客服',
-      en: 'AI pre-sales support for Chinese companies going global: websites, SEO, GEO and AI customer service',
+      zh: '面向中国出海企业的 AI 售前支持系统：GEO、独立站、SEO 与 AI 客服',
+      en: 'AI pre-sales support for Chinese companies going global: GEO, websites, SEO and AI customer service',
     };
 
 export const ICP_RECORD = '苏ICP备20260928号-1';

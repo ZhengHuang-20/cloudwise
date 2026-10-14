@@ -16,7 +16,26 @@ interface ServiceCard {
   link: Bi;
 }
 
+// 顺序即展示顺序：GEO 与 FDE 是主推服务，排在最前
 const ALL_SERVICES: ServiceCard[] = [
+  {
+    key: 'geo',
+    title: { zh: '出海 GEO 优化', en: 'Export GEO' },
+    desc: {
+      zh: '海外采购商向 ChatGPT、Perplexity、Google AI 概览询问供应商时，提高你的品牌被引用的机会，并每月复测给你看。',
+      en: 'When overseas buyers ask ChatGPT, Perplexity or Google AI Overviews for suppliers, we improve the chance your brand gets cited, and re-test every month so you can see the result.',
+    },
+    link: { zh: '了解 GEO 信源方案', en: 'See the GEO source plan' },
+  },
+  {
+    key: 'fde',
+    title: { zh: 'FDE 驻场工程师', en: 'FDE on-site engineers' },
+    desc: {
+      zh: '带着 AI 驻场一线，把业务经验写成标准、装进系统、交给 AI 执行。源码、数据和会用的人都留给企业。',
+      en: 'On-site engineers work alongside your business to turn experience into standards, load them into systems and hand them to AI to run. Source code, data and the people who can use it stay with your company.',
+    },
+    link: { zh: '了解三层建设', en: 'See the three-layer build' },
+  },
   {
     key: 'site',
     title: { zh: '海外独立站建站', en: 'Overseas websites' },
@@ -36,15 +55,6 @@ const ALL_SERVICES: ServiceCard[] = [
     link: { zh: '了解 SEO 词库策略', en: 'See the SEO keyword strategy' },
   },
   {
-    key: 'geo',
-    title: { zh: '出海 GEO 优化', en: 'Export GEO' },
-    desc: {
-      zh: '海外采购商向 ChatGPT、Perplexity、Google AI 概览询问供应商时，提高你的品牌被引用的机会，并每月复测给你看。',
-      en: 'When overseas buyers ask ChatGPT, Perplexity or Google AI Overviews for suppliers, we improve the chance your brand gets cited, and re-test every month so you can see the result.',
-    },
-    link: { zh: '了解 GEO 信源方案', en: 'See the GEO source plan' },
-  },
-  {
     key: 'chat',
     title: { zh: 'AI 智能客服与系统对接', en: 'AI customer service and system integration' },
     desc: {
@@ -52,15 +62,6 @@ const ALL_SERVICES: ServiceCard[] = [
       en: 'Answers multilingual questions about tolerances, certifications and lead times around the clock, based on your own product data. Questions beyond the material go to sales, and buying intent is synced to your CRM.',
     },
     link: { zh: '了解 AI 客服', en: 'See AI customer service' },
-  },
-  {
-    key: 'fde',
-    title: { zh: 'FDE 驻场工程师', en: 'FDE on-site engineers' },
-    desc: {
-      zh: '带着 AI 驻场一线，把业务经验写成标准、装进系统、交给 AI 执行。源码、数据和会用的人都留给企业。',
-      en: 'On-site engineers work alongside your business to turn experience into standards, load them into systems and hand them to AI to run. Source code, data and the people who can use it stay with your company.',
-    },
-    link: { zh: '了解三层建设', en: 'See the three-layer build' },
   },
 ];
 const SERVICES = SHOW_FDE ? ALL_SERVICES : ALL_SERVICES.filter((service) => service.key !== 'fde');
@@ -88,8 +89,8 @@ const TOOLS: {
     icon: ListChecks,
     title: { zh: '方案组合与交付规划', en: 'Package planning and delivery' },
     desc: {
-      zh: `自由组合独立站、SEO、GEO${SHOW_FDE ? '、AI 客服与 FDE 驻场' : ' 与 AI 客服'}，实时得到交付周期、阶段排期与交付物清单。`,
-      en: `Combine websites, SEO, GEO${SHOW_FDE ? ', AI customer service and FDE on-site engineering' : ' and AI customer service'}, and get delivery timelines, phased schedules and deliverables instantly.`,
+      zh: `自由组合 GEO${SHOW_FDE ? '、FDE 驻场、' : '、'}独立站、SEO 与 AI 客服，实时得到交付周期、阶段排期与交付物清单。`,
+      en: `Combine GEO${SHOW_FDE ? ', FDE on-site engineering, ' : ', '}websites, SEO and AI customer service, and get delivery timelines, phased schedules and deliverables instantly.`,
     },
     link: { zh: '规划方案', en: 'Plan a project' },
   },
@@ -173,8 +174,8 @@ export const HomeView: React.FC = () => {
         </h1>
         <p className="mx-auto mt-6 max-w-2xl text-intro text-label-secondary">
           {t(
-            `独立站、SEO、GEO、AI 客服与系统对接${SHOW_FDE ? '，以及 FDE 驻场' : ''}。帮中国中型制造企业让海外买家找得到、读得懂、信得过，询盘来了有人接。`,
-            `Websites, SEO, GEO, AI customer service and system integration${SHOW_FDE ? ', plus FDE on-site engineering' : ''}. We help mid-sized Chinese manufacturers get found, get read, get trusted, and answer every enquiry.`
+            `${SHOW_FDE ? 'GEO 与 FDE 驻场' : 'GEO'}，加上独立站、SEO、AI 客服与系统对接。帮中国中型制造企业让海外买家找得到、读得懂、信得过，询盘来了有人接。`,
+            `${SHOW_FDE ? 'GEO and FDE on-site engineering' : 'GEO'}, plus websites, SEO, AI customer service and system integration. We help mid-sized Chinese manufacturers get found, get read, get trusted, and answer every enquiry.`
           )}
         </p>
         <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
