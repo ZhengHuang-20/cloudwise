@@ -77,3 +77,79 @@ export const FDE_LOOP: { name: Bi; desc: Bi }[] = [
   { name: { zh: '试用', en: 'Trial' }, desc: { zh: '业务员拿真实询盘试用', en: 'Salespeople trial it on real enquiries' } },
   { name: { zh: '沉淀', en: 'Consolidate' }, desc: { zh: '有效做法写回标准与系统', en: 'Write what works back into standards and systems' } },
 ];
+
+/** 创始人介绍（关于我们页）。项目只写已确认的事实；规模、成果等数据确认后再补 */
+export const FOUNDER = {
+  name: { zh: '黄拯', en: 'Huang Zheng' },
+  title: { zh: '创始人 · 系统架构师', en: 'Founder · Systems architect' },
+  intro: {
+    zh: '12 年企业系统建设经验。先后在保险、支付、电商平台和教育出海领域主导过多个从 0 到 1 的系统，从需求梳理、架构设计到上线运营全程负责。',
+    en: '12 years of building enterprise systems. He has led several zero-to-one systems in insurance, payments, e-commerce platforms and education going global, owning everything from requirements and architecture to launch and operations.',
+  },
+  projects: [
+    {
+      name: { zh: '泰康 · 经纪人小程序（0 到 1）', en: 'Taikang · agent mini-program (0 to 1)' },
+      desc: {
+        zh: '在强监管的保险行业，为经纪人搭建展业系统。客户信息高度敏感，每一项功能都要先过合规这一关。',
+        en: 'A sales system for insurance agents in a heavily regulated industry. Customer information is highly sensitive, so every feature had to clear compliance first.',
+      },
+    },
+    {
+      name: { zh: '贝壳 · 钱包运营自动化系统（0 到 1）', en: 'Beike · wallet operations automation (0 to 1)' },
+      desc: {
+        zh: '系统直接处理资金流转。账务不能错，权限要分清，每一笔操作都要可追溯。',
+        en: 'The system handles money movement directly. Accounting must be exact, permissions clearly separated, and every operation traceable.',
+      },
+    },
+    {
+      name: { zh: '快手 · 商户系统低代码自动化（0 到 1）', en: 'Kuaishou · merchant-system low-code automation (0 to 1)' },
+      desc: {
+        zh: '把复杂多变的商户业务抽象成可配置的规则和流程，业务人员自己改配置，不必每次排期找开发。',
+        en: 'Complex, changing merchant operations were abstracted into configurable rules and workflows, so business staff change configuration themselves instead of queuing for developers.',
+      },
+    },
+    {
+      name: { zh: '教育软件出海（多次 0 到 1）', en: 'Education software going global (several 0-to-1 builds)' },
+      desc: {
+        zh: '从海外用户的视角设计产品，处理多语言、海外部署和当地数据合规要求。',
+        en: 'Products designed from the overseas user’s point of view, handling multiple languages, overseas deployment and local data-compliance requirements.',
+      },
+    },
+  ] as { name: Bi; desc: Bi }[],
+  common: {
+    zh: '这些项目有一个共同点：业务在跑，系统要换；用户是真人，数据不能出错。今天我们为出海制造企业做的，是同一件事。',
+    en: 'These projects share one trait: the business keeps running while the system is replaced, users are real people, and the data cannot be wrong. What we do for exporting manufacturers today is the same job.',
+  } as Bi,
+};
+
+/** FDE 服务页「为什么是我们」 */
+export const FDE_WHY: { title: Bi; body: Bi }[] = [
+  {
+    title: { zh: '创始人亲自驻场', en: 'The founder is on site himself' },
+    body: {
+      zh: '好的 FDE 要同时懂业务、懂系统、懂 AI，这样的人本身就具备创业者的素质。所以我们不外派新人，由创始人带队驻场，用老板的视角算每一笔投入能换回什么。',
+      en: 'A good FDE has to understand the business, the systems and AI at once, and such a person already thinks like an entrepreneur. So we do not send newcomers: the founder leads the on-site team and weighs what every investment will bring back from the owner’s point of view.',
+    },
+  },
+  {
+    title: { zh: '业务不停，系统换新', en: 'The business keeps running while systems are renewed' },
+    body: {
+      zh: '企业的智能化改造，像开着飞机换引擎。报价、接单、发货一天都不能停。我们的做法是：新旧系统并行试运行，按业务线分批切换，每一步都能回滚，旺季不动核心流程。',
+      en: 'Making a company intelligent is like changing the engine in flight: quoting, order intake and shipping cannot stop for a day. We run old and new systems in parallel, switch business line by business line, keep every step reversible, and leave core processes alone in peak season.',
+    },
+  },
+  {
+    title: { zh: '交付的是能长期运行的系统，不是演示', en: 'We deliver a system that runs for the long term, not a demo' },
+    body: {
+      zh: '系统是企业日后按标准运营的工具，所以交付清单写得很具体：源码、架构文档、运维手册、监控告警和交接培训，全部归企业所有。离场后由企业内部骨干接手，我们转为顾问。',
+      en: 'The system is the tool the company will operate by its standards, so the handover list is specific: source code, architecture documents, operations manual, monitoring and alerts, and handover training, all owned by the company. After we leave, your internal leads take over and we become advisers.',
+    },
+  },
+  {
+    title: { zh: '数据安全，按处理资金和保险数据的标准来做', en: 'Data security at the standard used for money and insurance data' },
+    body: {
+      zh: '客户名单、报价和成本是外贸企业的核心资产。我们沿用在保险和支付系统中的做法：最小权限，开发与生产环境隔离，操作全程留痕；敏感数据可以私有化部署；涉及海外买家个人信息时，按 GDPR 等当地法规处理。',
+      en: 'Customer lists, quotes and costs are an exporter’s core assets. We carry over the practice from insurance and payment systems: least privilege, development and production kept apart, every operation logged; sensitive data can be deployed privately; and overseas buyers’ personal information is handled under GDPR and other local rules.',
+    },
+  },
+];

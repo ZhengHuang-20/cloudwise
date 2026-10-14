@@ -4,6 +4,7 @@ import { Check, ChevronRight } from 'lucide-react';
 import { PageHeader } from '../components/ui/PageHeader';
 import { SERVICE_IDENTITY } from '../components/ui/serviceIdentity';
 import { FdeBuildLayers } from '../components/FdeBuildLayers';
+import { FdeWhyUs } from '../components/FdeWhyUs';
 import { FaqList } from '../components/FaqList';
 import { useLang } from '../context/LanguageContext';
 import { courseList } from '../data/coursesData';
@@ -68,6 +69,7 @@ export const ServiceDetailView: React.FC<{ slug: string }> = ({ slug }) => {
         </article>
 
         {svc.key === 'fde' && <FdeBuildLayers />}
+        {svc.key === 'fde' && <FdeWhyUs />}
 
         <div className="tile">
           <FaqList items={svc.faqs.map((f) => ({ q: tb(f.q), a: tb(f.a) }))} />
