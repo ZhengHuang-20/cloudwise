@@ -5,6 +5,7 @@ import { PageHeader } from '../components/ui/PageHeader';
 import { SERVICE_IDENTITY } from '../components/ui/serviceIdentity';
 import { useLang } from '../context/LanguageContext';
 import { CONTACTS, formatPhone } from '../data/contactsData';
+import { FOUNDER } from '../data/fdeData';
 import { SERVICES } from '../data/servicesData';
 import { caseList } from '../data/caseStudiesData';
 import { SERVICE_COUNT_CN, SERVICE_COUNT_EN, SHOW_FDE } from '../lib/features';
@@ -84,6 +85,24 @@ export const AboutView: React.FC = () => {
               );
             })}
           </ul>
+        </section>
+
+        <section className="tile" aria-labelledby="founder-title">
+          <h2 id="founder-title" className="text-title-2">
+            {t('创始人', 'Founder')}
+          </h2>
+          <p className="mt-6 text-title-3">{tb(FOUNDER.name)}</p>
+          <p className="text-caption text-label-secondary">{tb(FOUNDER.title)}</p>
+          <p className="mt-3 text-body text-label-secondary">{tb(FOUNDER.intro)}</p>
+          <ul className="mt-6 divide-y divide-separator border-t border-separator">
+            {FOUNDER.projects.map((p) => (
+              <li key={p.name.zh} className="py-4">
+                <p className="text-body font-semibold">{tb(p.name)}</p>
+                <p className="mt-1 text-body text-label-secondary">{tb(p.desc)}</p>
+              </li>
+            ))}
+          </ul>
+          <p className="mt-6 text-body">{tb(FOUNDER.common)}</p>
         </section>
 
         <section className="tile" aria-labelledby="principles-title">
