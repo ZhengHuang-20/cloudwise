@@ -43,8 +43,8 @@ export const NAV_GROUPS: NavGroup[] = [
         label: { zh: '服务', en: 'Services' },
         fullLabel: { zh: `${SERVICE_COUNT_CN}项服务`, en: `${SERVICE_COUNT_EN} services` },
         desc: SHOW_FDE
-          ? { zh: '独立站、SEO、GEO、AI 客服与 FDE 驻场', en: 'Websites, SEO, GEO, AI customer service and FDE on-site' }
-          : { zh: '独立站、SEO、GEO 与 AI 客服', en: 'Websites, SEO, GEO and AI customer service' },
+          ? { zh: 'GEO、FDE 驻场、独立站、SEO 与 AI 客服', en: 'GEO, FDE on-site, websites, SEO and AI customer service' }
+          : { zh: 'GEO、独立站、SEO 与 AI 客服', en: 'GEO, websites, SEO and AI customer service' },
       },
       {
         id: 'cases',

@@ -140,8 +140,8 @@ function chatFallback(r: ChatRequest) {
     next = '建议用“方案规划”查看 AI 客服的交付周期与交付物，或预约 30 分钟诊断会演示凌晨询盘的接待流程。';
     citations.push('《凌晨三点询盘自动化流转标准》');
   } else if (has('多少钱', '价格', '费用', '预算', '报价')) {
-    const fdeWord = show ? '与 FDE 驻场' : '';
-    answer = `我们不在线上提供统一报价。独立站、SEO、GEO、AI 客服${fdeWord}的投入取决于产品 SKU 规模、目标市场与语种数量、年度内容量以及需要打通的企业系统，每家企业差异很大。\n\n建议分两步：先用站内“方案规划”组合服务，查看交付周期、阶段排期与交付物清单；再预约 30 分钟诊断会，由架构师结合实测结果出具定制方案。`;
+    const fdeWord = show ? '、FDE 驻场' : '';
+    answer = `我们不在线上提供统一报价。GEO${fdeWord}、独立站、SEO、AI 客服的投入取决于产品 SKU 规模、目标市场与语种数量、年度内容量以及需要打通的企业系统，每家企业差异很大。\n\n建议分两步：先用站内“方案规划”组合服务，查看交付周期、阶段排期与交付物清单；再预约 30 分钟诊断会，由架构师结合实测结果出具定制方案。`;
     intent = 'HIGH';
     intentReason = '询问合作费用，进入高意向商务评估阶段';
     services.push(`整体服务组合（${count}项全做）`);
@@ -213,8 +213,8 @@ function chatFallbackEn(r: ChatRequest) {
     next = 'Use the Project planner to see the AI customer service timeline and deliverables, or book a 30-minute diagnosis call to see how an overnight enquiry is handled.';
     citations.push('Standard for automated overnight enquiry routing');
   } else if (has('price', 'cost', 'budget', 'quote', 'how much', 'fee')) {
-    const fdeWord = show ? ', and FDE on-site engineering' : '';
-    answer = `We do not publish a standard price online. The investment for websites, SEO, GEO and AI customer service${fdeWord} depends on the number of products, target markets and languages, the annual content volume and the company systems to be integrated, and it varies widely from company to company.\n\nTwo steps: use the Project planner on this site to combine services and review timelines and deliverables, then book a 30-minute diagnosis call so an architect can prepare a tailored plan based on real test results.`;
+    const fdeWord = show ? ', FDE on-site engineering' : '';
+    answer = `We do not publish a standard price online. The investment for GEO${fdeWord}, websites, SEO and AI customer service depends on the number of products, target markets and languages, the annual content volume and the company systems to be integrated, and it varies widely from company to company.\n\nTwo steps: use the Project planner on this site to combine services and review timelines and deliverables, then book a 30-minute diagnosis call so an architect can prepare a tailored plan based on real test results.`;
     intent = 'HIGH';
     intentReason = 'Asked about cost, so the conversation has moved into a high-intent commercial assessment';
     services.push(`Full package (all ${countEn} services)`);

@@ -24,7 +24,7 @@ export const AboutView: React.FC = () => {
         eyebrow={t('关于我们', 'About us')}
         title={t(`${BRAND.zh}（${BRAND.en}）`, `${BRAND.en} (${BRAND.zh})`)}
         intro={t(
-          `${BRAND.zh}是面向中国出海企业的 AI 售前支持团队，用独立站、SEO、GEO、AI 客服${SHOW_FDE ? '与 FDE 驻场' : ''}${SERVICE_COUNT_CN}项服务，帮助制造企业让海外买家找得到、读得懂、信得过，询盘来了有人接。`,
+          `${BRAND.zh}是面向中国出海企业的 AI 售前支持团队，用 GEO、${SHOW_FDE ? 'FDE 驻场、' : ''}独立站、SEO、AI 客服${SERVICE_COUNT_CN}项服务，帮助制造企业让海外买家找得到、读得懂、信得过，询盘来了有人接。`,
           `${BRAND.en} is an AI pre-sales support team for Chinese companies going global. Through ${SERVICE_COUNT_EN.toLowerCase()} services, websites, SEO, GEO, AI customer service${SHOW_FDE ? ' and FDE on-site engineering' : ''}, we help manufacturers get found, read and trusted by overseas buyers, and answer every enquiry.`
         )}
       />

@@ -26,8 +26,8 @@ export const ServicesView: React.FC = () => {
         eyebrow={t(`${SERVICE_COUNT_CN}项服务`, `${SERVICE_COUNT_EN} services`)}
         title={t(`${SERVICE_COUNT_CN}项服务，各解决一个卡点`, `${SERVICE_COUNT_EN} services, each solving one bottleneck`)}
         intro={t(
-          `${SERVICE_COUNT_CN}项服务共用同一套企业资料：独立站、搜索、AI 推荐、客服和内部系统，各解决一个卡点，内容可以互相复用。`,
-          'The services share one set of company material: websites, search, AI recommendations, customer service and internal systems. Each one solves a single bottleneck, and the content is reused across them.'
+          `${SERVICE_COUNT_CN}项服务共用同一套企业资料：AI 推荐（GEO）、FDE 驻场、独立站、搜索、客服和内部系统，各解决一个卡点，内容可以互相复用。`,
+          'The services share one set of company material: AI recommendations (GEO), FDE on-site engineering, websites, search, customer service and internal systems. Each one solves a single bottleneck, and the content is reused across them.'
         )}
       >
         {/* 页内索引 */}
@@ -119,8 +119,8 @@ export const ServicesView: React.FC = () => {
           </h2>
           <p className="mx-auto mt-5 max-w-2xl text-intro text-label-secondary">
             {t(
-              '常见的起点是“独立站 + SEO + GEO”获客组合。组合后可以看到交付周期、阶段排期与交付物清单。',
-              'A common starting point is the "website + SEO + GEO" lead-generation package. Once combined, you can see the delivery timeline, phased schedule and deliverables list.'
+              '常见的起点是“GEO + 独立站 + SEO”获客组合。组合后可以看到交付周期、阶段排期与交付物清单。',
+              'A common starting point is the "GEO + website + SEO" lead-generation package. Once combined, you can see the delivery timeline, phased schedule and deliverables list.'
             )}
           </p>
           <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
