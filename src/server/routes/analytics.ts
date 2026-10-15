@@ -333,7 +333,7 @@ export const leadAudit = withSite(async (_req, _u, siteId, params) => {
     if (input) {
       const key = input.domain ? input.domain.replace(/^www\./, '') : 'brand:' + input.brand.toLowerCase();
       const row = await queryOne(
-        `SELECT id FROM audits WHERE target_key = $1 AND status = 'done' ORDER BY created_at DESC LIMIT 1`,
+        `SELECT id FROM audits WHERE target_key = $1 ORDER BY (status = 'done') DESC, created_at DESC LIMIT 1`,
         [key],
       );
       id = row?.id ?? null;
