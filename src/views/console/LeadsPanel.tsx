@@ -11,12 +11,15 @@ import {
   Pagination,
   Segmented,
   Select,
+  Skeleton,
   Table,
   Tooltip,
   Typography,
   type TableColumnsType,
 } from 'antd';
 import { Download } from 'lucide-react';
+import { AuditResult } from '../home/VisibilityAudit';
+import type { AuditJob } from '../../lib/audit';
 import { api, formatTime } from '../../lib/api';
 import { CHANNEL_LABEL, countryName, prettyPath } from './labels';
 import { PageTitle } from './parts';
@@ -68,14 +71,52 @@ const Contact: React.FC<{ lead: Lead }> = ({ lead }) => (
 const sourceText = (l: Lead) =>
   l.channel ? [CHANNEL_LABEL[l.channel] ?? l.channel, l.source && l.source !== CHANNEL_LABEL[l.channel] ? l.source : ''].filter(Boolean).join(' · ') : '';
 
+/** 测评线索对应的 AI 可见性报告（与访客看到的一致，去掉预约入口）。 */
+const AuditReportDrawer: React.FC<{ siteId: number; leadId: number | null; onClose: () => void }> = ({ siteId, leadId, onClose }) => {
+  const [job, setJob] = useState<AuditJob | null>(null);
+  const [error, setError] = useState('');
+  useEffect(() => {
+    if (!leadId) return;
+    setJob(null);
+    setError('');
+    let alive = true;
+    api<AuditJob>(`/api/sites/${siteId}/leads/${leadId}/audit`)
+      .then((j) => alive && setJob(j))
+      .catch((e) => alive && setError(e.message));
+    return () => {
+      alive = false;
+    };
+  }, [siteId, leadId]);
+
+  return (
+    <Drawer open={!!leadId} onClose={onClose} size={Math.min(1100, window.innerWidth)} title="AI 可见性测评报告">
+      {error ? (
+        <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={error} />
+      ) : !job ? (
+        <Skeleton active />
+      ) : job.report ? (
+        <AuditResult report={job.report} />
+      ) : (
+        <Empty
+          image={Empty.PRESENTED_IMAGE_SIMPLE}
+          description={job.status === 'failed' ? `测评未完成：${job.error || '失败'}` : '测评仍在进行中，请稍后刷新查看'}
+        />
+      )}
+    </Drawer>
+  );
+};
+
 /** 线索详情：完整信息、状态与跟进备注。 */
 const LeadDrawer: React.FC<{
+  siteId: number;
   lead: Lead | null;
   onClose: () => void;
   onPatch: (lead: Lead, body: Partial<Pick<Lead, 'status' | 'note'>>) => Promise<boolean>;
-}> = ({ lead, onClose, onPatch }) => {
+}> = ({ siteId, lead, onClose, onPatch }) => {
   const [note, setNote] = useState('');
   const [saving, setSaving] = useState(false);
+  const [reportOpen, setReportOpen] = useState(false);
+  useEffect(() => setReportOpen(false), [lead?.id]);
   useEffect(() => setNote(lead?.note ?? ''), [lead?.id, lead?.note]);
 
   return (
@@ -134,6 +175,16 @@ const LeadDrawer: React.FC<{
             <h3 className="mb-2 text-caption text-label-secondary">留言</h3>
             <p className="whitespace-pre-wrap break-words rounded-[10px] bg-surface-raised px-4 py-3">{lead.message || '（未填写）'}</p>
           </section>
+
+          {lead.hasAudit && (
+            <section>
+              <h3 className="mb-2 text-caption text-label-secondary">AI 可见性测评</h3>
+              <Button block onClick={() => setReportOpen(true)}>
+                查看测评报告
+              </Button>
+              <AuditReportDrawer siteId={siteId} leadId={reportOpen ? lead.id : null} onClose={() => setReportOpen(false)} />
+            </section>
+          )}
 
           <section>
             <h3 className="mb-2 text-caption text-label-secondary">跟进备注</h3>
@@ -367,7 +418,7 @@ export const LeadsPanel: React.FC<{ site: Site }> = ({ site }) => {
         )}
       </Card>
 
-      <LeadDrawer lead={open} onClose={() => setOpenId(null)} onPatch={patch} />
+      <LeadDrawer siteId={site.id} lead={open} onClose={() => setOpenId(null)} onPatch={patch} />
     </>
   );
 };

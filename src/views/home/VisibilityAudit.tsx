@@ -353,8 +353,9 @@ const AuditProgress: React.FC<{ job: JobProgress }> = ({ job }) => {
 
 interface AuditResultProps {
   report: AuditReport;
-  openBookingModal: () => void;
-  onGoToConfigurator: () => void;
+  /** 不传时不显示「预约诊断会 / 规划服务方案」（客户后台查看报告用） */
+  openBookingModal?: () => void;
+  onGoToConfigurator?: () => void;
 }
 
 const Panel: React.FC<{
@@ -376,7 +377,7 @@ const Panel: React.FC<{
   </section>
 );
 
-const AuditResult: React.FC<AuditResultProps> = ({ report, openBookingModal, onGoToConfigurator }) => {
+export const AuditResult: React.FC<AuditResultProps> = ({ report, openBookingModal, onGoToConfigurator }) => {
   const { t, lang } = useLang();
   const tone = scoreTone(report.totalScore);
   const hasAI = report.mode !== 'site_only';
@@ -588,19 +589,21 @@ const AuditResult: React.FC<AuditResultProps> = ({ report, openBookingModal, onG
           <div className="well mt-4">
             <h5 className="text-body font-semibold">{t('建议方案', 'Recommended plan')}</h5>
             <p className="mt-2 text-body text-label-secondary">{report.recommendation}</p>
-            <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
-              <button type="button" onClick={openBookingModal} className="btn btn-primary">
-                {t('预约 30 分钟诊断会', 'Book a 30-minute diagnosis call')}
-              </button>
-              <button
-                type="button"
-                onClick={onGoToConfigurator}
-                className="link justify-center px-2 py-2 text-body sm:justify-start"
-              >
-                {t('规划服务方案', 'Plan a service package')}
-                <ChevronRight />
-              </button>
-            </div>
+            {openBookingModal && onGoToConfigurator && (
+              <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+                <button type="button" onClick={openBookingModal} className="btn btn-primary">
+                  {t('预约 30 分钟诊断会', 'Book a 30-minute diagnosis call')}
+                </button>
+                <button
+                  type="button"
+                  onClick={onGoToConfigurator}
+                  className="link justify-center px-2 py-2 text-body sm:justify-start"
+                >
+                  {t('规划服务方案', 'Plan a service package')}
+                  <ChevronRight />
+                </button>
+              </div>
+            )}
           </div>
         </Panel>
       </div>

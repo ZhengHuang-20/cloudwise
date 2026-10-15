@@ -48,6 +48,8 @@ export interface Lead {
   utmCampaign: string;
   landingPath: string;
   country: string;
+  /** 这条线索来自 AI 可见性测评，可以查看对应报告 */
+  hasAudit: boolean;
 }
 
 export const LEAD_STATUS: Record<Lead['status'], string> = {
