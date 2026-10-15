@@ -121,8 +121,10 @@ export async function runAudit(id: string, domainIn: string, brand: string, engi
   const store = auditStore();
   const started = Date.now();
   const jobSignal = AbortSignal.timeout(JOB_BUDGET_MS);
+  let stage = '初始化';
   try {
     // ① 官网检查（只给品牌名时先查找官网，找不到就跳过官网检查）
+    stage = '官网检查';
     await store.setStep(id, 1);
     let domain = domainIn;
     let target = domainIn;
@@ -138,6 +140,7 @@ export async function runAudit(id: string, domainIn: string, brand: string, engi
     if (domain) ({ site, text: siteText } = await checkSite(domain, jobSignal));
 
     // ② 识别品牌、行业与市场
+    stage = '品牌识别';
     await store.setStep(id, 2);
     const entity = await identifyEntity(domain, brand, site, siteText, jobSignal);
 
@@ -173,16 +176,19 @@ export async function runAudit(id: string, domainIn: string, brand: string, engi
       unbrandedAnswers = fillSampleAI(rep);
     } else {
       // ③ 生成买家问题
+      stage = '生成问题';
       await store.setStep(id, 3);
       const questions = await buildQuestions(entity, domain, jobSignal);
       rep.questions = questions.length;
 
       // ④ 真实提问
+      stage = '提问';
       await store.setStep(id, 4, { engines: names, total: engines.length * questions.length * auditSamples() });
       const probeSignal = AbortSignal.any([jobSignal, AbortSignal.timeout(Math.max(0, started + PROBE_DEADLINE_MS - Date.now()))]);
       const { answers, log } = await probe(id, engines, questions, probeSignal);
 
       // ⑤ 分析与评分
+      stage = '分析';
       await store.setStep(id, 5);
       rep.probeLog = log;
       const ok = answers.filter((a) => !a.error).length;
@@ -198,11 +204,15 @@ export async function runAudit(id: string, domainIn: string, brand: string, engi
         unbrandedAnswers = await analyze(rep, engines, answers, domain, jobSignal);
       }
     }
+    stage = '保存报告';
     finishReport(rep, unbrandedAnswers);
     await store.finish(id, rep);
   } catch (err) {
-    console.error('测评任务异常:', err);
-    await store.fail(id, '测评失败，请稍后重试').catch(() => {});
+    console.error('测评任务异常:', stage, err);
+    // 带上出错的阶段与异常摘要，方便在后台线索详情里直接看到原因（异常信息只含类型、数据库错误码与前 100 字）
+    const e = err as { name?: string; code?: string; message?: string };
+    const detail = [e?.name, e?.code, clip(String(e?.message ?? ''), 100)].filter(Boolean).join(' ');
+    await store.fail(id, `测评失败，请稍后重试（${stage}：${detail}）`).catch(() => {});
   }
 }
 

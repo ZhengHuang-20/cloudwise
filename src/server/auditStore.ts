@@ -223,7 +223,14 @@ class DbStore implements AuditStore {
     await exec(
       `UPDATE audits SET status = 'done', step = 5, mode = $2, engine_set = $3, total_score = $4, report = $5::jsonb, updated_at = now()
        WHERE id = $1`,
-      [id, report.mode, report.engineSet, report.totalScore, JSON.stringify(report)],
+      // jsonb 不接受 \u0000（AI 回答或网页里偶尔会带空字符），分数异常时落 0，避免整份报告写不进库
+      [
+        id,
+        report.mode,
+        report.engineSet,
+        Number.isFinite(report.totalScore) ? report.totalScore : 0,
+        JSON.stringify(report).replace(/\\u0000/g, ''),
+      ],
     );
   }
 
