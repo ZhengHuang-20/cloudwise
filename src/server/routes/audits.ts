@@ -26,7 +26,7 @@ function sourcePageOf(req: Request): string {
   }
 }
 
-const jobJSON = (j: AuditJob) => ({
+export const jobJSON = (j: AuditJob) => ({
   id: j.id,
   status: j.status,
   step: j.step,
@@ -60,10 +60,11 @@ export const createAudit = route(async (req) => {
   ]);
   // 同时进入官网的线索管理。官网站点未登记时不写入（测评照常进行）
   const official = await queryOne(`SELECT id FROM sites WHERE site_key = $1`, [ANALYTICS_SITE_KEY]);
+  let leadId: number | null = null;
   if (official) {
-    await exec(
+    const lead = await queryOne(
       `INSERT INTO leads (site_id, name, phone, message, source_page, ip, user_agent)
-       VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+       VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id`,
       [
         official.id,
         contact.name,
@@ -74,7 +75,12 @@ export const createAudit = route(async (req) => {
         clip(userAgent(req), 255),
       ],
     );
+    leadId = lead?.id ?? null;
   }
+  // 线索关联到本次提交对应的测评任务，客户后台的线索详情据此展示报告
+  const link = async (auditId: string) => {
+    if (leadId) await exec(`UPDATE leads SET audit_id = $2 WHERE id = $1`, [leadId, auditId]);
+  };
 
   const key = domain ? domain.replace(/^www\./, '') : 'brand:' + brand.toLowerCase();
   const engines = activeEngines();
@@ -82,11 +88,15 @@ export const createAudit = route(async (req) => {
 
   // 24 小时内测过的目标直接读库返回（登录的客户跳过，每次都重新测）
   const cached = unlimited ? null : await store.findCached(key, engineSignature(engines));
-  if (cached) return json({ id: cached, cached: true });
+  if (cached) {
+    await link(cached);
+    return json({ id: cached, cached: true });
+  }
 
   // 同一目标正在测评时，合并到同一个任务；否则按本次要发出的探测数占用当日（UTC）额度后创建
   const id = randomHex(16);
   const res = await store.create(id, key);
+  await link(res.id);
   if (!res.created) return json({ id: res.id }, 202);
   if (!unlimited && engines.length > 0) {
     const day = new Date().toISOString().slice(0, 10);

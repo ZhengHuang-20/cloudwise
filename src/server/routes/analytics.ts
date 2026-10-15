@@ -7,6 +7,9 @@ import type { NextRequest } from 'next/server';
 import { CHANNEL_LABEL } from '../../lib/channels';
 import { classify, parseCampaign } from '../channels';
 import { db, exec, query, queryOne } from '../db';
+import { auditStore, withStale } from '../auditStore';
+import { parseAuditInput } from '../auditSite';
+import { jobJSON } from './audits';
 import { apiError, clientIP, clip, json, pathID, readJSON, route, str, userAgent } from '../http';
 import { limits } from '../ratelimit';
 import { authed, normalizeEmail, siteAccess, type AuthedUser } from '../auth';
@@ -267,7 +270,10 @@ export const CN_OFFSET_MS = 8 * 3600 * 1000;
 
 const LEAD_STATUSES = new Set(['new', 'contacted', 'qualified', 'closed', 'invalid']);
 const LEAD_COLS = `id, name, phone, email, company, message, source_page, status, note, created_at,
-  channel, source, utm_campaign, landing_path, country`;
+  channel, source, utm_campaign, landing_path, country, audit_id`;
+
+/** 测评提交产生的线索，留言以此开头（audit_id 出现之前的线索靠它识别） */
+const AUDIT_LEAD_PREFIX = 'AI 可见性测评：';
 
 const leadJSON = (r: any) => ({
   id: r.id,
@@ -285,6 +291,7 @@ const leadJSON = (r: any) => ({
   utmCampaign: r.utm_campaign,
   landingPath: r.landing_path,
   country: r.country,
+  hasAudit: !!r.audit_id || String(r.message).startsWith(AUDIT_LEAD_PREFIX),
 });
 
 export const siteLeads = withSite(async (req, _u, siteId) => {
@@ -312,6 +319,29 @@ export const siteLeads = withSite(async (req, _u, siteId) => {
     [...args, (page - 1) * size],
   );
   return json({ leads: rows.map(leadJSON), total: total?.n ?? 0, page, pageSize: size });
+});
+
+/** 线索对应的 AI 可见性测评报告：优先用线索上记录的测评，升级前的线索按留言里的目标回查最近一次完成的测评。 */
+export const leadAudit = withSite(async (_req, _u, siteId, params) => {
+  const leadId = pathID(params.leadId);
+  if (!leadId) return apiError(404, 'not_found', '线索不存在');
+  const lead = await queryOne(`SELECT message, audit_id FROM leads WHERE id = $1 AND site_id = $2`, [leadId, siteId]);
+  if (!lead) return apiError(404, 'not_found', '线索不存在');
+  let id: string | null = lead.audit_id;
+  if (!id && String(lead.message).startsWith(AUDIT_LEAD_PREFIX)) {
+    const input = parseAuditInput(String(lead.message).slice(AUDIT_LEAD_PREFIX.length));
+    if (input) {
+      const key = input.domain ? input.domain.replace(/^www\./, '') : 'brand:' + input.brand.toLowerCase();
+      const row = await queryOne(
+        `SELECT id FROM audits WHERE target_key = $1 AND status = 'done' ORDER BY created_at DESC LIMIT 1`,
+        [key],
+      );
+      id = row?.id ?? null;
+    }
+  }
+  const job = id ? await auditStore().get(id) : null;
+  if (!job) return apiError(404, 'not_found', '没有找到这条线索对应的测评报告');
+  return json(jobJSON(withStale(job)));
 });
 
 export const updateLead = withSite(async (req, _u, siteId, params) => {
