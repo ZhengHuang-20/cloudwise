@@ -1,5 +1,6 @@
 import { SHOW_FDE } from '../../lib/features';
 import type { Insight } from './types';
+import { aiSupplierSearchProductPageChecklist } from './ai-supplier-search-product-page-checklist';
 import { aiVisibilityAuditMethodology } from './ai-visibility-audit-methodology';
 import { geoVsSeo } from './geo-vs-seo';
 import { llmsTxtGuide } from './llms-txt-guide';
@@ -10,7 +11,7 @@ export type { Insight, InsightContent, InsightTopic } from './types';
  * 全部「GEO 洞察」文章。新增文章：在本目录新建 <slug>.ts，在这里 import 并加入下面的数组。
  * 列表按发布日期倒序；FDE 关闭时不展示 FDE 主题的文章。
  */
-const ALL_INSIGHTS: Insight[] = [aiVisibilityAuditMethodology, geoVsSeo, llmsTxtGuide];
+const ALL_INSIGHTS: Insight[] = [aiSupplierSearchProductPageChecklist, aiVisibilityAuditMethodology, geoVsSeo, llmsTxtGuide];
 
 export const INSIGHTS: Insight[] = ALL_INSIGHTS.filter((item) => SHOW_FDE || item.topic !== 'fde').sort(
   (a, b) => b.publishedAt.localeCompare(a.publishedAt) || a.slug.localeCompare(b.slug)
