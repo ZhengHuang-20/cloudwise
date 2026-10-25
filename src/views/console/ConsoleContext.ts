@@ -3,10 +3,10 @@ import type { AuthUser } from '../../context/AuthContext';
 import type { Site } from './types';
 
 /** 后台的功能页：前三项按站点查看，后三项仅管理员可见。地址为 /console/<section>。 */
-export type Section = 'overview' | 'leads' | 'install' | 'orgs' | 'users' | 'sites';
+export type Section = 'overview' | 'leads' | 'install' | 'orgs' | 'users' | 'sites' | 'audits';
 
 export const SITE_SECTIONS: Section[] = ['overview', 'leads', 'install'];
-export const ADMIN_SECTIONS: Section[] = ['orgs', 'users', 'sites'];
+export const ADMIN_SECTIONS: Section[] = ['orgs', 'users', 'sites', 'audits'];
 
 export const SECTION_TITLE: Record<Section, string> = {
   overview: '数据概览',
@@ -15,6 +15,7 @@ export const SECTION_TITLE: Record<Section, string> = {
   orgs: '客户公司',
   users: '账号',
   sites: '站点与授权',
+  audits: '测评报告',
 };
 
 export const isSection = (v: string): v is Section => v in SECTION_TITLE;
