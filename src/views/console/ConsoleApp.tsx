@@ -9,6 +9,7 @@ import { LoginPage } from './LoginPage';
 import { InstallPanel } from './InstallPanel';
 import { LeadsPanel } from './LeadsPanel';
 import { StatsPanel } from './StatsPanel';
+import { AuditsPanel } from './admin/AuditsPanel';
 import { OrgsPanel } from './admin/OrgsPanel';
 import { SitesPanel } from './admin/SitesPanel';
 import { UsersPanel } from './admin/UsersPanel';
@@ -103,6 +104,7 @@ const ConsoleShell: React.FC<{ onNavigate: (tab: ConsoleTarget) => void }> = ({ 
   if (current === 'orgs') page = <OrgsPanel />;
   else if (current === 'users') page = <UsersPanel />;
   else if (current === 'sites') page = <SitesPanel />;
+  else if (current === 'audits') page = <AuditsPanel />;
   else if (sites === null) page = <div className="flex justify-center py-24"><Spin /></div>;
   else if (!site)
     page = (
