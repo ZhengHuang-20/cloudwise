@@ -111,7 +111,7 @@ bun run create-admin <email>   # 创建管理员并打印一次性初始密码
 
 ### SEO / GEO
 
-- 方案与进度见 `docs/seo-geo-plan.md`；文章与术语的写作规范见 `docs/geo-content-guide.md`（先给答案、写清出处、中英文同时写、不写价格、不编造）。
+- 方案与进度见 `docs/seo-geo-plan.md`；文章与术语的写作规范见 `docs/geo-content-guide.md`（先给答案、写清出处、中英文同时写、不写价格、不编造）。规范里还有选词与发布节奏（先看 SERP、一页一词、每周 1～2 篇、发布后观察 90 天）；被更正后把规则记入 `docs/seo-lessons.md`，写内容前先读它。
 - 「GEO 洞察」文章每篇一个文件 `src/data/insights/<slug>.ts`（类型 `types.ts`，在 `index.ts` 登记），正文是 `src/lib/markdown.ts` 支持的 Markdown 子集，站内链接写相对路径。页面、sitemap、llms.txt 与 Article / FAQPage 结构化数据自动生成。
 - 站点身份（正式域名、中英文品牌名、一句话定位、ICP 备案号、官方账号 `SAME_AS`）只在 `src/lib/site.ts` 维护；新开官方账号（知乎、公众号、头条号、LinkedIn 等）后加进 `SAME_AS`。
 - `app/robots.ts` 明确放行搜索引擎与 AI 爬虫（含 Bytespider、Doubaobot 等字节系爬虫），只挡 `/api/`。不要屏蔽 AI 爬虫。
