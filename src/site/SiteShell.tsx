@@ -91,7 +91,7 @@ function Chrome({ children }: { children: React.ReactNode }) {
 
         <Header currentTab={section === 'solutions' ? 'cases' : section} openBookingModal={actions.openBooking} openMySpaceModal={actions.openMySpace} />
 
-        <main id="main" tabIndex={-1} className="relative flex-1 outline-none">
+        <main id="main" tabIndex={-1} className="page-wash relative flex-1 outline-none">
           {children}
         </main>
 
@@ -102,9 +102,9 @@ function Chrome({ children }: { children: React.ReactNode }) {
           <button
             type="button"
             onClick={() => setAiAdvisorOpen(true)}
-            className="material fixed bottom-[max(1.25rem,env(safe-area-inset-bottom))] right-5 z-40 inline-flex min-h-12 items-center gap-2.5 rounded-full border border-hairline px-5 text-body text-label shadow-[0_8px_32px_rgb(0_0_0/0.5)] transition-colors duration-200 hover:bg-surface-hover"
+            className="material fixed bottom-[max(1.25rem,env(safe-area-inset-bottom))] right-5 z-40 inline-flex min-h-12 items-center gap-2.5 rounded-full border border-hairline px-5 text-body text-label shadow-[0_8px_28px_rgb(18_38_30/0.14)] transition-colors duration-200 hover:bg-surface"
           >
-            <span className="h-2 w-2 rounded-full bg-success" aria-hidden="true" />
+            <span className="h-2 w-2 rounded-full bg-brand" aria-hidden="true" />
             {t('AI 售前顾问', 'AI pre-sales advisor')}
           </button>
         )}
@@ -119,7 +119,7 @@ function Chrome({ children }: { children: React.ReactNode }) {
           <div
             role="status"
             aria-live="polite"
-            className="material fixed inset-x-0 top-16 z-[60] mx-auto w-fit max-w-[calc(100vw-2rem)] rounded-[1.375rem] border border-hairline px-5 py-2.5 text-center text-caption text-label shadow-[0_8px_32px_rgb(0_0_0/0.5)] animate-toast-in"
+            className="material fixed inset-x-0 top-16 z-[60] mx-auto w-fit max-w-[calc(100vw-2rem)] rounded-[1.375rem] border border-hairline px-5 py-2.5 text-center text-caption text-label shadow-[0_8px_28px_rgb(18_38_30/0.14)] animate-toast-in"
           >
             {toastMessage}
           </div>

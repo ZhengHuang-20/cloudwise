@@ -189,7 +189,7 @@ export const TrendChart: React.FC<{ data: DailyPoint[]; metric: Metric; prev?: D
         {point && (
           <div
             aria-hidden="true"
-            className="pointer-events-none absolute top-2 z-10 min-w-36 rounded-[10px] border border-hairline bg-surface-raised px-3 py-2.5 shadow-[0_12px_32px_rgb(0_0_0/0.5)]"
+            className="pointer-events-none absolute top-2 z-10 min-w-36 rounded-[10px] border border-hairline bg-surface-raised px-3 py-2.5 shadow-[0_12px_32px_rgb(18_38_30/0.14)]"
             style={{
               left: tipLeft,
               transform: `translateX(${tipLeft > width / 2 ? 'calc(-100% - 12px)' : '12px'})`,

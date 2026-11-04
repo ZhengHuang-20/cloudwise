@@ -123,10 +123,11 @@ bun run create-admin <email>   # 创建管理员并打印一次性初始密码
 以下约定针对官网页面。后台用 antd，主题在 `src/views/console/theme.ts`（色值与 `@theme` 对应）；antd 样式优先级高于 Tailwind 工具类，不要在 antd 组件上用 Tailwind 控制宽度、显示或外边距，详见 DESIGN.md 第 10 节。
 
 - Tailwind v4 通过 `@tailwindcss/postcss`（`postcss.config.mjs`）引入，没有 `tailwind.config`；全局样式 `src/index.css` 在 `app/layout.tsx` 中引入。设计 token 写在 `src/index.css` 的 `@theme` 中，会自动生成对应的工具类；组件类写在 `@layer components` 中。
-- **只用语义 token，不写 hex、不用 Tailwind 默认色板**：颜色用 `bg-canvas` / `bg-surface` / `bg-surface-raised`、`text-label` / `text-label-secondary`、`border-separator`、`text-link`、`bg-accent`、`text-success|warning|danger`；字号用 `text-display|headline|title-1|title-2|title-3|intro|body|caption`（自带行高与字重）；圆角用 `rounded-tile|card|control`；缓动用 `ease-apple`。
+- **配色是浅色 + 薄荷绿主色**（2026-11 改版，取 WorkBuddy 式的品牌绿）：浅灰绿画布 `canvas`、白色卡片 `surface`、交互绿 `accent` / `link`；品牌薄荷绿 `brand`（`#01c886`）白底对比度不够，只做装饰。
+- **只用语义 token，不写 hex、不用 Tailwind 默认色板**：颜色用 `bg-canvas` / `bg-surface` / `bg-surface-raised`、`text-label` / `text-label-secondary`、`border-separator`、`text-link`、`bg-accent` / `bg-accent-soft` / `text-on-accent`、`bg-brand`、`bg-scrim`、`text-success|warning|danger`；字号用 `text-display|headline|title-1|title-2|title-3|intro|body|caption`（自带行高与字重）；圆角用 `rounded-tile|card|control`；缓动用 `ease-apple`。
 - 组件类：`layout-wide|text|reading`、`section`、`page-header`、`eyebrow`、`tile` / `card` / `well`（加 `interactive` 可点击）、`btn` + `btn-primary|secondary|neutral` + `btn-sm|lg|block`、`btn-icon`、`link`、`field` / `field-label`、`chip`（`aria-pressed`）、`choice`（`aria-checked`）、`badge`、`meter`、`avatar`、`material`（仅悬浮层）。
 - React 基础组件在 `src/components/ui/`：`Dialog` / `DialogBody`、`SegmentedControl`、`PageHeader`、`Slider`、`ScoreRing`、`Reveal`；分数配色用 `tone.ts` 的 `scoreTone`，五项服务的图标与识别色用 `serviceIdentity.ts`。
-- 蓝色只用于可交互元素；卡片是平面纯色，不加描边、阴影、渐变和玻璃效果；数字用 `tabular-nums`，不用 `font-mono`；字重只用 400 / 600。
+- 绿色（`link` / `accent`）只用于可交互元素；卡片是白底加 1px `hairline` 细描边，不加阴影、渐变和玻璃效果（页面顶部的品牌绿光晕由 `SiteShell` 的 `.page-wash` 统一提供，页面里不要再加）；数字用 `tabular-nums`，不用 `font-mono`；字重只用 400 / 600。
 - 最小字号 14px（`text-caption`）。`index.css` 仍保留把 `.text-xs`、`.text-[10px]`～`.text-[13px]` 强制为 14px 的兜底规则，但新代码不要使用这些类。
 - 不加载 Web 字体（Google Fonts 在国内不可用），字体栈为 SF Pro / 苹方 / 微软雅黑；`<html lang="zh-CN">`。
 - 图标统一用 `lucide-react`（全局笔画 1.75），不要把图标装进带底色的小方块。

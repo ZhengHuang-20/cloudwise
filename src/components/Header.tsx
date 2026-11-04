@@ -66,7 +66,7 @@ export const Header: React.FC<HeaderProps> = ({ currentTab, openBookingModal, op
                   aria-current={isActive ? 'page' : undefined}
                   className={`relative flex items-center px-3 text-caption whitespace-nowrap transition-colors duration-200 after:absolute after:inset-x-3 after:bottom-0 after:h-0.5 after:rounded-full after:transition-colors ${
                     isActive
-                      ? 'text-label after:bg-label'
+                      ? 'text-link after:bg-accent'
                       : 'text-label-secondary after:bg-transparent hover:text-label'
                   }`}
                 >

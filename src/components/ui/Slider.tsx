@@ -11,7 +11,7 @@ interface SliderProps {
   format?: (value: number) => React.ReactNode;
   /** 读数颜色类，默认主文字色；只在数值本身带语义（如流失率）时使用状态色 */
   valueClassName?: string;
-  /** 已填充轨道颜色，默认强调蓝 */
+  /** 已填充轨道颜色，默认主色绿 */
   trackColor?: string;
 }
 

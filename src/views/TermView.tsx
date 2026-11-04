@@ -37,7 +37,7 @@ export const TermView: React.FC<{ slug: string }> = ({ slug }) => {
       />
 
       <article className="layout-reading pb-[clamp(4.5rem,2.5rem+6vw,8.75rem)]">
-        <section aria-label={t('一句话回答', 'Short answer')} className="well">
+        <section aria-label={t('一句话回答', 'Short answer')} className="well well-accent">
           <p className="text-caption text-label-secondary">{t('一句话回答', 'Short answer')}</p>
           <p className="mt-2 text-intro text-label">{term.oneLineDefinition}</p>
         </section>
