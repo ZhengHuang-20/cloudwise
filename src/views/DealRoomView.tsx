@@ -130,7 +130,7 @@ export const DealRoomView: React.FC<{ onGoToBooking: () => void }> = ({ onGoToBo
               {user?.companyName || t('贵司', 'Your company')} · {t('方案状态：商务审阅中', 'Status: under commercial review')}
             </p>
             <p className="mt-1 text-caption text-label-secondary">
-              {t('示例空间：以下为演示内容，不代表真实项目。', 'Sample room: the content below is for demonstration and does not represent a real project.')}
+              {t('示例空间：以下为演示内容，不代表真实项目', 'Sample room: the content below is for demonstration and does not represent a real project')}
             </p>
           </div>
           <div className="flex shrink-0 gap-3">

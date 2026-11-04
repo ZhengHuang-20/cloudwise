@@ -179,7 +179,7 @@ export const UsersPanel: React.FC = () => {
                 <div className="flex gap-1">
                   <Popconfirm
                     title="重置密码"
-                    description="将生成新的初始密码，并让该账号退出所有已登录设备。"
+                    description="将生成新的初始密码，并让该账号退出所有已登录设备"
                     okText="重置"
                     onConfirm={() =>
                       act(async () => {
@@ -207,7 +207,7 @@ export const UsersPanel: React.FC = () => {
                     ) : (
                       <Popconfirm
                         title="停用账号"
-                        description="停用后该账号立即退出登录，且无法再登录。"
+                        description="停用后该账号立即退出登录，且无法再登录"
                         okText="停用"
                         okButtonProps={{ danger: true }}
                         onConfirm={() =>

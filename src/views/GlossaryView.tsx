@@ -70,7 +70,7 @@ export const GlossaryView: React.FC = () => {
           {filteredGlossary.length === 0 ? (
             <div className="py-24 text-center">
               <p className="text-title-3">{t('没有找到相关术语', 'No matching terms')}</p>
-              <p className="mt-2 text-body text-label-secondary">{t('换个关键词，或查看全部术语。', 'Try another keyword, or view all terms.')}</p>
+              <p className="mt-2 text-body text-label-secondary">{t('换个关键词，或查看全部术语', 'Try another keyword, or view all terms')}</p>
               <button
                 type="button"
                 onClick={() => {

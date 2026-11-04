@@ -7,6 +7,9 @@ import { SHOW_FDE } from './features';
 /** 正式域名（不带结尾斜杠）。预览环境也输出正式域名的 canonical，避免预览地址被当成正式站点 */
 export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || 'https://chingeo.com').replace(/\/+$/, '');
 
+/** IndexNow 密钥：公开的，对应文件 public/<key>.txt（见 scripts/indexnow.ts）。换密钥要同时换文件名与内容 */
+export const INDEXNOW_KEY = 'f787532cd2eeb8ca71dccdac74ae3c37';
+
 export const BRAND = {
   zh: '云端智荐',
   en: 'ChinGEO',

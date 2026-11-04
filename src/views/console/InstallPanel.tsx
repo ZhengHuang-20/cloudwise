@@ -109,7 +109,7 @@ export const InstallGuide: React.FC<{ site: Site }> = ({ site }) => {
               <Step
                 n={2}
                 title="线索：给表单加上 data-cw-lead"
-                desc="提交时自动入库，字段名用 name / phone / email / company / message，手机与邮箱至少填一项。"
+                desc="提交时自动入库，字段名用 name / phone / email / company / message，手机与邮箱至少填一项"
                 code={s.form}
               />
               <div className="flex gap-3">
@@ -132,7 +132,7 @@ export const InstallGuide: React.FC<{ site: Site }> = ({ site }) => {
               <Step
                 n={1}
                 title="在自己的提交逻辑里调用"
-                desc="页面已加载采集脚本时可用，返回 Promise。"
+                desc="页面已加载采集脚本时可用，返回 Promise"
                 code={s.js}
                 lang="JavaScript"
               />
@@ -147,7 +147,7 @@ export const InstallGuide: React.FC<{ site: Site }> = ({ site }) => {
               <Step
                 n={1}
                 title="后端 / 小程序直接调用"
-                desc="POST /api/public/leads，按 IP 限流；不带 Origin 的服务端请求不做域名校验。"
+                desc="POST /api/public/leads，按 IP 限流；不带 Origin 的服务端请求不做域名校验"
                 code={s.curl}
                 lang="Shell"
               />
@@ -161,7 +161,7 @@ export const InstallGuide: React.FC<{ site: Site }> = ({ site }) => {
 
 export const InstallPanel: React.FC<{ site: Site }> = ({ site }) => (
   <>
-    <PageTitle title="接入代码" description="把采集脚本与线索表单接到您的网站，数据会实时进入后台。" />
+    <PageTitle title="接入代码" description="把采集脚本与线索表单接到您的网站，数据会实时进入后台" />
 
     <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_22rem]">
       <Card variant="borderless" className="xl:order-2 xl:self-start" title="站点信息">

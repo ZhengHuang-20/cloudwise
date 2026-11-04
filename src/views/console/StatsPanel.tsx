@@ -6,7 +6,6 @@ import { BreakdownCard, DeltaText, PagesCard } from './Breakdown';
 import { useConsole } from './ConsoleContext';
 import { CHANNEL_LABEL, countryName, delta, DEVICE_LABEL, formatDuration, formatPercent, languageName } from './labels';
 import { PageTitle } from './parts';
-import { CONSOLE_COLORS } from './theme';
 import { fullLabel, METRIC_LABEL, TrendChart, type DailyPoint, type Metric } from './TrendChart';
 import { LEAD_BADGE, LEAD_STATUS, type Lead, type Site } from './types';
 
@@ -48,35 +47,6 @@ interface Stats {
 /** 1 = 近 24 小时（按小时） */
 type Days = 1 | 7 | 30 | 90;
 
-/** 迷你趋势线：KPI 卡片里只看走势，具体数值看下方趋势图。没有数据的日子断开。 */
-const Sparkline: React.FC<{ values: (number | null | undefined)[] }> = ({ values }) => {
-  const W = 88;
-  const H = 28;
-  const nums = values.filter((v): v is number => typeof v === 'number');
-  if (nums.length < 2) return null;
-  const max = Math.max(...nums);
-  const min = Math.min(0, ...nums);
-  const span = max - min || 1;
-  const n = values.length;
-  let d = '';
-  let pen = false;
-  values.forEach((v, i) => {
-    if (typeof v !== 'number') {
-      pen = false;
-      return;
-    }
-    const x = n <= 1 ? W / 2 : (i / (n - 1)) * (W - 2) + 1;
-    const y = H - 1 - ((v - min) / span) * (H - 2);
-    d += `${pen ? 'L' : 'M'}${x.toFixed(1)},${y.toFixed(1)}`;
-    pen = true;
-  });
-  return (
-    <svg width={W} height={H} aria-hidden="true" className="block shrink-0">
-      <path d={d} fill="none" stroke={CONSOLE_COLORS.link} strokeWidth={1.5} strokeLinejoin="round" strokeLinecap="round" />
-    </svg>
-  );
-};
-
 /** 在线人数：采集脚本 5 分钟内有浏览的访客（Vercel 的查询接口不提供实时数据），每分钟刷新一次 */
 const Online: React.FC<{ siteId: number }> = ({ siteId }) => {
   const [n, setN] = useState<number | null>(null);
@@ -117,10 +87,9 @@ const Kpi: React.FC<{
   value: string;
   d: ReturnType<typeof delta>;
   goodWhen?: 'up' | 'down';
-  spark?: (number | null | undefined)[];
   extra?: React.ReactNode;
-}> = ({ title, tip, value, d, goodWhen, spark, extra }) => (
-  <Card variant="borderless" className="h-full" styles={{ body: { padding: 18 } }}>
+}> = ({ title, tip, value, d, goodWhen, extra }) => (
+  <Card variant="borderless" className="h-full" styles={{ body: { padding: 20 } }}>
     <div className="flex items-center gap-1.5 text-label-secondary">
       <span>{title}</span>
       <Tooltip title={tip}>
@@ -129,15 +98,7 @@ const Kpi: React.FC<{
         </button>
       </Tooltip>
     </div>
-    <div className="mt-2 flex items-end justify-between gap-2">
-      <p className="truncate text-[1.625rem] font-semibold leading-tight tabular-nums">{value}</p>
-      {spark && (
-        // 窄屏两列时让位给数值
-        <div className="hidden sm:block">
-          <Sparkline values={spark} />
-        </div>
-      )}
-    </div>
+    <p className="mt-2 truncate text-[1.75rem] font-semibold leading-tight tabular-nums">{value}</p>
     <p className="mt-2 text-caption">
       <DeltaText d={d} goodWhen={goodWhen} suffix="较上期" />
     </p>
@@ -328,7 +289,6 @@ export const StatsPanel: React.FC<{ site: Site }> = ({ site }) => {
               tip={fromVercel ? 'Vercel Web Analytics 统计的访客数（按天匿名去重）' : '按浏览器去重的访客数'}
               value={cur.uv.toLocaleString()}
               d={delta(cur.uv, prev.uv)}
-              spark={stats.daily.map((x) => x.uv)}
               extra={fromVercel ? scriptNote(stats.script.uv) : undefined}
             />
             <Kpi
@@ -336,7 +296,6 @@ export const StatsPanel: React.FC<{ site: Site }> = ({ site }) => {
               tip={fromVercel ? 'Vercel Web Analytics 统计的页面浏览次数' : '页面被打开的次数'}
               value={cur.pv.toLocaleString()}
               d={delta(cur.pv, prev.pv)}
-              spark={stats.daily.map((x) => x.pv)}
               extra={fromVercel ? scriptNote(stats.script.pv) : undefined}
             />
             <Kpi
@@ -345,21 +304,18 @@ export const StatsPanel: React.FC<{ site: Site }> = ({ site }) => {
               value={formatPercent(cur.bounceRate)}
               d={prevHasSessions ? delta(cur.bounceRate, prev.bounceRate, true) : null}
               goodWhen="down"
-              spark={stats.daily.map((x) => x.bounceRate)}
             />
             <Kpi
               title="平均参与时长"
               tip="每次访问中页面停留在前台的平均时长（切到其他标签页不计）"
               value={formatDuration(cur.avgEngagedMs)}
               d={prevHasSessions ? delta(cur.avgEngagedMs, prev.avgEngagedMs) : null}
-              spark={stats.daily.map((x) => x.avgEngagedMs)}
             />
             <Kpi
               title="线索"
               tip="访客在网站上留下联系方式的次数"
               value={cur.leads.toLocaleString()}
               d={delta(cur.leads, prev.leads)}
-              spark={stats.daily.map((x) => x.leads)}
               extra={
                 cur.newLeads > 0 ? (
                   <button type="button" className="link" onClick={() => go('leads')}>

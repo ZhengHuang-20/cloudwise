@@ -110,7 +110,7 @@ const ConsoleShell: React.FC<{ onNavigate: (tab: ConsoleTarget) => void }> = ({ 
         <Empty
           image={Empty.PRESENTED_IMAGE_SIMPLE}
           description={
-            isAdmin ? '还没有接入任何站点。' : '还没有授权给您的站点，请联系云端智荐为您的账号开通。'
+            isAdmin ? '还没有接入任何站点' : '还没有授权给您的站点，请联系云端智荐为您的账号开通'
           }
         >
           {isAdmin && (

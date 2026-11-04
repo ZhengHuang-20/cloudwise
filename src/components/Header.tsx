@@ -78,9 +78,9 @@ export const Header: React.FC<HeaderProps> = ({ currentTab, openBookingModal, op
 
           {/* 右侧操作 */}
           <div className="ml-auto flex shrink-0 items-center gap-2 lg:ml-0">
-            <LanguageSwitch className="hidden sm:inline-flex" />
+            <LanguageSwitch variant="text" className="hidden sm:inline-flex" />
 
-            <Link href={accountHref} rel="nofollow" className="btn btn-neutral btn-sm hidden sm:inline-flex">
+            <Link href={accountHref} rel="nofollow" className="nav-text-link hidden sm:inline-flex">
               {user ? t('客户后台', 'Client console') : t('登录', 'Sign in')}
             </Link>
 

@@ -170,7 +170,7 @@ export const HomeView: React.FC = () => {
         <h1 className="mt-4 text-display">
           {t('让海外买家找到你', 'Help overseas buyers find you')}
           <br />
-          <span className="text-gradient-ai">{t('让 AI 替你接住生意', 'Let AI take the enquiries')}</span>
+          <span className="text-accent">{t('让 AI 替你接住生意', 'Let AI take the enquiries')}</span>
         </h1>
         <p className="mx-auto mt-6 max-w-2xl text-intro text-label-secondary">
           {t(
@@ -203,10 +203,10 @@ export const HomeView: React.FC = () => {
           <p className="eyebrow">{t('核心服务', 'Core services')}</p>
           <h2 className="mt-3 text-headline">
             <span className="inline-block">{t(`${SERVICE_COUNT_CN}项服务，`, `${SERVICE_COUNT_EN} services,`)}</span>
-            <span className="inline-block">{t('一套获客系统。', 'one lead-generation system.')}</span>
+            <span className="inline-block">{t('一套获客系统', 'one lead-generation system')}</span>
           </h2>
           <p className="mx-auto mt-5 max-w-2xl text-intro text-label-secondary">
-            {t('每一项服务都写明：做什么、交什么、怎样验收。', 'Every service states what we do, what you receive, and how it is accepted.')}
+            {t('每一项服务都写明：做什么、交什么、怎样验收', 'Every service states what we do, what you receive, and how it is accepted')}
           </p>
         </Reveal>
 
@@ -246,7 +246,7 @@ export const HomeView: React.FC = () => {
           <p className="eyebrow">{t('售前工具', 'Pre-sales tools')}</p>
           <h2 className="mt-3 text-headline">
             <span className="inline-block">{t('见销售之前，', 'Before a sales call,')}</span>
-            <span className="inline-block">{t('先看清问题与方案。', 'see the problem and the plan clearly.')}</span>
+            <span className="inline-block">{t('先看清问题与方案', 'see the problem and the plan clearly')}</span>
           </h2>
           <p className="mx-auto mt-5 max-w-2xl text-intro text-label-secondary">
             {t('面向出海决策人的自助工具，免注册，打开即用。', 'Self-serve tools for export decision-makers. No sign-up, open and use.')}
@@ -295,7 +295,7 @@ export const HomeView: React.FC = () => {
         <Reveal className="mx-auto max-w-4xl text-center">
           <p className="eyebrow">{t('标杆案例', 'Case studies')}</p>
           <h2 className="mt-3 text-headline">
-            <span className="inline-block">{t('看制造企业怎样走向海外。', 'See how manufacturers go overseas.')}</span>
+            <span className="inline-block">{t('看制造企业怎样走向海外', 'See how manufacturers go overseas')}</span>
           </h2>
           <Link href={path('/cases')} className="link mt-5 text-intro">
             {t('查看全部案例', 'View all cases')}
@@ -338,7 +338,7 @@ export const HomeView: React.FC = () => {
         <Reveal>
           <h2 className="text-headline">
             <span className="inline-block">{t('先看清现状，', 'See where you stand,')}</span>
-            <span className="inline-block">{t('再决定做什么。', 'then decide what to do.')}</span>
+            <span className="inline-block">{t('再决定做什么', 'then decide what to do')}</span>
           </h2>
           <p className="mx-auto mt-5 max-w-2xl text-intro text-label-secondary">
             {t(

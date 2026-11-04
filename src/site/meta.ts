@@ -15,6 +15,8 @@ export interface PageMeta {
   description: string;
   /** 首页用完整标题，其他页面在标题后加「 - 品牌名」 */
   absoluteTitle?: boolean;
+  /** <title> 放不下时依次换用的短标题（JSON-LD、llms.txt 仍用完整的 title），见 page.tsx 的 fitTitle */
+  shortTitles?: string[];
   /** 文章类页面（Open Graph type=article） */
   article?: { publishedTime: string; modifiedTime: string };
   keywords?: string[];
@@ -25,6 +27,12 @@ const clip = (text: string, max: number) => {
   return clean.length <= max ? clean : `${clean.slice(0, max - 1).trimEnd()}…`;
 };
 
+/** 课时标题去掉开头的编号（如「1.1 」），编号对搜索没有帮助 */
+const stripNumber = (title: string) => title.replace(/^\d+(\.\d+)*\s+/, '');
+
+/** 中文与英文、数字之间加空格：「GEO课程」→「GEO 课程」 */
+const courseLabel = (short: string, lang: Lang) => (lang === 'en' ? `${short} course` : /[A-Za-z0-9]$/.test(short) ? `${short} 课程` : `${short}课程`);
+
 /** 客户名形如「爱康医疗 (AK Medical)」，取主名 */
 const primaryName = (name: string) => name.replace(/\s*\(.*\)$/, '');
 
@@ -32,6 +40,8 @@ export function routeMeta(route: Route, lang: Lang): PageMeta {
   const t = (zh: string, en: string) => (lang === 'en' ? en : zh);
   const max = lang === 'en' ? 165 : 95;
   const svcList = SHOW_FDE ? t('独立站、外贸 SEO、出海 GEO、AI 客服与 FDE 驻场', 'websites, SEO, GEO, AI customer service and FDE on-site engineering') : t('独立站、外贸 SEO、出海 GEO 与 AI 客服', 'websites, SEO, GEO and AI customer service');
+  // 英文描述限 160 字符，用短一些的服务列表
+  const svcShort = SHOW_FDE ? t(svcList, 'websites, SEO, GEO, AI customer service and FDE') : svcList;
 
   switch (route.kind) {
     case 'home':
@@ -41,17 +51,19 @@ export function routeMeta(route: Route, lang: Lang): PageMeta {
           `${BRAND.zh} - 出海 GEO 优化、外贸 SEO 与独立站建设 | AI 出海售前支持`,
           `${BRAND.en} - GEO, SEO and export websites for Chinese manufacturers`
         ),
+        shortTitles: [t('', `${BRAND.en}: GEO, SEO and websites for Chinese exporters`)].filter(Boolean),
         description: t(
           `${BRAND.zh}帮中国制造企业让海外买家找得到、读得懂、信得过：${svcList}${SERVICE_COUNT_CN}项服务，并提供免费 AI 可见性测评、出海学院与方案规划。`,
-          `${BRAND.en} helps Chinese manufacturers get found, read and trusted by overseas buyers: ${SERVICE_COUNT_EN.toLowerCase()} services covering ${svcList}, plus a free AI visibility audit, an export academy and a project planner.`
+          `${BRAND.en} helps Chinese manufacturers get found and trusted by overseas buyers: ${svcShort}, plus a free AI visibility audit.`
         ),
       };
     case 'services':
       return {
         title: t(`${SERVICE_COUNT_CN}项服务：${svcList}`, `Services: ${svcList}`),
+        shortTitles: [t(`${SERVICE_COUNT_CN}项出海获客服务：${svcList}`, `Services: ${svcShort}`)],
         description: t(
           `${SERVICE_COUNT_CN}项服务共用同一套企业资料，各解决一个卡点：看不见、读不懂、不被信、接不住${SHOW_FDE ? '、连不上' : ''}。每项服务写明做什么、交什么、怎样验收。`,
-          `${SERVICE_COUNT_EN} services share one set of company material, each solving one bottleneck: invisible, hard to read, not trusted, can’t keep up${SHOW_FDE ? ', not connected' : ''}. Each states what we do, what you get and how it is accepted.`
+          `${SERVICE_COUNT_EN} services on one set of company material, each fixing one bottleneck, from being invisible to missed enquiries. Each states what we do and how it is accepted.`
         ),
       };
     case 'service': {
@@ -63,7 +75,7 @@ export function routeMeta(route: Route, lang: Lang): PageMeta {
         title: t('出海案例：爱康医疗、泰宁科创的 GEO 与 SEO 实战', 'Case studies: GEO and SEO results for Chinese exporters'),
         description: t(
           '爱康医疗、泰宁科创的出海实战拆解：起点、做了什么、结果与数据口径，以及医疗器械、环保工程两个行业的出海方案。',
-          'Field breakdowns from Aikang Medical and Taining Tech: the starting point, what we did, the results and the basis of the data, plus export plans for medical devices and environmental engineering.'
+          'How Aikang Medical and Taining Tech went overseas: the starting point, what we did, the results and the data basis, plus two industry export plans.'
         ),
       };
     case 'case': {
@@ -71,17 +83,26 @@ export function routeMeta(route: Route, lang: Lang): PageMeta {
       const c = caseList(lang).find((item) => item.id === id)!;
       return {
         title: t(`${primaryName(c.clientName)}出海案例：${c.industry}`, `${primaryName(c.clientName)} case study: ${c.industry}`),
-        description: clip(c.results.directOutcome, max),
+        shortTitles: [t(`${primaryName(c.clientName)}出海案例：${c.industry.split(' · ')[0]}`, `${primaryName(c.clientName)} case study: ${c.industry.split(' · ')[0]}`)],
+        description: clip(`${c.results.directOutcome}${t('目标市场：', ' Target market: ')}${c.targetMarket}${t('。', '.')}`, max),
       };
     }
     case 'solution': {
       const id = findSolution(route.slug)!.id;
       const s = solutionList(lang).find((item) => item.id === id)!;
-      return { title: s.name, description: clip(s.description, max) };
+      const roles = s.overseasDecisionMakers.map((d) => d.role).join(t('、', ', '));
+      return {
+        title: s.name,
+        description: clip(
+          t(`${s.description}写清${roles}各自关注什么、海外买家常问的问题与推荐的内容形式。`, `${s.description} What ${roles} each look for, the questions overseas buyers ask, and the content formats that answer them.`),
+          max
+        ),
+      };
     }
     case 'academy':
       return {
         title: t(`出海学院：${SERVICE_COUNT_CN}门公开课，讲透独立站、SEO 与 GEO`, `Export Academy: ${SERVICE_COUNT_EN.toLowerCase()} open courses on websites, SEO and GEO`),
+        shortTitles: [t(`出海学院：独立站、SEO 与 GEO 公开课`, `Export Academy: open courses on websites, SEO and GEO`)],
         description: t(
           '面向出海企业决策者、外贸总监与技术负责人的公开课程，带视频、案例、误区与课后自测，按角色给出学习路径。',
           'Open courses for export decision-makers, export directors and technical leads, with videos, cases, misconceptions and quizzes, plus learning paths by role.'
@@ -91,17 +112,28 @@ export function routeMeta(route: Route, lang: Lang): PageMeta {
       const id = findCourse(route.slug)!.id;
       const c = courseList(lang).find((item) => item.id === id)!;
       const [short, tagline] = c.title.split('——');
-      return { title: t(`${short}课程：${tagline ?? short}`, `${short} course: ${tagline ?? short}`), description: clip(c.subtitle, max) };
+      return {
+        title: `${courseLabel(short, lang)}${t('：', ': ')}${tagline ?? short}`,
+        shortTitles: [t(`${courseLabel(short, lang)}｜出海学院`, `Export Academy: ${courseLabel(short, lang)}`)],
+        description: clip(`${c.subtitle}${t(`共 ${c.totalLessons} 节课，适合${c.targetAudience}。`, ` ${c.totalLessons} lessons for ${c.targetAudience}.`)}`, max),
+      };
     }
     case 'lesson': {
       const found = findLesson(route.course, route.slug)!;
       const c = courseList(lang).find((item) => item.id === found.course.id)!;
       const lesson = c.modules.flatMap((m) => m.lessons).find((l) => l.id === found.lesson.id)!;
-      return { title: t(`${lesson.title}｜${c.title.split('——')[0]}课程`, `${lesson.title} | ${c.title.split('——')[0]} course`), description: clip(lesson.summary, max) };
+      const course = courseLabel(c.title.split('——')[0], lang);
+      const bare = stripNumber(lesson.title);
+      return {
+        title: `${lesson.title}${t('｜', ' | ')}${course}`,
+        shortTitles: [`${bare}${t('｜', ' | ')}${course}`, bare],
+        description: clip(lesson.summary, max),
+      };
     }
     case 'insights':
       return {
         title: t('GEO 洞察：出海 SEO 与 GEO 的方法、数据与实操', 'GEO insights: methods, data and practice for export SEO and GEO'),
+        shortTitles: [t('GEO 洞察：出海 SEO 与 GEO 实操文章', 'GEO insights: export SEO and GEO methods and data')],
         description: t(
           '写给出海企业决策者与市场负责人的 SEO、GEO 实操文章：GEO 与 SEO 的区别、AI 可见性怎么测、llms.txt 怎么写。',
           'Practical SEO and GEO articles for export decision-makers and marketing leads: GEO vs SEO, how to measure AI visibility, and how to write llms.txt.'
@@ -133,25 +165,27 @@ export function routeMeta(route: Route, lang: Lang): PageMeta {
     case 'audit':
       return {
         title: t('免费 AI 可见性测评：ChatGPT、Perplexity、Gemini 会推荐你的品牌吗？', 'Free AI visibility audit: do ChatGPT, Perplexity and Gemini recommend your brand?'),
+        shortTitles: [t('免费 AI 可见性测评：AI 会推荐你的品牌吗？', 'Free AI visibility audit: does ChatGPT recommend your brand?')],
         description: t(
           '输入官网或品牌名，以海外买家身份向 ChatGPT、Perplexity、Gemini 提问，统计品牌被提及与被引用的情况，并检查官网能否被 AI 读取。免费。',
-          'Enter your website or brand. We ask ChatGPT, Perplexity and Gemini questions as an overseas buyer, measure how often you are mentioned and cited, and check whether AI can read your site. Free.'
+          'Enter your website or brand. We ask ChatGPT, Perplexity and Gemini as an overseas buyer would, then score mentions, citations and site readability. Free.'
         ),
       };
     case 'about':
       return {
         title: t(`关于${BRAND.zh}（${BRAND.en}）`, `About ${BRAND.en} (${BRAND.zh})`),
         description: t(
-          `${BRAND.zh}（${BRAND.en}）是面向中国出海企业的 AI 售前支持团队，提供${svcList}服务。公司信息、做事原则、案例与联系方式。`,
-          `${BRAND.en} (${BRAND.zh}) is an AI pre-sales support team for Chinese companies going global, offering ${svcList}. Company facts, principles, cases and contacts.`
+          `${BRAND.zh}（${BRAND.en}）是面向中国出海企业的 AI 售前支持团队，提供${svcList}服务。公司信息、做事原则、创始人、案例与联系方式。`,
+          `${BRAND.en} (${BRAND.zh}) is an AI pre-sales team for Chinese exporters: ${svcShort}. Company facts, founder, cases and contacts.`
         ),
       };
     case 'configurator':
       return {
         title: t('方案规划：组合出海服务，查看周期、排期与交付物', 'Project planner: combine services and see timelines and deliverables'),
+        shortTitles: [t('方案规划：查看出海项目的周期与交付物', 'Project planner: export project timelines and deliverables')],
         description: t(
           `自由组合${svcList}，按规模实时得到交付周期、阶段排期与交付物清单。`,
-          `Combine ${svcList}, and get the delivery timeline, phased schedule and deliverables for your scale instantly.`
+          `Combine ${svcShort}, and see the delivery timeline, phased schedule and deliverables for your scale.`
         ),
       };
     case 'deal-room':

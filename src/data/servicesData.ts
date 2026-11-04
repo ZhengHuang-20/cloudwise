@@ -50,7 +50,7 @@ const ALL_SERVICES: Service[] = [
     ],
     courseId: 'C',
     seo: {
-      title: { zh: '出海 GEO 优化：让 ChatGPT、Perplexity、Gemini 引用你的品牌', en: 'GEO services for exporters: get ChatGPT, Perplexity and Gemini to cite your brand' },
+      title: { zh: '出海 GEO 优化：让 ChatGPT、Perplexity、Gemini 引用你的品牌', en: 'GEO for exporters: get cited by ChatGPT, Perplexity, Gemini' },
       description: { zh: 'GEO（生成式引擎优化）把企业的专利、认证与工程案例整理成 AI 能查证、愿意引用的公开资料，提高海外买家问 AI 时你被推荐的机会，并每月复测。', en: 'GEO (generative engine optimisation) turns your patents, certifications and engineering cases into public material AI can verify and cite, so you are more likely to be recommended when overseas buyers ask AI. Re-tested monthly.' },
     },
     faqs: [
@@ -98,7 +98,7 @@ const ALL_SERVICES: Service[] = [
     ],
     courseId: 'E',
     seo: {
-      title: { zh: 'FDE 驻场工程师：AI 驱动的标准化、信息化、智能化三层建设', en: 'Forward deployed engineers (FDE): an AI-driven three-layer build for exporters' },
+      title: { zh: 'FDE 驻场工程师：AI 驱动的标准化、信息化、智能化三层建设', en: 'Forward deployed engineers (FDE): a three-layer AI build' },
       description: { zh: 'FDE 带着 AI 驻场业务一线，自下而上完成标准化、信息化、智能化三层建设，每周一轮“观察-原型-试用-沉淀”，离场时把标准、系统、数据和会用的人留给企业。', en: 'FDE engineers work on site with AI and build three layers from the bottom up: standardisation, digitisation and intelligence, with a weekly observe–prototype–trial–consolidate cycle. Standards, systems, data and trained people stay with you.' },
     },
     faqs: [
@@ -194,7 +194,7 @@ const ALL_SERVICES: Service[] = [
     ],
     courseId: 'B',
     seo: {
-      title: { zh: '外贸 SEO 优化：采购级核心词库，让海外买家在 Google 搜到你', en: 'Export SEO for B2B manufacturers: a procurement-grade keyword strategy' },
+      title: { zh: '外贸 SEO 优化：采购级核心词库，让海外买家在 Google 搜到你', en: 'Export SEO for B2B manufacturers: procurement keywords' },
       description: { zh: '遵循 Google Search Essentials 与 E-E-A-T，为出海企业建立信息型、对比型、采购型核心词库，一个词对应一个页面，不买链接、不堆泛词。', en: 'Export SEO that follows Google Search Essentials and E-E-A-T: informational, comparison and procurement keyword groups, one page per term, no paid links and no generic keyword stuffing.' },
     },
     faqs: [
@@ -242,7 +242,7 @@ const ALL_SERVICES: Service[] = [
     ],
     courseId: 'D',
     seo: {
-      title: { zh: '外贸 AI 智能客服：7×24 小时多语种接待海外询盘', en: 'AI customer service for exporters: 24/7 multilingual enquiry handling' },
+      title: { zh: '外贸 AI 智能客服：7×24 小时多语种接待海外询盘', en: 'AI customer service for exporters: 24/7 multilingual replies' },
       description: { zh: '基于企业自己的参数与资质知识库，AI 客服用多语种回答公差、认证、交期问题，抽取询盘信息、判断意向，并推送到企业微信与 CRM，超出范围转人工。', en: 'AI customer service built on your own parameter and certification knowledge base: multilingual answers on tolerances, certifications and lead times, enquiry extraction and intent grading, pushed to WeCom and your CRM, with hand-off to sales.' },
     },
     faqs: [

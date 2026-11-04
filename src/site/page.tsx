@@ -24,13 +24,35 @@ export const siteStaticParams = (lang: Lang) =>
     .filter((route) => lang === 'zh' || hasEnglish(route))
     .map((route) => ({ slug: routePath(route).split('/').filter(Boolean) }));
 
+/**
+ * <title> 的长度：搜索结果大约显示 30 个汉字或 60 个英文字符（约 600px），超出会被截断。
+ * 依次尝试完整标题与 shortTitles：带「 - 品牌」放得下就带上，放不下就去掉品牌；都放不下时用最短的一个。
+ * 汉字与全角标点按 1 计，其余按 0.5 计（中文）；英文按字符数计。
+ */
+const TITLE_LIMIT: Record<Lang, number> = { zh: 30, en: 60 };
+const titleWidth = (text: string, lang: Lang) =>
+  lang === 'en' ? text.length : [...text].reduce((n, ch) => n + (/[\u2e80-\u9fff\uff00-\uffef]/.test(ch) ? 1 : 0.5), 0);
+
+export function fitTitle(candidates: string[], lang: Lang): Metadata['title'] {
+  const suffix = ` - ${lang === 'en' ? BRAND.en : BRAND.zh}`;
+  const limit = TITLE_LIMIT[lang];
+  for (const text of candidates) {
+    if (titleWidth(text + suffix, lang) <= limit) return text;
+    if (titleWidth(text, lang) <= limit) return { absolute: text };
+  }
+  return { absolute: candidates.reduce((a, b) => (titleWidth(b, lang) < titleWidth(a, lang) ? b : a)) };
+}
+
 export function siteMetadata(lang: Lang, slug?: string[]): Metadata {
   const route = resolve(lang, slug);
   if (!route) return {};
   const meta = routeMeta(route, lang);
   const path = routePath(route);
   const canonical = localizePath(path, lang);
-  const title = meta.absoluteTitle ? { absolute: meta.title } : meta.title;
+  const candidates = [meta.title, ...(meta.shortTitles ?? [])];
+  const title = meta.absoluteTitle
+    ? { absolute: candidates.find((text) => titleWidth(text, lang) <= TITLE_LIMIT[lang]) ?? candidates[candidates.length - 1] }
+    : fitTitle(candidates, lang);
   const ogTitle = meta.absoluteTitle ? meta.title : `${meta.title} - ${lang === 'en' ? BRAND.en : BRAND.zh}`;
   return {
     title,

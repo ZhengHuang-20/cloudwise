@@ -10,6 +10,7 @@ import { glossaryList } from '../data/glossaryData';
 import { SERVICES } from '../data/servicesData';
 import { VIDEO_META, videoPoster } from '../data/videoMeta';
 import { CONTACTS } from '../data/contactsData';
+import { FOUNDER } from '../data/fdeData';
 import { BILIBILI_VIDEOS, BRAND, SAME_AS, SITE_URL, TAGLINE, absoluteUrl } from '../lib/site';
 import { routeMeta } from './meta';
 import {
@@ -32,6 +33,7 @@ type Json = Record<string, unknown>;
 
 const ORG_ID = `${SITE_URL}/#organization`;
 const WEBSITE_ID = `${SITE_URL}/#website`;
+const FOUNDER_ID = `${SITE_URL}/#founder`;
 const GLOSSARY_SET_ID = (lang: Lang) => `${absoluteUrl(localizePath('/glossary', lang))}#termset`;
 
 const inLanguage = (lang: Lang) => (lang === 'en' ? 'en' : 'zh-CN');
@@ -310,6 +312,20 @@ function mainEntities(route: Route, lang: Lang, pageUrl: string): Json[] {
         faqPage(pageUrl, [{ q: term.questionTitle, a: `${term.oneLineDefinition} ${term.detailedExplanation}` }]),
       ];
     }
+    case 'about':
+      // 创始人：只用关于页上已经写明的事实（姓名、职务、简介）
+      return [
+        {
+          '@type': 'Person',
+          '@id': FOUNDER_ID,
+          name: pick(FOUNDER.name, lang),
+          alternateName: lang === 'en' ? FOUNDER.name.zh : FOUNDER.name.en,
+          jobTitle: pick(FOUNDER.title, lang),
+          description: pick(FOUNDER.intro, lang),
+          worksFor: orgRef,
+          url: pageUrl,
+        },
+      ];
     case 'audit': {
       const method = findInsight('ai-visibility-audit-methodology');
       return [
@@ -347,8 +363,10 @@ export function pageSchema(route: Route, lang: Lang): Json {
   const meta = routeMeta(route, lang);
   const pageUrl = url(routePath(route), lang);
   const trail = crumbs(route, lang);
+  const org = organization(lang);
+  if (route.kind === 'about') org.founder = { '@id': FOUNDER_ID };
   const graph: Json[] = [
-    organization(lang),
+    org,
     website(lang),
     {
       '@type': PAGE_TYPE[route.kind] ?? 'WebPage',

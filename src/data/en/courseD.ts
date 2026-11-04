@@ -42,9 +42,9 @@ export const courseD: CourseEn = {
       title: '9.2 For decision-makers: work out the cost with the enquiry-loss formula',
       summary:
         'Enter monthly enquiries Q, the share arriving at night p, average order value A and close rate c, and work out how much real money slow replies lose each year.',
-      conceptContent: `The ChinGEO official loss-estimation model: L = Q × p × r × c × A. Here Q is total monthly enquiries, p is the share that arrives at night across time zones, r is the loss rate from delayed replies, c is the close rate and A is the average order value. Many companies lose hundreds of thousands of dollars of orders a year to slow overnight replies, while deploying AI customer service costs far less, so the return is overwhelming.`,
+      conceptContent: `The ChinGEO official loss-estimation model: L = Q × p × r × c × A. Here Q is total monthly enquiries, p is the share that arrives at night across time zones, r is the loss rate from delayed replies, c is the close rate and A is the average order value. Put your own company’s numbers into the formula to see how many orders slow overnight replies cost you each year, then compare that with the investment in AI customer service.`,
       misconceptions: [
-        'Believing the customer is not in a hurry, and that replying to the email the next morning is good enough. Overseas procurement teams request quotes from three suppliers at once on average, and the first professional reply wins 70% more often.',
+        'Believing the customer is not in a hurry, and that replying to the email the next morning is good enough. Overseas procurement teams usually request quotes from several suppliers at once, and the first professional reply is more likely to make the next round.',
       ],
       executiveTakeaway:
         'Do not let overseas traffic that you have paid advertising money for be lost while it waits overnight.',

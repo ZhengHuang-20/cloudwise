@@ -63,7 +63,7 @@ A modern independent site offers three things nothing else can:
 - Reader 3: AI question-answering models (ChatGPT, Perplexity, Gemini). They build answers from public, high-value definitions, numerical tables and FAQs. If your site does not define your category clearly, AI will leave you out of its answers.`,
       misconceptions: [
         'Believing that the flashier the site and the more animation it has, the more overseas buyers it will attract. The result slows loading, and AI crawlers cannot read the content at all.',
-        'Stuffing keywords to fool search engines, so the buyers who do arrive cannot understand the site and bounce at a rate above 90%.',
+        'Stuffing keywords to fool search engines, so the buyers who do arrive cannot understand the site and leave quickly.',
       ],
       executiveTakeaway:
         'Before designing the site, map each reader’s needs to every module: product pages give buyers the parameters, the underlying code gives Google its structure, and definitions and FAQs feed AI.',
@@ -103,7 +103,7 @@ A modern independent site offers three things nothing else can:
       title: '7.4 Case study: reading one week of data on the Aikang Medical overseas dashboard',
       summary:
         'A real dashboard from the Aikang Medical global site. Read Google organic search, ChatGPT referral traffic, the spread of high-intent countries and the enquiry conversion path.',
-      conceptContent: `In the sixth page of the brochure, the back-end dashboard of the Aikang Medical (AK Medical) global site shows a highly representative data structure:
+      conceptContent: `In the sixth page of the brochure, the back-end dashboard of the Aikang Medical (AK Medical) global site shows a highly representative data structure (the figures below come from one week of the site’s analytics):
 1. Among referral sources, visits from generative AI such as chatgpt.com and perplexity.ai have climbed to 18% of the total, and these visitors stay 2.4 times longer than an average visitor.
 2. The most visited pages are no longer "About Us" but the technical white-paper pages with parameter tables for porous 3D-printed titanium.
 3. The enquiry funnel maps clearly: AI visibility audit → download of the technical white paper → live chat with smart customer service → follow-up by a salesperson.`,

@@ -29,11 +29,11 @@ export const courseC: CourseEn = {
       title: '1.1 The buyer’s first stop is changing: from reading dozens of pages to asking AI for a shortlist',
       summary:
         'Buyers used to open ten web pages from the results and filter them slowly. Now AI draws on the whole web and gives 3–5 recommended suppliers with reasons. If you are not in the answer, you are cut out entirely.',
-      conceptContent: `According to the latest 2026 research on overseas purchasers, more than 54% of European and US B2B purchase decision-makers start their initial research by asking ChatGPT-4o, Perplexity or Gemini something like: "Recommend three cost-effective Asia-Pacific orthopaedic implant suppliers with CE/FDA certification".
+      conceptContent: `More and more European and US B2B purchase decision-makers start their initial research by asking ChatGPT, Perplexity or Gemini something like: "Recommend three Asia-Pacific orthopaedic implant suppliers with CE/FDA certification".
 
 When AI writes an answer, it does not show thousands of blue links. It gives a concise paragraph and a comparison table. That means:
 - In the past, ranking eighth on Google could still bring hundreds of clicks.
-- Today, if AI does not name you among the three suppliers it generates, your potential customer never knows you exist. This is the most serious "invisible, not trusted" bottleneck facing export companies.`,
+- Today, if AI does not name you among the three suppliers it generates, your potential customer never knows you exist. This is the "invisible, not trusted" bottleneck facing export companies.`,
       misconceptions: [
         'Believing AI is just a toy, and that serious overseas buyers of industrial or medical equipment would never use AI to look for suppliers.',
         'Thinking that posting a few AI-generated, reworded articles on your website counts as doing GEO.',
