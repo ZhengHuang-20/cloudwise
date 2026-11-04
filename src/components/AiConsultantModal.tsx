@@ -199,7 +199,7 @@ export const AiConsultantModal: React.FC = () => {
                 <div key={msg.id} className={`flex flex-col ${isUser ? 'items-end' : 'items-start'}`}>
                   <p
                     className={`max-w-[85%] whitespace-pre-wrap rounded-[1.25rem] px-4 py-3 text-body ${
-                      isUser ? 'rounded-br-md bg-accent text-white' : 'rounded-bl-md bg-surface-raised text-label'
+                      isUser ? 'rounded-br-md bg-accent text-on-accent' : 'rounded-bl-md bg-surface-raised text-label'
                     }`}
                   >
                     {msg.text}
@@ -253,7 +253,7 @@ export const AiConsultantModal: React.FC = () => {
               <button
                 type="submit"
                 disabled={isLoading || !inputValue.trim()}
-                className="btn-icon h-11 w-11 bg-accent text-white hover:bg-accent-hover hover:text-white disabled:opacity-40"
+                className="btn-icon h-11 w-11 bg-accent text-on-accent hover:bg-accent-hover hover:text-on-accent disabled:opacity-40"
                 aria-label={t('发送', 'Send')}
               >
                 <ArrowUp />

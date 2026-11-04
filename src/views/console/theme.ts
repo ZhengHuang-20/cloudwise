@@ -1,31 +1,33 @@
 import { theme, type ThemeConfig } from 'antd';
 
 /**
- * 后台（/login、/console）使用 antd，主题与官网的深色 token 对齐（色值同 src/index.css 的 @theme）。
+ * 后台（/login、/console）使用 antd，主题与官网的浅色薄荷绿 token 对齐（色值同 src/index.css 的 @theme）。
  * 官网页面不使用 antd，规范见 DESIGN.md §10。
  */
 const C = {
-  canvas: '#000000',
-  sider: '#0b0b0c',
-  surface: '#1d1d1f',
-  surfaceHover: '#242426',
-  raised: '#2c2c2e',
-  separator: '#38383a',
-  separatorSoft: '#2a2a2c',
-  label: '#f5f5f7',
-  secondary: '#a1a1a6',
-  tertiary: '#6e6e73',
-  accent: '#0071e3',
-  link: '#2997ff',
-  success: '#30d158',
-  warning: '#ff9f0a',
-  danger: '#ff453a',
+  canvas: '#f5f7f6',
+  sider: '#ffffff',
+  surface: '#ffffff',
+  surfaceHover: '#f5f9f7',
+  raised: '#f0f4f2',
+  separator: '#dfe5e2',
+  separatorSoft: '#e9eeec',
+  label: '#15201b',
+  secondary: '#55615c',
+  tertiary: '#8a9590',
+  accent: '#00845a',
+  accentSoft: '#e6f7ef',
+  link: '#00774f',
+  brand: '#01c886',
+  success: '#177a35',
+  warning: '#a35300',
+  danger: '#c42a24',
 };
 
 export const CONSOLE_COLORS = C;
 
 export const consoleTheme: ThemeConfig = {
-  algorithm: theme.darkAlgorithm,
+  algorithm: theme.defaultAlgorithm,
   token: {
     colorPrimary: C.accent,
     colorInfo: C.accent,
@@ -55,14 +57,14 @@ export const consoleTheme: ThemeConfig = {
     borderRadiusSM: 8,
     controlHeight: 36,
     controlHeightLG: 44,
-    boxShadowSecondary: '0 12px 40px rgb(0 0 0 / 0.55)',
+    boxShadowSecondary: '0 12px 40px rgb(18 38 30 / 0.14)',
     motionEaseInOut: 'cubic-bezier(0.28, 0.11, 0.32, 1)',
     wireframe: false,
   },
   components: {
     Layout: {
       siderBg: C.sider,
-      headerBg: 'rgb(0 0 0 / 0.72)',
+      headerBg: 'rgb(255 255 255 / 0.85)',
       bodyBg: C.canvas,
       headerHeight: 64,
       headerPadding: '0 24px',
@@ -72,10 +74,10 @@ export const consoleTheme: ThemeConfig = {
       subMenuItemBg: 'transparent',
       itemColor: C.secondary,
       itemHoverColor: C.label,
-      itemHoverBg: 'rgb(255 255 255 / 0.05)',
-      itemSelectedBg: 'rgb(255 255 255 / 0.09)',
-      itemSelectedColor: C.label,
-      itemActiveBg: 'rgb(255 255 255 / 0.09)',
+      itemHoverBg: 'rgb(18 38 30 / 0.04)',
+      itemSelectedBg: C.accentSoft,
+      itemSelectedColor: C.link,
+      itemActiveBg: C.accentSoft,
       itemBorderRadius: 8,
       itemHeight: 40,
       itemMarginInline: 12,
@@ -110,11 +112,12 @@ export const consoleTheme: ThemeConfig = {
       titleFontSize: 14,
     },
     Segmented: {
-      itemSelectedBg: C.raised,
-      trackBg: 'rgb(118 118 128 / 0.24)',
+      itemSelectedBg: C.surface,
+      itemSelectedColor: C.link,
+      trackBg: 'rgb(18 38 30 / 0.06)',
     },
     Tag: {
-      defaultBg: 'rgb(118 118 128 / 0.24)',
+      defaultBg: 'rgb(18 38 30 / 0.06)',
       defaultColor: C.label,
     },
     Modal: {

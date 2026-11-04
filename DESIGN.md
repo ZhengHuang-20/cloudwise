@@ -1,7 +1,7 @@
 # 云端智荐 · 设计规范
 
 > 版本 1.0 · 2026-09
-> 基准：apple.com 深色产品页的视觉语言 + Apple Human Interface Guidelines，针对简体中文排版与 B2B 出海售前场景做了取舍。
+> 基准：Apple Human Interface Guidelines 的排版与交互规则 + WorkBuddy 式的浅色薄荷绿配色（2026-11 改版），针对简体中文排版与 B2B 出海售前场景做了取舍。
 > 实现：token 与组件类在 `src/index.css`，React 基础组件在 `src/components/ui/`。**本文档与这两处代码必须保持一致；改其一，同步改其余。**
 > 适用范围：第 0～9 节约束官网（营销页）。登录页与客户后台（`/login`、`/console/*`）改用 antd，规则见第 10 节。
 
@@ -10,9 +10,9 @@
 ## 0. 十条铁律（速查）
 
 1. **一屏一事。** 每个章节只讲一件事：一个标题、一段导语、最多两个行动按钮。
-2. **蓝色只属于交互。** `link` 与 `accent` 只用于按钮、链接、焦点、选中态。强调靠白色和字重，不靠蓝色。
+2. **绿色只属于交互。** `link` 与 `accent` 只用于按钮、链接、焦点、选中态；品牌薄荷绿 `brand` 只做装饰。强调靠深色文字和字重，不靠绿色。
 3. **层级靠字号和灰度，不靠框。** 卡片内部用留白和分隔线组织信息，最多嵌套一层（`tile` → `well`）。
-4. **平面优先。** 卡片是纯色 `surface`，不加描边、阴影和渐变。毛玻璃材质只给悬浮层用。
+4. **平面优先。** 卡片是白色 `surface` 加 1px `hairline` 细描边，不加阴影和渐变。毛玻璃材质只给悬浮层用。
 5. **只用 token。** 颜色、字号、圆角、缓动一律取自 `@theme`。不在组件里写 hex，也不写 `text-[13px]`。
 6. **最小字号 14px**（`text-caption`）。层级靠颜色对比拉开，不靠把字缩小。
 7. **数字用 `tabular-nums`，不用等宽字体。** 等宽字体只用于代码、SQL、URL 和密钥输入。
@@ -26,7 +26,7 @@
 
 | 原则 | 含义 | 在本站的落地 |
 | --- | --- | --- |
-| **内容为先** Deference | 界面退后，让内容和数据说话 | 纯黑画布、平面卡片、无装饰光晕；大数字和结论优先展示 |
+| **内容为先** Deference | 界面退后，让内容和数据说话 | 浅灰绿画布、白色细描边卡片，只在页头保留一层品牌绿光晕；大数字和结论优先展示 |
 | **清晰** Clarity | 每个元素只有一种解读 | 统一的 8 级字号阶梯；状态色只表达状态；按钮文案说清结果 |
 | **层次** Depth | 用层级和动效表达空间关系 | 画布 → 卡片 → 内嵌块三级表面；弹窗从底部/中心浮起 |
 | **克制** Restraint | 能删就删 | 每屏最多一个主按钮；全站只保留一处签名渐变 |
@@ -39,53 +39,71 @@
 
 ## 2. 设计 Token
 
-### 2.1 颜色（仅深色模式）
+### 2.1 颜色（浅色 · 薄荷绿主色）
+
+> 2026-11 改版：从 Apple 式纯黑深色界面改为浅色界面，主色取 WorkBuddy 式的薄荷绿，辅色都从这个绿色推出来。整体是浅灰绿画布、白色卡片、绿色交互。
+
+**主色体系**：品牌绿和交互绿分开用。薄荷绿 `#01C886` 放在白底上对比度只有 2.2 : 1，所以只做装饰；按钮、链接这类要读的元素改用同一色相、压暗后的交互绿。
+
+```
+brand         #01C886   品牌薄荷绿：色点、页头光晕、引用竖线、选中光环（装饰，不承载文字）
+accent        #00845A   交互绿：主按钮、用户消息气泡、选中描边、导航指示条
+ ├─ hover/link #00774F  悬停、文字链接、选中态文字
+ ├─ active     #006A46  按下
+ └─ soft       #E6F7EF  浅绿底：选中 chip、选中 choice、头像、后台菜单选中项
+```
 
 **表面层级**：同一时间最多出现三层。
 
 ```
-canvas  #000000   页面画布
- └─ surface  #1d1d1f   tile / card（悬停 #242426）
-     └─ surface-raised  #2c2c2e   well：卡片内的分组、指标块、聊天气泡
+canvas  #F5F7F6   页面画布（带一点绿的浅灰）
+ └─ surface  #FFFFFF   tile / card（1px hairline 描边；悬停底色 #FAFCFB，描边转为主色 40%）
+     └─ surface-raised  #F0F4F2   well：卡片内的分组、指标块、聊天气泡（悬停 #E7EEEA）
 ```
 
 | Token | 值 | Tailwind 类 | 用途 |
 | --- | --- | --- | --- |
-| `canvas` | `#000000` | `bg-canvas` | 页面背景、移动端菜单 |
-| `surface` | `#1d1d1f` | `bg-surface` | tile、card、弹窗面板 |
-| `surface-hover` | `#242426` | `hover:bg-surface-hover` | 可点击卡片的悬停态 |
-| `surface-raised` | `#2c2c2e` | `bg-surface-raised` | well、AI 回复气泡 |
-| `separator` | `#38383a` | `border-separator` / `divide-separator` | 分隔线 |
-| `separator-strong` | `#48484a` | `border-separator-strong` | 输入框描边、滑块轨道、引用竖线 |
-| `hairline` | `rgb(255 255 255 / .1)` | `border-hairline` | 悬浮材质（导航、浮动按钮、Toast）的描边 |
-| `label` | `#f5f5f7` | `text-label` | 主文字、标题 |
-| `label-secondary` | `#a1a1a6` | `text-label-secondary` | 正文辅助、说明、元信息 |
-| `label-tertiary` | `#6e6e73` | `text-label-tertiary` | **仅限**占位符、禁用态、装饰性箭头 |
-| `link` | `#2997ff` | `text-link` | 文字链接、描边按钮、焦点环 |
-| `accent` | `#0071e3` | `bg-accent` | 主按钮、用户消息气泡、选中描边 |
-| `accent-hover` / `accent-active` | `#0077ed` / `#006edb` | — | 主按钮的悬停与按下 |
-| `fill` / `fill-hover` | `rgb(118 118 128 / .24 / .34)` | `bg-fill` | chip、分段控件轨道、中性按钮、图标按钮 |
-| `thumb` | `#636366` | — | 分段控件的选中滑块 |
+| `canvas` | `#f5f7f6` | `bg-canvas` | 页面背景、移动端菜单、页脚 |
+| `surface` | `#ffffff` | `bg-surface` | tile、card、弹窗面板、输入框 |
+| `surface-hover` | `#fafcfb` | `hover:bg-surface-hover` | 可点击卡片、列表行的悬停态 |
+| `surface-raised` | `#f0f4f2` | `bg-surface-raised` | well、AI 回复气泡、表头 |
+| `surface-raised-hover` | `#e7eeea` | — | 可点击 well 的悬停态 |
+| `separator` | `#e4e9e7` | `border-separator` / `divide-separator` | 分隔线、进度条轨道 |
+| `separator-strong` | `#cbd3cf` | `border-separator-strong` | 输入框描边、滑块轨道 |
+| `hairline` | `rgb(18 38 30 / .08)` | `border-hairline` | tile / card 与悬浮材质（导航、浮动按钮、Toast）的细描边 |
+| `scrim` | `rgb(10 24 18 / .45)` | `bg-scrim` | 弹窗遮罩 |
+| `label` | `#15201b` | `text-label` | 主文字、标题 |
+| `label-secondary` | `#55615c` | `text-label-secondary` | 正文辅助、说明、元信息 |
+| `label-tertiary` | `#8a9590` | `text-label-tertiary` | **仅限**占位符、禁用态、装饰性箭头 |
+| `brand` | `#01c886` | `bg-brand` | 品牌薄荷绿，只做装饰（在线点、光晕、引用竖线） |
+| `link` | `#00774f` | `text-link` | 文字链接、描边按钮、焦点环、选中态文字 |
+| `accent` | `#00845a` | `bg-accent` | 主按钮、用户消息气泡、选中描边、导航指示条 |
+| `accent-hover` / `accent-active` | `#00774f` / `#006a46` | — | 主按钮的悬停与按下 |
+| `accent-soft` | `#e6f7ef` | `bg-accent-soft` | 选中 chip / choice、头像、浅绿提示底 |
+| `on-accent` | `#ffffff` | `text-on-accent` | 绿色底上的文字 |
+| `fill` / `fill-hover` | `rgb(18 38 30 / .06 / .1)` | `bg-fill` | chip、分段控件轨道、中性按钮、图标按钮 |
+| `thumb` | `#ffffff` | — | 分段控件的选中滑块（白色浮起 + 绿字） |
 
 **对比度**（WCAG 2.1，已核算）：
 
 | 前景 / 背景 | canvas | surface | surface-raised |
 | --- | --- | --- | --- |
-| `label` #f5f5f7 | 19.2 : 1 | 15.5 : 1 | 12.8 : 1 |
-| `label-secondary` #a1a1a6 | 8.2 : 1 | 6.6 : 1 | 5.4 : 1 |
-| `link` #2997ff | 6.9 : 1 | 5.5 : 1 | — |
-| `label-tertiary` #6e6e73 | 4.1 : 1 ✗ | 3.3 : 1 ✗ | ✗ |
-| 白字 / `accent` #0071e3 | 4.7 : 1 | | |
+| `label` #15201b | 15.6 : 1 | 16.7 : 1 | 15.1 : 1 |
+| `label-secondary` #55615c | 6.0 : 1 | 6.5 : 1 | 5.8 : 1 |
+| `link` #00774f | 5.2 : 1 | 5.6 : 1 | 5.1 : 1 |
+| `label-tertiary` #8a9590 | 2.9 : 1 ✗ | 3.1 : 1 ✗ | ✗ |
+| `brand` #01c886 | 2.0 : 1 ✗ | 2.2 : 1 ✗ | ✗ |
+| 白字 / `accent` #00845a | 4.7 : 1（主按钮文字加粗到 600） | | |
 
-`label-tertiary` 达不到 AA，所以不能承载任何必读信息。
+`label-tertiary` 与 `brand` 达不到 AA，所以不能承载任何必读信息。
 
-**状态色**：只表达状态，不做装饰。
+**状态色**：只表达状态，不做装饰。都压暗到白底与画布上 ≥ 4.5 : 1，可以直接作文字色。
 
 | Token | 值 | 语义 |
 | --- | --- | --- |
-| `success` | `#30d158` | 健康、已完成、正向增长、已提及 |
-| `warning` | `#ff9f0a` | 需关注、中等风险、误区提示 |
-| `danger` | `#ff453a` | 断点严重、流失金额、错误、未提及 |
+| `success` | `#177a35` | 健康、已完成、正向增长、已提及（比主色偏黄，避免和交互绿混淆） |
+| `warning` | `#a35300` | 需关注、中等风险、误区提示 |
+| `danger` | `#c42a24` | 断点严重、流失金额、错误、未提及 |
 
 **分数 → 颜色**：唯一的映射写在 `ui/tone.ts`，不要在组件里另写一套。
 
@@ -97,17 +115,19 @@ canvas  #000000   页面画布
 
 状态徽标写法：`badge bg-success/15 text-success`（背景用同色 15% 透明度）。
 
-**服务识别色**：`ui/serviceIdentity.ts` 集中定义。**只用在图标和小色点上**，不用于文字、按钮或大面积背景。
+**服务识别色**：`ui/serviceIdentity.ts` 集中定义。以主色为锚点取一组冷暖色（青蓝、靛蓝、紫、绿、橙），在白底上都 ≥ 3 : 1。**只用在图标和小色点上**，不用于文字、按钮或大面积背景。
 
 | 服务 | 代号 | 图标 | Token | 值 |
 | --- | --- | --- | --- | --- |
-| 海外独立站 | A | Globe | `svc-site` | `#64d2ff` |
-| 外贸 SEO | B | Search | `svc-seo` | `#7d7aff` |
-| 出海 GEO | C | Sparkles | `svc-geo` | `#bf5af2` |
-| AI 智能客服 | D | Bot | `svc-chat` | `#30d158` |
-| FDE 驻场 | E | Users | `svc-fde` | `#ff9f0a` |
+| 海外独立站 | A | Globe | `svc-site` | `#0b8fc9` |
+| 外贸 SEO | B | Search | `svc-seo` | `#4f6bed` |
+| 出海 GEO | C | Sparkles | `svc-geo` | `#8b5cf6` |
+| AI 智能客服 | D | Bot | `svc-chat` | `#00a06a` |
+| FDE 驻场 | E | Users | `svc-fde` | `#d0700a` |
 
-**签名渐变**：`.text-gradient-ai`（蓝 → 紫 → 粉 → 橙），**全站只用一处**，即首页 Hero 的“让 AI 替你接住生意”。其他地方不再使用渐变文字、渐变背景或发光。
+**签名渐变**：`.text-gradient-ai`（交互绿 → 青绿 → 青蓝 → 蓝），**全站只用一处**，即首页 Hero 的“让 AI 替你接住生意”。其他地方不再使用渐变文字。
+
+**页头光晕**：`.page-wash`（挂在 `SiteShell` 的 `<main>` 上）在每个页面顶部铺一层从品牌绿淡出到画布的光晕，约 640px 高。这是全站唯一的背景渐变，各页面不要再自己加光晕或渐变背景。分享图 `public/og.png` 用同一套底色与签名渐变。
 
 ### 2.2 字体
 
@@ -192,7 +212,7 @@ canvas  #000000   页面画布
 
 ### 2.5 材质与层级
 
-毛玻璃 `.material`（`rgb(22 22 23 / .8)` + `saturate(180%) blur(20px)`）**只用于悬浮层**：全局导航、浮动 AI 按钮、Toast。卡片和面板一律不用。
+毛玻璃 `.material`（`rgb(255 255 255 / .78)` + `saturate(180%) blur(20px)`）**只用于悬浮层**：全局导航、浮动 AI 按钮、Toast。卡片和面板一律不用。
 
 > 注意：`backdrop-filter` 会让元素成为 `position: fixed` 子元素的定位容器。所以悬浮层内部不要再放 fixed 元素（移动端菜单因此渲染在 `<header>` 之外）。
 
@@ -205,7 +225,7 @@ canvas  #000000   页面画布
 | 60 | Toast |
 | 70 | “跳到主要内容”链接 |
 
-阴影只用于弹窗、浮动按钮和 Toast 这类悬浮层。卡片不用阴影，在纯黑背景上阴影本来就看不见。
+阴影只用于弹窗、浮动按钮和 Toast 这类悬浮层，统一用带绿调的浅阴影（`rgb(18 38 30 / .14～.22)`），不用纯黑阴影。卡片不用阴影，靠白底与 hairline 描边和画布区分。
 
 ### 2.6 动效
 
@@ -241,10 +261,10 @@ canvas  #000000   页面画布
 
 | 变体 | 类 | 外观 | 何时用 |
 | --- | --- | --- | --- |
-| 主按钮 | `btn btn-primary` | 实心蓝 | 本视图最重要的一个动作，**每个视图（或每个结果面板）最多一个** |
-| 次按钮 | `btn btn-secondary` | 蓝色描边，悬停变实心 | 与主按钮并列的第二个动作 |
+| 主按钮 | `btn btn-primary` | 实心绿、白字 600 | 本视图最重要的一个动作，**每个视图（或每个结果面板）最多一个** |
+| 次按钮 | `btn btn-secondary` | 绿色描边，悬停变实心 | 与主按钮并列的第二个动作 |
 | 中性按钮 | `btn btn-neutral` | 灰色填充 | 工具性动作：复制、下载、邀请、标记完成 |
-| 文字链接 | `link` + `<ChevronRight />` | 蓝字加 › | 第三个动作、“了解更多”、“查看全部” |
+| 文字链接 | `link` + `<ChevronRight />` | 绿字加 › | 第三个动作、“了解更多”、“查看全部” |
 | 图标按钮 | `btn-icon` | 36px 灰色圆形 | 关闭、账户、重播 |
 
 | 尺寸 | 类 | 高度 | 字号 |
@@ -284,7 +304,7 @@ canvas  #000000   页面画布
 
 - 标签放在输入框**上方**（`field-label`：14px，600），并通过 `htmlFor` / `id` 关联。**不能只用 placeholder 代替标签。**
 - placeholder 只写示例，以“如”开头。
-- 输入框（`field`）高 48px，Hero 的主输入框用 `field field-lg`（56px）。聚焦时：蓝色描边加 3px 光环。
+- 输入框（`field`）高 48px，Hero 的主输入框用 `field field-lg`（56px）。聚焦时：主色描边加 3px 薄荷绿光环。
 - `select.field` 自带 chevron；`textarea.field` 最小高度 128px，可纵向拉伸。
 - 补充说明放在输入框下方：`mt-2 text-caption text-label-secondary`。
 - 必填项加 `required`，联系方式加 `autoComplete`。
@@ -295,9 +315,9 @@ canvas  #000000   页面画布
 
 | 组件 | 外观 | 语义 | 用于 |
 | --- | --- | --- | --- |
-| `SegmentedControl` | 灰色轨道，选中项为浮起的灰色滑块 | `role="tablist"`，←/→ 键切换 | **切换视图**。页面级用 `size="lg"`（学院课程、案例/方案），面板内用默认尺寸 |
-| `chip` + `aria-pressed` | 灰色胶囊，选中后反白（白底黑字） | 切换按钮 | **筛选和多选**：术语分类、接入渠道、示例快捷试测、页内索引 |
-| `choice` + `role="radio"` + `aria-checked` | 描边卡片，选中后为 2px 蓝色描边（Apple Store 选配样式） | 单选组 | **有说明文字的单选项**：诊断会形式、课后自测、套餐 |
+| `SegmentedControl` | 浅灰轨道，选中项为浮起的白色滑块 + 绿字 | `role="tablist"`，←/→ 键切换 | **切换视图**。页面级用 `size="lg"`（学院课程、案例/方案），面板内用默认尺寸 |
+| `chip` + `aria-pressed` | 灰色胶囊，选中后为浅绿底、绿字、绿色细描边 | 切换按钮 | **筛选和多选**：术语分类、接入渠道、示例快捷试测、页内索引 |
+| `choice` + `role="radio"` + `aria-checked` | 描边卡片，选中后为 2px 绿色描边 + 浅绿底 | 单选组 | **有说明文字的单选项**：诊断会形式、课后自测、套餐 |
 
 选中态由 aria 属性驱动样式，不要另写 `isActive ? … : …` 的类名分支。
 
@@ -329,10 +349,10 @@ canvas  #000000   页面画布
 
 ### 3.9 导航
 
-- **全局导航**：52px 高，毛玻璃。左侧品牌（点击回首页），中间 7 个 2–4 字的短标签，右侧依次为语言切换、登录、“预约诊断”小号主按钮、账户图标按钮。导航项、品牌与语言切换都是真实链接（`<a href>`），搜索引擎能顺着链接发现页面。当前页的标签为白字，底部有 2px 白色指示条，并标注 `aria-current="page"`。
+- **全局导航**：52px 高，毛玻璃。左侧品牌（点击回首页），中间 7 个 2–4 字的短标签，右侧依次为语言切换、登录、“预约诊断”小号主按钮、账户图标按钮。导航项、品牌与语言切换都是真实链接（`<a href>`），搜索引擎能顺着链接发现页面。当前页的标签为绿字（`link`），底部有 2px 绿色指示条（`accent`），并标注 `aria-current="page"`。
 - **移动端（< 1024px）**：汉堡按钮打开全屏菜单。菜单按“了解 / 决策”分组，条目为 24px 标题加一行说明，底部是全宽的主按钮和中性按钮。Esc 可关闭，打开时锁定背景滚动。
 - **页脚**：品牌简介加两组站点地图（“决策”组末尾附 AI 可见性测评与关于我们），底部一行放版权和备案号。
-- **品牌标识**：导航与页脚左上角都用公司 logo 的图形部分 `public/brand/logo-mark.png`（透明底，品牌蓝 `#1479BE`，高 28px，`alt=""`）加白色“云端智荐”文字（英文界面为 ChinGEO）。完整 logo 里的藏青色中英文字在纯黑画布上看不清，所以深色界面不用整套 logo。logo 图形是品牌资产，不受“蓝色只属于交互”的限制，但不要把品牌蓝用到其他元素上。favicon（`public/favicon.png`）与 `apple-touch-icon.png` 由同一图形生成。
+- **品牌标识**：导航与页脚左上角都用公司 logo 的图形部分 `public/brand/logo-mark.png`（透明底，logo 绿 `#00A06A`，高 28px，`alt=""`）加深色（`label`）“云端智荐”文字（英文界面为 ChinGEO）。logo 绿介于品牌薄荷绿与交互绿之间，在白底上 3.4 : 1，作为图形够清楚；它是品牌资产，不受“绿色只属于交互”的限制。2026-11 由原来的品牌蓝 `#1479BE` 改为绿色，图形本身没变。favicon（`public/favicon.png`）、`apple-touch-icon.png` 与分享图 `public/og.png` 用同一图形同一颜色，改 logo 时三处一起换。
 - **地址**：每个页面有自己的路径（`/services/geo`，英文加 `/en`），在服务端渲染并输出独立的标题、描述与结构化数据；旧的 `#/tab` 链接会自动跳到对应路径。详情页在页头上方显示面包屑。
 - 导航数据只维护在 `src/components/navigation.ts` 一处。
 
@@ -346,7 +366,7 @@ canvas  #000000   页面画布
 
 ### 3.12 头像
 
-`avatar`：灰色渐变圆形加姓名首字母，与 Apple 通讯录的样式一致。**不使用图库人像**：一是不真实，二是外链图片在大陆加载不稳定。
+`avatar`：浅绿底（`accent-soft`）圆形加绿色姓名首字母。**不使用图库人像**：一是不真实，二是外链图片在大陆加载不稳定。
 
 ### 3.13 空状态与加载
 
@@ -392,7 +412,7 @@ Hero（eyebrow、`text-display` 标语、导语、两个按钮）→ AI 可见�
 
 新增页面需要同时改动：`src/site/routes.ts`（路由）、`src/site/meta.ts`（标题与描述）、`src/site/RouteView.tsx`（渲染分支）、新的 view 文件（以 `PageHeader` 开头）；需要进导航时再改 `navigation.ts`。
 
-长文页（GEO 洞察文章、术语、课时）用 `layout-reading`：页头（面包屑 → 眉标 → H1）之后先放一个 `well` 写“简短回答”，再放正文。文章正文由 `src/components/Markdown.tsx` 渲染（样式类 `prose-article`、表格 `prose-table`），常见问题用 `FaqList`（问答直接展示，不折叠）。
+长文页（GEO 洞察文章、术语、课时）用 `layout-reading`：页头（面包屑 → 眉标 → H1）之后先放一个 `well well-accent`（浅绿底 + 品牌绿竖线）写“简短回答”，再放正文。文章正文由 `src/components/Markdown.tsx` 渲染（样式类 `prose-article`、表格 `prose-table`），常见问题用 `FaqList`（问答直接展示，不折叠）。
 
 ---
 
@@ -437,9 +457,9 @@ Hero（eyebrow、`text-display` 标语、导语、两个按钮）→ AI 可见�
 | --- | --- |
 | `apple-glass`、`backdrop-blur-*` 做卡片 | `tile` / `card`（纯色） |
 | `bg-white/[0.04] border border-white/10` 手写卡片 | `well` 或分隔线 |
-| 卡片 `hover:-translate-y`、发光阴影 `shadow-[0_0_24px_…]` | `interactive`（仅改背景色） |
+| 卡片 `hover:-translate-y`、发光阴影 `shadow-[0_0_24px_…]` | `interactive`（只改背景色与描边色） |
 | 渐变文字、径向光晕背景 | 纯色文字；签名渐变全站仅一处 |
-| `text-[#2997ff]` 装饰标签和数字 | `text-label-secondary` 或 `text-label` 加 `font-semibold` |
+| `text-[#01c886]`、`text-link` 装饰标签和数字 | `text-label-secondary` 或 `text-label` 加 `font-semibold` |
 | `font-mono` 显示数字 | `tabular-nums` |
 | `text-xs`、`text-[11px]` | `text-caption` |
 | `font-bold`、`font-extrabold`、`font-medium` | `font-semibold` 或默认 400 |
@@ -459,7 +479,7 @@ Hero（eyebrow、`text-display` 标语、导语、两个按钮）→ AI 可见�
 
 1. 这一屏只讲一件事吗？主按钮只有一个吗？
 2. 有没有新写 hex、默认色板、`text-[Npx]`、`font-mono` 数字？
-3. 蓝色是不是只出现在可交互元素上？
+3. 绿色（`link` / `accent`）是不是只出现在可交互元素上？品牌薄荷绿有没有被拿来写字？
 4. 有没有盒中盒？能不能用分隔线代替边框？
 5. 标题在 390px 宽的手机上会不会在词组中间断行？
 6. 键盘能不能走完整个流程？焦点是否可见？
@@ -495,7 +515,7 @@ Hero（eyebrow、`text-display` 标语、导语、两个按钮）→ AI 可见�
 ### 10.1 加载与主题
 
 - 入口 `src/views/console/ConsoleApp.tsx`，由 `src/site/RouteView.tsx` 用 `next/dynamic`（`ssr: false`）按需加载：antd 只打进后台分块，官网首屏不下载。后台是独立的全屏布局，不渲染官网的 Header、Footer 和 AI 顾问入口。
-- 主题在 `src/views/console/theme.ts`：`darkAlgorithm`，色值与第 2.1 节 token 一一对应（canvas / surface / raised / separator / label / accent / link / success / warning / danger）。要改颜色先改 `@theme`，再同步这里；组件里不要直接写 antd 预设色或 hex，需要时从 `CONSOLE_COLORS` 取。
+- 主题在 `src/views/console/theme.ts`：`defaultAlgorithm`（浅色），色值与第 2.1 节 token 一一对应（canvas / surface / raised / separator / label / accent / accentSoft / link / brand / success / warning / danger）；侧栏为白色，菜单选中项为浅绿底绿字。要改颜色先改 `@theme`，再同步这里；组件里不要直接写 antd 预设色或 hex，需要时从 `CONSOLE_COLORS` 取。
 - 字号 14px 起（`fontSize` 与 `fontSizeSM` 都是 14）；字重只用 400 / 600；图标仍用 `lucide-react`，16px。
 - `ConfigProvider` 关闭了按钮两字之间自动加空格（`autoInsertSpace: false`）；`message` / `modal` 一律用 `App.useApp()` 取，不用静态方法。
 

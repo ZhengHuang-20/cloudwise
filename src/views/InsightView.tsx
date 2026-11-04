@@ -50,7 +50,7 @@ export const InsightView: React.FC<{ slug: string }> = ({ slug }) => {
 
       <article className="layout-reading pb-[clamp(4.5rem,2.5rem+6vw,8.75rem)]">
         {/* 先给答案：单独成段，便于读者扫读与 AI 摘录 */}
-        <section aria-label={t('简短回答', 'Short answer')} className="well">
+        <section aria-label={t('简短回答', 'Short answer')} className="well well-accent">
           <p className="text-caption text-label-secondary">{t('简短回答', 'Short answer')}</p>
           <p className="mt-2 text-intro text-label">{content.answer}</p>
         </section>

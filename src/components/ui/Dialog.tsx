@@ -95,7 +95,7 @@ export const Dialog: React.FC<DialogProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-md animate-fade-in sm:items-center sm:p-6"
+      className="fixed inset-0 z-50 flex items-end justify-center bg-scrim backdrop-blur-sm animate-fade-in sm:items-center sm:p-6"
       onMouseDown={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
@@ -106,7 +106,7 @@ export const Dialog: React.FC<DialogProps> = ({
         aria-modal="true"
         aria-labelledby={titleId}
         tabIndex={-1}
-        className={`relative flex max-h-[92dvh] w-full flex-col overflow-hidden rounded-t-tile bg-surface shadow-[0_24px_80px_rgb(0_0_0/0.6)] outline-none animate-sheet-in sm:max-h-[88vh] sm:rounded-tile ${SIZE_CLASS[size]} ${panelClassName}`}
+        className={`relative flex max-h-[92dvh] w-full flex-col overflow-hidden rounded-t-tile bg-surface shadow-[0_24px_80px_rgb(18_38_30/0.22)] outline-none animate-sheet-in sm:max-h-[88vh] sm:rounded-tile ${SIZE_CLASS[size]} ${panelClassName}`}
       >
         <header className="flex shrink-0 items-center gap-4 border-b border-separator px-6 py-4 sm:px-8 sm:py-5">
           {leading}

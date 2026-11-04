@@ -543,7 +543,7 @@ export const AuditResult: React.FC<AuditResultProps> = ({ report, openBookingMod
                     </span>
                     <div className="meter">
                       <span
-                        className={voice.isSelf ? 'bg-label' : 'bg-label-tertiary'}
+                        className={voice.isSelf ? 'bg-accent' : 'bg-label-tertiary'}
                         style={{ width: `${(voice.mentions / maxVoice) * 100}%` }}
                       />
                     </div>

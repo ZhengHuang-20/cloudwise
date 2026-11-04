@@ -53,12 +53,12 @@ export const LoginPage: React.FC<{ onLoggedIn: () => void; onGoHome: () => void;
       {/* 品牌面板：仅大屏 */}
       <aside
         className="relative hidden overflow-hidden border-r border-separator p-12 lg:flex lg:flex-col"
-        style={{ background: CONSOLE_COLORS.sider }}
+        style={{ background: `linear-gradient(160deg, ${CONSOLE_COLORS.accentSoft} 0%, ${CONSOLE_COLORS.sider} 65%)` }}
       >
         <div
           aria-hidden="true"
           className="pointer-events-none absolute -left-40 -top-40 h-[36rem] w-[36rem] rounded-full opacity-60 blur-3xl"
-          style={{ background: 'radial-gradient(closest-side, rgb(0 113 227 / 0.28), transparent)' }}
+          style={{ background: 'radial-gradient(closest-side, rgb(1 200 134 / 0.22), transparent)' }}
         />
         <div className="relative">
           <Brand />

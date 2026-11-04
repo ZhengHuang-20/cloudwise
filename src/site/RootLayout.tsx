@@ -38,8 +38,8 @@ export const rootViewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   viewportFit: 'cover',
-  themeColor: '#000000',
-  colorScheme: 'dark',
+  themeColor: '#f5f7f6',
+  colorScheme: 'light',
 };
 
 // 脚本可用时给 <html> 加 js 类：.reveal 动画只在有脚本时先隐藏（src/index.css）
