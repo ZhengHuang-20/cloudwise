@@ -81,7 +81,7 @@ export const AuditView: React.FC = () => {
         <section className="tile mt-16 text-center">
           <h2 className="text-title-2">{t('想要人工解读？', 'Want a human read-through?')}</h2>
           <p className="mx-auto mt-3 max-w-xl text-body text-label-secondary">
-            {t('预约 30 分钟诊断会，会后给出书面的改进清单。', 'Book a 30-minute diagnosis call and receive a written improvement list afterwards.')}
+            {t('预约 30 分钟诊断会，会后给出书面的改进清单', 'Book a 30-minute diagnosis call and receive a written improvement list afterwards')}
           </p>
           <button type="button" onClick={openBooking} className="btn btn-primary mt-6">
             {t('预约诊断会', 'Book a diagnosis call')}

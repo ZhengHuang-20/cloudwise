@@ -91,7 +91,7 @@ function Chrome({ children }: { children: React.ReactNode }) {
 
         <Header currentTab={section === 'solutions' ? 'cases' : section} openBookingModal={actions.openBooking} openMySpaceModal={actions.openMySpace} />
 
-        <main id="main" tabIndex={-1} className="page-wash relative flex-1 outline-none">
+        <main id="main" tabIndex={-1} className="relative flex-1 outline-none">
           {children}
         </main>
 

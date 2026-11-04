@@ -75,7 +75,7 @@ export const BookingModal: React.FC<{ isOpen: boolean; onClose: () => void }> = 
       onClose={handleClose}
       size="lg"
       title={t('预约 1 对 1 出海诊断会', 'Book a one-to-one export diagnosis call')}
-      description={t('带着测评报告进会议，直奔实质方案。', 'Bring your audit report to the call and go straight to a real plan.')}
+      description={t('带着测评报告进会议，直奔实质方案', 'Bring your audit report to the call and go straight to a real plan')}
     >
       <DialogBody>
         {!isBooked ? (

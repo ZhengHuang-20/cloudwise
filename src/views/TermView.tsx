@@ -106,7 +106,7 @@ export const TermView: React.FC<{ slug: string }> = ({ slug }) => {
         <section className="tile mt-16 text-center">
           <h2 className="text-title-2">{t('看看你的官网做得怎么样', 'See how your website measures up')}</h2>
           <p className="mx-auto mt-3 max-w-xl text-body text-label-secondary">
-            {t('免费的 AI 可见性测评会检查技术底座，并测试 AI 是否会推荐你。', 'The free AI visibility audit checks your technical foundation and tests whether AI recommends you.')}
+            {t('免费的 AI 可见性测评会检查技术底座，并测试 AI 是否会推荐你', 'The free AI visibility audit checks your technical foundation and tests whether AI recommends you')}
           </p>
           <button type="button" onClick={goToAudit} className="btn btn-primary mt-6">
             {t('开始测评', 'Start the audit')}

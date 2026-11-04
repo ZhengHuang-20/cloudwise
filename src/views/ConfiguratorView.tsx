@@ -95,7 +95,7 @@ export const ConfiguratorView: React.FC<ConfiguratorViewProps> = ({
       <PageHeader
         eyebrow={t('方案规划', 'Project planner')}
         title={t('组合服务，看到交付周期与步骤', 'Combine services, and see the timeline and steps')}
-        intro={t('把复杂的出海工程拆解为清晰的服务组合、实施周期与阶段成果。', 'Break a complex export project into clear service packages, delivery timelines and phased results.')}
+        intro={t('把复杂的出海工程拆解为清晰的服务组合、实施周期与阶段成果', 'Break a complex export project into clear service packages, delivery timelines and phased results')}
       />
 
       <div className="layout-wide pb-[clamp(4.5rem,2.5rem+6vw,8.75rem)]">
@@ -143,7 +143,7 @@ export const ConfiguratorView: React.FC<ConfiguratorViewProps> = ({
               {t('按企业规模调整', 'Adjust to company size')}
             </h2>
             <p className="mt-2 text-body text-label-secondary">
-              {t('参数变化会实时联动交付周期与交付物。', 'Changes to these inputs update the timeline and deliverables in real time.')}
+              {t('参数变化会实时联动交付周期与交付物', 'Changes to these inputs update the timeline and deliverables in real time')}
             </p>
 
             {!showAcquisitionParams && (
@@ -266,7 +266,7 @@ export const ConfiguratorView: React.FC<ConfiguratorViewProps> = ({
                     />
                     <span
                       aria-hidden="true"
-                      className="relative h-[31px] w-[51px] shrink-0 rounded-full bg-fill transition-colors duration-200 peer-checked:bg-success peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-link after:absolute after:left-[2px] after:top-[2px] after:h-[27px] after:w-[27px] after:rounded-full after:bg-white after:shadow after:transition-transform after:duration-200 peer-checked:after:translate-x-5"
+                      className="relative h-8 w-13 shrink-0 rounded-full bg-fill transition-colors duration-200 peer-checked:bg-success peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-link after:absolute after:left-[2px] after:top-[2px] after:h-7 after:w-7 after:rounded-full after:bg-white after:shadow after:transition-transform after:duration-200 peer-checked:after:translate-x-5"
                     />
                   </label>
                 </div>

@@ -6,9 +6,9 @@ import { confirmRules, newPasswordRules } from './ChangePasswordModal';
 import { CONSOLE_COLORS } from './theme';
 
 const FEATURES = [
-  { icon: ChartColumn, title: '访问统计', desc: '按北京时间分天统计浏览量、访客、来源与设备。' },
-  { icon: Inbox, title: '线索管理', desc: '官网表单的留资实时入库，跟进状态与备注集中管理。' },
-  { icon: ShieldCheck, title: '数据隔离', desc: '账号由我们开通，每个账号只能查看授权给它的站点。' },
+  { icon: ChartColumn, title: '访问统计', desc: '按北京时间分天统计浏览量、访客、来源与设备' },
+  { icon: Inbox, title: '线索管理', desc: '官网表单的留资实时入库，跟进状态与备注集中管理' },
+  { icon: ShieldCheck, title: '数据隔离', desc: '账号由我们开通，每个账号只能查看授权给它的站点' },
 ];
 
 const Brand: React.FC = () => (
@@ -53,13 +53,8 @@ export const LoginPage: React.FC<{ onLoggedIn: () => void; onGoHome: () => void;
       {/* 品牌面板：仅大屏 */}
       <aside
         className="relative hidden overflow-hidden border-r border-separator p-12 lg:flex lg:flex-col"
-        style={{ background: `linear-gradient(160deg, ${CONSOLE_COLORS.accentSoft} 0%, ${CONSOLE_COLORS.sider} 65%)` }}
+        style={{ background: CONSOLE_COLORS.sider }}
       >
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute -left-40 -top-40 h-[36rem] w-[36rem] rounded-full opacity-60 blur-3xl"
-          style={{ background: 'radial-gradient(closest-side, rgb(1 200 134 / 0.22), transparent)' }}
-        />
         <div className="relative">
           <Brand />
         </div>
@@ -68,7 +63,7 @@ export const LoginPage: React.FC<{ onLoggedIn: () => void; onGoHome: () => void;
           <h2 className="mt-4 text-[2.5rem] font-semibold leading-[1.15] tracking-tight">
             看清每一位访客，
             <br />
-            接住每一条线索。
+            接住每一条线索
           </h2>
           <ul className="mt-12 space-y-7">
             {FEATURES.map(({ icon: Icon, title, desc }) => (
@@ -103,9 +98,9 @@ export const LoginPage: React.FC<{ onLoggedIn: () => void; onGoHome: () => void;
             </div>
           ) : (
             <>
-              <h1 className="text-[1.75rem] font-semibold tracking-tight">{mustChange ? '设置新密码' : '登录客户后台'}</h1>
+              <h1 className="text-[1.75rem] font-semibold">{mustChange ? '设置新密码' : '登录客户后台'}</h1>
               <p className="mt-2 text-caption text-label-secondary">
-                {mustChange ? '首次登录需要把初始密码换成您自己的密码。' : '查看您网站的访问统计与客户留下的线索。'}
+                {mustChange ? '首次登录需要把初始密码换成您自己的密码' : '查看您网站的访问统计与客户留下的线索'}
               </p>
 
               {error && <Alert style={{ marginTop: 24 }} type="error" showIcon title={error} />}

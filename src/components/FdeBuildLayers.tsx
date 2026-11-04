@@ -63,7 +63,7 @@ export const FdeBuildLayers: React.FC<{ className?: string }> = ({ className = '
             ))}
           </ol>
           <p className="mt-3 text-caption text-label-secondary">
-            {t('一个场景走完一轮，三层各往前一步。', 'One scenario completes one round, and each layer moves forward one step.')}
+            {t('一个场景走完一轮，三层各往前一步', 'One scenario completes one round, and each layer moves forward one step')}
           </p>
         </div>
       </div>
