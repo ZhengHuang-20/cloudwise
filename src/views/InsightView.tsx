@@ -5,7 +5,7 @@ import { PageHeader } from '../components/ui/PageHeader';
 import { Markdown } from '../components/Markdown';
 import { FaqList } from '../components/FaqList';
 import { useLang } from '../context/LanguageContext';
-import { INSIGHT_TOPIC_LABEL, INSIGHTS } from '../data/insights';
+import { INSIGHT_TOPIC_LABEL, moreInsights } from '../data/insights';
 import { SERVICES } from '../data/servicesData';
 import { glossaryList } from '../data/glossaryData';
 import { courseList } from '../data/coursesData';
@@ -26,7 +26,7 @@ export const InsightView: React.FC<{ slug: string }> = ({ slug }) => {
   const lessons = courseList(lang)
     .flatMap((c) => c.modules.flatMap((m) => m.lessons))
     .filter((lesson) => insight.relatedLessons.includes(lesson.id));
-  const more = INSIGHTS.filter((item) => item.slug !== slug).slice(0, 3);
+  const more = moreInsights(slug);
 
   return (
     <div>

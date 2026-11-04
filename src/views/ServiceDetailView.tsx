@@ -9,7 +9,8 @@ import { FaqList } from '../components/FaqList';
 import { useLang } from '../context/LanguageContext';
 import { courseList } from '../data/coursesData';
 import { INSIGHTS } from '../data/insights';
-import { findService } from '../site/routes';
+import { glossaryList } from '../data/glossaryData';
+import { findService, termSlug } from '../site/routes';
 import { useSite } from '../site/SiteContext';
 import { InsightCard } from './InsightsView';
 
@@ -22,6 +23,8 @@ export const ServiceDetailView: React.FC<{ slug: string }> = ({ slug }) => {
   const Icon = identity.icon;
   const course = courseList(lang).find((c) => c.code === svc.code);
   const insights = INSIGHTS.filter((item) => item.relatedServices.includes(svc.slug)).slice(0, 3);
+  // 术语按「相关课时」归到课程，课程与服务一一对应（课程 C ↔ 服务 C）
+  const terms = glossaryList(lang).filter((term) => term.relatedLessonId?.split('-')[1]?.toUpperCase() === svc.code);
   const name = t(identity.name, identity.nameEn);
 
   return (
@@ -105,6 +108,24 @@ export const ServiceDetailView: React.FC<{ slug: string }> = ({ slug }) => {
             </button>
           </div>
         </div>
+
+        {terms.length > 0 && (
+          <section aria-labelledby="related-terms" className="pt-10">
+            <h2 id="related-terms" className="text-title-2">
+              {t('相关术语', 'Related terms')}
+            </h2>
+            <ul className="mt-5 space-y-3 text-body">
+              {terms.map((term) => (
+                <li key={term.id}>
+                  <Link href={path(`/glossary/${termSlug(term.id)}`)} className="link">
+                    {term.questionTitle}
+                    <ChevronRight />
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
 
         {insights.length > 0 && (
           <section aria-labelledby="related-insights" className="pt-10">
