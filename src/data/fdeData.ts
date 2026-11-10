@@ -82,6 +82,16 @@ export const FDE_LOOP: { name: Bi; desc: Bi }[] = [
 export const FOUNDER = {
   name: { zh: '黄拯', en: 'Huang Zheng' },
   title: { zh: '创始人 · 系统架构师', en: 'Founder · Systems architect' },
+  /** Person.sameAs：本人运营的账号 */
+  sameAs: ['https://www.zhihu.com/people/dou-dou-15-34-65', 'https://space.bilibili.com/375232709'],
+  /** Person.knowsAbout：与简介和署名文章的主题对应 */
+  knowsAbout: [
+    'Generative Engine Optimization (GEO)',
+    'Search Engine Optimization (SEO)',
+    'Enterprise system architecture',
+    'B2B export websites',
+    'Forward Deployed Engineering',
+  ],
   intro: {
     zh: '12 年企业系统建设经验。先后在保险、支付、电商平台和教育出海领域主导过多个从 0 到 1 的系统，从需求梳理、架构设计到上线运营全程负责。',
     en: '12 years of building enterprise systems. He has led several zero-to-one systems in insurance, payments, e-commerce platforms and education going global, owning everything from requirements and architecture to launch and operations.',

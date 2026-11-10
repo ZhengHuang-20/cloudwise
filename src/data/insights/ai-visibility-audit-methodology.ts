@@ -3,6 +3,7 @@ import type { Insight } from './types';
 export const aiVisibilityAuditMethodology: Insight = {
   slug: 'ai-visibility-audit-methodology',
   topic: 'audit',
+  author: 'founder',
   publishedAt: '2026-10-08',
   updatedAt: '2026-10-08',
   keywords: {

@@ -9,7 +9,7 @@ import { FOUNDER } from '../data/fdeData';
 import { SERVICES } from '../data/servicesData';
 import { caseList } from '../data/caseStudiesData';
 import { SERVICE_COUNT_CN, SERVICE_COUNT_EN, SHOW_FDE } from '../lib/features';
-import { BRAND, ICP_RECORD, SAME_AS, SITE_URL } from '../lib/site';
+import { BRAND, COMPANY, OFFICIAL_ACCOUNTS, SITE_URL, XIAOHONGSHU } from '../lib/site';
 import { caseSlug } from '../site/routes';
 import { splitName } from './CasesView';
 
@@ -47,9 +47,30 @@ export const AboutView: React.FC = () => {
               <dt className="text-caption text-label-secondary">{t('官网', 'Website')}</dt>
               <dd className="mt-1 text-body">{SITE_URL.replace(/^https:\/\//, '')}</dd>
             </div>
+            <div className="sm:col-span-2">
+              <dt className="text-caption text-label-secondary">{t('公司全称', 'Registered name')}</dt>
+              <dd className="mt-1 text-body">
+                {COMPANY.legalName.zh}
+                {lang === 'en' && ` (${COMPANY.legalName.en})`}
+              </dd>
+            </div>
             <div>
-              <dt className="text-caption text-label-secondary">{t('ICP 备案号', 'ICP licence')}</dt>
-              <dd className="mt-1 text-body">{ICP_RECORD}</dd>
+              <dt className="text-caption text-label-secondary">{t('统一社会信用代码', 'Unified social credit code')}</dt>
+              <dd className="mt-1 text-body tabular-nums">{COMPANY.creditCode}</dd>
+            </div>
+            <div>
+              <dt className="text-caption text-label-secondary">{t('成立日期', 'Founded')}</dt>
+              <dd className="mt-1 text-body tabular-nums">
+                <time dateTime={COMPANY.foundingDate}>{COMPANY.foundingDate}</time>
+              </dd>
+            </div>
+            <div className="sm:col-span-2">
+              <dt className="text-caption text-label-secondary">{t('注册地址', 'Registered address')}</dt>
+              <dd className="mt-1 text-body">{tb(COMPANY.address.full)}</dd>
+            </div>
+            <div>
+              <dt className="text-caption text-label-secondary">{t('生态身份', 'Ecosystem')}</dt>
+              <dd className="mt-1 text-body">{tb(COMPANY.endorsement)}</dd>
             </div>
             <div className="sm:col-span-2">
               <dt className="text-caption text-label-secondary">{t('服务对象', 'Who we serve')}</dt>
@@ -162,14 +183,27 @@ export const AboutView: React.FC = () => {
               </li>
             ))}
           </ul>
-          {SAME_AS.length > 0 && (
-            <p className="mt-8 text-caption text-label-secondary">
-              {t('官方账号：', 'Official accounts: ')}
-              <a href={SAME_AS[0]} target="_blank" rel="noopener noreferrer" className="link">
-                {t('B 站 · 云端智荐出海学院', 'Bilibili · ChinGEO Export Academy')}
-              </a>
-            </p>
-          )}
+          <p className="mt-8 text-caption text-label-secondary">
+            {t('邮箱：', 'Email: ')}
+            <a href={`mailto:${COMPANY.email}`} className="link">
+              {COMPANY.email}
+            </a>
+          </p>
+          <p className="mt-2 text-caption text-label-secondary">
+            {t('官方账号：', 'Official accounts: ')}
+            {OFFICIAL_ACCOUNTS.map((a, i) => (
+              <React.Fragment key={a.url}>
+                {i > 0 && ' · '}
+                <a href={a.url} target="_blank" rel="noopener noreferrer me" className="link">
+                  {tb(a.label)}
+                </a>
+              </React.Fragment>
+            ))}
+            {t(
+              ` · 小红书「${XIAOHONGSHU.name}」（小红书号 ${XIAOHONGSHU.id}）`,
+              ` · Xiaohongshu “${XIAOHONGSHU.name}” (ID ${XIAOHONGSHU.id})`
+            )}
+          </p>
         </section>
       </div>
     </div>

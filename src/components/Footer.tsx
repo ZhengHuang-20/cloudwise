@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { FOOTER_EXTRA, NAV_GROUPS } from './navigation';
 import { CONTACTS, formatPhone } from '../data/contactsData';
 import { useLang } from '../context/LanguageContext';
-import { ICP_RECORD } from '../lib/site';
+import { COMPANY } from '../lib/site';
 
 export const Footer: React.FC = () => {
   const { t, tb, path } = useLang();
@@ -73,10 +73,15 @@ export const Footer: React.FC = () => {
         </div>
 
         <div className="mt-12 flex flex-col gap-4 border-t border-separator pt-6 text-caption text-label-secondary md:flex-row md:items-center md:justify-between">
-          <p>{t('Copyright © 2026 云端智荐。保留所有权利。', 'Copyright © 2026 ChinGEO. All rights reserved.')}</p>
-          <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer nofollow" className="hover:text-label">
-            {ICP_RECORD}
-          </a>
+          <div className="space-y-1">
+            <p>{t(`Copyright © 2026 ${COMPANY.legalName.zh}。保留所有权利。`, `Copyright © 2026 ChinGEO (${COMPANY.legalName.zh}). All rights reserved.`)}</p>
+            <p>
+              {tb(COMPANY.address.full)} ·{' '}
+              <a href={`mailto:${COMPANY.email}`} className="hover:text-label">
+                {COMPANY.email}
+              </a>
+            </p>
+          </div>
         </div>
       </div>
     </footer>

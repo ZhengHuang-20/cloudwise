@@ -3,6 +3,7 @@ import type { Insight } from './types';
 export const aiSearchSelfTestDecision: Insight = {
   slug: 'ai-search-self-test-decision',
   topic: 'geo',
+  author: 'founder',
   publishedAt: '2026-10-26',
   updatedAt: '2026-10-26',
   keywords: {

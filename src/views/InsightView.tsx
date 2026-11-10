@@ -10,7 +10,7 @@ import { SERVICES } from '../data/servicesData';
 import { glossaryList } from '../data/glossaryData';
 import { courseList } from '../data/coursesData';
 import { SERVICE_IDENTITY } from '../components/ui/serviceIdentity';
-import { BRAND } from '../lib/site';
+import { AUTHORS } from '../data/authors';
 import { findInsight, lessonPath, termSlug } from '../site/routes';
 import { useSite } from '../site/SiteContext';
 import { InsightCard } from './InsightsView';
@@ -21,6 +21,7 @@ export const InsightView: React.FC<{ slug: string }> = ({ slug }) => {
   const { openBooking, goToAudit } = useSite();
   const insight = findInsight(slug)!;
   const content = insight[lang];
+  const author = AUTHORS[insight.author];
   const services = SERVICES.filter((s) => insight.relatedServices.includes(s.slug));
   const terms = glossaryList(lang).filter((term) => insight.relatedTerms.includes(term.id));
   const lessons = courseList(lang)
@@ -36,7 +37,11 @@ export const InsightView: React.FC<{ slug: string }> = ({ slug }) => {
         title={content.title}
       >
         <p className="text-caption text-label-secondary">
-          {t(`${BRAND.zh}编辑部`, `${BRAND.en} editorial team`)} · {t('发布于 ', 'Published ')}
+          <Link href={path('/about')} className="link" rel="author">
+            {tb(author.name)}
+          </Link>
+          {' · '}
+          {tb(author.title)} · {t('发布于 ', 'Published ')}
           <time dateTime={insight.publishedAt}>{insight.publishedAt}</time>
           {insight.updatedAt !== insight.publishedAt && (
             <>
