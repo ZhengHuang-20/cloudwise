@@ -26,8 +26,6 @@ export const TAGLINE = SHOW_FDE
       en: 'AI pre-sales support for Chinese companies going global: GEO, websites, SEO and AI customer service',
     };
 
-export const ICP_RECORD = '苏ICP备20260928号-1';
-
 /**
  * 公司主体信息，以营业执照为准：Organization schema、页脚、关于页、llms.txt 共用。
  * 英文名与英文地址是译名（执照上只有中文），schema 的 legalName 与 address 一律用中文原文。

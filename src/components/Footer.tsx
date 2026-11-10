@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { FOOTER_EXTRA, NAV_GROUPS } from './navigation';
 import { CONTACTS, formatPhone } from '../data/contactsData';
 import { useLang } from '../context/LanguageContext';
-import { COMPANY, ICP_RECORD } from '../lib/site';
+import { COMPANY } from '../lib/site';
 
 export const Footer: React.FC = () => {
   const { t, tb, path } = useLang();
@@ -82,9 +82,6 @@ export const Footer: React.FC = () => {
               </a>
             </p>
           </div>
-          <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer nofollow" className="hover:text-label">
-            {ICP_RECORD}
-          </a>
         </div>
       </div>
     </footer>

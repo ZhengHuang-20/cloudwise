@@ -9,7 +9,7 @@ import { FOUNDER } from '../data/fdeData';
 import { SERVICES } from '../data/servicesData';
 import { caseList } from '../data/caseStudiesData';
 import { SERVICE_COUNT_CN, SERVICE_COUNT_EN, SHOW_FDE } from '../lib/features';
-import { BRAND, COMPANY, ICP_RECORD, OFFICIAL_ACCOUNTS, SITE_URL, XIAOHONGSHU } from '../lib/site';
+import { BRAND, COMPANY, OFFICIAL_ACCOUNTS, SITE_URL, XIAOHONGSHU } from '../lib/site';
 import { caseSlug } from '../site/routes';
 import { splitName } from './CasesView';
 
@@ -71,10 +71,6 @@ export const AboutView: React.FC = () => {
             <div>
               <dt className="text-caption text-label-secondary">{t('生态身份', 'Ecosystem')}</dt>
               <dd className="mt-1 text-body">{tb(COMPANY.endorsement)}</dd>
-            </div>
-            <div>
-              <dt className="text-caption text-label-secondary">{t('ICP 备案号', 'ICP licence')}</dt>
-              <dd className="mt-1 text-body">{ICP_RECORD}</dd>
             </div>
             <div className="sm:col-span-2">
               <dt className="text-caption text-label-secondary">{t('服务对象', 'Who we serve')}</dt>
