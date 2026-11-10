@@ -4,6 +4,7 @@ import {
   ArrowLeft,
   Building2,
   ChevronDown,
+  FileText,
   Code,
   Globe,
   Inbox,
@@ -41,6 +42,7 @@ const Nav: React.FC<{ onPick: () => void; onGoHome: () => void }> = ({ onPick, o
               { key: 'orgs', icon: <Building2 size={ICON} />, label: SECTION_TITLE.orgs },
               { key: 'users', icon: <Users size={ICON} />, label: SECTION_TITLE.users },
               { key: 'sites', icon: <Globe size={ICON} />, label: SECTION_TITLE.sites },
+              { key: 'audits', icon: <FileText size={ICON} />, label: SECTION_TITLE.audits },
             ],
           },
         ]
