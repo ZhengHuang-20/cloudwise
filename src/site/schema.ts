@@ -10,8 +10,8 @@ import { glossaryList } from '../data/glossaryData';
 import { SERVICES } from '../data/servicesData';
 import { VIDEO_META, videoPoster } from '../data/videoMeta';
 import { CONTACTS } from '../data/contactsData';
-import { FOUNDER } from '../data/fdeData';
-import { BILIBILI_VIDEOS, BRAND, SAME_AS, SITE_URL, TAGLINE, absoluteUrl } from '../lib/site';
+import { AUTHORS, type AuthorId } from '../data/authors';
+import { BILIBILI_VIDEOS, BRAND, COMPANY, SAME_AS, SITE_URL, TAGLINE, absoluteUrl } from '../lib/site';
 import { routeMeta } from './meta';
 import {
   courseSlug,
@@ -33,7 +33,7 @@ type Json = Record<string, unknown>;
 
 const ORG_ID = `${SITE_URL}/#organization`;
 const WEBSITE_ID = `${SITE_URL}/#website`;
-const FOUNDER_ID = `${SITE_URL}/#founder`;
+const personId = (id: AuthorId) => `${SITE_URL}/#${id}`;
 const GLOSSARY_SET_ID = (lang: Lang) => `${absoluteUrl(localizePath('/glossary', lang))}#termset`;
 
 const inLanguage = (lang: Lang) => (lang === 'en' ? 'en' : 'zh-CN');
@@ -46,6 +46,18 @@ function organization(lang: Lang): Json {
     '@id': ORG_ID,
     name: pick(BRAND, lang),
     alternateName: lang === 'en' ? BRAND.zh : BRAND.en,
+    legalName: COMPANY.legalName.zh,
+    taxID: COMPANY.creditCode,
+    identifier: { '@type': 'PropertyValue', propertyID: '统一社会信用代码', value: COMPANY.creditCode },
+    foundingDate: COMPANY.foundingDate,
+    address: {
+      '@type': 'PostalAddress',
+      addressCountry: COMPANY.address.country,
+      addressRegion: COMPANY.address.region,
+      addressLocality: COMPANY.address.locality,
+      streetAddress: COMPANY.address.street,
+    },
+    email: COMPANY.email,
     url: SITE_URL,
     logo: { '@type': 'ImageObject', url: absoluteUrl('/brand/logo-mark.png'), width: 235, height: 204 },
     description: pick(TAGLINE, lang),
@@ -60,6 +72,23 @@ function organization(lang: Lang): Json {
       availableLanguage: ['zh-CN', 'en'],
     })),
     sameAs: SAME_AS,
+  };
+}
+
+/** 署名作者：关于页与文章页都输出完整节点，Article.author 引用它的 @id */
+function person(id: AuthorId, lang: Lang): Json {
+  const p = AUTHORS[id];
+  return {
+    '@type': 'Person',
+    '@id': personId(id),
+    name: pick(p.name, lang),
+    alternateName: lang === 'en' ? p.name.zh : p.name.en,
+    jobTitle: pick(p.title, lang),
+    description: pick(p.intro, lang),
+    knowsAbout: p.knowsAbout,
+    sameAs: p.sameAs,
+    worksFor: orgRef,
+    url: url('/about', lang),
   };
 }
 
@@ -273,13 +302,14 @@ function mainEntities(route: Route, lang: Lang, pageUrl: string): Json[] {
           abstract: content.answer,
           datePublished: item.publishedAt,
           dateModified: item.updatedAt,
-          author: orgRef,
+          author: { '@id': personId(item.author) },
           publisher: orgRef,
           inLanguage: inLanguage(lang),
           keywords: item.keywords[lang].join(', '),
           mainEntityOfPage: pageUrl,
           image: absoluteUrl('/og.png'),
         },
+        person(item.author, lang),
         faqPage(pageUrl, content.faqs),
       ];
     }
@@ -314,18 +344,7 @@ function mainEntities(route: Route, lang: Lang, pageUrl: string): Json[] {
     }
     case 'about':
       // 创始人：只用关于页上已经写明的事实（姓名、职务、简介）
-      return [
-        {
-          '@type': 'Person',
-          '@id': FOUNDER_ID,
-          name: pick(FOUNDER.name, lang),
-          alternateName: lang === 'en' ? FOUNDER.name.zh : FOUNDER.name.en,
-          jobTitle: pick(FOUNDER.title, lang),
-          description: pick(FOUNDER.intro, lang),
-          worksFor: orgRef,
-          url: pageUrl,
-        },
-      ];
+      return [person('founder', lang)];
     case 'audit': {
       const method = findInsight('ai-visibility-audit-methodology');
       return [
@@ -364,7 +383,7 @@ export function pageSchema(route: Route, lang: Lang): Json {
   const pageUrl = url(routePath(route), lang);
   const trail = crumbs(route, lang);
   const org = organization(lang);
-  if (route.kind === 'about') org.founder = { '@id': FOUNDER_ID };
+  if (route.kind === 'about') org.founder = { '@id': personId('founder') };
   const graph: Json[] = [
     org,
     website(lang),

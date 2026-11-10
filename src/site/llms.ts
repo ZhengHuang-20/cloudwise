@@ -10,7 +10,7 @@ import { INSIGHTS } from '../data/insights';
 import { SERVICES } from '../data/servicesData';
 import { CONTACTS } from '../data/contactsData';
 import { SERVICE_COUNT_CN, SERVICE_COUNT_EN } from '../lib/features';
-import { BRAND, ICP_RECORD, SAME_AS, SITE_URL, TAGLINE, absoluteUrl } from '../lib/site';
+import { BRAND, COMPANY, ICP_RECORD, SAME_AS, SITE_URL, TAGLINE, absoluteUrl } from '../lib/site';
 import { routeMeta } from './meta';
 import { caseSlug, courseSlug, lessonPath, localizePath, solutionSlug, termSlug, type Route } from './routes';
 
@@ -57,6 +57,10 @@ export function llmsTxt(): string {
     '## 公司 Company',
     entry(`关于${BRAND.zh}`, '/about', desc({ kind: 'about' }, zh), zh),
     ...CONTACTS.map((c) => `- ${c.title}：${c.name}，手机 ${c.phone}`),
+    `- 公司全称：${COMPANY.legalName.zh}（统一社会信用代码 ${COMPANY.creditCode}，成立于 ${COMPANY.foundingDate}）`,
+    `- 注册地址：${COMPANY.address.full.zh}`,
+    `- 邮箱：${COMPANY.email}`,
+    `- ${COMPANY.endorsement.zh}`,
     `- ICP 备案号：${ICP_RECORD}`,
     ...SAME_AS.map((u) => `- 官方账号：${u}`),
     '',

@@ -3,6 +3,7 @@ import type { Insight } from './types';
 export const geoVsSeo: Insight = {
   slug: 'geo-vs-seo',
   topic: 'geo',
+  author: 'founder',
   publishedAt: '2026-10-08',
   updatedAt: '2026-10-08',
   keywords: {

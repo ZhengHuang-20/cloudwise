@@ -28,11 +28,43 @@ export const TAGLINE = SHOW_FDE
 
 export const ICP_RECORD = '苏ICP备20260928号-1';
 
+/**
+ * 公司主体信息，以营业执照为准：Organization schema、页脚、关于页、llms.txt 共用。
+ * 英文名与英文地址是译名（执照上只有中文），schema 的 legalName 与 address 一律用中文原文。
+ */
+export const COMPANY = {
+  legalName: { zh: '深圳市云端智荐科技有限公司', en: 'Shenzhen Cloudwise Zhijian Technology Co., Ltd.' },
+  /** 统一社会信用代码 */
+  creditCode: '91440300MADPJ0KN2H',
+  foundingDate: '2024-06-26',
+  address: {
+    country: 'CN',
+    region: '广东省',
+    locality: '深圳市',
+    street: '罗湖区黄贝街道深南东路1133号长安大厦510',
+    full: {
+      zh: '中国广东省深圳市罗湖区黄贝街道深南东路1133号长安大厦510',
+      en: 'Room 510, Chang’an Building, 1133 Shennan East Road, Huangbei Subdistrict, Luohu District, Shenzhen, Guangdong, China',
+    },
+  },
+  email: 'bluu110@gmail.com',
+  /** 身份背书：只写确认过的身份，不扩大成「合作伙伴」「认证」 */
+  endorsement: { zh: '腾讯 WorkBuddy 生态共建企业', en: 'Tencent WorkBuddy ecosystem co-builder' },
+};
+
 /** 官网自己的访问统计站点标识（公开，写在页面的 cw.js 标签里），对应客户后台「站点与授权」中的官网 */
 export const ANALYTICS_SITE_KEY = 'sk_b7b2303ec24b731047210b7e';
 
-/** 官方账号（Organization.sameAs）。新开账号后加到这里 */
-export const SAME_AS: string[] = ['https://space.bilibili.com/375232709'];
+/** 官方账号（Organization.sameAs 与关于页）。新开账号后加到这里；没有主页地址的账号不要加 */
+export const OFFICIAL_ACCOUNTS: { url: string; label: { zh: string; en: string } }[] = [
+  { url: 'https://space.bilibili.com/375232709', label: { zh: 'B 站 · 云端智荐出海学院', en: 'Bilibili · ChinGEO Export Academy' } },
+  { url: 'https://www.zhihu.com/people/dou-dou-15-34-65', label: { zh: '知乎', en: 'Zhihu' } },
+];
+
+export const SAME_AS: string[] = OFFICIAL_ACCOUNTS.map((a) => a.url);
+
+/** 小红书账号：暂无可公开的主页地址，只在关于页以文字提及，不进 sameAs */
+export const XIAOHONGSHU = { name: 'David爱肥鱼', id: '49237272147' };
 
 /** 课程视频在 B 站的对应稿件（课时 id → BV 号），清单见 docs/course-videos.md */
 export const BILIBILI_VIDEOS: Record<string, string> = {

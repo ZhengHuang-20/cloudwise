@@ -3,6 +3,7 @@ import type { Insight } from './types';
 export const llmsTxtGuide: Insight = {
   slug: 'llms-txt-guide',
   topic: 'website',
+  author: 'founder',
   publishedAt: '2026-10-08',
   updatedAt: '2026-10-08',
   keywords: {

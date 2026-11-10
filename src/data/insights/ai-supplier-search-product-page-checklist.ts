@@ -3,6 +3,7 @@ import type { Insight } from './types';
 export const aiSupplierSearchProductPageChecklist: Insight = {
   slug: 'ai-supplier-search-product-page-checklist',
   topic: 'geo',
+  author: 'founder',
   publishedAt: '2026-10-20',
   updatedAt: '2026-10-20',
   keywords: {

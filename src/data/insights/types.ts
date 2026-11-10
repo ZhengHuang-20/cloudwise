@@ -17,12 +17,16 @@ export interface InsightContent {
   faqs: { q: string; a: string }[];
 }
 
+import type { AuthorId } from '../authors';
+
 export type InsightTopic = 'geo' | 'seo' | 'website' | 'ai-customer-service' | 'fde' | 'audit';
 
 export interface Insight {
   /** URL slug：小写英文与连字符，例如 what-is-geo */
   slug: string;
   topic: InsightTopic;
+  /** 署名作者（src/data/authors.ts） */
+  author: AuthorId;
   /** YYYY-MM-DD */
   publishedAt: string;
   /** YYYY-MM-DD，内容有实质更新时修改 */
