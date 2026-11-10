@@ -9,7 +9,7 @@ import { allRoutes, findLesson, hasEnglish, isIndexable, localizePath, routePath
  * sitemap.xml：全部可索引页面的中英文地址，带 hreflang 互指；课时页附带视频信息。
  * lastModified：文章取更新日期，其他页面取 CONTENT_UPDATED（改动页面内容时更新它）。
  */
-const CONTENT_UPDATED = '2026-11-04';
+const CONTENT_UPDATED = '2026-11-10';
 
 const lastModified = (route: Route) =>
   route.kind === 'insight' ? (INSIGHTS.find((i) => i.slug === route.slug)?.updatedAt ?? CONTENT_UPDATED) : CONTENT_UPDATED;
