@@ -11,7 +11,7 @@ export const llmsTxtGuide: Insight = {
     en: ['what is llms.txt', 'how to write llms.txt', 'does llms.txt help GEO'],
   },
   relatedServices: ['website', 'geo'],
-  relatedTerms: ['term-geo'],
+  relatedTerms: ['term-geo', 'term-ai-crawlers'],
   relatedLessons: ['lesson-a-1-2'],
   zh: {
     title: 'llms.txt 是什么，企业官网要不要做？',

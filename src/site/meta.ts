@@ -153,14 +153,17 @@ export function routeMeta(route: Route, lang: Lang): PageMeta {
       return {
         title: t('出海 SEO、GEO 与 AI 术语百科', 'Glossary of export SEO, GEO and AI terms'),
         description: t(
-          '用一问一答讲清 GEO、E-E-A-T、Core Web Vitals 等出海获客术语：一句话定义、案例与常见误区。',
-          'GEO, E-E-A-T, Core Web Vitals and other export marketing terms explained as questions and answers: a one-line definition, a case and common pitfalls.'
+          '用一问一答讲清 GEO、AEO、AI Overviews、结构化数据、hreflang、AI 爬虫等出海获客术语：一句话定义、详细解释、案例与常见误区。',
+          'GEO, AEO, AI Overviews, structured data, hreflang, AI crawlers and more, explained as questions and answers: a one-line definition, an example and pitfalls.'
         ),
       };
     case 'term': {
       const id = findTerm(route.slug)!.id;
       const term = glossaryList(lang).find((item) => item.id === id)!;
-      return { title: term.questionTitle, description: clip(term.oneLineDefinition, max) };
+      // 「什么是 X？为什么……？」这类两问的标题放不下时，只留第一问
+      const first = term.questionTitle.split(lang === 'en' ? /, and /i : /？(?=.)/)[0];
+      const short = first === term.questionTitle ? [] : [`${first}${t('？', '?')}`];
+      return { title: term.questionTitle, shortTitles: short, description: clip(term.oneLineDefinition, max) };
     }
     case 'audit':
       return {

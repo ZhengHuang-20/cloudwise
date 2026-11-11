@@ -40,7 +40,7 @@ bun run create-admin <email>   # 创建管理员并打印一次性初始密码
 
 ### 服务端（`app/api/**` + `src/server/`）
 
-- `app/` 的结构：两个根布局 `app/(zh)/layout.tsx`（中文，`<html lang="zh-CN">`）与 `app/(en)/layout.tsx`（英文，页面在 `/en` 下），都转发到 `src/site/RootLayout.tsx`；页面是 `app/(zh)/[[...slug]]/page.tsx` 与 `app/(en)/en/[[...slug]]/page.tsx` 两个可选 catch-all，只转发到 `src/site/page.tsx`；另有 `not-found.tsx`、`robots.ts`、`sitemap.ts`、`llms.txt` / `llms-full.txt` / `en/llms-full.txt` 三个 route handler，以及 `api/**/route.ts`。api 的 route 文件只做一行 re-export，处理逻辑都在 `src/server/routes/*.ts`；新增接口时同样在 `app/api` 下按路径建 `route.ts` 并从 routes 导出。未定义的 `/api/*` 由 `app/api/[...path]` 返回 JSON 404。
+- `app/` 的结构：两个根布局 `app/(zh)/layout.tsx`（中文，`<html lang="zh-CN">`）与 `app/(en)/layout.tsx`（英文，页面在 `/en` 下），都转发到 `src/site/RootLayout.tsx`；页面是 `app/(zh)/[[...slug]]/page.tsx` 与 `app/(en)/en/[[...slug]]/page.tsx` 两个可选 catch-all，只转发到 `src/site/page.tsx`；另有 `not-found.tsx`、`robots.ts`、`sitemap.ts`、`llms.txt` / `llms-full.txt` / `en/llms-full.txt`、`feed.xml` / `en/feed.xml`、`md-pages`（Markdown 版页面）等 route handler，以及 `api/**/route.ts`。api 的 route 文件只做一行 re-export，处理逻辑都在 `src/server/routes/*.ts`；新增接口时同样在 `app/api` 下按路径建 `route.ts` 并从 routes 导出。未定义的 `/api/*` 由 `app/api/[...path]` 返回 JSON 404。
 - `src/server/` 只在服务端使用，不要从前端代码 import：`config.ts`（环境变量）、`db.ts`（`pg` 连接池 + `attachDatabasePool`，`query` / `queryOne` / `exec` / `tx`；BIGINT 已解析为 number）、`http.ts`（`route()` 包装、`json` / `apiError`、`readJSON`、`clientIP`）、`auth.ts`（argon2id、会话、`authed()` 鉴权包装、`siteAccess`）、`ratelimit.ts`、`channels.ts`（访问来源归类）、`useragent.ts`（设备 / 浏览器 / 系统 / 爬虫识别）、`vercel.ts`（读取 Vercel Web Analytics，数据概览以它为准）、`gemini.ts`、`knowledge.ts`、`engines.ts`、`audit*.ts`、`migrate.ts`。
 - 错误响应统一为 `{ error: 中文说明, code }`，前端 `src/lib/api.ts` 依赖这个格式。处理函数里 `throw new HttpError(...)` 或直接 `return apiError(...)`；其他异常由 `route()` 记日志并返回 500。
 - **Serverless 约束**：函数实例之间不共享内存（创建测评的 POST 与轮询的 GET 常落在不同实例），所以限流计数（`rate_limits` 表）、测评任务状态（`audits` 表）都放数据库；测评必须配置数据库（联系方式要入库，未配置时 POST 返回 503），所以不再有进程内的测评实现，任务状态一律走数据库。不要再引入只存内存、却需要跨请求一致的状态。
@@ -116,7 +116,10 @@ bun run create-admin <email>   # 创建管理员并打印一次性初始密码
 - 站点身份（正式域名、中英文品牌名、一句话定位、公司主体 `COMPANY`（营业执照上的全称、信用代码、成立日期、地址、邮箱）、官方账号 `OFFICIAL_ACCOUNTS` / `SAME_AS`）只在 `src/lib/site.ts` 维护；文章署名作者在 `src/data/authors.ts`（Insight 的 `author` 字段），文章页输出作者的 `Person` 并由 Article.author 引用其 @id；新开官方账号（知乎、公众号、头条号、LinkedIn 等）后加进 `SAME_AS`。
 - `app/robots.ts` 明确放行搜索引擎与 AI 爬虫（含 Bytespider、Doubaobot 等字节系爬虫），只挡 `/api/`。不要屏蔽 AI 爬虫。
 - 站长平台验证码走环境变量（`GOOGLE_SITE_VERIFICATION`、`BING_SITE_VERIFICATION`、`BAIDU_SITE_VERIFICATION`、`TOUTIAO_SITE_VERIFICATION`、`SO360_SITE_VERIFICATION`、`SOGOU_SITE_VERIFICATION`），在 `src/site/RootLayout.tsx` 输出为 meta 标签。
-- 分享图是静态的 `public/og.png`（1200×630）。sitemap 的 `lastModified`：文章取 `updatedAt`，其他页面取 `app/sitemap.ts` 的 `CONTENT_UPDATED`，改了页面内容记得更新。
+- 分享图是静态的 `public/og.png`（1200×630）。页面的更新日期（sitemap 的 `lastModified`、JSON-LD 的 `dateModified`、Markdown 版）：文章取 `updatedAt`，其他页面取 `src/lib/site.ts` 的 `CONTENT_UPDATED`（`routeModified`），改了页面内容记得更新。
+- **Markdown 版页面**（`src/site/markdown.ts`）：每个可索引的内容页在地址后加 `.md` 就是干净的 Markdown 全文（`/services/geo.md`、`/en/glossary/geo.md`，首页 `/index.md`、`/en/index.md`），写给 AI 助手与智能体。构建时由 `app/md-pages/[lang]/[[...slug]]/route.ts` 生成，`next.config.mjs` 的 `rewrites` 把 `*.md` 改写过去；响应带 `X-Robots-Tag: noindex` 与指回 HTML 页的 `Link: rel="canonical"`，页面 `<head>` 用 `<link rel="alternate" type="text/markdown">` 声明。新增一种页面时在 `markdown.ts` 的 `body()` 补对应分支（不补则只有标题与描述）。
+- **RSS**（`src/site/feed.ts`）：`/feed.xml`（中文）与 `/en/feed.xml`（英文）列出全部洞察文章，`<head>` 里有 `application/rss+xml` 声明。
+- 首页的常见问题在 `src/data/homeFaqs.ts`（页面与 FAQPage 结构化数据共用），回答「是谁、做什么、适合谁、怎么收费」；改服务或案例时一并核对。
 
 ## 样式约定（完整规范见 `DESIGN.md`）
 

@@ -5,7 +5,8 @@ import { PageHeader } from '../components/ui/PageHeader';
 import { useLang } from '../context/LanguageContext';
 import { Insight, INSIGHT_TOPIC_LABEL, INSIGHTS } from '../data/insights';
 
-export const InsightCard: React.FC<{ insight: Insight }> = ({ insight }) => {
+/** heading：卡片标题的层级，列表页紧跟 H1 用 h2，其他页面放在某个 H2 小节下用 h3 */
+export const InsightCard: React.FC<{ insight: Insight; heading?: 'h2' | 'h3' }> = ({ insight, heading: Heading = 'h3' }) => {
   const { t, tb, lang, path } = useLang();
   const content = insight[lang];
   return (
@@ -13,7 +14,7 @@ export const InsightCard: React.FC<{ insight: Insight }> = ({ insight }) => {
       <p className="text-caption text-label-secondary">
         {tb(INSIGHT_TOPIC_LABEL[insight.topic])} · <time dateTime={insight.publishedAt}>{insight.publishedAt}</time>
       </p>
-      <h3 className="mt-2 text-title-3">{content.title}</h3>
+      <Heading className="mt-2 text-title-3">{content.title}</Heading>
       <p className="mt-2 line-clamp-3 flex-1 text-body text-label-secondary">{content.description}</p>
       <span className="link mt-5 text-body">
         {t('阅读全文', 'Read more')}
@@ -39,7 +40,7 @@ export const InsightsView: React.FC = () => {
       <div className="layout-wide pb-[clamp(4.5rem,2.5rem+6vw,8.75rem)]">
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-5 lg:grid-cols-3">
           {INSIGHTS.map((item) => (
-            <InsightCard key={item.slug} insight={item} />
+            <InsightCard key={item.slug} insight={item} heading="h2" />
           ))}
         </div>
       </div>

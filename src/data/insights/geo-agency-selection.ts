@@ -11,7 +11,7 @@ export const geoAgencySelection: Insight = {
     en: ['how to choose a GEO agency', 'GEO agency', 'questions to ask a GEO agency', 'generative engine optimization services'],
   },
   relatedServices: ['geo', 'seo', 'website'],
-  relatedTerms: ['term-geo', 'term-eeat'],
+  relatedTerms: ['term-geo', 'term-eeat', 'term-entity'],
   relatedLessons: ['lesson-c-3-1', 'lesson-c-1-2'],
   zh: {
     title: 'GEO 服务商怎么选？出海企业的 8 个评估问题',

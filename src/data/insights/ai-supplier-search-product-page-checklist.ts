@@ -17,7 +17,7 @@ export const aiSupplierSearchProductPageChecklist: Insight = {
     ],
   },
   relatedServices: ['geo', 'website', 'seo'],
-  relatedTerms: ['term-geo', 'term-eeat'],
+  relatedTerms: ['term-geo', 'term-eeat', 'term-structured-data'],
   relatedLessons: ['lesson-c-1-1'],
   zh: {
     title: '买家问 AI 找供应商：外贸官网产品页 6 项自查清单',
