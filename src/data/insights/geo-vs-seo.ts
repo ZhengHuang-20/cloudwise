@@ -69,6 +69,7 @@ export const geoVsSeo: Insight = {
   },
   en: {
     title: 'GEO vs SEO: what is the difference, and which should exporters do first?',
+    seoTitle: 'GEO vs SEO: the difference, and which exporters do first',
     description:
       'SEO gets pages ranked in search results; GEO gets ChatGPT, Perplexity, Gemini and other AI assistants to mention and cite you. We compare the goals, measurement and work involved, and set out the order exporters should follow.',
     answer:

@@ -163,6 +163,7 @@ export const aiSupplierSearchProductPageChecklist: Insight = {
   },
   en: {
     title: 'Buyers ask AI to find suppliers: a 6-point product page checklist',
+    seoTitle: 'AI supplier search: a 6-point product page checklist',
     description:
       'In a Gemini test, AI kept describing suppliers with the same 6 types of facts. Here is a 6-point product page checklist and copy templates for manufacturer websites.',
     answer:

@@ -17,7 +17,7 @@ import { InsightCard } from './InsightsView';
 /** 单项服务详情页 /services/<slug> */
 export const ServiceDetailView: React.FC<{ slug: string }> = ({ slug }) => {
   const { t, tb, lang, path } = useLang();
-  const { openBooking, goToAudit, goToConfigurator } = useSite();
+  const { openBooking, goToConfigurator } = useSite();
   const svc = findService(slug)!;
   const identity = SERVICE_IDENTITY[svc.key];
   const Icon = identity.icon;
@@ -39,9 +39,9 @@ export const ServiceDetailView: React.FC<{ slug: string }> = ({ slug }) => {
           <button type="button" onClick={openBooking} className="btn btn-primary btn-lg">
             {t('预约诊断会', 'Book a diagnosis call')}
           </button>
-          <button type="button" onClick={goToAudit} className="btn btn-secondary btn-lg">
+          <Link href={path('/audit')} className="btn btn-secondary btn-lg">
             {t('先做 AI 可见性测评', 'Run the AI visibility audit first')}
-          </button>
+          </Link>
         </div>
       </PageHeader>
 

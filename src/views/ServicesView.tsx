@@ -12,7 +12,7 @@ import { useSite } from '../site/SiteContext';
 
 export const ServicesView: React.FC = () => {
   const { t, tb, lang, path } = useLang();
-  const { goToAudit: onGoToAudit, goToConfigurator } = useSite();
+  const { goToConfigurator } = useSite();
   const onGoToConfigurator = (combo: string) => goToConfigurator({ packageType: combo });
 
   const scrollToService = (code: string) => {
@@ -131,9 +131,9 @@ export const ServicesView: React.FC = () => {
             >
               {t('配置获客组合', 'Configure the lead package')}
             </button>
-            <button type="button" onClick={onGoToAudit} className="btn btn-secondary btn-lg">
+            <Link href={path('/audit')} className="btn btn-secondary btn-lg">
               {t('先做 AI 可见性测评', 'Run the AI visibility audit first')}
-            </button>
+            </Link>
           </div>
         </section>
       </div>

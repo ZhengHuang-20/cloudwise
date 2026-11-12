@@ -12,7 +12,7 @@ import { splitName } from './CasesView';
 /** 案例详情页 /cases/<slug> */
 export const CaseDetailView: React.FC<{ slug: string }> = ({ slug }) => {
   const { t, lang, path } = useLang();
-  const { goToAudit, openBooking } = useSite();
+  const { openBooking } = useSite();
   const id = findCase(slug)!.id;
   const currentCase = caseList(lang).find((c) => c.id === id)!;
   const caseName = splitName(currentCase.clientName);
@@ -174,9 +174,9 @@ export const CaseDetailView: React.FC<{ slug: string }> = ({ slug }) => {
         <section className="pt-[clamp(3.5rem,2rem+4vw,6rem)] text-center">
           <h2 className="text-headline">{t('先看看你的企业在哪一步', 'See where your company stands')}</h2>
           <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
-            <button type="button" onClick={goToAudit} className="btn btn-primary btn-lg">
+            <Link href={path('/audit')} className="btn btn-primary btn-lg">
               {t('给我的企业做同样的测评', 'Run the same audit for my company')}
-            </button>
+            </Link>
             <button type="button" onClick={openBooking} className="btn btn-secondary btn-lg">
               {t('预约诊断会', 'Book a diagnosis call')}
             </button>

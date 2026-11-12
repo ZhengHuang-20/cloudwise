@@ -6,7 +6,6 @@ import { glossaryList, GLOSSARY_CATEGORY_EN } from '../data/glossaryData';
 import { INSIGHTS } from '../data/insights';
 import { useLang } from '../context/LanguageContext';
 import { findTerm, lessonPath, termSlug } from '../site/routes';
-import { useSite } from '../site/SiteContext';
 import { InsightCard } from './InsightsView';
 
 // 「相关术语」写的是术语名（如 SEO、E-E-A-T），能对上已有词条的就链接过去
@@ -15,7 +14,6 @@ const normalize = (s: string) => s.toLowerCase().replace(/[^a-z0-9一-龥]/g, ''
 /** 术语详情页 /glossary/<slug> */
 export const TermView: React.FC<{ slug: string }> = ({ slug }) => {
   const { t, lang, path } = useLang();
-  const { goToAudit } = useSite();
   const id = findTerm(slug)!.id;
   const terms = glossaryList(lang);
   const term = terms.find((item) => item.id === id)!;
@@ -108,9 +106,9 @@ export const TermView: React.FC<{ slug: string }> = ({ slug }) => {
           <p className="mx-auto mt-3 max-w-xl text-body text-label-secondary">
             {t('免费的 AI 可见性测评会检查技术底座，并测试 AI 是否会推荐你', 'The free AI visibility audit checks your technical foundation and tests whether AI recommends you')}
           </p>
-          <button type="button" onClick={goToAudit} className="btn btn-primary mt-6">
+          <Link href={path('/audit')} className="btn btn-primary mt-6">
             {t('开始测评', 'Start the audit')}
-          </button>
+          </Link>
         </section>
       </article>
     </div>

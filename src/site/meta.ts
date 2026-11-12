@@ -51,7 +51,7 @@ export function routeMeta(route: Route, lang: Lang): PageMeta {
           `${BRAND.zh} - 出海 GEO 优化、外贸 SEO 与独立站建设 | AI 出海售前支持`,
           `${BRAND.en} - GEO, SEO and export websites for Chinese manufacturers`
         ),
-        shortTitles: [t('', `${BRAND.en}: GEO, SEO and websites for Chinese exporters`)].filter(Boolean),
+        shortTitles: [t(`${BRAND.zh} - 出海 GEO 优化、外贸 SEO 与独立站建设`, `${BRAND.en}: GEO, SEO and websites for Chinese exporters`)],
         description: t(
           `${BRAND.zh}帮中国制造企业让海外买家找得到、读得懂、信得过：${svcList}${SERVICE_COUNT_CN}项服务，并提供免费 AI 可见性测评、出海学院与方案规划。`,
           `${BRAND.en} helps Chinese manufacturers get found and trusted by overseas buyers: ${svcShort}, plus a free AI visibility audit.`
@@ -144,6 +144,7 @@ export function routeMeta(route: Route, lang: Lang): PageMeta {
       const content = item[lang];
       return {
         title: content.title,
+        shortTitles: content.seoTitle ? [content.seoTitle] : undefined,
         description: clip(content.description, max),
         article: { publishedTime: item.publishedAt, modifiedTime: item.updatedAt },
         keywords: item.keywords[lang],

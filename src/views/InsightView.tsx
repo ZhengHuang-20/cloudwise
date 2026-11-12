@@ -18,7 +18,7 @@ import { InsightCard } from './InsightsView';
 /** 「GEO 洞察」文章页 /insights/<slug> */
 export const InsightView: React.FC<{ slug: string }> = ({ slug }) => {
   const { t, tb, lang, path } = useLang();
-  const { openBooking, goToAudit } = useSite();
+  const { openBooking } = useSite();
   const insight = findInsight(slug)!;
   const content = insight[lang];
   const author = AUTHORS[insight.author];
@@ -110,9 +110,9 @@ export const InsightView: React.FC<{ slug: string }> = ({ slug }) => {
             )}
           </p>
           <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <button type="button" onClick={goToAudit} className="btn btn-primary">
+            <Link href={path('/audit')} className="btn btn-primary">
               {t('开始测评', 'Start the audit')}
-            </button>
+            </Link>
             <button type="button" onClick={openBooking} className="btn btn-secondary">
               {t('预约诊断会', 'Book a diagnosis call')}
             </button>
