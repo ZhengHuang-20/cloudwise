@@ -13,11 +13,14 @@ interface Recipient {
   phone: string;
 }
 
-/** 模板变量：${site} 站点名、${name} 称呼、${contact} 联系方式。阿里云「其他」类变量单个不超过 35 个字符 */
+/**
+ * 模板变量：${sitename} 站点名、${customer} 称呼、${contact} 联系方式。阿里云「其他」类变量单个不超过 35 个字符。
+ * 变量名不能用 email、mobile、nick、id、site（阿里云保留）。
+ */
 export function leadSmsParams(site: string, name: string, contact: string) {
   return {
-    site: clip(site, 20) || '官网',
-    name: clip(name, 12) || '访客',
+    sitename: clip(site, 20) || '官网',
+    customer: clip(name, 12) || '访客',
     contact: clip(contact, 35) || '未留',
   };
 }

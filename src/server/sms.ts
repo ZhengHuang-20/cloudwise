@@ -32,7 +32,7 @@ const HINTS: Record<string, string> = {
   'isv.SMS_SIGNATURE_ILLEGAL': '短信签名不存在或未审核通过',
   'isv.SMS_SIGN_ILLEGAL': '短信签名不存在或未审核通过',
   'isv.SMS_TEMPLATE_ILLEGAL': '模板不存在、未审核通过或不属于该账号',
-  'isv.TEMPLATE_MISSING_PARAMETERS': '模板变量与 ${site} ${name} ${contact} 不一致',
+  'isv.TEMPLATE_MISSING_PARAMETERS': '模板变量与 ${sitename} ${customer} ${contact} 不一致',
   'isv.TEMPLATE_PARAMS_ILLEGAL': '模板变量的内容不符合变量属性（如把邮箱填进了「电话号码」类型的变量）',
   'isv.BUSINESS_LIMIT_CONTROL': '触发阿里云对同一号码的发送频率限制',
   'isv.DAY_LIMIT_CONTROL': '触发阿里云的每日发送上限',
@@ -47,7 +47,7 @@ const HINTS: Record<string, string> = {
 };
 
 /**
- * 用新线索模板给一个号码发短信。params 是模板变量（如 { site, name, contact }），值需符合模板的变量属性。
+ * 用新线索模板给一个号码发短信。params 是模板变量（如 { sitename, customer, contact }），值需符合模板的变量属性。
  * 不抛异常：网络错误、超时与服务商拒绝都返回 { ok: false, error }。
  */
 export async function sendSms(phone: string, params: Record<string, string>): Promise<SmsResult> {
