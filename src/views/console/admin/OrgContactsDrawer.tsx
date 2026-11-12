@@ -141,7 +141,7 @@ export const OrgContactsDrawer: React.FC<{ org: Org | null; onClose: () => void;
           />
         )}
         <p className="text-caption text-label-secondary">
-          打开「新线索短信」的联系人，会在该公司任一站点收到新线索（含 AI 可见性测评留资）时立即收到一条短信，内容为站点、称呼与联系方式。
+          打开「新线索短信」的联系人，会在该公司任一站点收到新线索（含 AI 可见性测评留资）时立即收到一条短信，内容为站点与称呼，联系方式到「线索管理」查看。
           {data ? `每个号码每天最多 ${data.dailyLimit} 条，超出的只记录不发送。` : ''}
         </p>
 

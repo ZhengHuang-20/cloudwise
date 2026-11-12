@@ -14,14 +14,15 @@ interface Recipient {
 }
 
 /**
- * 模板变量：${sitename} 站点名、${customer} 称呼、${contact} 联系方式。阿里云「其他」类变量单个不超过 35 个字符。
+ * 模板变量：${sitename} 站点名、${customer} 称呼，属性都选「其他」，单个不超过 35 个字符。
  * 变量名不能用 email、mobile、nick、id、site（阿里云保留）。
+ * 不把线索的手机号放进短信：变量属性为「电话号码」时阿里云要求逐个报备号码（引流信息），
+ * 而线索号码每条都不同，无法报备；联系方式请到后台「线索管理」查看。
  */
-export function leadSmsParams(site: string, name: string, contact: string) {
+export function leadSmsParams(site: string, name: string) {
   return {
     sitename: clip(site, 20) || '官网',
     customer: clip(name, 12) || '访客',
-    contact: clip(contact, 35) || '未留',
   };
 }
 
@@ -57,7 +58,7 @@ async function sentToday(phone: string): Promise<number> {
 export async function notifyNewLead(leadId: number): Promise<void> {
   try {
     const lead = await queryOne(
-      `SELECT l.name, l.phone, l.email, s.name AS site_name, s.org_id
+      `SELECT l.name, s.name AS site_name, s.org_id
        FROM leads l JOIN sites s ON s.id = l.site_id WHERE l.id = $1`,
       [leadId],
     );
@@ -67,7 +68,7 @@ export async function notifyNewLead(leadId: number): Promise<void> {
       [lead.org_id],
     );
     if (recipients.length === 0) return;
-    const params = leadSmsParams(lead.site_name, lead.name, lead.phone || lead.email);
+    const params = leadSmsParams(lead.site_name, lead.name);
     const limit = config().smsDailyLimit;
     await Promise.all(
       recipients.map(async (r) => {
@@ -85,7 +86,7 @@ export async function notifyNewLead(leadId: number): Promise<void> {
 
 /** 管理员手动给某个联系人发一条测试短信（同一个模板，内容为示例），返回发送结果 */
 export async function sendTestSms(r: Recipient, siteName: string): Promise<SmsResult> {
-  const res = await sendSms(r.phone, leadSmsParams(siteName, '测试线索', r.phone));
+  const res = await sendSms(r.phone, leadSmsParams(siteName, '测试线索'));
   await log(r, 'test', null, res);
   return res;
 }
