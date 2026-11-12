@@ -17,6 +17,30 @@ export interface Org {
   id: number;
   name: string;
   createdAt: string;
+  /** 企业联系人数，以及其中打开了新线索短信的人数 */
+  contacts: number;
+  notifyContacts: number;
+}
+
+export interface OrgContact {
+  id: number;
+  orgId: number;
+  name: string;
+  title: string;
+  phone: string;
+  notifyLeads: boolean;
+  createdAt: string;
+}
+
+export interface SmsLog {
+  id: number;
+  contactName: string;
+  phone: string;
+  kind: 'lead' | 'test';
+  status: 'sent' | 'failed' | 'skipped';
+  error: string;
+  leadName: string;
+  createdAt: string;
 }
 
 export interface AdminUser {

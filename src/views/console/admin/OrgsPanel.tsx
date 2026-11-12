@@ -1,9 +1,10 @@
 import React, { useMemo, useState } from 'react';
 import { App as AntApp, Button, Card, Form, Input, Modal, Table } from 'antd';
-import { Plus } from 'lucide-react';
+import { Plus, UsersRound } from 'lucide-react';
 import { api, formatTime } from '../../../lib/api';
 import { PageTitle } from '../parts';
 import type { Org } from '../types';
+import { OrgContactsDrawer } from './OrgContactsDrawer';
 import { useAdminData } from './useAdminData';
 
 export const OrgsPanel: React.FC = () => {
@@ -12,6 +13,7 @@ export const OrgsPanel: React.FC = () => {
   const [keyword, setKeyword] = useState('');
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [contactsOrg, setContactsOrg] = useState<Org | null>(null);
   const [form] = Form.useForm<{ name: string }>();
 
   const rows = useMemo(() => {
@@ -44,7 +46,7 @@ export const OrgsPanel: React.FC = () => {
     <>
       <PageTitle
         title="客户公司"
-        description="签约客户的公司主体。账号与站点都归属于公司，站点只能授权给同一公司的账号。"
+        description="签约客户的公司主体。账号与站点都归属于公司，站点只能授权给同一公司的账号；企业联系人可以接收新线索短信。"
         extra={
           <Button type="primary" icon={<Plus size={16} />} onClick={() => setOpen(true)}>
             新建公司
@@ -62,7 +64,7 @@ export const OrgsPanel: React.FC = () => {
           rowKey="id"
           loading={loading}
           dataSource={rows}
-          scroll={{ x: 640 }}
+          scroll={{ x: 860 }}
           pagination={{ pageSize: 20, hideOnSinglePage: true, showSizeChanger: false }}
           columns={[
             { title: '公司名称', dataIndex: 'name', render: (v: string) => <span className="font-semibold">{v}</span> },
@@ -73,6 +75,17 @@ export const OrgsPanel: React.FC = () => {
               dataIndex: 'createdAt',
               width: 200,
               render: (v: string) => <span className="tabular-nums text-label-secondary">{formatTime(v)}</span>,
+            },
+            {
+              title: '联系人',
+              key: 'contacts',
+              width: 200,
+              fixed: 'right',
+              render: (_, o) => (
+                <Button type="link" size="small" icon={<UsersRound size={14} />} style={{ paddingInline: 0 }} onClick={() => setContactsOrg(o)}>
+                  {o.contacts ? `${o.contacts} 人 · ${o.notifyContacts} 人收短信` : '添加联系人'}
+                </Button>
+              ),
             },
           ]}
         />
@@ -92,6 +105,8 @@ export const OrgsPanel: React.FC = () => {
           </Form.Item>
         </Form>
       </Modal>
+
+      <OrgContactsDrawer org={contactsOrg} onClose={() => setContactsOrg(null)} onChanged={reload} />
     </>
   );
 };

@@ -89,6 +89,15 @@ export interface Config {
   openrouterPerplexity: string;
   openrouterGemini: string;
   openrouterEffort: string;
+
+  /** 阿里云短信（新线索提醒）。四项都配齐才会发送 */
+  aliyunAccessKeyId: string;
+  aliyunAccessKeySecret: string;
+  smsSignName: string;
+  smsTemplateLead: string;
+  smsEndpoint: string;
+  /** 每个号码每天（北京时间）最多收到几条新线索短信，超出的只记日志不发送 */
+  smsDailyLimit: number;
 }
 
 let cached: Config | null = null;
@@ -121,6 +130,13 @@ export function config(): Config {
     openrouterPerplexity: env('OPENROUTER_PERPLEXITY_MODEL', 'perplexity/sonar'),
     openrouterGemini: env('OPENROUTER_GEMINI_MODEL', 'google/gemini-3.1-flash-lite'),
     openrouterEffort: envAllowEmpty('OPENROUTER_REASONING_EFFORT', 'low'),
+
+    aliyunAccessKeyId: env('ALIYUN_ACCESS_KEY_ID'),
+    aliyunAccessKeySecret: env('ALIYUN_ACCESS_KEY_SECRET'),
+    smsSignName: env('ALIYUN_SMS_SIGN_NAME'),
+    smsTemplateLead: env('ALIYUN_SMS_TEMPLATE_LEAD'),
+    smsEndpoint: env('ALIYUN_SMS_ENDPOINT', 'dysmsapi.aliyuncs.com'),
+    smsDailyLimit: envInt('SMS_DAILY_LIMIT', 30),
   };
   return cached;
 }

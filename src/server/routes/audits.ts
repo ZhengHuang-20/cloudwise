@@ -3,6 +3,7 @@
  * 测评必须填写联系人姓名与手机号，每次提交都写入 audit_contacts 与官网的线索（leads），因此依赖数据库。
  */
 import { after } from 'next/server';
+import { notifyNewLead } from '../leadNotify';
 import { auditProbeCount, runAudit } from '../audit';
 import { parseAuditInput } from '../auditSite';
 import { auditStore, withStale, type AuditJob } from '../auditStore';
@@ -76,6 +77,8 @@ export const createAudit = route(async (req) => {
       ],
     );
     leadId = lead?.id ?? null;
+    // 给官网所属公司的联系人发新线索短信（响应之后执行）
+    if (lead) after(() => notifyNewLead(lead.id));
   }
   // 线索关联到本次提交对应的测评任务，客户后台的线索详情据此展示报告
   const link = async (auditId: string) => {

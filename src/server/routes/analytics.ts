@@ -3,7 +3,7 @@
  * 公开接口靠公开的 site_key 识别站点；客户接口全部经 withSite 校验（管理员或 site_members），越权一律 404。
  */
 import { randomBytes } from 'node:crypto';
-import type { NextRequest } from 'next/server';
+import { after, type NextRequest } from 'next/server';
 import { CHANNEL_LABEL } from '../../lib/channels';
 import { classify, parseCampaign } from '../channels';
 import { db, exec, query, queryOne } from '../db';
@@ -12,6 +12,7 @@ import { parseAuditInput } from '../auditSite';
 import { jobJSON } from './audits';
 import { apiError, clientIP, clip, json, pathID, readJSON, route, str, userAgent } from '../http';
 import { limits } from '../ratelimit';
+import { notifyNewLead } from '../leadNotify';
 import { authed, normalizeEmail, siteAccess, type AuthedUser } from '../auth';
 import { browserOf, deviceOf, isBot, normalizeLang, osOf } from '../useragent';
 
@@ -249,6 +250,8 @@ export const submitLead = route(async (req) => {
       session ? [site.id, visitor, session] : [site.id, visitor],
     );
   }
+  // 给站点所属公司的联系人发新线索短信（响应之后执行）
+  after(() => notifyNewLead(row.id));
   return json({ ok: true, id: row.id }, 201, cors);
 });
 
