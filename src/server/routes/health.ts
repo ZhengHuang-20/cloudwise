@@ -4,6 +4,7 @@ import { activeEngines } from '../engines';
 import { gemini } from '../gemini';
 import { textModel } from '../llm';
 import { json, route } from '../http';
+import { smsConfigured } from '../sms';
 
 export const health = route(async () => {
   const { status, issue } = await dbStatus();
@@ -16,6 +17,8 @@ export const health = route(async () => {
     hasDatabase: db() !== null,
     dbStatus: status,
     dbIssue: issue,
+    // 新线索短信（阿里云）的 AccessKey、签名、模板是否配齐
+    hasSms: smsConfigured(),
     timestamp: new Date().toISOString(),
   });
 });

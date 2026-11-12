@@ -6,8 +6,21 @@ import { adminOnly, authed, createUser, hashPassword, normalizeEmail, randomHex,
 // ---------- 客户公司 ----------
 
 export const listOrgs = authed(adminOnly, async () => {
-  const rows = await query(`SELECT id, name, created_at FROM organizations ORDER BY id DESC`);
-  return json({ organizations: rows.map((r) => ({ id: r.id, name: r.name, createdAt: r.created_at })) });
+  const rows = await query(
+    `SELECT o.id, o.name, o.created_at,
+       (SELECT COUNT(*) FROM org_contacts c WHERE c.org_id = o.id) AS contacts,
+       (SELECT COUNT(*) FROM org_contacts c WHERE c.org_id = o.id AND c.notify_leads) AS notify_contacts
+     FROM organizations o ORDER BY o.id DESC`,
+  );
+  return json({
+    organizations: rows.map((r) => ({
+      id: r.id,
+      name: r.name,
+      createdAt: r.created_at,
+      contacts: r.contacts,
+      notifyContacts: r.notify_contacts,
+    })),
+  });
 });
 
 export const createOrg = authed(adminOnly, async (req) => {
