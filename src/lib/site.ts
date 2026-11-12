@@ -87,6 +87,6 @@ export const BILIBILI_VIDEOS: Record<string, string> = {
  * 文章以外的页面内容最近一次更新的日期（YYYY-MM-DD）：sitemap 的 lastModified、JSON-LD 的 dateModified、
  * Markdown 版页面共用。改了页面内容（服务、案例、课程、术语、首页等）记得更新。
  */
-export const CONTENT_UPDATED = '2026-11-11';
+export const CONTENT_UPDATED = '2026-11-12';
 
 export const absoluteUrl = (path: string) => `${SITE_URL}${path === '/' ? '' : path}`;
