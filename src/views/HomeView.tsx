@@ -8,6 +8,8 @@ import { Bi, useLang } from '../context/LanguageContext';
 import { VisibilityAudit } from './home/VisibilityAudit';
 import { useSite } from '../site/SiteContext';
 import { SERVICES as SERVICE_DATA } from '../data/servicesData';
+import { HOME_FAQS } from '../data/homeFaqs';
+import { FaqList } from '../components/FaqList';
 
 interface ServiceCard {
   key: ServiceKey;
@@ -331,6 +333,25 @@ export const HomeView: React.FC = () => {
             </Link>
           ))}
         </Reveal>
+      </section>
+
+      {/* ===================== 常见问题 ===================== */}
+      <section className="section layout-reading pt-0">
+        <FaqList items={HOME_FAQS.map((f) => ({ q: tb(f.q), a: tb(f.a) }))} />
+        <p className="mt-8 flex flex-wrap gap-x-6 gap-y-2 text-body">
+          <Link href={path('/insights/geo-vs-seo')} className="link">
+            {t('GEO 与 SEO 的区别', 'GEO vs SEO')}
+            <ChevronRight />
+          </Link>
+          <Link href={path('/glossary')} className="link">
+            {t('术语百科', 'Glossary')}
+            <ChevronRight />
+          </Link>
+          <Link href={path('/about')} className="link">
+            {t('关于我们', 'About us')}
+            <ChevronRight />
+          </Link>
+        </p>
       </section>
 
       {/* ===================== 收尾行动 ===================== */}

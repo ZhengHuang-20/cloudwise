@@ -11,7 +11,7 @@ export const geoVsSeo: Insight = {
     en: ['GEO vs SEO', 'what is generative engine optimization', 'should exporters do SEO or GEO first'],
   },
   relatedServices: ['geo', 'seo', 'website'],
-  relatedTerms: ['term-geo', 'term-eeat'],
+  relatedTerms: ['term-geo', 'term-eeat', 'term-aeo'],
   relatedLessons: ['lesson-b-1-3', 'lesson-c-1-2'],
   zh: {
     title: 'GEO 和 SEO 有什么区别？出海企业应该先做哪个',

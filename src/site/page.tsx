@@ -5,6 +5,8 @@ import { BRAND } from '../lib/site';
 import { routeMeta } from './meta';
 import { allRoutes, hasEnglish, isIndexable, localizePath, resolveRoute, routePath, type Route } from './routes';
 import { pageSchema } from './schema';
+import { hasMarkdown, markdownPath } from './markdown';
+import { feedPath } from './feed';
 import { RouteView } from './RouteView';
 
 /**
@@ -63,6 +65,11 @@ export function siteMetadata(lang: Lang, slug?: string[]): Metadata {
       languages: hasEnglish(route)
         ? { 'zh-CN': localizePath(path, 'zh'), en: localizePath(path, 'en'), 'x-default': localizePath(path, 'zh') }
         : undefined,
+      // 机器可读的替代版本：页面的 Markdown 全文与文章 RSS
+      types: {
+        ...(hasMarkdown(route) ? { 'text/markdown': markdownPath(route, lang) } : {}),
+        'application/rss+xml': [{ url: feedPath(lang), title: lang === 'en' ? `${BRAND.en} GEO insights` : `${BRAND.zh} GEO 洞察` }],
+      },
     },
     robots: isIndexable(route) ? undefined : { index: false, follow: false },
     openGraph: {

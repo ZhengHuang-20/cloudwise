@@ -27,6 +27,17 @@
 
 **2026-11-04 补充**：全站 94 个地址爬取审计（状态码、canonical、H1、JSON-LD、alt、hreflang 全部合格）；标题按长度自动去掉品牌后缀并换用短标题；英文描述压到 160 字符内；文章页「更多文章」改为前后篇 + 最接近的一篇，服务页链接对应术语，所有页面至少 3 个站内入口；关于页输出创始人 `Person`；llms.txt 补齐英文案例、方案、课程与术语；生产构建后自动推送 IndexNow（§3.6，百度普通收录配置 `BAIDU_PUSH_TOKEN` 后启用）；课程里无出处的统计与一处金额已改写。
 
+**2026-11-11 补充**（把站内能做的做满）：
+
+- 每个内容页提供 Markdown 版本（地址后加 `.md`，共 110 个），`<head>` 声明 `text/markdown` 替代版本，llms.txt 说明用法；AI 助手与智能体一次请求拿到不带导航与脚本的正文。Markdown 版 noindex 并指回 HTML 页，不产生重复收录。
+- 洞察文章 RSS：`/feed.xml`、`/en/feed.xml`。
+- 术语百科从 4 条扩到 12 条（中英文）：AEO、AI Overviews、零点击搜索、实体、结构化数据、AI 爬虫、hreflang、IndexNow。llms.txt 已有专文，不另立词条（一词一页）。术语、文章互相链接。
+- 首页新增常见问题（是谁、做什么、适合谁、测评测什么、案例、怎么收费）并输出 FAQPage，回答 AI 最常被问到的品牌类问题。
+- 结构化数据补强：Organization 全站带创始人与更完整的 `knowsAbout`；WebPage 带 `dateModified`、`mainEntity`、主图；案例与方案的 Article 带更新日期与图片；课程带 `hasCourseInstance` 与 `offers.category = Free`（Google 课程富结果的必填项，不含金额）；视频带 B 站 `embedUrl`；文章带 `wordCount` 与栏目；案例与洞察列表页输出 ItemList。
+- sitemap 的 hreflang 补上 `x-default`；robots.txt 追加放行 Amazonbot、DuckAssistBot、PetalBot、ChatGLM-Spider 等爬虫；洞察列表页的标题层级改为 H1 → H2。
+
+站内技术项到这里基本做满，之后的提升主要来自三件事：按节奏持续发文与扩充术语（§4.3）、站外信源（§5）、收录与监测（§3.6、§6）。
+
 **还需要你做的**：在 Vercel 绑定 chingeo.com 并设为主域名（`www` 与 `*.vercel.app` 301 到主域名）；开通各站长平台、把验证码填进环境变量后重新部署、提交 sitemap（见 §3.6）；审核并合并定时任务提交的文章 PR；开通并登记官方账号（§5.2、§5.3）。
 
 ---

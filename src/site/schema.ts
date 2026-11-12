@@ -1,13 +1,17 @@
 /**
  * 每个页面的 JSON-LD 结构化数据（schema.org），由服务端页面输出到 HTML。
  * 全站共用 Organization 与 WebSite（固定 @id），各页面再加 WebPage、BreadcrumbList 与内容类型
- * （Service、Article、Course、VideoObject、DefinedTerm、FAQPage 等）。不输出任何价格（offers）。
+ * （Service、Article、Course、VideoObject、DefinedTerm、FAQPage 等）。不输出任何金额：唯一的 offers 是公开课的
+ * `category: 'Free'`（Google 的课程富结果要求写明免费还是付费），不带 price。
  */
 import { pick, type Lang } from '../lib/i18n';
 import { caseList, solutionList } from '../data/caseStudiesData';
 import { courseList } from '../data/coursesData';
 import { glossaryList } from '../data/glossaryData';
 import { SERVICES } from '../data/servicesData';
+import { INSIGHTS, INSIGHT_TOPIC_LABEL } from '../data/insights';
+import { HOME_FAQS } from '../data/homeFaqs';
+import { SHOW_FDE } from '../lib/features';
 import { VIDEO_META, videoPoster } from '../data/videoMeta';
 import { CONTACTS } from '../data/contactsData';
 import { AUTHORS, type AuthorId } from '../data/authors';
@@ -22,9 +26,12 @@ import {
   findService,
   findSolution,
   findTerm,
+  caseSlug,
   lessonPath,
   localizePath,
+  routeModified,
   routePath,
+  solutionSlug,
   termSlug,
   type Route,
 } from './routes';
@@ -61,7 +68,17 @@ function organization(lang: Lang): Json {
     url: SITE_URL,
     logo: { '@type': 'ImageObject', url: absoluteUrl('/brand/logo-mark.png'), width: 235, height: 204 },
     description: pick(TAGLINE, lang),
-    knowsAbout: ['Generative Engine Optimization (GEO)', 'Search Engine Optimization (SEO)', 'B2B export websites', 'AI customer service', 'Forward Deployed Engineering'],
+    knowsAbout: [
+      'Generative Engine Optimization (GEO)',
+      'Answer Engine Optimization (AEO)',
+      'Search Engine Optimization (SEO)',
+      'AI search visibility',
+      'B2B export websites',
+      'AI customer service',
+      ...(SHOW_FDE ? ['Forward Deployed Engineering'] : []),
+    ],
+    // 创始人：完整的 Person 节点在关于页与文章页输出，这里带上姓名，保证单独读这个节点也成立
+    founder: { '@type': 'Person', '@id': personId('founder'), name: pick(AUTHORS.founder.name, lang), url: url('/about', lang) },
     areaServed: ['CN', 'Worldwide'],
     contactPoint: CONTACTS.map((c) => ({
       '@type': 'ContactPoint',
@@ -148,6 +165,18 @@ const faqPage = (pageUrl: string, items: { q: string; a: string }[]): Json => ({
   })),
 });
 
+const itemList = (id: string, items: { name: string; url: string }[]): Json => ({
+  '@type': 'ItemList',
+  '@id': id,
+  itemListElement: items.map((item, i) => ({ '@type': 'ListItem', position: i + 1, ...item })),
+});
+
+/** 正文字数：中文按汉字计，英文按单词计（去掉 Markdown 标记与链接地址） */
+const wordCount = (markdown: string, lang: Lang) => {
+  const text = markdown.replace(/\]\([^)]*\)/g, ' ').replace(/[#>*|\[\]-]/g, ' ');
+  return lang === 'en' ? text.split(/\s+/).filter(Boolean).length : (text.match(/[\u4e00-\u9fff]/g) ?? []).length;
+};
+
 /** 页面主体内容的结构化数据 */
 function mainEntities(route: Route, lang: Lang, pageUrl: string): Json[] {
   const meta = routeMeta(route, lang);
@@ -165,6 +194,16 @@ function mainEntities(route: Route, lang: Lang, pageUrl: string): Json[] {
             name: pick(svc.title, lang),
           })),
         },
+        ...(route.kind === 'home'
+          ? [faqPage(pageUrl, HOME_FAQS.map((f) => ({ q: pick(f.q, lang), a: pick(f.a, lang) })))]
+          : []),
+      ];
+    case 'cases':
+      return [
+        itemList(`${pageUrl}#cases`, [
+          ...caseList(lang).map((c) => ({ name: c.clientName, url: url(`/cases/${caseSlug(c.id)}`, lang) })),
+          ...solutionList(lang).map((s) => ({ name: s.name, url: url(`/solutions/${solutionSlug(s.id)}`, lang) })),
+        ]),
       ];
     case 'service': {
       const svc = findService(route.slug)!;
@@ -196,6 +235,9 @@ function mainEntities(route: Route, lang: Lang, pageUrl: string): Json[] {
           headline: meta.title,
           description: meta.description,
           about: { '@type': 'Organization', name: c.clientName },
+          articleSection: lang === 'en' ? 'Case studies' : '出海案例',
+          dateModified: routeModified(route),
+          image: absoluteUrl('/og.png'),
           author: orgRef,
           publisher: orgRef,
           inLanguage: inLanguage(lang),
@@ -212,6 +254,9 @@ function mainEntities(route: Route, lang: Lang, pageUrl: string): Json[] {
           '@id': `${pageUrl}#article`,
           headline: s.name,
           description: s.description,
+          articleSection: lang === 'en' ? 'Industry solutions' : '行业方案',
+          dateModified: routeModified(route),
+          image: absoluteUrl('/og.png'),
           author: orgRef,
           publisher: orgRef,
           inLanguage: inLanguage(lang),
@@ -245,6 +290,13 @@ function mainEntities(route: Route, lang: Lang, pageUrl: string): Json[] {
           inLanguage: inLanguage(lang),
           audience: { '@type': 'Audience', audienceType: c.targetAudience },
           isAccessibleForFree: true,
+          // Google 课程富结果的必填项：免费 / 付费（不带金额）与授课方式
+          offers: { '@type': 'Offer', category: 'Free' },
+          hasCourseInstance: {
+            '@type': 'CourseInstance',
+            courseMode: 'Online',
+            courseWorkload: `PT${c.modules.flatMap((m) => m.lessons).reduce((n, l) => n + l.durationMinutes, 0)}M`,
+          },
           hasPart: c.modules.flatMap((m) =>
             m.lessons.map((l) => ({ '@type': 'LearningResource', name: l.title, url: url(lessonPath(l.id), lang) }))
           ),
@@ -283,13 +335,20 @@ function mainEntities(route: Route, lang: Lang, pageUrl: string): Json[] {
           duration: `PT${Math.floor(video.seconds / 60)}M${video.seconds % 60}S`,
           inLanguage: 'zh-CN',
           publisher: orgRef,
-          ...(bvid ? { sameAs: `https://www.bilibili.com/video/${bvid}` } : {}),
+          ...(bvid
+            ? { sameAs: `https://www.bilibili.com/video/${bvid}`, embedUrl: `https://player.bilibili.com/player.html?bvid=${bvid}` }
+            : {}),
         });
       }
       return entities;
     }
     case 'insights':
-      return [];
+      return [
+        itemList(
+          `${pageUrl}#articles`,
+          INSIGHTS.map((i) => ({ name: i[lang].title, url: url(`/insights/${i.slug}`, lang) }))
+        ),
+      ];
     case 'insight': {
       const item = findInsight(route.slug)!;
       const content = item[lang];
@@ -306,6 +365,8 @@ function mainEntities(route: Route, lang: Lang, pageUrl: string): Json[] {
           publisher: orgRef,
           inLanguage: inLanguage(lang),
           keywords: item.keywords[lang].join(', '),
+          articleSection: pick(INSIGHT_TOPIC_LABEL[item.topic], lang),
+          wordCount: wordCount(`${content.answer} ${content.body}`, lang),
           mainEntityOfPage: pageUrl,
           image: absoluteUrl('/og.png'),
         },
@@ -336,7 +397,13 @@ function mainEntities(route: Route, lang: Lang, pageUrl: string): Json[] {
           name: term.term,
           alternateName: term.englishTerm,
           description: term.oneLineDefinition,
-          inDefinedTermSet: { '@id': GLOSSARY_SET_ID(lang) },
+          // 术语集的完整节点在 /glossary 页，这里带上名称与地址，单独读这个页面也能解析
+          inDefinedTermSet: {
+            '@type': 'DefinedTermSet',
+            '@id': GLOSSARY_SET_ID(lang),
+            name: routeMeta({ kind: 'glossary' }, lang).title,
+            url: url('/glossary', lang),
+          },
           url: pageUrl,
         },
         faqPage(pageUrl, [{ q: term.questionTitle, a: `${term.oneLineDefinition} ${term.detailedExplanation}` }]),
@@ -383,7 +450,9 @@ export function pageSchema(route: Route, lang: Lang): Json {
   const pageUrl = url(routePath(route), lang);
   const trail = crumbs(route, lang);
   const org = organization(lang);
-  if (route.kind === 'about') org.founder = { '@id': personId('founder') };
+  const entities = mainEntities(route, lang, pageUrl);
+  // 列表页与首页的主体是一组条目，不指定单个 mainEntity；其余页面指向第一个内容节点
+  const main = ['home', 'services', 'cases', 'academy', 'insights'].includes(route.kind) ? undefined : entities[0]?.['@id'];
   const graph: Json[] = [
     org,
     website(lang),
@@ -394,11 +463,15 @@ export function pageSchema(route: Route, lang: Lang): Json {
       name: meta.title,
       description: meta.description,
       inLanguage: inLanguage(lang),
+      dateModified: routeModified(route),
       isPartOf: { '@id': WEBSITE_ID },
+      publisher: orgRef,
+      primaryImageOfPage: { '@type': 'ImageObject', url: absoluteUrl('/og.png'), width: 1200, height: 630 },
       about: route.kind === 'home' || route.kind === 'about' ? orgRef : undefined,
+      mainEntity: main ? { '@id': main } : undefined,
       breadcrumb: trail.length ? { '@id': `${pageUrl}#breadcrumb` } : undefined,
     },
-    ...mainEntities(route, lang, pageUrl),
+    ...entities,
   ];
   if (trail.length) {
     graph.push({

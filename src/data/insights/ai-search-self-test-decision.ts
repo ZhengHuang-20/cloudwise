@@ -17,7 +17,7 @@ export const aiSearchSelfTestDecision: Insight = {
     ],
   },
   relatedServices: ['geo', 'website'],
-  relatedTerms: ['term-geo'],
+  relatedTerms: ['term-geo', 'term-zero-click'],
   relatedLessons: ['lesson-c-1-1'],
   zh: {
     title: 'AI 搜索要不要研究？半天自测，按结果决定下一步',

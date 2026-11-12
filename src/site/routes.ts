@@ -8,6 +8,7 @@ import { CASE_STUDIES, INDUSTRY_SOLUTIONS } from '../data/caseStudiesData';
 import { COURSES } from '../data/coursesData';
 import { GLOSSARY_TERMS } from '../data/glossaryData';
 import { INSIGHTS } from '../data/insights';
+import { CONTENT_UPDATED } from '../lib/site';
 export { localizePath, splitLocale } from './locale';
 
 export type Route =
@@ -142,6 +143,10 @@ export const isIndexable = (route: Route) => !['deal-room', 'login', 'console'].
 
 /** 后台只有中文 */
 export const hasEnglish = (route: Route) => !['login', 'console'].includes(route.kind);
+
+/** 页面内容的更新日期（YYYY-MM-DD）：文章取自己的 updatedAt，其他页面取 CONTENT_UPDATED */
+export const routeModified = (route: Route): string =>
+  route.kind === 'insight' ? (findInsight(route.slug)?.updatedAt ?? CONTENT_UPDATED) : CONTENT_UPDATED;
 
 /** 全部可访问的页面（静态生成与 sitemap 用） */
 export function allRoutes(): Route[] {

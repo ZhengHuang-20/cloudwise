@@ -30,7 +30,14 @@ const CRAWLERS = [
   'Applebot-Extended',
   'Doubaobot',
   'meta-externalagent',
+  'meta-externalfetcher',
   'MistralAI-User',
+  'DuckAssistBot',
+  'Amazonbot',
+  'cohere-ai',
+  'Google-CloudVertexBot',
+  'PetalBot',
+  'ChatGLM-Spider',
   'CCBot',
 ];
 
@@ -38,7 +45,8 @@ export default function robots(): MetadataRoute.Robots {
   if (process.env.VERCEL_ENV === 'preview') {
     return { rules: [{ userAgent: '*', disallow: '/' }] };
   }
-  const disallow = ['/api/'];
+  // /md-pages 是 Markdown 版本的内部地址，对外地址是 /<路径>.md
+  const disallow = ['/api/', '/md-pages/'];
   return {
     rules: [
       { userAgent: CRAWLERS, allow: '/', disallow },
