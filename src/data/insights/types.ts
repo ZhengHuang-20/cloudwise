@@ -7,6 +7,8 @@
 export interface InsightContent {
   /** 标题（H1 与 <title>）：用读者会搜、会问 AI 的说法，最好是问句 */
   title: string;
+  /** 可选：title 放不进 <title>（中文约 30 字、英文 60 字符）时用的短标题，H1 仍用 title */
+  seoTitle?: string;
   /** 页面描述（meta description）：中文 60～90 字，英文 120～160 字符 */
   description: string;
   /** 开头的直接回答：中文 50～120 字，英文 40～80 词，能单独被 AI 引用 */

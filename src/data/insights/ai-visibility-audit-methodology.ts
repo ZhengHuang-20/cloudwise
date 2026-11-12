@@ -90,6 +90,7 @@ export const aiVisibilityAuditMethodology: Insight = {
   },
   en: {
     title: 'How does an AI visibility audit work? Our method, scoring and limits',
+    seoTitle: 'How an AI visibility audit works: method, scoring, limits',
     description:
       'The full method behind the ChinGEO AI visibility audit: how we check your website, how we ask ChatGPT, Perplexity and Gemini questions as an overseas buyer, how mention, citation, brand knowledge and site readability are scored, and the limits.',
     answer:

@@ -12,6 +12,7 @@ export type TabId =
   | 'academy'
   | 'insights'
   | 'glossary'
+  | 'audit'
   | 'configurator'
   | 'deal-room'
   | 'login'
@@ -80,6 +81,13 @@ export const NAV_GROUPS: NavGroup[] = [
     title: { zh: '决策', en: 'Decide' },
     items: [
       {
+        id: 'audit',
+        href: '/audit',
+        label: { zh: '测评', en: 'Audit' },
+        fullLabel: { zh: 'AI 可见性测评', en: 'AI visibility audit' },
+        desc: { zh: '免费查看 ChatGPT、Perplexity、Gemini 是否推荐你', en: 'Free check: do ChatGPT, Perplexity and Gemini recommend you' },
+      },
+      {
         id: 'configurator',
         href: '/configurator',
         label: { zh: '规划', en: 'Plan' },
@@ -101,6 +109,5 @@ export const NAV_ITEMS: NavItem[] = NAV_GROUPS.flatMap((group) => group.items);
 
 /** 只在页脚出现的页面 */
 export const FOOTER_EXTRA: { href: string; label: Bi }[] = [
-  { href: '/audit', label: { zh: 'AI 可见性测评', en: 'AI visibility audit' } },
   { href: '/about', label: { zh: '关于我们', en: 'About us' } },
 ];
