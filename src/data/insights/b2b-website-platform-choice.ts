@@ -7,283 +7,309 @@ export const b2bWebsitePlatformChoice: Insight = {
   publishedAt: '2026-11-16',
   updatedAt: '2026-11-16',
   keywords: {
-    zh: ['外贸独立站用什么平台', '独立站平台对比', '外贸独立站 Shopify 还是 WordPress', '外贸独立站建设', 'B2B 独立站选型'],
-    en: ['B2B website platform', 'best website platform for manufacturers', 'Shopify vs WordPress for B2B', 'custom website vs Shopify for manufacturers'],
+    zh: ['外贸独立站 Next.js', '外贸独立站什么时候需要定制', 'AI 驱动独立站', '独立站平台对比'],
+    en: ['custom Next.js B2B website', 'when to build a custom B2B website', 'AI-ready B2B website', 'Shopify vs WordPress vs custom Next.js'],
   },
-  relatedServices: ['website', 'seo', 'geo'],
-  relatedTerms: ['term-hreflang', 'term-core-web-vitals', 'term-structured-data', 'term-ai-crawlers'],
-  relatedLessons: ['lesson-a-1-1', 'lesson-a-1-2', 'lesson-a-1-4'],
+  relatedServices: ['website', 'ai-customer-service', 'seo'],
+  relatedTerms: ['term-core-web-vitals', 'term-structured-data', 'term-hreflang', 'term-ai-crawlers'],
+  relatedLessons: ['lesson-a-1-1', 'lesson-a-1-2', 'lesson-d-1-2'],
   zh: {
-    title: '外贸独立站用 Shopify、WordPress 还是定制？',
+    title: '外贸独立站什么时候需要 Next.js 定制开发？',
     description:
-      '外贸独立站用什么平台？从询盘还是下单、型号规模、语种、系统集成和维护人手五个问题出发，对比 Shopify、WordPress 与定制开发，并给出老站迁移不丢排名的步骤。',
+      '外贸独立站什么时候值得做 Next.js 定制？从成交方式、型号规模、系统对接、AI 计划和维护人手判断，说明现成平台更合适的情况、换平台的步骤和云端智荐能提供什么。',
     answer:
-      '没有绝对最好的平台。询盘为主、型号不多的工厂，WordPress 或 Shopify 都够用，关键在维护；要在线下单、分级定价，Shopify 的 B2B 功能最省事；型号多、参数复杂、要接 CRM/ERP，定制开发更合适。平台本身不决定排名。',
-    body: `## 先看结论：先定业务模式，再选平台
+      '没有绝对最好的平台。询盘为主、型号不多、没人维护代码时，现成平台往往更合适；需要自定义流程、对接 CRM/ERP 或后续接入 AI 时，Next.js 定制更有余地。云端智荐只做 Next.js 定制独立站。平台本身不决定排名。',
+    body: `## 先看结论：平台跟着业务走
 
-建 B2B 外贸独立站，平台是最后一个决定，不是第一个。先回答五个业务问题：客户是发询盘还是在线下单，有多少型号、参数有多复杂，要做几个语种市场，询盘要不要进 CRM/ERP，以后谁来维护和更新。答案出来，选哪种方案往往就清楚了。
+选平台是最后一个决定，不是第一个。先把业务问题答清楚：客户是发询盘还是在线下单，型号有多少、参数多复杂，要做几个语种，询盘要不要进 CRM/ERP，以后会不会接入 AI，谁来维护。答案出来，方案往往也就清楚了。
 
-| 方案 | 最适合 | 主要代价 |
+| 方案 | 更适合 | 要注意 |
 |---|---|---|
-| Shopify | 要在线下单，给企业客户设账户、价格和付款条件 | 部分 URL 路径固定；B2B 功能随套餐不同 |
-| WordPress | 询盘为主、内容多、要页面灵活 | 安全、更新、备份要有人负责；多语言靠插件 |
-| 定制开发 | 型号多、参数复杂，或要深度对接 CRM/ERP | 前期要理清产品数据；上线后要有团队接手 |
+| Shopify | 要在线下单、分级定价，型号标准 | B2B 功能要看套餐，部分固定路径不能自定义 |
+| WordPress | 询盘为主、内容更新频繁、有人维护插件 | 多语种靠插件，安全要持续加固 |
+| Next.js 定制 | 型号多、参数复杂、要对接系统或后续接入 AI | 需要开发团队，渲染与 SEO 基础要自己做对 |
 
-三条路都走得通。走坏的原因很少是平台本身，而是方案和业务不匹配，或者上线后没人管。
+说明：云端智荐只交付 Next.js 定制独立站，不做 Shopify 或 WordPress 建站。表里的另外两种方案是为了帮你判断，不是我们的服务清单。
 
-## 平台不决定排名，决定结果的是三件事
+## 平台不决定排名
 
-制造企业官网的任务，是让海外采购商、搜索引擎和 AI 读懂你做什么、参数是什么、凭什么可信，然后留下询盘。做得好不好取决于下面三项，和平台基本无关。
+结论：搜索引擎和 AI 看的是页面能不能被抓取、有没有可读的正文、内容是否相关，不看你用什么平台。
 
-1. **页面结构**：每个产品系列、每个应用场景有没有独立页面，参数、标准编号、认证是不是写成可以核对的文字和表格。产品页具体怎么写，见 [产品页 6 项自查清单](/insights/ai-supplier-search-product-page-checklist)。
-2. **技术资格**：Google 在 [Search Essentials 的技术要求](https://developers.google.com/search/docs/essentials/technical)里只列了三条最低门槛：Googlebot 没有被屏蔽、页面返回 HTTP 200、页面有可索引的内容。在此之上是速度（[Core Web Vitals](/glossary/core-web-vitals)）、多语言的 [hreflang](/glossary/hreflang) 和 [结构化数据](/glossary/structured-data)，三种方案都能做好，也都能做坏。
-3. **能否长期更新**：新产品、新认证、新案例能不能在一两天内上线，靠的是后台好不好用、有没有人负责。
+Google 的 [Search Essentials 技术要求](https://developers.google.com/search/docs/essentials/technical) 只有三条：Googlebot 没被屏蔽、页面能正常返回（HTTP 200）、页面有可索引的内容。三种方案都能满足，也都可能做砸。
 
-速度也不是万能的。Google 在 [Core Web Vitals 说明](https://developers.google.com/search/docs/appearance/core-web-vitals)里建议站长把这几项指标做好，但在 [页面体验说明](https://developers.google.com/search/docs/appearance/page-experience)里也写明，报告得分好并不保证排到前面，Google 会优先展示相关的内容。
+定制站要特别注意一点：如果正文要靠浏览器执行 JavaScript 才出现，有些爬虫读不到。Google 的 [JavaScript SEO 基础](https://developers.google.com/search/docs/crawling-indexing/javascript/javascript-seo-basics) 写明，服务端渲染或预渲染仍然值得做，因为它对用户和爬虫都更快，而且不是所有爬虫都能运行 JavaScript。做 GEO 时，也要假设 [AI 爬虫](/glossary/ai-crawlers) 可能读不到只在浏览器里渲染的内容。
 
-用的人多也不等于适合你。按 [W3Techs 的统计](https://w3techs.com/technologies/overview/content_management)（2026 年 11 月 16 日，按网站而非网页计、子域名不单独计），WordPress 用于 38.5% 的网站、占可识别 CMS 的 57.5%，Shopify 分别是 5.5% 和 8.1%。这说明生态成熟、好找人，说明不了哪个适合一家阀门厂。
+## Next.js 定制解决哪四类问题
 
-## 选型前要回答的 6 个问题
+结论：定制的价值不在于“更高级”，而在于现成平台做不到、或者做起来很别扭的地方。
 
-把这 6 个问题写成一页纸，和老板、销售、市场负责人一起填完，再去谈方案。
+### 1. 自定义业务流程
 
-| 问题 | 为什么重要 | 答案会把你推向哪里 |
+询价单按型号、数量、认证要求分字段收集；不同市场显示不同的产品线和资料；经销商登录后看到专属文档。这些在现成平台上往往要叠插件或改主题，定制站可以按你的流程直接建模。
+
+### 2. 对接 CRM / ERP
+
+表单线索直接写入企业自己的 CRM，产品参数从 ERP 或产品数据库同步，减少人工搬运和抄错。WordPress 也有 [REST API](https://developer.wordpress.org/rest-api/) 可以对接，差别在于定制站的数据结构一开始就按你的系统来设计。
+
+### 3. 可控的渲染与性能
+
+Next.js 的页面默认是服务端组件，可以在服务端取数据、渲染 HTML，并减少发给浏览器的 JavaScript（见 [Next.js 文档](https://nextjs.org/docs/app/getting-started/server-and-client-components)）。加载哪些第三方脚本、图片怎么处理、部署在哪些节点，也都由你决定。这是一种能力，不是结果：性能好不好，取决于具体怎么做、上线后加了什么。
+
+### 4. 为 AI 留扩展空间
+
+同一套技术栈里，后续可以按需加入产品问答、选型助手、询盘分级等功能，不必换平台。这些属于定制项目，要先评估数据和需求，网站上线时不会自带。
+
+## 什么时候现成平台更合适
+
+结论：下面几条占多数时，Shopify 或 WordPress 往往更省事，不必为定制承担开发和维护的负担。
+
+- 以询盘为主，没有复杂的业务流程，表单发到邮箱就够用
+- 型号不多、参数简单，几十个产品页就能讲清楚
+- 公司里没人维护代码，也不打算长期找开发团队
+- 近一两年没有对接 CRM/ERP 或接入 AI 的计划
+
+现成平台也有自己的边界，选之前先看官方文档：
+
+- **Shopify**：B2B 功能需要支持 B2B 的套餐，具体功能因套餐而异，单个订单最多 500 个商品行（[B2B 注意事项](https://help.shopify.com/en/manual/b2b/getting-started/considerations)）；/products、/collections 这类固定路径不能设置重定向（[URL 重定向](https://help.shopify.com/en/manual/online-store/menus-and-links/url-redirect)）。
+- **WordPress**：官方说明目前不支持开箱即用的多语种，要靠社区插件（[多语种说明](https://developer.wordpress.org/advanced-administration/wordpress/multilingual/)）；主题和插件要持续更新与加固（[安全加固](https://developer.wordpress.org/advanced-administration/security/hardening/)）。
+
+## 用六个问题判断
+
+| 问题 | 偏向现成平台 | 偏向 Next.js 定制 |
 |---|---|---|
-| 1. 客户是发询盘还是在线下单 | 决定网站的核心是内容和表单，还是购物车和结账 | 只要询盘，三者都行；要下单、分级价格，优先看 Shopify |
-| 2. 有多少型号，参数有多复杂 | 几百个型号的参数表，靠手工逐页维护会失控 | 参数多、要按参数筛选，倾向定制或在 WordPress 上建产品数据库 |
-| 3. 要做几个语种市场 | 每个语种都要独立 URL、互相声明的 hreflang 和翻译流程 | 语种多时重点比较翻译与 URL 方案，而不是模板 |
-| 4. 询盘要进哪些系统 | 销售要在 CRM 里看到询盘的来源页面和渠道 | 只发邮件通知，三者都简单；要双向同步 CRM/ERP，定制更可控 |
-| 5. 谁来长期维护 | 插件更新、备份、安全和内容上新都要有人负责 | 没有技术人员，优先托管型方案或约定外部维护 |
-| 6. 老站有没有排名要保住 | 换平台通常意味着换 URL | 先做 URL 映射，再看新平台的 URL 规则能不能接住 |
+| 客户怎么成交 | 发询盘，或标准品在线下单 | 询价有多个步骤，要按型号和认证收集信息 |
+| 型号与参数 | 几十个型号，参数简单 | 上百个型号，参数表复杂，需要筛选对比 |
+| 语种与市场 | 一两个语种 | 多语种、多市场，内容各不相同 |
+| 系统对接 | 询盘发邮件即可 | 线索要进 CRM，参数要从 ERP 同步 |
+| AI 计划 | 暂时没有 | 打算接入产品问答或询盘分级 |
+| 维护人手 | 市场人员自己改内容 | 有开发团队或长期的技术合作方 |
 
-## 按业务情形匹配方案
+## 按情况选
 
-下表是制造企业最常见的六种情形，最后一列是最容易忽略的坑。
+| 你的情况 | 建议 |
+|---|---|
+| 询盘为主、型号少、没人维护代码 | 现成平台（WordPress 或 Shopify） |
+| 要在线下单、分级定价，型号标准 | Shopify 的 B2B 功能 |
+| 内容为主、经常发文章、有人维护插件 | WordPress |
+| 型号多、参数复杂，要给工程师核对 | Next.js 定制 |
+| 要对接 CRM/ERP，或后续接入 AI | Next.js 定制 |
+| 拿不准 | 先做测评，看现有网站卡在哪 |
 
-| 业务情形 | 推荐方案 | 理由 | 要注意的坑 |
-|---|---|---|---|
-| 询盘为主，几十个型号，1～2 个语种，没有专职技术 | WordPress（选可靠的托管服务并约定维护）或 Shopify | 页面和文章都好维护，上线快 | WordPress 插件越装越多、更新没人管；Shopify 的询盘表单要靠主题或应用实现 |
-| 询盘为主，几百上千个型号，参数表复杂，买家要按参数筛选 | 定制开发，或 WordPress 加自定义字段与产品数据库 | 参数是结构化数据，要能批量导入、按参数筛选、自动生成规格页 | 产品数据建模是最大工作量；页面靠浏览器端渲染会让部分爬虫读不到正文 |
-| 备件、样品或复购要在线下单，企业客户价格和付款条件各不相同 | Shopify（B2B 功能） | 企业账户、目录与价格、付款条件都是原生功能 | B2B 功能随套餐不同，部分结账功能与 B2B 不兼容 |
-| 面向 4 个以上语种市场 | 三者都可以，按翻译流程和 URL 规则选 | 多语言的难点在翻译管理和 hreflang，不在平台 | 机翻上线、语种之间 hreflang 不互相声明 |
-| 询盘必须进 CRM，销售按来源跟进 | 任何方案都要先定好字段和接口；集成多、要双向同步时选定制 | 数据从哪来、进到哪去，比用哪个后台更重要 | 表单只发邮件，来源丢失，无法判断哪类页面带来询盘 |
-| 老站有排名，要换平台 | 先做 URL 映射，再决定平台 | 新平台的 URL 规则决定有多少旧地址需要重定向 | 只迁内容、不做重定向，旧排名和外链一起失效 |
+前三种情况我们不承接建站，建议找对应平台的服务商；后两种是云端智荐在做的事。
 
-## 三种方案的真实代价
+## 性能分数怎么看
 
-### Shopify：交易省心，但 URL 和功能受平台约束
+结论：性能是工程目标，不是排名保证。
 
-在线交易是业务一部分时，Shopify 最省事。它的 [B2B 功能](https://help.shopify.com/en/manual/b2b)可以为企业客户设置公司账户、专属价格、币种、产品目录、付款与配送方式，并支持对接 ERP 等外部系统；服务器、安全和结账由平台托管。
+- PageSpeed Insights 分别给出移动端和桌面端的结果，两者常常不同；它同时提供实验室数据和真实用户的现场数据，两者有时并不一致（[PSI 说明](https://developers.google.com/speed/docs/insights/v5/about)）。
+- 实验室数据分 Performance、Accessibility、Best Practices、SEO 四类，是四个独立的分数，不能合成一个“总分”。
+- Performance 分数会随测试时间、设备、网络和第三方脚本（如广告、A/B 测试）变化，Lighthouse 官方说明大部分波动来自这些条件的变化（[Lighthouse 性能评分](https://developer.chrome.com/docs/lighthouse/performance/performance-scoring)）。
+- Google 说明，[Core Web Vitals](https://developers.google.com/search/docs/appearance/core-web-vitals) 等页面体验报告表现好，不保证排名靠前；搜索始终优先展示最相关的内容（[页面体验](https://developers.google.com/search/docs/appearance/page-experience)）。
 
-代价是规则由平台定：
+云端智荐把海外主要地区的 [Core Web Vitals](/glossary/core-web-vitals) 列为验收项，目标是 LCP ≤ 1.8 秒，用 PSI 等工具检查。这是交付时对照的工程目标，不是服务承诺，也不代表排名或 AI 引用。
 
-- **B2B 功能随套餐不同**，按 [B2B 的使用要求与注意事项](https://help.shopify.com/en/manual/b2b/getting-started/considerations)，部分套餐不提供 B2B；加速结账、订阅等功能与 B2B 不兼容；单个订单最多 500 个行项目。
-- **URL 路径部分固定**：[URL 重定向说明](https://help.shopify.com/en/manual/online-store/menus-and-links/url-redirect)把 /products、/collections 列为固定路径；[多语言要求](https://help.shopify.com/en/manual/international/languages/requirements)也写明，产品地址里的 products 一词不能翻译，各套餐能开的语种数量也有上限。
-- **参数表要另做**：产品参数可以用 [metafields 自定义字段](https://help.shopify.com/en/manual/custom-data/metafields)保存并显示在主题里，但几百个型号的字段要事先设计好。
+## 换平台怎么不丢排名
 
-### WordPress：内容灵活，但维护责任在你
+结论：排名会不会掉，主要看迁移做得规不规范，而不是新平台是什么。按 Google 的 [网址变更迁移指南](https://developers.google.com/search/docs/crawling-indexing/site-move-with-url-changes)：
 
-内容多、以询盘为主、要页面灵活的企业适合 WordPress。主题、插件和开发者都好找，[REST API](https://developer.wordpress.org/rest-api/) 也让它能和其他系统交换数据。
+1. 列出旧站全部 URL，尤其是有流量、有外链的页面
+2. 为每个旧 URL 指定新地址，做成对应表
+3. 上线时用 301 永久重定向；Google 说明这类重定向不会造成 PageRank 损失
+4. 重定向尽量长期保留，一般至少 1 年
+5. 更新站内链接、sitemap、canonical 与 [hreflang](/glossary/hreflang)
+6. 上线后在 Search Console 观察抓取与收录；中小网站大部分页面完成迁移通常要几周
 
-代价是维护：
-
-- **安全与更新要有人管**：官方的 [安全加固文档](https://developer.wordpress.org/advanced-administration/security/hardening/)提醒，主机只负责一部分安全，大量责任在网站所有者；旧版本不再获得安全更新，插件和主题不要从不可信来源安装。
-- **多语言靠插件**：官方 [多语言文档](https://developer.wordpress.org/advanced-administration/wordpress/multilingual/)写明，WordPress 目前不原生支持多语言网站，需要用社区插件或每个语种单独安装。插件选定后再换，成本很高。
-
-### 定制开发：数据和集成最可控，但要有团队接手
-
-产品数据复杂、要深度对接 CRM/ERP、对速度和页面结构要求严格时，定制开发更合适：参数按产品体系建模，规格页、对比页、筛选页从同一份数据生成，询盘字段按销售流程设计。
-
-代价是对规划和团队的要求：
-
-- **前期要把产品数据理清**：型号、参数、单位、标准编号、认证，哪些是公共字段、哪些按系列不同，要在开发前定下来。
-- **SEO 基础要自己实现**：hreflang、sitemap、结构化数据、重定向，平台不会替你做。Google 的 [JavaScript SEO 基础](https://developers.google.com/search/docs/crawling-indexing/javascript/javascript-seo-basics)建议采用服务端渲染或预渲染，因为并非所有爬虫都能执行 JavaScript。
-- **上线后要有人接手**：代码归谁、文档是否完整、换团队能否交接，要在合同里写清。
-
-## 老站迁移不丢排名要做的事
-
-丢排名的通常不是迁移本身，而是漏掉的步骤。下面按 Google 的 [网址变更与网站迁移说明](https://developers.google.com/search/docs/crawling-indexing/site-move-with-url-changes)整理：
-
-1. **做一张 URL 映射表**：每个旧地址对应一个新地址，产品页对产品页，不要全部指向首页。
-2. **配置 301 永久重定向**：Google 写明，301 等永久重定向不会造成 PageRank 损失。
-3. **更新站内信息**：内链、canonical、hreflang 和 sitemap 都改成新地址，并检查新站的 robots.txt 没有误挡要收录的部分。
-4. **换域名时提交地址变更**：在 Search Console 为旧站提交 Change of Address。
-5. **预期短期波动**：Google 说明迁移期间排名会有暂时波动，中型网站通常要几周或更久，新地址才会逐步替换旧地址。
-6. **重定向至少保留一年**：Google 建议尽量长期保留，一般至少 1 年。
-
-迁到 Shopify 时还要注意：它只能为已经返回 404 的地址建重定向，固定路径不能作为重定向来源，映射表要按这些规则做。
-
-迁移不是唯一选择。案例 [爱康医疗](/cases/ak-medical) 保留了国内官网，另建了一个英文海外官网，两个站点分别服务不同读者，没有迁移风险。
+迁入 Shopify 时，产品和分类页使用 /products、/collections 固定路径，对应表要按这个结构来做。
 
 ## 常见误区
 
-1. **以为换平台就能提升排名**：如果页面结构、内容和技术资格不变，换平台只换了后台。
-2. **只看模板好不好看**：采购商和爬虫关心的是参数和证据能不能读到，模板决定不了这些。
-3. **忽略谁来维护**：网站上线那天最新，之后每月都在变旧；没人维护的 WordPress 有安全风险，没人更新的 Shopify 也留不住买家。
-4. **先建站，再整理产品数据**：几百个型号的参数上线后才整理，页面结构往往要推倒重来。
-5. **把多语言当成装个翻译插件**：每个语种都要独立 URL、互相声明的 hreflang 和专人校对，机翻直接上线会拖累可信度。
+- **以为换平台就能涨排名**：平台不决定排名，内容和技术基础才决定。
+- **定制站只做前端效果**：正文要靠 JavaScript 才出现，爬虫可能读不到。
+- **把产品画册直接翻译上网**：工程师核对不了的参数，不会被当作采购依据。
+- **只看一次性能分数**：分数会波动，移动端和桌面端也不同，要看多次结果和现场数据。
+- **上线后没人更新**：参数、认证和资料过期，买家和 AI 拿到的都是旧信息。
+
+## 云端智荐提供什么
+
+结论：我们只做 Next.js 定制独立站，下面是能写进方案的部分。
+
+1. **只做 Next.js 定制**：网站、AI 功能与业务系统在同一套技术栈里扩展，后续加功能不必换平台。
+2. **写给三类读者**：页面按采购、技术、合规三类读者组织，参数、认证与资料都能被核对（见课程 [为什么一个网站要写给三类读者](/academy/website/a-1-2)）。
+3. **服务端渲染或预渲染**：不执行 JavaScript 的爬虫也能读到正文，并配好 [结构化数据](/glossary/structured-data) 与 hreflang。
+4. **性能作为工程目标**：Core Web Vitals 列入验收，目标与口径见上文「性能分数怎么看」。
+5. **数据进自己的系统**：表单线索同步到企业自己的 CRM，上线后接入访问与线索数据看板。
+6. **AI 客服可选接入**：[AI 客服](/services/ai-customer-service) 是单独的服务，提供知识库问答、多语种回复和询盘信息提取，高意向线索推送到企业微信或 CRM，不是每个网站都自带。产品选型助手、询盘分级和更深的系统接口属于定制项目，需要单独评估。
+
+案例：[爱康医疗](/cases/ak-medical) 新建了英文海外官网，按 Core Web Vitals 与多语种标准搭建。
 
 ## 怎么开始
 
-1. **测一次现有网站**：用 [AI 可见性测评](/audit)看 AI 爬虫权限、不执行 JavaScript 时能读到的正文、结构化数据和多语言设置。
-2. **填完上面 6 个问题**：第 1、2、5 题基本决定方案方向。
-3. **拿决策表比较方案**：请每家方案提供方说明会怎么处理你那一行的坑。
-
-想先了解独立站的分类，可以读课时 [独立站、平台店铺与“电子画册”官网的区别](/academy/website/a-1-1)。如果想在一次诊断会里把这些问题过一遍，我们的 [海外独立站服务](/services/website)也从这几个问题开始，不预设平台。`,
+1. 先做一次 [AI 可见性测评](/audit)，看现有网站在抓取、正文、结构化数据和 AI 回答里的表现。
+2. 对照上面六个问题，确认自己是否真的需要定制。
+3. 需要的话，看 [外贸独立站服务](/services/website) 的交付内容与验收方式；还在比较不同建站形式的，可以先读课程 [独立站、平台店铺和电子画册官网的区别](/academy/website/a-1-1)。`,
     faqs: [
       {
-        q: '外贸 B2B 独立站一定要用 Shopify 吗？',
-        a: '不一定。Shopify 的优势在在线交易和托管省心，适合要在线下单、给企业客户分级定价的情形；以询盘为主的制造企业，WordPress 或定制开发同样可行。',
+        q: '外贸独立站一定要用 Next.js 吗？',
+        a: '不一定。询盘为主、型号少、没人维护代码时，现成平台往往更合适；需要自定义流程、对接 CRM/ERP 或后续接入 AI 时，Next.js 定制更有余地。',
       },
       {
-        q: '换建站平台会不会丢掉 Google 排名？',
-        a: '按 Google 的迁移说明做好 URL 映射、301 重定向和站内信息更新，可以把损失降到最低，但迁移期间仍会有暂时波动，中型网站通常要几周或更久才稳定。',
+        q: '云端智荐也做 Shopify 或 WordPress 建站吗？',
+        a: '不做。我们只交付 Next.js 定制独立站；如果你的情况更适合现成平台，我们会直接说明。',
       },
       {
-        q: '没有技术人员，适合用哪种方案？',
-        a: '优先选托管型方案，或在合同里约定外部维护：谁负责更新、备份和安全，出问题多久响应。没人维护是 B2B 官网最常见的失败原因。',
+        q: '换平台会丢排名吗？',
+        a: '关键看迁移是否规范。Google 说明 301 永久重定向不会造成 PageRank 损失，旧地址要逐一对应并长期保留；新地址在搜索结果里稳定下来通常要几周或更久。',
       },
       {
-        q: '定制开发和用现成平台，成本差在哪里？',
-        a: '影响成本的主要是产品数据的复杂度、语种数量、系统集成深度和后续维护方式，不只是建站本身。建议先做方案规划，按交付物和维护责任比较，而不是只比较报价。',
+        q: '网站上线就自带 AI 功能吗？',
+        a: '不自带。AI 客服是可选接入的单独服务；产品问答、询盘分级等功能按需定制，要先评估数据和需求。',
+      },
+      {
+        q: '性能分数高能保证排名吗？',
+        a: '不能。Google 说明页面体验表现好不保证排名靠前，最相关的内容仍然优先；我们把 Core Web Vitals 作为验收目标，不作为排名承诺。',
       },
     ],
   },
   en: {
-    title: 'B2B website platform: Shopify, WordPress or custom build?',
+    title: 'When does a B2B website need a custom Next.js build?',
     description:
-      'Which platform suits a manufacturer’s B2B website? Five business questions to decide between Shopify, WordPress and a custom build, and how to migrate safely.',
+      'When is a custom Next.js build worth it for a B2B export website? Five questions to decide, when off-the-shelf platforms fit better, and how to migrate safely.',
     answer:
-      'There is no single best platform. An enquiry-led manufacturer with a modest catalogue and no in-house developer can do well on WordPress or Shopify, as long as someone maintains it. If buyers order online at account-specific prices, Shopify B2B fits best. Hundreds of models with complex specs and CRM or ERP integration point to a custom build. The platform itself does not decide rankings.',
-    body: `## The short answer: decide the business model, then the platform
+      'There is no single best platform. If enquiries are your main goal, your catalogue is small and nobody on staff maintains code, an off-the-shelf platform often fits better. A custom Next.js build pays off when you need custom workflows, CRM or ERP integration, or room to add AI later. ChinGEO only builds custom Next.js sites. The platform itself does not decide rankings.',
+    body: `## Short answer: let the business pick the platform
 
-For a manufacturer’s B2B website, the platform is the last decision, not the first. Start with five questions: do buyers send enquiries or place orders, how many models do you sell and how complex are the specs, how many language markets do you serve, does every enquiry need to reach a CRM or ERP, and who will maintain the site in two years. Once those are answered, the choice usually makes itself.
+The platform is the last decision, not the first. Start with how buyers reach you (enquiry or online order), how many models you sell and how complex the specs are, how many languages you need, whether leads must flow into a CRM or ERP, whether you plan to add AI, and who will maintain the site. Once those are answered, the choice is usually obvious.
 
-| Option | Best fit | Main trade-off |
+| Option | Best for | Watch out for |
 |---|---|---|
-| Shopify | Online ordering with company accounts, price lists and payment terms; no wish to run servers | Built for commerce, with some fixed URL paths; B2B features vary by plan |
-| WordPress | Enquiry-led sites with lots of content and flexible page layouts | When self-hosted, security, updates and backups are your job; multilingual needs plugins |
-| Custom build | Large catalogues, complex specs, spec-based filtering, deep CRM or ERP integration | Product data must be modelled up front; a technical team has to own it after launch |
+| Shopify | Online ordering, tiered pricing, standard products | B2B features depend on your plan; some fixed paths can't be changed |
+| WordPress | Enquiry-led sites, frequent content, someone to manage plugins | Multilingual needs plugins; security needs ongoing hardening |
+| Custom Next.js | Large catalogues, complex specs, system integration, AI later | Needs a development team; rendering and SEO basics are on you |
 
-Each route works, and each has its failures. Those failures rarely come from the platform. They come from a mismatch with the business, or from nobody looking after the site once it is live.
+A note on scope: ChinGEO only delivers custom Next.js websites. We don't build on Shopify or WordPress. The other two columns are here to help you decide, not to sell you something.
 
-## Platforms don’t rank; pages do
+## The platform doesn't decide rankings
 
-A manufacturer’s website has one job: help overseas buyers, search engines and AI systems understand what you make, what the specifications are and why you can be trusted, and then capture the enquiry. Three things determine how well it does that, and none of them is tied to a particular platform.
+Search engines and AI assistants care whether a page can be crawled, whether its text is readable, and whether it's relevant. Which platform produced it doesn't matter.
 
-1. **Page structure.** Does each product family and application have its own page? Are specifications, standard numbers and certifications written as checkable text and tables? For the product page itself, see our [6-point product page checklist](/insights/ai-supplier-search-product-page-checklist).
-2. **Technical eligibility.** Google’s [Search Essentials technical requirements](https://developers.google.com/search/docs/essentials/technical) set only three minimums: Googlebot is not blocked, the page returns HTTP 200, and it has indexable content. On top of that come speed ([Core Web Vitals](/glossary/core-web-vitals)), [hreflang](/glossary/hreflang) for language versions and [structured data](/glossary/structured-data). All three options can get these right, and all three can get them wrong.
-3. **Ongoing updates.** Can a new product, certificate or case study go live within a day or two? That depends on the editing workflow and on whether someone owns it.
+Google's [Search Essentials technical requirements](https://developers.google.com/search/docs/essentials/technical) come down to three things: Googlebot isn't blocked, the page works (HTTP 200), and it has indexable content. All three options can meet them, and all three can get them wrong.
 
-Speed is not a shortcut either. Google’s [Core Web Vitals page](https://developers.google.com/search/docs/appearance/core-web-vitals) recommends achieving good scores, while its [page experience guidance](https://developers.google.com/search/docs/appearance/page-experience) notes that good report results do not guarantee top rankings and that relevant content comes first.
+Custom builds have one specific trap. If the main text only appears after the browser runs JavaScript, some crawlers won't see it. Google's [JavaScript SEO basics](https://developers.google.com/search/docs/crawling-indexing/javascript/javascript-seo-basics) still recommends server-side rendering or pre-rendering, because it's faster for users and crawlers and not all bots can run JavaScript. For GEO, assume [AI crawlers](/glossary/ai-crawlers) may miss anything rendered only in the browser.
 
-Popularity does not settle it. According to [W3Techs](https://w3techs.com/technologies/overview/content_management) (16 November 2026, counting websites rather than pages, with subdomains not counted separately), WordPress runs 38.5% of all websites and holds 57.5% of the CMS market; Shopify’s figures are 5.5% and 8.1%. That tells you both ecosystems are mature and easy to hire for. It does not tell you which one suits a valve manufacturer.
+## Four problems a custom Next.js build solves
 
-## Six questions to answer before choosing
+Custom isn't "more advanced". It's useful where off-the-shelf platforms either can't do the job or make it awkward.
 
-Put these on one page and fill them in with the owner, the sales lead and whoever runs marketing before you talk to anyone about a build.
+- **Your own workflows.** Quote forms that collect model, quantity and certification needs as separate fields; different product lines for different markets; distributor logins with private documents. On a theme-based platform this usually means stacking plugins. On a custom build it is modelled directly.
+- **CRM and ERP integration.** Leads go straight into your CRM, and specs sync from your ERP or product database, so nobody retypes data. WordPress has a [REST API](https://developer.wordpress.org/rest-api/) too; the difference is that a custom site's data model is designed around your systems from day one.
+- **Control over rendering and performance.** In Next.js, pages are Server Components by default, so data fetching and HTML rendering happen on the server and less JavaScript reaches the browser ([Next.js docs](https://nextjs.org/docs/app/getting-started/server-and-client-components)). You also decide which third-party scripts load, how images are handled and where the site is deployed. That is a capability, not a result. Actual speed depends on how the site is built and what gets added later.
+- **Room for AI.** Product Q&A, a selection assistant or enquiry scoring can be added later on the same stack without replatforming. These are custom projects that start with a look at your data and needs. They don't ship with the site.
 
-| Question | Why it matters | Where the answer points |
+## When an off-the-shelf platform is the better call
+
+If most of these apply, Shopify or WordPress will likely serve you better than a custom build:
+
+- Enquiries are the goal and a form that emails sales is enough
+- A few dozen products with simple specs
+- No one in-house maintains code, and you don't plan to retain developers
+- No CRM, ERP or AI plans for the next year or two
+
+Each platform has its own limits, so read the official docs first. Shopify B2B requires a plan that supports it, features vary by plan, and orders cap at 500 line items ([B2B considerations](https://help.shopify.com/en/manual/b2b/getting-started/considerations)). Fixed paths such as /products and /collections can't be redirected ([URL redirects](https://help.shopify.com/en/manual/online-store/menus-and-links/url-redirect)). WordPress doesn't support multilingual sites out of the box and relies on community plugins ([multilingual](https://developer.wordpress.org/advanced-administration/wordpress/multilingual/)), and themes and plugins need ongoing updates ([hardening](https://developer.wordpress.org/advanced-administration/security/hardening/)).
+
+## Six questions to decide
+
+| Question | Leans off-the-shelf | Leans custom Next.js |
 |---|---|---|
-| 1. Enquiries or online orders? | Decides whether the core is content and forms, or cart and checkout | Enquiries only: any option works. Orders and tiered prices: look at Shopify first |
-| 2. How many models, how complex are the specs? | Hand-editing spec tables for hundreds of models does not scale | Many specs and spec-based filtering lean towards custom, or WordPress with a product database |
-| 3. How many language markets? | Each language needs its own URLs, reciprocal hreflang and a translation workflow | With many languages, compare translation and URL handling, not themes |
-| 4. Which systems must enquiries reach? | Sales need to see the source page and channel of each enquiry in the CRM | Email alerts are easy anywhere; two-way CRM or ERP sync is easier to control in a custom build |
-| 5. Who maintains it long term? | Updates, backups, security and new content all need an owner | No developer in-house: choose a hosted option or contract maintenance |
-| 6. Is there an old site with rankings to protect? | Changing platform usually means changing URLs | Map URLs first, then check whether the new platform’s URL rules can accommodate them |
+| How do deals start? | Enquiry, or online order for standard items | Multi-step quotes by model and certification |
+| Catalogue | Dozens of models, simple specs | Hundreds of models, filterable spec tables |
+| Languages and markets | One or two languages | Several markets with different content |
+| Systems | Email is enough | Leads into CRM, specs from ERP |
+| AI plans | None yet | Product Q&A or enquiry scoring |
+| Maintenance | Marketing edits content | A dev team or long-term technical partner |
 
-## Matching the platform to the situation
+## Pick by situation
 
-The table below covers the six situations we see most often among manufacturers. The last column is the pitfall people tend to miss.
+| Your situation | Suggestion |
+|---|---|
+| Enquiry-led, small catalogue, no one to maintain code | Off-the-shelf (WordPress or Shopify) |
+| Online ordering with tiered pricing, standard products | Shopify B2B |
+| Content-heavy, frequent articles, plugin upkeep covered | WordPress |
+| Large catalogue, specs engineers need to verify | Custom Next.js |
+| CRM/ERP integration or AI on the roadmap | Custom Next.js |
+| Not sure | Run an audit to see where your current site stalls |
 
-| Situation | Recommended | Why | Watch out for |
-|---|---|---|---|
-| Enquiry-led, a few dozen models, one or two languages, no developer | WordPress on reliable managed hosting with agreed maintenance, or Shopify | Pages and articles are easy to edit and launch quickly | Plugins pile up and go unpatched on WordPress; on Shopify, enquiry forms rely on the theme or an app |
-| Enquiry-led, hundreds or thousands of models, complex specs, buyers filter by spec | Custom build, or WordPress with custom fields and a product database | Specs are structured data that should be imported in bulk, filtered and turned into spec pages automatically | Data modelling is most of the work; client-side rendering can hide content from some crawlers |
-| Online ordering for spares, samples or repeat orders, with account-specific prices and terms | Shopify B2B | Company accounts, catalogues, price lists and payment terms are built in | Features vary by plan, and some checkout features are not compatible with B2B |
-| Four or more language markets | Any option; choose on translation workflow and URL handling | The hard part is managing translations and hreflang, not the platform | Machine translation pushed live; hreflang tags that don’t point back to each other |
-| Every enquiry must reach the CRM with its source | Define fields and integrations first on any option; go custom for many systems or two-way sync | Where data comes from and where it goes matters more than the admin panel | Forms that only send email lose the source, so you never learn which pages produce enquiries |
-| An old site with rankings, moving platform | Map URLs before choosing | The new platform’s URL rules decide how many old addresses need redirects | Moving content without redirects, losing rankings and backlinks together |
+We don't take on the first three; a specialist for that platform is the better fit. The last two are what ChinGEO does.
 
-## What each option really costs you
+## How to read performance scores
 
-### Shopify: easy commerce, within the platform’s rules
+Performance is an engineering target. It doesn't guarantee rankings.
 
-Shopify is the strongest choice when online transactions are part of the business. Its [B2B features](https://help.shopify.com/en/manual/b2b) let you set up company accounts with their own pricing, currency, catalogues, payment and shipping methods, and Shopify lists ERP and external-system integrations among the tools available. Hosting, security and checkout are managed for you.
+- PageSpeed Insights reports mobile and desktop separately, and the two often differ. It also mixes lab data with field data from real users, and the two don't always agree ([about PSI](https://developers.google.com/speed/docs/insights/v5/about)).
+- Lab results come in four separate categories: Performance, Accessibility, Best Practices and SEO. They aren't one combined score.
+- The Performance score moves with test time, device, network and third-party scripts such as ads or A/B tests. Lighthouse says most of that variance comes from changing conditions, not the tool ([performance scoring](https://developer.chrome.com/docs/lighthouse/performance/performance-scoring)).
+- Google says good [Core Web Vitals](https://developers.google.com/search/docs/appearance/core-web-vitals) and page experience results don't guarantee top rankings, and the most relevant content still wins ([page experience](https://developers.google.com/search/docs/appearance/page-experience)).
 
-The trade-off is that Shopify sets the rules:
+ChinGEO treats [Core Web Vitals](/glossary/core-web-vitals) in key overseas regions as an acceptance item, with a target of LCP ≤ 1.8 seconds, checked with PSI and similar tools. It's a delivery target, not a service-level promise, and it says nothing about rankings or AI citations.
 
-- **B2B depends on your plan.** Shopify’s [B2B requirements and considerations](https://help.shopify.com/en/manual/b2b/getting-started/considerations) say B2B is not offered on every plan, that accelerated checkouts and subscriptions are not compatible with B2B, and that an order can have at most 500 line items.
-- **Some URL paths are fixed.** The [URL redirect guide](https://help.shopify.com/en/manual/online-store/menus-and-links/url-redirect) lists /products and /collections as fixed paths, and the [multilingual requirements](https://help.shopify.com/en/manual/international/languages/requirements) note that the word "products" in a URL cannot be translated and that each plan caps the number of languages.
-- **Spec tables take planning.** Product specifications can be stored in [metafields](https://help.shopify.com/en/manual/custom-data/metafields) and shown by the theme, but a spec system for hundreds of models needs its fields designed in advance.
+## Switching platforms without losing rankings
 
-### WordPress: flexible content, maintenance on you
+Whether rankings drop depends on how carefully you migrate, not on the new platform. Following Google's [site move guide](https://developers.google.com/search/docs/crawling-indexing/site-move-with-url-changes):
 
-WordPress suits content-heavy, enquiry-led sites that want flexible page structures. Themes, plugins and developers are easy to find, and the [REST API](https://developer.wordpress.org/rest-api/) lets it exchange data with other systems.
+1. List every old URL, especially pages with traffic or backlinks
+2. Map each one to a new URL
+3. Use 301 permanent redirects at launch; Google says these don't cause PageRank loss
+4. Keep redirects as long as possible, generally at least a year
+5. Update internal links, the sitemap, canonicals and [hreflang](/glossary/hreflang)
+6. Watch crawling and indexing in Search Console; a small to medium site usually takes a few weeks for most pages to move
 
-The trade-off is maintenance:
-
-- **Security and updates need an owner.** The official [hardening guide](https://developer.wordpress.org/advanced-administration/security/hardening/) reminds site owners that hosts cover only part of security and a great deal rests with the owner; older versions stop receiving security updates, and plugins and themes should come only from trusted sources.
-- **Multilingual means plugins.** WordPress’s [multilingual documentation](https://developer.wordpress.org/advanced-administration/wordpress/multilingual/) says core does not yet support multilingual sites out of the box, so you rely on community plugins or one installation per language. Switching plugins later is expensive.
-
-### Custom build: full control of data and integration, if a team owns it
-
-A custom build fits complex product data, deep CRM or ERP integration, or strict requirements on speed and page structure. Specs are modelled on your own product system; spec pages, comparison pages and filters are generated from one data source; enquiry fields follow your sales process.
-
-The trade-off is what it demands of planning and people:
-
-- **Product data comes first.** Models, parameters, units, standard numbers and certifications, and which fields are shared or series-specific, must be settled before development starts.
-- **SEO basics are your job.** hreflang, sitemaps, structured data and redirects are not provided for you. Google’s [JavaScript SEO basics](https://developers.google.com/search/docs/crawling-indexing/javascript/javascript-seo-basics) recommends server-side rendering or pre-rendering because not all bots can run JavaScript.
-- **Someone must own it after launch.** Who owns the code, whether it is documented and whether another team could take it over should all be in the contract.
-
-## Moving an old site without losing rankings
-
-A migration does not have to cost rankings; the skipped steps do. Based on Google’s [site move guide](https://developers.google.com/search/docs/crawling-indexing/site-move-with-url-changes):
-
-1. **Build a URL map.** Every old address gets a matching new one, product page to product page, never everything to the home page.
-2. **Use 301 redirects.** Google states that 301 and other permanent redirects do not cause a loss in PageRank.
-3. **Update on-site signals.** Point internal links, canonicals, hreflang and sitemaps at the new URLs, and check that the new robots.txt does not block anything you want indexed.
-4. **Changing domains? File a Change of Address** for the old site in Search Console.
-5. **Expect a dip.** Google warns of temporary ranking fluctuation; for a medium-sized site it can take a few weeks or more before new URLs replace the old ones.
-6. **Keep redirects for at least a year**, and longer if you can.
-
-On Shopify, note that redirects can only be created from addresses that already return 404, and fixed paths cannot be used as redirect sources, so build the URL map around those rules.
-
-Migration is not the only route. In our [Aikang Medical case](/cases/ak-medical), the domestic site stayed as it was and a separate English site was built for overseas buyers, so there was no migration risk at all.
+If you're moving onto Shopify, product and collection pages live under the fixed /products and /collections paths, so build the URL map around them.
 
 ## Common mistakes
 
-1. **Expecting a new platform to lift rankings.** If structure, content and technical basics stay the same, only the admin panel changed.
-2. **Choosing on the theme.** Buyers and crawlers care whether specs and evidence are readable; a theme cannot supply those.
-3. **Ignoring maintenance.** A site is newest on launch day. An unmaintained WordPress site is a security risk; an unupdated Shopify store loses buyers just the same.
-4. **Building first, organising product data later.** If specs for hundreds of models are sorted only after launch, the page structure often has to be rebuilt.
-5. **Treating multilingual as a plugin install.** Each language needs its own URLs, reciprocal hreflang and a human reviewer. Unedited machine translation damages credibility.
+- **Expecting a new platform to lift rankings.** Content and technical basics do that.
+- **Building a custom site as a front-end showcase.** If text needs JavaScript to appear, crawlers may miss it.
+- **Translating the brochure and calling it a website.** Specs an engineer can't check won't be used to make a buying decision.
+- **Judging by one performance score.** Scores vary run to run and between mobile and desktop; look at repeated runs and field data.
+- **Launching and walking away.** Outdated specs and certificates mean buyers and AI assistants get old information.
+
+## What ChinGEO provides
+
+We only build custom Next.js sites. Here is what can go into a proposal:
+
+1. **Custom Next.js only**, so the site, AI features and your business systems grow on one stack without replatforming.
+2. **Pages written for three readers**: procurement, engineering and compliance, with specs, certifications and documents they can verify (see the lesson [why one website has to be written for three readers](/academy/website/a-1-2)).
+3. **Server-side rendering or pre-rendering**, so crawlers that don't run JavaScript still get the text, plus [structured data](/glossary/structured-data) and hreflang.
+4. **Performance as an engineering target**, with Core Web Vitals in the acceptance checklist as described above.
+5. **Your data in your systems**: form leads sync to your own CRM, and a visit and lead dashboard is connected after launch.
+6. **Optional AI customer service**: [AI customer service](/services/ai-customer-service) is a separate service covering knowledge-base answers, multilingual replies and enquiry extraction, with high-intent leads pushed to WeCom or your CRM. It isn't built into every site. A product selection assistant, enquiry scoring or deeper system integration are custom work, scoped separately.
+
+Case in point: for [Aikang Medical](/cases/ak-medical) we built a new English overseas site to Core Web Vitals and multilingual standards.
 
 ## Where to start
 
-Know your current position before you compare proposals:
-
-1. **Check your current site.** An [AI visibility audit](/audit) looks at AI crawler access, the text visible without JavaScript, structured data and language setup. Note the main issues.
-2. **Answer the six questions above**, especially 1, 2 and 5, which set the direction.
-3. **Use the decision table to compare proposals.** Ask each provider how they would handle the pitfalls in your row.
-
-For background on the types of overseas website, see the lesson on [websites, marketplace stores and brochure sites](/academy/website/a-1-1). If you would rather work through these questions in one session, our [export website service](/services/website) starts from the same place, without assuming a platform.`,
+1. Run the [AI visibility audit](/audit) to see how your current site does on crawling, readable text, structured data and AI answers.
+2. Go through the six questions above and decide whether you really need a custom build.
+3. If you do, see what the [export website service](/services/website) delivers and how it's accepted. If you're still comparing site types, start with the lesson on [independent sites vs platform stores vs e-brochure sites](/academy/website/a-1-1).`,
     faqs: [
       {
-        q: 'Does a B2B website have to run on Shopify?',
-        a: 'No. Shopify’s strengths are online transactions and managed hosting, which suit buyers who order online at account-specific prices. For enquiry-led manufacturers, WordPress or a custom build works just as well.',
+        q: 'Does a B2B export website have to be built with Next.js?',
+        a: 'No. If you mostly take enquiries, have a small catalogue and no one to maintain code, an off-the-shelf platform often fits better. Next.js makes sense when you need custom workflows, CRM/ERP integration or AI later.',
       },
       {
-        q: 'Will switching platforms cost us our Google rankings?',
-        a: 'Following Google’s site move guidance, with a URL map, 301 redirects and updated internal signals, keeps the loss to a minimum. Expect a temporary dip; a medium-sized site usually needs a few weeks or more to settle.',
+        q: 'Does ChinGEO also build Shopify or WordPress sites?',
+        a: "No. We only deliver custom Next.js websites, and if an off-the-shelf platform suits you better, we'll say so.",
       },
       {
-        q: 'We have no developer. Which option suits us?',
-        a: 'Choose a hosted option or contract maintenance, spelling out who handles updates, backups and security and how fast problems are fixed. A site nobody maintains is the most common way B2B websites fail.',
+        q: 'Will switching platforms cost me my rankings?',
+        a: 'It depends on the migration. Google says 301 redirects don\'t cause PageRank loss; map every old URL and keep the redirects for at least a year. New URLs can take a few weeks or more to settle in results.',
       },
       {
-        q: 'What drives the cost difference between a custom build and an off-the-shelf platform?',
-        a: 'Mainly the complexity of your product data, the number of languages, how deep the integrations go and how the site will be maintained, not the build alone. Plan the scope first and compare proposals by deliverables and maintenance responsibility rather than by quote.',
+        q: 'Does the site come with AI features at launch?',
+        a: 'No. AI customer service is a separate, optional service, and features like product Q&A or enquiry scoring are built on demand after scoping your data and needs.',
+      },
+      {
+        q: 'Can a high performance score guarantee rankings?',
+        a: "No. Google says good page experience doesn't guarantee top rankings and relevant content comes first. We use Core Web Vitals as an acceptance target, not a ranking promise.",
       },
     ],
   },
