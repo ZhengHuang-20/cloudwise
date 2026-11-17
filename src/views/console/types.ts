@@ -11,6 +11,8 @@ export interface Site {
   /** 仅管理接口返回：关联的 Vercel 团队 / 项目 ID（留空表示未关联） */
   vercelTeamId?: string;
   vercelProjectId?: string;
+  /** 仅管理接口返回：表单字段映射「字段名 → name|phone|email|company|message|ignore|extra」 */
+  fieldMap?: Record<string, string>;
 }
 
 export interface Org {
@@ -72,6 +74,8 @@ export interface Lead {
   utmCampaign: string;
   landingPath: string;
   country: string;
+  /** 表单里除标准字段之外的填写内容（字段名 → 值） */
+  extra: Record<string, string>;
   /** 这条线索来自 AI 可见性测评，可以查看对应报告 */
   hasAudit: boolean;
 }

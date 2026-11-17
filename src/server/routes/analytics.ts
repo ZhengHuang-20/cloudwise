@@ -13,6 +13,7 @@ import { jobJSON } from './audits';
 import { apiError, clientIP, clip, json, pathID, readJSON, route, str, userAgent } from '../http';
 import { limits } from '../ratelimit';
 import { notifyNewLead } from '../leadNotify';
+import { normalizeFields, parseFieldMap, resolveLead, STD_KEYS } from '../leadFields';
 import { authed, normalizeEmail, siteAccess, type AuthedUser } from '../auth';
 import { browserOf, deviceOf, isBot, normalizeLang, osOf } from '../useragent';
 
@@ -22,9 +23,9 @@ const SITE_KEY_RE = /^sk_[0-9a-f]{24}$/;
 const VISITOR_RE = /^[A-Za-z0-9_-]{8,40}$/;
 const PHONE_RE = /^[0-9+\-() ]{6,32}$/;
 
-async function siteByKey(key: string): Promise<{ id: number; domain: string } | null> {
+async function siteByKey(key: string): Promise<{ id: number; domain: string; field_map: unknown } | null> {
   if (!SITE_KEY_RE.test(key)) return null;
-  return queryOne(`SELECT id, domain FROM sites WHERE site_key = $1`, [key]);
+  return queryOne(`SELECT id, domain, field_map FROM sites WHERE site_key = $1`, [key]);
 }
 
 function hostnameOf(raw: string): string {
@@ -198,13 +199,27 @@ export const submitLead = route(async (req) => {
   // 蜜罐：真人看不见，机器人会填。命中时假装成功，不入库
   if (str(body.website)) return json({ ok: true }, 201, cors);
 
-  const phone = str(body.phone).trim();
-  const email = str(body.email).trim().toLowerCase();
+  // 标准字段可以直接带（data-cw-lead 与旧脚本），也可以放在 fields 里按字段名识别（自动识别、任意表单）；直接带的优先
+  const explicit: Partial<Record<(typeof STD_KEYS)[number], string>> = {};
+  for (const k of STD_KEYS) explicit[k] = str(body[k]).trim();
+  const { std, extra } = resolveLead(normalizeFields(body.fields), explicit, parseFieldMap(site.field_map));
+  const phone = std.phone.trim();
+  const email = std.email.trim().toLowerCase();
   if (!phone && !email) return apiError(400, 'bad_request', '请至少留下手机号或邮箱', cors);
   if (phone && !PHONE_RE.test(phone)) return apiError(400, 'bad_request', '手机号格式不正确', cors);
   if (email && normalizeEmail(email) !== email) return apiError(400, 'bad_request', '邮箱格式不正确', cors);
   const visitor = VISITOR_RE.test(str(body.visitorId)) ? str(body.visitorId) : '';
   const session = VISITOR_RE.test(str(body.sessionId)) ? str(body.sessionId) : '';
+
+  // 脚本自动识别的提交：同一联系方式 30 秒内已有线索时不重复入库（表单提交与按钮点击可能各触发一次）
+  if (body.auto === true) {
+    const dup = await queryOne(
+      `SELECT id FROM leads WHERE site_id = $1 AND created_at > now() - interval '30 seconds'
+         AND (($2 <> '' AND phone = $2) OR ($3 <> '' AND email = $3)) LIMIT 1`,
+      [site.id, phone, email],
+    );
+    if (dup) return json({ ok: true, id: dup.id, duplicate: true }, 200, cors);
+  }
 
   // 来源归因：留资所在的会话不是直接访问时就用它；否则取最近 90 天内最近一次非直接访问的会话，都没有时取最近一次会话
   const attr = visitor
@@ -220,15 +235,15 @@ export const submitLead = route(async (req) => {
 
   const row = await queryOne(
     `INSERT INTO leads (site_id, name, phone, email, company, message, source_page, visitor_id, ip, user_agent,
-       channel, source, utm_campaign, landing_path, country)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15) RETURNING id`,
+       channel, source, utm_campaign, landing_path, country, extra)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16::jsonb) RETURNING id`,
     [
       site.id,
-      clip(str(body.name), 64),
+      clip(std.name, 64),
       phone,
       email,
-      clip(str(body.company), 128),
-      clip(str(body.message), 2000),
+      clip(std.company, 128),
+      clip(std.message, 2000),
       clip(str(body.sourcePage), 512),
       visitor,
       clientIP(req),
@@ -238,6 +253,7 @@ export const submitLead = route(async (req) => {
       attr?.utm_campaign ?? '',
       attr?.entry_path ?? '',
       country,
+      JSON.stringify(extra),
     ],
   );
   // 标记留资的会话（脚本带了会话 ID 就用它，否则取该访客最近一次会话），用于按渠道、页面统计转化
@@ -273,7 +289,7 @@ export const CN_OFFSET_MS = 8 * 3600 * 1000;
 
 const LEAD_STATUSES = new Set(['new', 'contacted', 'qualified', 'closed', 'invalid']);
 const LEAD_COLS = `id, name, phone, email, company, message, source_page, status, note, created_at,
-  channel, source, utm_campaign, landing_path, country, audit_id`;
+  channel, source, utm_campaign, landing_path, country, audit_id, extra`;
 
 /** 测评提交产生的线索，留言以此开头（audit_id 出现之前的线索靠它识别） */
 const AUDIT_LEAD_PREFIX = 'AI 可见性测评：';
@@ -294,6 +310,7 @@ const leadJSON = (r: any) => ({
   utmCampaign: r.utm_campaign,
   landingPath: r.landing_path,
   country: r.country,
+  extra: (r.extra ?? {}) as Record<string, string>,
   hasAudit: !!r.audit_id || String(r.message).startsWith(AUDIT_LEAD_PREFIX),
 });
 
@@ -309,12 +326,12 @@ export const siteLeads = withSite(async (req, _u, siteId) => {
     args.push(status);
     where += ` AND status = $${args.length}`;
   }
-  // 关键词：姓名、手机、邮箱、公司、留言模糊匹配（转义 LIKE 通配符）
+  // 关键词：姓名、手机、邮箱、公司、留言与自定义字段模糊匹配（转义 LIKE 通配符）
   const q = (sp.get('q') ?? '').trim().slice(0, 64);
   if (q) {
     args.push(`%${q.replace(/[\\%_]/g, (c) => '\\' + c)}%`);
     const p = `$${args.length}`;
-    where += ` AND (name ILIKE ${p} OR phone ILIKE ${p} OR email ILIKE ${p} OR company ILIKE ${p} OR message ILIKE ${p})`;
+    where += ` AND (name ILIKE ${p} OR phone ILIKE ${p} OR email ILIKE ${p} OR company ILIKE ${p} OR message ILIKE ${p} OR extra::text ILIKE ${p})`;
   }
   const total = await queryOne(`SELECT COUNT(*) AS n FROM leads WHERE ${where}`, args);
   const rows = await query(
@@ -388,7 +405,10 @@ const cnTime = (d: Date) => new Date(d.getTime() + CN_OFFSET_MS).toISOString().s
 /** 导出全部线索为 CSV（UTF-8 带 BOM，Excel 直接打开不乱码）。 */
 export const exportLeads = withSite(async (_req, _u, siteId) => {
   const rows = await query(`SELECT ${LEAD_COLS} FROM leads WHERE site_id = $1 ORDER BY id DESC LIMIT 50000`, [siteId]);
-  const lines = [['时间(北京)', '姓名', '手机', '邮箱', '公司', '留言', '来源页面', '状态', '备注', '来源渠道', '来源', 'UTM 活动', '落地页', '国家/地区']];
+  // 自定义字段按字段名合并成动态列（按首次出现的顺序），放在固定列之后
+  const extraKeys: string[] = [];
+  for (const r of rows) for (const k of Object.keys(r.extra ?? {})) if (!extraKeys.includes(k)) extraKeys.push(k);
+  const lines = [['时间(北京)', '姓名', '手机', '邮箱', '公司', '留言', '来源页面', '状态', '备注', '来源渠道', '来源', 'UTM 活动', '落地页', '国家/地区', ...extraKeys]];
   for (const r of rows) {
     lines.push([
       cnTime(r.created_at),
@@ -405,6 +425,7 @@ export const exportLeads = withSite(async (_req, _u, siteId) => {
       csvSafe(r.utm_campaign),
       csvSafe(r.landing_path),
       r.country,
+      ...extraKeys.map((k) => csvSafe(String(r.extra?.[k] ?? ''))),
     ]);
   }
   const body = '﻿' + lines.map((l) => l.map(csvField).join(',')).join('\n') + '\n';

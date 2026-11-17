@@ -2,6 +2,7 @@
 import { exec, isDuplicate, isFKViolation, query, queryOne, tx } from '../db';
 import { apiError, json, pathID, readJSON, runeLen, str } from '../http';
 import { adminOnly, authed, createUser, hashPassword, normalizeEmail, randomHex, randomPassword, validatePassword } from '../auth';
+import { parseFieldMap } from '../leadFields';
 
 // ---------- 客户公司 ----------
 
@@ -138,7 +139,7 @@ const siteJSON = (r: any) => ({
 export const listSites = authed(adminOnly, async () => {
   // 管理视角额外返回已授权的账号 ID（用于展示与撤销授权）与 Vercel 项目关联
   const rows = await query(
-    `SELECT ${SITE_COLS}, s.vercel_team_id, s.vercel_project_id,
+    `SELECT ${SITE_COLS}, s.vercel_team_id, s.vercel_project_id, s.field_map,
        COALESCE((SELECT array_agg(m.user_id::int ORDER BY m.user_id) FROM site_members m WHERE m.site_id = s.id), '{}') AS member_ids
      FROM sites s ORDER BY s.id DESC`,
   );
@@ -147,6 +148,7 @@ export const listSites = authed(adminOnly, async () => {
       ...siteJSON(r),
       vercelTeamId: r.vercel_team_id,
       vercelProjectId: r.vercel_project_id,
+      fieldMap: r.field_map as Record<string, string>,
       memberIds: r.member_ids as number[],
     })),
   });
@@ -155,17 +157,32 @@ export const listSites = authed(adminOnly, async () => {
 const VERCEL_TEAM_RE = /^team_[A-Za-z0-9]{8,64}$/;
 const VERCEL_PROJECT_RE = /^prj_[A-Za-z0-9]{8,64}$/;
 
-/** PATCH /api/admin/sites/{id}：设置站点关联的 Vercel 团队 ID 与项目 ID（留空表示不关联）。 */
+/**
+ * PATCH /api/admin/sites/{id}：按请求里带的字段分别更新，没带的不动。
+ * - vercelTeamId / vercelProjectId：关联的 Vercel 团队与项目（留空表示不关联）
+ * - fieldMap：表单字段映射「字段名 → name|phone|email|company|message|ignore|extra」，线索识别不准时用
+ */
 export const updateSite = authed(adminOnly, async (req, _u, params) => {
   const id = pathID(params.id);
   if (!id) return apiError(400, 'bad_request', '无效的站点 ID');
   const body = await readJSON(req);
-  const teamId = str(body.vercelTeamId).trim();
-  const projectId = str(body.vercelProjectId).trim();
-  if (teamId && !VERCEL_TEAM_RE.test(teamId)) return apiError(400, 'bad_request', '团队 ID 应以 team_ 开头');
-  if (projectId && !VERCEL_PROJECT_RE.test(projectId)) return apiError(400, 'bad_request', '项目 ID 应以 prj_ 开头');
-  const n = await exec(`UPDATE sites SET vercel_team_id = $2, vercel_project_id = $3 WHERE id = $1`, [id, teamId, projectId]);
-  if (n === 0) return apiError(404, 'not_found', '站点不存在');
+  let touched = false;
+  if ('vercelTeamId' in body || 'vercelProjectId' in body) {
+    const teamId = str(body.vercelTeamId).trim();
+    const projectId = str(body.vercelProjectId).trim();
+    if (teamId && !VERCEL_TEAM_RE.test(teamId)) return apiError(400, 'bad_request', '团队 ID 应以 team_ 开头');
+    if (projectId && !VERCEL_PROJECT_RE.test(projectId)) return apiError(400, 'bad_request', '项目 ID 应以 prj_ 开头');
+    const n = await exec(`UPDATE sites SET vercel_team_id = $2, vercel_project_id = $3 WHERE id = $1`, [id, teamId, projectId]);
+    if (n === 0) return apiError(404, 'not_found', '站点不存在');
+    touched = true;
+  }
+  if ('fieldMap' in body) {
+    const map = parseFieldMap(body.fieldMap);
+    const n = await exec(`UPDATE sites SET field_map = $2::jsonb WHERE id = $1`, [id, JSON.stringify(map)]);
+    if (n === 0) return apiError(404, 'not_found', '站点不存在');
+    touched = true;
+  }
+  if (!touched) return apiError(400, 'bad_request', '没有要修改的内容');
   return json({ ok: true });
 });
 
