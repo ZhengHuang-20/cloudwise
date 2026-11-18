@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { App as AntApp, Button, Card, Drawer, Form, Input, Modal, Select, Table, Tag, Typography } from 'antd';
-import { BookOpen, ChartColumn, Code, Copy, Plus, Triangle } from 'lucide-react';
+import { BookOpen, ChartColumn, Code, Copy, Plus, Shuffle, Triangle } from 'lucide-react';
 import { api } from '../../../lib/api';
 import { useConsole } from '../ConsoleContext';
 import { InstallGuide, installGuideText, installSnippets } from '../InstallPanel';
@@ -31,6 +31,8 @@ export const SitesPanel: React.FC = () => {
   const [guideSite, setGuideSite] = useState<Site | null>(null);
   const [vercelSite, setVercelSite] = useState<Site | null>(null);
   const [vercelForm] = Form.useForm<VercelValues>();
+  const [mapSite, setMapSite] = useState<Site | null>(null);
+  const [mapText, setMapText] = useState('');
   const [grantIds, setGrantIds] = useState<number[]>([]);
   const [busy, setBusy] = useState(false);
   const [form] = Form.useForm<CreateValues>();
@@ -81,6 +83,26 @@ export const SitesPanel: React.FC = () => {
       });
       message.success('Vercel 关联已保存，数据概览约 10 分钟内生效');
       setVercelSite(null);
+      refresh();
+    } catch (e: any) {
+      message.error(e.message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const saveFieldMap = async () => {
+    if (!mapSite) return;
+    const fieldMap: Record<string, string> = {};
+    for (const line of mapText.split('\n')) {
+      const m = line.split(/[=＝]/);
+      if (m.length === 2 && m[0].trim() && m[1].trim()) fieldMap[m[0].trim()] = m[1].trim();
+    }
+    setBusy(true);
+    try {
+      await api(`/api/admin/sites/${mapSite.id}`, { method: 'PATCH', body: { fieldMap } });
+      message.success('字段映射已保存，新提交的线索立即按它识别');
+      setMapSite(null);
       refresh();
     } catch (e: any) {
       message.error(e.message);
@@ -264,6 +286,17 @@ export const SitesPanel: React.FC = () => {
                   <Button
                     type="link"
                     size="small"
+                    icon={<Shuffle size={14} />}
+                    onClick={() => {
+                      setMapText(Object.entries(s.fieldMap ?? {}).map(([k, v]) => `${k}=${v}`).join('\n'));
+                      setMapSite(s);
+                    }}
+                  >
+                    字段映射
+                  </Button>
+                  <Button
+                    type="link"
+                    size="small"
                     icon={<ChartColumn size={14} />}
                     onClick={() => {
                       selectSite(s.id);
@@ -334,6 +367,35 @@ export const SitesPanel: React.FC = () => {
             <Input placeholder="prj_xxxxxxxx" className="tabular-nums" />
           </Form.Item>
         </Form>
+      </Modal>
+
+      <Modal
+        title={mapSite ? `表单字段映射：${mapSite.name}` : ''}
+        open={!!mapSite}
+        onCancel={() => setMapSite(null)}
+        onOk={saveFieldMap}
+        okText="保存"
+        confirmLoading={busy}
+        destroyOnHidden
+        width={520}
+      >
+        <div className="space-y-3 pt-2">
+          <p className="text-caption text-label-secondary">
+            自动识别的表单会按字段名（页面上用户看到的标题）自动判断姓名、手机、邮箱、公司、留言，其余内容保存在线索的「表单其他信息」里。
+            只有识别错了才需要在这里改，每行一条，保存后新提交的线索立即生效，网站不用改。
+          </p>
+          <Input.TextArea
+            aria-label="字段映射"
+            value={mapText}
+            onChange={(e) => setMapText(e.target.value)}
+            autoSize={{ minRows: 5, maxRows: 12 }}
+            placeholder={'意向城市=company\n加盟顾问=ignore\n您的称呼=name'}
+            className="tabular-nums"
+          />
+          <p className="text-caption text-label-secondary">
+            右边可填：name（姓名）、phone（手机）、email（邮箱）、company（公司）、message（留言）、extra（当作其他信息）、ignore（丢弃）。
+          </p>
+        </div>
       </Modal>
 
       <Drawer

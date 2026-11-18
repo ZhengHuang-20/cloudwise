@@ -32,12 +32,15 @@ export const installSnippets = (site: Site, origin = window.location.origin) => 
   document.addEventListener('cw:success', () => alert('已收到，我们会尽快联系您'));
   document.addEventListener('cw:error', (e) => alert(e.detail));
 </script>`,
+  auto: `<script async src="${origin}/cw.js" data-site="${site.siteKey}" data-cw-auto></script>`,
   js: `CloudWise.submitLead({
   name: '张三',
   phone: '13800000000',
   email: 'zhangsan@example.com',
   company: '示例公司',
   message: '想了解产品',
+  // 其他任意字段：字段名 → 值，原样保存并在后台线索详情里显示
+  fields: { 意向城市: '韩城市', 意向开店区域: '县级市' },
 });`,
   curl: `curl -X POST ${origin}/api/public/leads \\
   -H 'Content-Type: application/json' \\
@@ -64,11 +67,17 @@ ${s.script}
 自查：在网址后加 ?cw_debug=1 打开页面，浏览器控制台会打印「[CloudWise] 已上报」；没有上报时控制台会给出原因（脚本标签缺 data-site、来源域名不匹配、被拦截插件或 CSP 拦截等）。
 
 二、线索表单（按网站情况任选一种）
+方式 0（推荐，一次接入，以后任何表单都不用再改）：把统计脚本换成带 data-cw-auto 的版本：
+
+${s.auto}
+
+之后页面上任何含手机或邮箱输入的表单（包括没有 <form> 标签、点击「提交」按钮发请求的自定义表单）提交时都会自动入库。字段名取页面上用户看到的标题（如「意向城市」），下拉、单选、勾选框与选项按钮按选中状态收集，姓名、手机、邮箱、公司、留言由服务端按字段名识别，其余内容在线索详情的「表单其他信息」里。不会拦截或改动网站自己的提交流程；密码、验证码、证件号与银行卡号不会上报；要求勾选的协议没勾选、表单有校验错误时不上报。登录、搜索等没有联系方式的表单会被忽略，某个表单不想被收可以加 data-cw-ignore 属性。字段识别不准时，管理员在「站点与授权」的「字段映射」里调整，不用改网站。
+
 方式 1：给现有表单加上 data-cw-lead 属性，提交时自动入库。字段名用 name / phone / email / company / message，手机与邮箱至少填一项。提交成功会触发 cw:success 事件，失败触发 cw:error（e.detail 为错误说明）。示例：
 
 ${s.form}
 
-方式 2：自己写提交逻辑的，在页面已加载上面脚本的前提下调用（返回 Promise）：
+方式 2：自己写提交逻辑的，在页面已加载上面脚本的前提下调用（返回 Promise，fields 里的字段不限）：
 
 ${s.js}
 
@@ -108,12 +117,18 @@ export const InstallGuide: React.FC<{ site: Site }> = ({ site }) => {
               </div>
               <Step
                 n={2}
-                title="线索：给表单加上 data-cw-lead"
-                desc="提交时自动入库，字段名用 name / phone / email / company / message，手机与邮箱至少填一项"
+                title="线索（推荐）：脚本标签加 data-cw-auto，任何表单自动入库"
+                desc="一次接入，以后新增或改版的表单都不用再改。字段名取页面上用户看到的标题，下拉、单选、勾选框与选项按钮按选中状态收集；不会拦截网站自己的提交流程。登录、搜索等没有联系方式的表单会被忽略，不想被收的表单加 data-cw-ignore。"
+                code={s.auto}
+              />
+              <Step
+                n={3}
+                title="线索（备选）：给表单加上 data-cw-lead"
+                desc="按固定字段入库：字段名用 name / phone / email / company / message，手机与邮箱至少填一项。需要带其他字段时，在 JS 里调用 CloudWise.submitLead({ ..., fields: {...} })。"
                 code={s.form}
               />
               <div className="flex gap-3">
-                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-fill text-caption tabular-nums">3</span>
+                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-fill text-caption tabular-nums">4</span>
                 <div>
                   <p className="font-semibold">验证</p>
                   <p className="mt-1 text-caption text-label-secondary">

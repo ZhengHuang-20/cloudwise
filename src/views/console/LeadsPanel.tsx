@@ -171,6 +171,19 @@ const LeadDrawer: React.FC<{
             ]}
           />
 
+          {Object.keys(lead.extra ?? {}).length > 0 && (
+            <section>
+              <h3 className="mb-2 text-caption text-label-secondary">表单其他信息</h3>
+              <Descriptions
+                column={1}
+                size="small"
+                colon={false}
+                styles={{ label: { width: 120 } }}
+                items={Object.entries(lead.extra).map(([k, v]) => ({ key: k, label: k, children: <span className="break-words">{v}</span> }))}
+              />
+            </section>
+          )}
+
           <section>
             <h3 className="mb-2 text-caption text-label-secondary">留言</h3>
             <p className="whitespace-pre-wrap break-words rounded-[10px] bg-surface-raised px-4 py-3">{lead.message || '（未填写）'}</p>
@@ -343,7 +356,7 @@ export const LeadsPanel: React.FC<{ site: Site }> = ({ site }) => {
             <Input.Search
               aria-label="搜索线索"
               allowClear
-              placeholder="搜索姓名、手机、邮箱、公司或留言"
+              placeholder="搜索姓名、手机、邮箱、公司、留言或表单其他信息"
               onSearch={search}
             />
           </div>
