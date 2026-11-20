@@ -168,7 +168,7 @@ export const HomeView: React.FC = () => {
     <div>
       {/* ===================== Hero ===================== */}
       <section className="layout-text pt-[clamp(4rem,2rem+6vw,7.5rem)] text-center">
-        <p className="eyebrow">{t('云端智荐 · AI 出海售前系统', 'ChinGEO · AI pre-sales system for going global')}</p>
+        <p className="eyebrow">{t('云端智荐 · 中国 B2B 出海 GEO 服务商', 'ChinGEO · GEO for Chinese B2B exporters')}</p>
         <h1 className="mt-4 text-display">
           {t('让海外买家找到你', 'Help overseas buyers find you')}
           <br />
