@@ -131,7 +131,7 @@ export const MySpaceModal: React.FC<MySpaceModalProps> = ({ isOpen, onClose }) =
             </h3>
             <ul className="mt-4 space-y-5">
               {courses.map((course) => {
-                const percent = getCourseProgressPercentage(course.id);
+                const percent = getCourseProgressPercentage(course);
                 return (
                   <li key={course.id}>
                     <div className="flex items-baseline justify-between gap-4 text-body">

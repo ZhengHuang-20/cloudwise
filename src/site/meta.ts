@@ -22,9 +22,21 @@ export interface PageMeta {
   keywords?: string[];
 }
 
+/**
+ * 描述截断到搜索结果能完整显示的长度。英文优先在句末截断（不加省略号），其次在词边界截断，不切断单词；
+ * 中文按字截断。
+ */
 const clip = (text: string, max: number) => {
   const clean = text.replace(/\s+/g, ' ').trim();
-  return clean.length <= max ? clean : `${clean.slice(0, max - 1).trimEnd()}…`;
+  if (clean.length <= max) return clean;
+  const head = clean.slice(0, max - 1);
+  if (!/[\u4e00-\u9fff]/.test(clean)) {
+    const sentence = head.lastIndexOf('. ');
+    if (sentence >= max * 0.6) return head.slice(0, sentence + 1);
+    const space = head.lastIndexOf(' ');
+    if (space >= max * 0.6) return `${head.slice(0, space).replace(/[,;:—-]+$/, '')}…`;
+  }
+  return `${head.trimEnd()}…`;
 };
 
 /** 课时标题去掉开头的编号（如「1.1 」），编号对搜索没有帮助 */
@@ -38,7 +50,7 @@ const primaryName = (name: string) => name.replace(/\s*\(.*\)$/, '');
 
 export function routeMeta(route: Route, lang: Lang): PageMeta {
   const t = (zh: string, en: string) => (lang === 'en' ? en : zh);
-  const max = lang === 'en' ? 165 : 95;
+  const max = lang === 'en' ? 158 : 95;
   const svcList = SHOW_FDE ? t('独立站、外贸 SEO、出海 GEO、AI 客服与 FDE 驻场', 'websites, SEO, GEO, AI customer service and FDE on-site engineering') : t('独立站、外贸 SEO、出海 GEO 与 AI 客服', 'websites, SEO, GEO and AI customer service');
   // 英文描述限 160 字符，用短一些的服务列表
   const svcShort = SHOW_FDE ? t(svcList, 'websites, SEO, GEO, AI customer service and FDE') : svcList;
@@ -63,7 +75,7 @@ export function routeMeta(route: Route, lang: Lang): PageMeta {
         shortTitles: [t(`${SERVICE_COUNT_CN}项出海获客服务：${svcList}`, `Services: ${svcShort}`)],
         description: t(
           `${SERVICE_COUNT_CN}项服务共用同一套企业资料，各解决一个卡点：看不见、读不懂、不被信、接不住${SHOW_FDE ? '、连不上' : ''}。每项服务写明做什么、交什么、怎样验收。`,
-          `${SERVICE_COUNT_EN} services on one set of company material, each fixing one bottleneck, from being invisible to missed enquiries. Each states what we do and how it is accepted.`
+          `${SERVICE_COUNT_EN} services on one set of company material, each fixing one bottleneck from being invisible to missed enquiries, with clear deliverables and acceptance.`
         ),
       };
     case 'service': {

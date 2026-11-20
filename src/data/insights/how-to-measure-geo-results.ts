@@ -11,7 +11,7 @@ export const howToMeasureGeoResults: Insight = {
     en: ['how to measure GEO results', 'GEO metrics', 'AI mention rate', 'AI citation rate', 'track AI referral enquiries'],
   },
   relatedServices: ['geo', 'website'],
-  relatedTerms: ['term-geo', 'term-ai-crawlers'],
+  relatedTerms: ['term-geo', 'term-ai-crawlers', 'term-ai-share-of-voice'],
   relatedLessons: ['lesson-c-3-1', 'lesson-c-10-2'],
   zh: {
     title: 'GEO 效果怎么衡量？提及率、推荐率、引用率与 AI 询盘',

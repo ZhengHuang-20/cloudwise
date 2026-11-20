@@ -41,7 +41,9 @@ export const TermView: React.FC<{ slug: string; insights?: InsightSummary[] }> =
 
         <div className="prose-article mt-10">
           <h2>{t('详细解释', 'In detail')}</h2>
-          <p>{term.detailedExplanation}</p>
+          {term.detailedExplanation.split(/\n{2,}/).map((para) => (
+            <p key={para.slice(0, 24)}>{para.trim()}</p>
+          ))}
           <h2>{t('实际案例', 'In practice')}</h2>
           <p>{term.realWorldExample}</p>
           {term.commonPitfalls.length > 0 && (

@@ -10,7 +10,7 @@ import { Markdown } from '../components/Markdown';
 import { useLang } from '../context/LanguageContext';
 import { courseList } from '../data/coursesData';
 import { glossaryList } from '../data/glossaryData';
-import { findService, termSlug } from '../site/links';
+import { findService, lessonPath, termSlug } from '../site/links';
 import type { InsightSummary } from '../site/pageData';
 import { useSite } from '../site/SiteContext';
 import { InsightCard } from './InsightsView';
@@ -105,15 +105,38 @@ export const ServiceDetailView: React.FC<{ slug: string; insights?: InsightSumma
                 'A common starting point is the "website + SEO + GEO" lead package. The planner gives a phased schedule and deliverables list for your scale.'
               )}
             </p>
-            <button
-              type="button"
-              onClick={() => goToConfigurator({ packageType: 'package-acquisition' })}
+            {/* 真实链接（爬虫能顺着走），点击时带上预设组合 */}
+            <Link
+              href={path('/configurator')}
+              onClick={(e) => {
+                if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+                e.preventDefault();
+                goToConfigurator({ packageType: 'package-acquisition' });
+              }}
               className="btn btn-secondary mt-5"
             >
               {t('打开方案规划', 'Open the planner')}
-            </button>
+            </Link>
           </div>
         </div>
+
+        {course && (
+          <section aria-labelledby="related-lessons" className="pt-10">
+            <h2 id="related-lessons" className="text-title-2">
+              {t('配套课时', 'Related lessons')}
+            </h2>
+            <ul className="mt-5 space-y-3 text-body">
+              {course.modules.flatMap((m) => m.lessons).map((lesson) => (
+                <li key={lesson.id}>
+                  <Link href={path(lessonPath(lesson.id))} className="link">
+                    {lesson.title}
+                    <ChevronRight />
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
 
         {terms.length > 0 && (
           <section aria-labelledby="related-terms" className="pt-10">

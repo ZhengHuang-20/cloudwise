@@ -6,7 +6,7 @@ import {
   DiagnosisRecord,
   SavedProposal,
 } from '../lib/types';
-import { COURSES } from '../data/coursesData';
+import type { Course } from '../data/coursesData';
 
 interface LeadActivity {
   id: string;
@@ -30,7 +30,7 @@ interface AppContextType {
   learningProgress: Record<string, LessonProgress>;
   markLessonComplete: (courseId: string, lessonId: string, quizScore?: number, exerciseData?: any) => void;
   isLessonCompleted: (lessonId: string) => boolean;
-  getCourseProgressPercentage: (courseId: string) => number;
+  getCourseProgressPercentage: (course: Pick<Course, 'modules'>) => number;
   totalCompletedLessons: number;
   completedQuizzesCount: number;
 
@@ -275,9 +275,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     return Boolean(learningProgress[lessonId]?.completed);
   };
 
-  const getCourseProgressPercentage = (courseId: string) => {
-    const course = COURSES.find((c) => c.id === courseId);
-    if (!course) return 0;
+  // 课程数据由调用方传入：全局状态不引入课程正文，避免打进每个页面的脚本
+  const getCourseProgressPercentage = (course: Pick<Course, 'modules'>) => {
     const allLessonIds = course.modules.flatMap((m) => m.lessons.map((l) => l.id));
     if (allLessonIds.length === 0) return 0;
     const completed = allLessonIds.filter((id) => Boolean(learningProgress[id]?.completed)).length;

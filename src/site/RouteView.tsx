@@ -6,24 +6,26 @@ import { useRouter } from 'next/navigation';
 import type { Route } from './links';
 import type { PageData } from './pageData';
 import { useSite } from './SiteContext';
-import { HomeView } from '../views/HomeView';
-import { ServicesView } from '../views/ServicesView';
-import { ServiceDetailView } from '../views/ServiceDetailView';
-import { CasesView } from '../views/CasesView';
-import { CaseDetailView } from '../views/CaseDetailView';
-import { SolutionDetailView } from '../views/SolutionDetailView';
-import { AcademyView } from '../views/AcademyView';
-import { CourseView } from '../views/CourseView';
-import { LessonView } from '../views/LessonView';
-import { InsightsView } from '../views/InsightsView';
-import { InsightView } from '../views/InsightView';
-import { GlossaryView } from '../views/GlossaryView';
-import { TermView } from '../views/TermView';
-import { AuditView } from '../views/AuditView';
-import { AboutView } from '../views/AboutView';
-import { ConfiguratorView } from '../views/ConfiguratorView';
-import { DealRoomView } from '../views/DealRoomView';
-import { NotFoundView } from '../views/NotFoundView';
+
+// 每个页面单独分块：服务端照常预渲染完整 HTML，浏览器只下载当前页面的脚本与数据（课程、术语、服务等不再打进全站脚本）
+const HomeView = dynamic(() => import('../views/HomeView').then((m) => m.HomeView));
+const ServicesView = dynamic(() => import('../views/ServicesView').then((m) => m.ServicesView));
+const ServiceDetailView = dynamic(() => import('../views/ServiceDetailView').then((m) => m.ServiceDetailView));
+const CasesView = dynamic(() => import('../views/CasesView').then((m) => m.CasesView));
+const CaseDetailView = dynamic(() => import('../views/CaseDetailView').then((m) => m.CaseDetailView));
+const SolutionDetailView = dynamic(() => import('../views/SolutionDetailView').then((m) => m.SolutionDetailView));
+const AcademyView = dynamic(() => import('../views/AcademyView').then((m) => m.AcademyView));
+const CourseView = dynamic(() => import('../views/CourseView').then((m) => m.CourseView));
+const LessonView = dynamic(() => import('../views/LessonView').then((m) => m.LessonView));
+const InsightsView = dynamic(() => import('../views/InsightsView').then((m) => m.InsightsView));
+const InsightView = dynamic(() => import('../views/InsightView').then((m) => m.InsightView));
+const GlossaryView = dynamic(() => import('../views/GlossaryView').then((m) => m.GlossaryView));
+const TermView = dynamic(() => import('../views/TermView').then((m) => m.TermView));
+const AuditView = dynamic(() => import('../views/AuditView').then((m) => m.AuditView));
+const AboutView = dynamic(() => import('../views/AboutView').then((m) => m.AboutView));
+const ConfiguratorView = dynamic(() => import('../views/ConfiguratorView').then((m) => m.ConfiguratorView));
+const DealRoomView = dynamic(() => import('../views/DealRoomView').then((m) => m.DealRoomView));
+const NotFoundView = dynamic(() => import('../views/NotFoundView').then((m) => m.NotFoundView));
 
 // 后台（登录与客户后台）使用 antd、依赖登录态，单独分块且只在浏览器端渲染，官网页面不下载
 const ConsoleApp = dynamic(() => import('../views/console/ConsoleApp'), {

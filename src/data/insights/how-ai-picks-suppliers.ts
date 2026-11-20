@@ -11,7 +11,7 @@ export const howAiPicksSuppliers: Insight = {
     en: ['how does ChatGPT recommend suppliers', 'how AI chooses suppliers', 'Gemini supplier recommendations', 'GEO for manufacturers'],
   },
   relatedServices: ['geo', 'seo', 'website'],
-  relatedTerms: ['term-geo', 'term-ai-crawlers', 'term-entity', 'term-eeat'],
+  relatedTerms: ['term-geo', 'term-ai-crawlers', 'term-entity', 'term-eeat', 'term-ai-citation'],
   relatedLessons: ['lesson-c-1-1', 'lesson-c-3-1'],
   zh: {
     title: 'ChatGPT 和 Gemini 怎么挑选推荐供应商？工业企业能做什么',
