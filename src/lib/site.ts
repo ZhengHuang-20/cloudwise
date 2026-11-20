@@ -15,7 +15,10 @@ export const BRAND = {
   en: 'ChinGEO',
 } as const;
 
-/** 一句话定位：页面描述、Organization schema、llms.txt 共用 */
+/**
+ * 一句话定位：页面描述、Organization schema、llms.txt 共用。
+ * 定位已定为「专注中国 B2B 出海 GEO 的服务商」，未经用户明确要求不要修改措辞，也不要改回“AI 售前支持系统”。
+ */
 export const TAGLINE = SHOW_FDE
   ? {
       zh: '专注中国 B2B 出海 GEO 的服务商：让 ChatGPT、Perplexity、Gemini 等 AI 推荐你的品牌，并配套独立站、SEO、AI 客服与 FDE 驻场',
