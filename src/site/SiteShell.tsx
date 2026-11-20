@@ -1,15 +1,13 @@
 'use client';
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import dynamic from 'next/dynamic';
 import { usePathname, useRouter } from 'next/navigation';
 import { AppProvider, useApp } from '../context/AppContext';
 import { AuthProvider } from '../context/AuthContext';
 import { Lang, LanguageProvider, useLang } from '../context/LanguageContext';
 import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
-import { AiConsultantModal } from '../components/AiConsultantModal';
-import { BookingModal } from '../components/BookingModal';
-import { MySpaceModal } from '../components/MySpaceModal';
 import { localizePath, splitLocale } from './locale';
 import { SiteActions, SiteContext } from './SiteContext';
 
@@ -17,6 +15,18 @@ import { SiteActions, SiteContext } from './SiteContext';
  * 官网的外壳：Provider、页眉页脚、AI 顾问入口与全局弹窗。放在根布局里，站内跳转时保持状态不重置。
  * 登录与后台（/login、/console/*）是独立的全屏布局，不显示页眉页脚。
  */
+
+// 全局弹窗按需加载：第一次打开时才下载脚本，之后保持挂载（保留对话等状态）。不进入每个页面的初始脚本
+const AiConsultantModal = dynamic(() => import('../components/AiConsultantModal').then((m) => m.AiConsultantModal), { ssr: false });
+const BookingModal = dynamic(() => import('../components/BookingModal').then((m) => m.BookingModal), { ssr: false });
+const MySpaceModal = dynamic(() => import('../components/MySpaceModal').then((m) => m.MySpaceModal), { ssr: false });
+
+/** 变为 true 之后一直保持 true：弹窗打开过一次就不再卸载 */
+const useOnceTrue = (value: boolean) => {
+  const [seen, setSeen] = useState(value);
+  if (value && !seen) setSeen(true);
+  return seen || value;
+};
 
 // 旧版 hash 地址（#/services、#/console/leads）跳到对应的新路径，已分享出去的链接不失效
 const legacyHashPath = (hash: string): string | null => {
@@ -34,6 +44,10 @@ function Chrome({ children }: { children: React.ReactNode }) {
   const [isBookingOpen, setIsBookingOpen] = useState(false);
   const [isMySpaceOpen, setIsMySpaceOpen] = useState(false);
   const [configuratorPrefill, setConfiguratorPrefill] = useState<Record<string, unknown> | null>(null);
+
+  const advisorMounted = useOnceTrue(isAiAdvisorOpen);
+  const bookingMounted = useOnceTrue(isBookingOpen);
+  const mySpaceMounted = useOnceTrue(isMySpaceOpen);
 
   const section = splitLocale(pathname).path.split('/')[1] || 'home';
   const isConsole = section === 'login' || section === 'console';
@@ -70,7 +84,7 @@ function Chrome({ children }: { children: React.ReactNode }) {
     return (
       <SiteContext.Provider value={actions}>
         {children}
-        <BookingModal isOpen={isBookingOpen} onClose={() => setIsBookingOpen(false)} />
+        {bookingMounted && <BookingModal isOpen={isBookingOpen} onClose={() => setIsBookingOpen(false)} />}
       </SiteContext.Provider>
     );
   }
@@ -110,9 +124,9 @@ function Chrome({ children }: { children: React.ReactNode }) {
         )}
 
         {/* 全局弹窗 */}
-        <AiConsultantModal />
-        <BookingModal isOpen={isBookingOpen} onClose={() => setIsBookingOpen(false)} />
-        <MySpaceModal isOpen={isMySpaceOpen} onClose={() => setIsMySpaceOpen(false)} />
+        {advisorMounted && <AiConsultantModal />}
+        {bookingMounted && <BookingModal isOpen={isBookingOpen} onClose={() => setIsBookingOpen(false)} />}
+        {mySpaceMounted && <MySpaceModal isOpen={isMySpaceOpen} onClose={() => setIsMySpaceOpen(false)} />}
 
         {/* Toast：顶部居中的状态提示 */}
         {toastMessage && (

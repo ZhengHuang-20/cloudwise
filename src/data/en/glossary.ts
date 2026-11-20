@@ -23,7 +23,7 @@ export const GLOSSARY_EN: Record<string, GlossaryEn> = {
       'Believing that GEO means "poisoning" a model or inflating results through hacking. Compliant GEO has to rest on a real, public and authoritative chain of technical evidence.',
       'Believing that generating hundreds of low-quality articles with AI on your website will improve GEO. In practice, low-quality rewritten articles get demoted by search engines, and AI does not cite them either.',
     ],
-    relatedTerms: ['SEO', 'AEO', 'AI Overviews', 'E-E-A-T', 'Entity'],
+    relatedTerms: ['SEO', 'AEO', 'AI Overviews', 'E-E-A-T', 'Entity', 'AI citations'],
   },
   'term-fde': {
     term: 'FDE (Forward Deployed Engineer)',
@@ -39,7 +39,7 @@ export const GLOSSARY_EN: Record<string, GlossaryEn> = {
       'Skipping standardisation and digitisation to go straight to AI. Without clear rules and clean data, AI only produces demos, and nobody catches its mistakes after launch.',
       'Having only the IT department work with the FDE. If the business lead and frontline salespeople do not take part in the weekly trials and decisions, the system gets built and nobody uses it.',
     ],
-    relatedTerms: ['Knowledge assets', 'Agile prototyping', 'Private deployment'],
+    relatedTerms: ['Knowledge assets', 'Agile prototyping', 'Private deployment', 'RAG'],
   },
   'term-eeat': {
     term: 'E-E-A-T quality framework',
@@ -99,7 +99,7 @@ export const GLOSSARY_EN: Record<string, GlossaryEn> = {
       'Assuming that blocking Google-Extended opts you out of AI Overviews. It only affects Gemini, not Search.',
       'Watching rankings and ignoring how results are displayed. A page on page one that does not answer the question directly is unlikely to be pulled into an overview.',
     ],
-    relatedTerms: ['GEO', 'AEO', 'Zero-click search', 'E-E-A-T'],
+    relatedTerms: ['GEO', 'AEO', 'Zero-click search', 'E-E-A-T', 'Query fan-out'],
   },
   'term-zero-click': {
     term: 'Zero-click search',
@@ -115,7 +115,7 @@ export const GLOSSARY_EN: Record<string, GlossaryEn> = {
       'Counting only website traffic and never testing mentions in AI answers. Part of your exposure now happens off your site.',
       'Writing every piece as a teaser that only pays off after a click. The deeper the answer is buried, the less likely it is to be quoted.',
     ],
-    relatedTerms: ['AI Overviews', 'AEO', 'GEO'],
+    relatedTerms: ['AI Overviews', 'AEO', 'GEO', 'AI share of voice'],
   },
   'term-entity': {
     term: 'Entity (brand entity)',
@@ -131,7 +131,7 @@ export const GLOSSARY_EN: Record<string, GlossaryEn> = {
       'Letting the company description differ across the website, B2B platforms and social accounts, with founding dates and main products that contradict each other.',
       'Saying who you are only on your own website, with no third-party source to confirm it.',
     ],
-    relatedTerms: ['Structured data', 'E-E-A-T', 'GEO'],
+    relatedTerms: ['Structured data', 'E-E-A-T', 'GEO', 'AI hallucination'],
   },
   'term-structured-data': {
     term: 'Structured data (Schema / JSON-LD)',
@@ -196,6 +196,102 @@ export const GLOSSARY_EN: Record<string, GlossaryEn> = {
       'Resubmitting unchanged pages every day. The protocol asks for URLs that were added, updated or deleted.',
       'Using IndexNow alone, without submitting a sitemap or verifying Google Search Console. Google does not use this protocol.',
     ],
-    relatedTerms: ['AI crawlers', 'hreflang', 'Structured data'],
+    relatedTerms: ['AI crawlers', 'hreflang', 'Structured data', 'XML sitemap'],
+  },
+  'term-ai-share-of-voice': {
+    term: 'AI share of voice',
+    questionTitle: 'What is AI share of voice, and does AI recommend you or a competitor?',
+    oneLineDefinition:
+      'AI share of voice is the number of times AI answers mention your brand, as a share of all brand mentions, across a fixed set of buyer questions. It answers one question: for the same buyer query, whom does AI recommend more often? It is one of the most direct measures of GEO results.',
+    detailedExplanation:
+      'Classic SEO tracks where a keyword ranks. AI answers have no fixed "page one", and the same question can get a different answer each time, so AI visibility needs a different measure. Fix a set of questions that overseas buyers really ask without naming a brand (for example, "Which energy storage battery suppliers in Europe are reliable?"), ask each one on ChatGPT, Perplexity, Gemini and other platforms, record every brand each answer mentions, and count how often you and each competitor appear.\n\nThree related numbers are usually read alongside it: mention rate (the share of unbranded answers that mention you), average position (where you appear when mentioned) and citation rate (whether the answer cites your own website). Share of voice shows your position relative to competitors; mention rate shows absolute coverage. Together they tell you whether the problem is "AI does not know you" or "AI knows you but prefers someone else".\n\nKeep the method consistent: a fixed question set, the same number of runs per platform and a recorded date. Otherwise two measurements cannot be compared.',
+    realWorldExample:
+      'This site’s AI visibility audit asks 6 unbranded buyer questions on each platform. The "share of voice" section of the report compares your mention count with the most-mentioned competitors, alongside mention rate, average position and citation rate.',
+    commonPitfalls: [
+      'Drawing conclusions from one question on one platform. AI answers vary, so use a fixed question set, several platforms and a monthly re-test.',
+      'Counting branded questions. "What do you know about Company X?" will almost always mention you; it checks accuracy, not whether AI recommends you unprompted.',
+      'Looking at share of voice without looking at sources. When it is low, check which websites AI cited: those pages show what content is missing.',
+    ],
+    relatedTerms: ['GEO', 'AI citations', 'AI Overviews', 'Zero-click search'],
+  },
+  'term-ai-citation': {
+    term: 'AI citations',
+    questionTitle: 'What are AI citations, and how do you get AI to cite your website?',
+    oneLineDefinition:
+      'AI citations are the links that ChatGPT search, Perplexity, Google AI Overviews and similar tools show next to an answer to indicate which pages it relied on. Being cited means buyers can click through to your site, and it shows the AI treats your page as a credible source.',
+    detailedExplanation:
+      'When a web-connected AI assistant answers, it first retrieves web pages, then writes the answer from what it found and marks the pages it used. Perplexity adds numbered references after sentences, ChatGPT search shows links inline and in a Sources panel, and Google AI Overviews shows link cards beside the summary. Answers generated only from training data usually carry no citations.\n\nTo be cited, a page must first be found and then be easy to cite. Being found depends on the search index: the page is indexed by Google and Bing, AI crawlers can fetch it, and the text does not depend on JavaScript to appear. Being easy to cite depends on how the page is written: it answers the question up front, states specific facts with sources (models, specifications, certificate numbers, standards), uses tables and lists, and agrees with other sources. AI tends to cite pages where a single passage answers the question on its own.\n\nCitations are not limited to your website. Trade media, directories, Q&A sites and standards bodies are cited too, so GEO means writing your own site well and making sure third-party descriptions of you are accurate and consistent.',
+    realWorldExample:
+      'This site’s audit records the URLs cited in every answer, counts how many come from the company’s own website (citation rate), and lists the third-party sites AI cites most often as a to-do list for content and source building.',
+    commonPitfalls: [
+      'Assuming a mention is a citation. AI may name your brand but cite a directory or a competitor’s page, so buyers who click do not land on your site.',
+      'Key pages that contain only images and slogans, with no specific facts that can be quoted, so AI finds nothing to cite.',
+      'Specifications and company details that differ between your website, marketplace stores and third-party pages. When sources conflict, AI often cites none of them.',
+    ],
+    relatedTerms: ['GEO', 'AI share of voice', 'Structured data', 'E-E-A-T', 'AI crawlers'],
+  },
+  'term-query-fan-out': {
+    term: 'Query fan-out',
+    questionTitle: 'What is query fan-out, and why does AI search look up terms you never targeted?',
+    oneLineDefinition:
+      'Query fan-out is the way AI search splits one user question into several sub-queries, searches them in parallel and combines the results into one answer. Google says AI Mode and AI Overviews use it, so whether your page is cited depends on whether it answers those sub-questions.',
+    detailedExplanation:
+      'Buyers ask AI long questions, such as "Find an industrial connector supplier for a German plant with IP67 protection, CE certification and lead times under four weeks." AI search does not treat the sentence as one keyword. It breaks it into sub-queries such as "IP67 industrial connector supplier", "CE certified connector manufacturer" and "connector lead time", searches each, and picks pages that answer each part. Google called this technique query fan-out when it introduced AI Mode in 2025, and its Search Central page on AI features and your website says both AI Overviews and AI Mode may use it.\n\nFor exporters, one promotional page built around a single head keyword is no longer enough. Every dimension a buyer cares about (specifications, certifications, applications, lead time and capacity, after-sales support, comparison with alternatives) should have a passage that can be found and can answer the question on its own. When those details are written out on the page, the sub-queries have something on your site to land on.\n\nNo provider has published exactly how questions are split or how many sub-queries are issued; rely on official documentation.',
+    realWorldExample:
+      'The 6 buyer questions in this site’s audit each cover a different intent: supplier recommendations, comparisons, certifications and compliance, technical specifications and sourcing from China. In effect, one sourcing need is asked from several angles, and the questions where you are not mentioned usually point to a type of information your website lacks.',
+    commonPitfalls: [
+      'Putting everything on one long home page with no section headings, so AI cannot find the passage that answers a sub-question.',
+      'Keeping specifications and certifications only in PDFs or images that retrieval cannot read.',
+      'Treating query fan-out as a trick to optimise for. It is simply how AI retrieves; the response is still to cover every aspect buyers ask about.',
+    ],
+    relatedTerms: ['AI Overviews', 'AEO', 'AI citations', 'Zero-click search'],
+  },
+  'term-rag': {
+    term: 'RAG (Retrieval-Augmented Generation)',
+    questionTitle: 'What is RAG (retrieval-augmented generation), and why should AI customer service use a knowledge base?',
+    oneLineDefinition:
+      'RAG is a method in which a large language model first retrieves relevant passages from a chosen knowledge base and then answers from them. It lets AI customer service answer from your own product documents instead of guessing from memory, and it is also how web-connected AI search cites pages.',
+    detailedExplanation:
+      'The name comes from the 2020 paper by Lewis et al., "Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks". It works in two steps: search a knowledge base with the user’s question and take the most relevant passages, then give those passages and the question to the model, which writes an answer based on them and can point to the source.\n\nRAG matters to exporters in two ways. The first is your own AI customer service: turn product manuals, specification sheets, certifications and FAQs into a knowledge base, and the assistant retrieves before it answers enquiries. This greatly reduces invented specifications, and answers change as soon as the knowledge base is updated, with no model retraining. The second is external AI search: ChatGPT search and Perplexity also retrieve and then generate, and their "knowledge base" is the public web. How clearly your website is written, and whether it can be retrieved, decides whether you appear in the answer.\n\nRAG is only as good as its material and its retrieval. Outdated, contradictory or badly split documents still lead to wrong answers.',
+    realWorldExample:
+      'This site’s AI pre-sales advisor follows the same principle of answering only from supplied material: every answer is generated with a knowledge base of services, cases and response rules, and questions it does not cover (such as pricing) are directed to the planner and a diagnosis call instead of being made up. The knowledge base is small enough to go straight into the prompt, so no separate retrieval step is needed; RAG’s retrieval step becomes necessary when the material no longer fits.',
+    commonPitfalls: [
+      'Loading hundreds of pages of PDFs as they are, without cleaning or de-duplicating them, so retrieved passages contradict each other.',
+      'Assuming RAG prevents all errors. When nothing relevant is retrieved the model may still improvise, so set a rule to hand over to a person.',
+      'Never maintaining the knowledge base, so the assistant keeps quoting old specifications after the product changes.',
+    ],
+    relatedTerms: ['AI hallucination', 'AI citations', 'FDE', 'GEO'],
+  },
+  'term-ai-hallucination': {
+    term: 'AI hallucination',
+    questionTitle: 'What is AI hallucination, and what should you do when AI gets your company wrong?',
+    oneLineDefinition:
+      'AI hallucination is content a language model generates that sounds plausible but is not true. For a company, the common cases are AI getting your founding year, product range, certifications or customers wrong, and a buyer who sees the error may drop you from the shortlist.',
+    detailedExplanation:
+      'Language models generate text by probability. When the material they have is thin or contradictory, they may fill the gap with information that does not exist. For exporters the most common errors are: mixing you up with a company that has the same or a similar name; repeating years-old information such as a former address or a discontinued product line; and attributing an industry-standard certification to you, or leaving out one you actually hold.\n\nThe way to reduce these errors is public information that is plentiful, accurate and consistent. First, state your full legal name, founding year, address, product range, certificate numbers and main markets on your website as text (not images), and mark them up with Organization structured data. Second, keep marketplace stores, industry directories, social accounts and press releases consistent with the website; the more sources agree, the more readily AI accepts the facts. Third, regularly ask AI branded questions about yourself, and when it is wrong, trace the source it cites and correct it there.\n\nAI platforms generally offer no way to edit an answer directly. Corrections come from improving public information and waiting for models or indexes to update, which takes time.',
+    realWorldExample:
+      'This site’s audit always includes two branded questions ("What do you know about this company and what products does it make?" and "Is it a reliable supplier, and what are its strengths and weaknesses?") to check whether AI describes the company accurately. The report’s brand knowledge score comes from these two questions.',
+    commonPitfalls: [
+      'Adding a correction notice to your own website but leaving the third-party sources AI cites unchanged, so the error keeps coming back.',
+      'Inconsistent Chinese and English company names or a former brand name, so AI treats them as two companies.',
+      'Publishing many repetitive press releases to "correct" AI, which only adds more low-quality sources.',
+    ],
+    relatedTerms: ['Entity', 'Structured data', 'RAG', 'E-E-A-T'],
+  },
+  'term-xml-sitemap': {
+    term: 'XML sitemap',
+    questionTitle: 'What is an XML sitemap (sitemap.xml), and how should an export website write and submit it?',
+    oneLineDefinition:
+      'An XML sitemap is a file, usually at /sitemap.xml, that lists every URL you want indexed, helping Google and Bing find new and updated pages faster. It does not guarantee indexing, but almost every new or large site should have one.',
+    detailedExplanation:
+      'The format is defined by the sitemaps.org protocol: one <url> entry per address with a <loc> and an optional <lastmod> date. A single file can hold up to 50,000 URLs and 50 MB uncompressed; larger sites split it into several files listed in a sitemap index. Multilingual sites can annotate each URL with its hreflang alternates inside the sitemap, and videos and images have their own extensions.\n\nGoogle states that it ignores <priority> and <changefreq>, but uses <lastmod> if it is consistently accurate. So update lastmod only when a page’s content actually changes, not on every deployment. List only URLs that return 200, are indexable and have a self-referencing canonical; leave out redirects, 404s and noindex pages.\n\nThere are three ways to submit it, and you can use all of them: add a Sitemap: line to robots.txt; submit it in Google Search Console and Bing Webmaster Tools; and, for search engines that support IndexNow such as Bing, push changed pages as they are published. Afterwards, compare "discovered" with "indexed" in the webmaster tools; a large gap means checking pages one by one.',
+    realWorldExample:
+      'This site’s sitemap.xml is generated from the route table. It contains every indexable page in Chinese and English, their hreflang alternates and the course video details; articles use their real update dates as lastmod, and the sitemap is declared in robots.txt.',
+    commonPitfalls: [
+      'Sitemaps that include redirects, 404s or noindex URLs, which produce errors in webmaster tools and make search engines trust the file less.',
+      'Setting every lastmod to today on each build. Once search engines see it is unreliable, they stop using it.',
+      'Assuming a submitted sitemap means indexing. Indexing still depends on page quality and duplication.',
+    ],
+    relatedTerms: ['IndexNow', 'hreflang', 'AI crawlers', 'Structured data'],
   },
 };

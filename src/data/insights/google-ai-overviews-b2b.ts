@@ -11,7 +11,7 @@ export const googleAiOverviewsB2b: Insight = {
     en: ['AI Overviews B2B', 'AI Overviews manufacturers', 'which pages do AI Overviews cite', 'AI Overviews optimization', 'AI Overviews organic clicks'],
   },
   relatedServices: ['seo', 'geo', 'website'],
-  relatedTerms: ['term-ai-overviews', 'term-zero-click', 'term-aeo', 'term-eeat', 'term-structured-data'],
+  relatedTerms: ['term-ai-overviews', 'term-zero-click', 'term-aeo', 'term-eeat', 'term-structured-data', 'term-query-fan-out'],
   relatedLessons: ['lesson-b-1-3', 'lesson-c-1-1'],
   zh: {
     title: 'Google AI 概览引用哪些网页？B2B 制造商怎么应对',

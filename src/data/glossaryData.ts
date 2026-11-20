@@ -30,7 +30,7 @@ const ALL_GLOSSARY_TERMS: GlossaryTerm[] = [
       '误以为 GEO 是通过黑客手段给大模型“投毒”或刷单，合规的 GEO 必须建立在真实公开的权威技术证据链上。',
       '以为只要在官网用 AI 批量生成成百上千篇低质文章就能提升 GEO，实际上低质洗稿文章会被搜索引擎降权，AI 同样拒绝引用。'
     ],
-    relatedTerms: ['SEO', 'AEO', 'AI Overviews', 'E-E-A-T', '实体'],
+    relatedTerms: ['SEO', 'AEO', 'AI Overviews', 'E-E-A-T', '实体', 'AI 引用来源'],
     relatedLessonId: 'lesson-c-1-1',
     schemaType: 'DefinedTerm'
   },
@@ -48,7 +48,7 @@ const ALL_GLOSSARY_TERMS: GlossaryTerm[] = [
       '跳过标准化和信息化直接上 AI。没有清晰的规则和干净的数据，AI 只能做演示，上线后答错了没人兜底。',
       '只让 IT 部门对接 FDE。业务负责人和一线业务员不参与每周的试用与拍板，做出来的系统没人用。'
     ],
-    relatedTerms: ['知识资产', '敏捷原型', '私有化部署'],
+    relatedTerms: ['知识资产', '敏捷原型', '私有化部署', 'RAG'],
     relatedLessonId: 'lesson-e-1-1',
     schemaType: 'DefinedTerm'
   },
@@ -116,7 +116,7 @@ const ALL_GLOSSARY_TERMS: GlossaryTerm[] = [
       '以为屏蔽 Google-Extended 就能退出 AI 概览。它只影响 Gemini，不影响搜索。',
       '只盯排名不看展示方式。排在第一页但内容没有直接回答问题的页面，很难被摘进概览。'
     ],
-    relatedTerms: ['GEO', 'AEO', '零点击搜索', 'E-E-A-T'],
+    relatedTerms: ['GEO', 'AEO', '零点击搜索', 'E-E-A-T', '查询扇出'],
     relatedLessonId: 'lesson-c-1-1',
     schemaType: 'DefinedTerm'
   },
@@ -134,7 +134,7 @@ const ALL_GLOSSARY_TERMS: GlossaryTerm[] = [
       '只统计官网流量，不测 AI 回答里的提及。零点击时代，一部分曝光发生在站外。',
       '把所有内容都写成只能点进来才看得到的“钩子”。答案藏得越深，越不会被摘录。'
     ],
-    relatedTerms: ['AI Overviews', 'AEO', 'GEO'],
+    relatedTerms: ['AI Overviews', 'AEO', 'GEO', 'AI 声量占比'],
     relatedLessonId: 'lesson-c-1-1',
     schemaType: 'DefinedTerm'
   },
@@ -152,7 +152,7 @@ const ALL_GLOSSARY_TERMS: GlossaryTerm[] = [
       '官网、B2B 平台、社交账号上的公司介绍各写各的，成立时间与主营产品互相矛盾。',
       '只在自己官网上说自己是谁，没有任何第三方来源能印证。'
     ],
-    relatedTerms: ['结构化数据', 'E-E-A-T', 'GEO'],
+    relatedTerms: ['结构化数据', 'E-E-A-T', 'GEO', 'AI 幻觉'],
     relatedLessonId: 'lesson-c-3-1',
     schemaType: 'DefinedTerm'
   },
@@ -222,9 +222,143 @@ const ALL_GLOSSARY_TERMS: GlossaryTerm[] = [
       '把没有变化的页面每天重复提交。协议要求只提交新增、更新或删除的网址。',
       '只做 IndexNow，不提交 sitemap、不验证 Google Search Console。Google 不走这个协议。'
     ],
-    relatedTerms: ['AI 爬虫', 'hreflang', '结构化数据'],
+    relatedTerms: ['AI 爬虫', 'hreflang', '结构化数据', 'XML 网站地图'],
     schemaType: 'DefinedTerm'
   }
+,
+  {
+    id: 'term-ai-share-of-voice',
+    term: 'AI 声量占比 (AI Share of Voice)',
+    englishTerm: 'AI Share of Voice',
+    category: 'SEO/GEO',
+    questionTitle: '什么是 AI 声量占比？怎么知道 AI 推荐你还是推荐竞品？',
+    oneLineDefinition: 'AI 声量占比是在一组固定的买家问题里，AI 回答提到你的品牌的次数占所有被提到品牌的比例。它回答的是“同样的问题，AI 更常推荐谁”，是衡量 GEO 效果最直接的指标之一。',
+    detailedExplanation: `传统 SEO 看的是某个关键词排第几位，而 AI 的回答没有固定的“第几页”，同一个问题每次回答也可能不同。所以衡量 AI 可见性要换一种口径：先固定一组海外买家真实会问、但不带品牌名的问题（例如“欧洲有哪些可靠的储能电池供应商”），在 ChatGPT、Perplexity、Gemini 等平台上逐题提问，记录每个回答提到了哪些品牌，再统计你和竞品各被提到多少次。
+
+常和声量一起看的还有三项：提及率（不带品牌名的问题里，有多少比例的回答提到你）、平均排位（被提到时排在第几个）和引用率（回答是否引用了你的官网）。声量看的是和竞品的相对位置，提及率看的是绝对覆盖，两者结合才知道问题出在“AI 不认识你”还是“AI 认识你但更推荐别人”。
+
+做这类统计要注意口径：问题集要固定、每个平台的提问次数要一致、时间要写清楚，否则前后两次的数字没有可比性。`,
+    realWorldExample: '本站的 AI 可见性测评对 6 个不带品牌名的买家问题逐平台提问，报告里的“声量”一栏列出被提及最多的竞品与你自己的次数对比，并给出提及率、平均排位与引用率。',
+    commonPitfalls: [
+      '只问一次、只问一个平台就下结论。AI 回答有随机性，至少要固定问题集、多平台、按月复测。',
+      '用带品牌名的问题算声量。“某某公司怎么样”几乎一定会提到你，只能检查 AI 对你的了解是否准确，不能说明 AI 会主动推荐你。',
+      '只看声量不看来源。声量低时，要看 AI 引用了哪些网站，那些网站上才是该补的内容。'
+    ],
+    relatedTerms: ['GEO', 'AI 引用来源', 'AI Overviews', '零点击搜索'],
+    relatedLessonId: 'lesson-c-10-2',
+    schemaType: 'DefinedTerm'
+  },
+  {
+    id: 'term-ai-citation',
+    term: 'AI 引用来源 (AI Citations)',
+    englishTerm: 'AI Citations',
+    category: 'SEO/GEO',
+    questionTitle: 'AI 回答里的引用来源是什么？怎样让 AI 引用你的网站？',
+    oneLineDefinition: 'AI 引用来源是 ChatGPT 搜索、Perplexity、Google AI Overviews 等在回答旁边列出的网页链接，表示答案依据了哪些页面。被引用意味着买家能点进你的网站，也说明 AI 把你的页面当作可信的出处。',
+    detailedExplanation: `联网的 AI 助手在回答问题时，会先检索网页，再根据检索到的内容写答案，并把依据的页面标成引用：Perplexity 在句子后面加编号，ChatGPT 搜索在回答中和“来源”面板里列出链接，Google 的 AI Overviews 在摘要旁边展示链接卡片。不联网、只靠训练数据回答时，通常不会有引用。
+
+一个页面要被引用，先要被找到，再要“好引用”。被找到取决于搜索索引：页面被 Google、Bing 收录，AI 爬虫能抓取，正文不依赖 JavaScript 才出现。好引用取决于页面写法：开头就直接回答问题，事实具体且有出处（型号、参数、认证编号、标准号），用表格和列表组织，和其他来源说法一致。AI 倾向于引用能单独摘出一段就回答问题的页面。
+
+引用的来源也不只是你的官网。行业媒体、目录网站、问答平台、标准组织的页面都会被引用，所以 GEO 既要把官网写好，也要让这些第三方来源对你的描述准确一致。`,
+    realWorldExample: '本站测评会记录每个回答引用了哪些网址，统计其中有多少来自被测企业自己的官网（引用率），并在报告里列出 AI 最常引用的第三方网站，作为下一步补内容和铺信源的清单。',
+    commonPitfalls: [
+      '以为提及就等于引用。AI 可能提到你的品牌，却引用了目录网站或竞品的页面，买家点进去的不是你的网站。',
+      '核心页面只有图片和宣传口号，没有可以被摘出来的具体事实，AI 找不到可以引用的句子。',
+      '官网、平台店铺与第三方页面上的参数和公司信息互相矛盾，AI 难以判断哪个可信，往往干脆不引用。'
+    ],
+    relatedTerms: ['GEO', 'AI 声量占比', '结构化数据', 'E-E-A-T', 'AI 爬虫'],
+    relatedLessonId: 'lesson-c-3-1',
+    schemaType: 'DefinedTerm'
+  },
+  {
+    id: 'term-query-fan-out',
+    term: '查询扇出 (Query Fan-out)',
+    englishTerm: 'Query Fan-out',
+    category: 'SEO/GEO',
+    questionTitle: '什么是查询扇出（Query Fan-out）？AI 搜索为什么会搜你没想到的词？',
+    oneLineDefinition: '查询扇出是 AI 搜索把用户的一个问题拆成多个子问题、同时分别检索，再把结果合成一个回答的做法。Google 公开说明 AI Mode 与 AI Overviews 使用这种技术，所以页面能否被引用，取决于它能不能回答这些子问题。',
+    detailedExplanation: `买家问 AI 的问题往往很长，例如“给德国的工厂找一家能做 IP67 防护、有 CE 认证、交期四周以内的工业连接器供应商”。AI 搜索不会把整句话当成一个关键词去搜，而是拆成“工业连接器 IP67 供应商”“CE 认证 连接器 制造商”“连接器 交期”等多个子查询，分别检索后再挑出能回答各部分的页面写进答案。Google 在 2025 年介绍 AI Mode 时把这种方法称为 query fan-out，并在 Search Central 的“AI 功能与你的网站”文档中提到 AI Overviews 和 AI Mode 都可能使用它。
+
+这对出海企业的含义是：只围绕一个主关键词写一篇宣传页已经不够。买家关心的每个维度（参数、认证、应用场景、交期与产能、售后、与其他方案的对比）最好都有一段能单独被检索到、单独回答问题的内容。页面里写清这些具体信息，被拆出来的子查询才可能落到你的网站上。
+
+具体怎么拆、发出多少个子查询，各家都没有公开细节，以官方文档为准。`,
+    realWorldExample: '本站测评生成的 6 个买家问题分别覆盖供应商推荐、对比、认证与合规、技术参数、从中国采购等不同意图，相当于把一个采购需求拆成多个角度来问；报告里没被提及的那几题，往往对应官网缺少的那一类信息。',
+    commonPitfalls: [
+      '把所有信息塞进一个很长的首页，没有分节标题，AI 检索子问题时找不到对应的段落。',
+      '参数、认证只放在 PDF 或图片里，检索时读不到。',
+      '以为查询扇出是可以单独“优化”的技巧。它只是 AI 的检索方式，应对办法仍然是把买家会问的每个方面写清楚。'
+    ],
+    relatedTerms: ['AI Overviews', 'AEO', 'AI 引用来源', '零点击搜索'],
+    relatedLessonId: 'lesson-c-1-1',
+    schemaType: 'DefinedTerm'
+  },
+  {
+    id: 'term-rag',
+    term: 'RAG (检索增强生成)',
+    englishTerm: 'Retrieval-Augmented Generation',
+    category: '智能客服',
+    questionTitle: '什么是 RAG（检索增强生成）？AI 客服为什么要先接知识库？',
+    oneLineDefinition: 'RAG 是让大模型先从指定的资料库里检索相关内容，再依据检索结果作答的方法。它让 AI 客服按企业自己的产品资料回答，而不是凭模型的记忆猜，也是联网 AI 搜索引用网页的基本原理。',
+    detailedExplanation: `RAG（Retrieval-Augmented Generation）这个名称来自 2020 年 Lewis 等人发表的论文《Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks》。做法分两步：先把用户的问题拿去资料库里检索，取出最相关的几段内容；再把这些内容和问题一起交给大模型，让它依据这些内容写答案，并可以标出出处。
+
+对出海企业，RAG 有两层意义。第一层是自己的 AI 客服：把产品手册、参数表、认证、常见问题整理成知识库，客服回答询盘时先检索再作答，能明显减少“编参数”的情况，知识库更新后回答也随之更新，不用重新训练模型。第二层是外部的 AI 搜索：ChatGPT 搜索、Perplexity 等联网回答本质上也是检索加生成，检索的“资料库”是整个公开网页。所以官网写得是否清楚、能否被检索到，直接决定 AI 回答里有没有你。
+
+RAG 的效果取决于资料质量和检索质量：资料过时、互相矛盾或切分得太碎，模型照样会答错。`,
+    realWorldExample: '本站的 AI 售前顾问采用同样的“依据指定资料作答”原则：每次回答都带上由服务、案例与话术规则组成的知识库，问到知识库里没有的内容（例如价格）时引导到方案规划与诊断会，而不是自行编造。知识库篇幅小，所以直接放进提示词，不需要另做检索；资料多到放不下时才需要 RAG 的检索步骤。',
+    commonPitfalls: [
+      '把几百页 PDF 原样丢进知识库就上线，没有整理和去重，检索到的段落互相矛盾。',
+      '以为接了 RAG 就不会出错。检索不到时模型仍可能自行发挥，需要设定“查不到就转人工”的规则。',
+      '知识库建好后不维护，产品更新了，客服还在按旧参数回答。'
+    ],
+    relatedTerms: ['AI 幻觉', 'AI 引用来源', 'FDE', 'GEO'],
+    relatedLessonId: 'lesson-d-1-2',
+    schemaType: 'DefinedTerm'
+  },
+  {
+    id: 'term-ai-hallucination',
+    term: 'AI 幻觉 (AI Hallucination)',
+    englishTerm: 'AI Hallucination',
+    category: 'SEO/GEO',
+    questionTitle: '什么是 AI 幻觉？AI 把你的公司信息说错了怎么办？',
+    oneLineDefinition: 'AI 幻觉是大模型生成了听起来合理、但与事实不符的内容。对企业来说，常见的是 AI 把成立时间、产品范围、认证或客户说错，买家看到错误信息就可能把你排除在名单之外。',
+    detailedExplanation: `大模型按概率生成文字，当它掌握的资料不足或互相矛盾时，就可能“补全”出不存在的信息。对出海企业，最常见的几种错误是：把你和同名或名字相近的公司混在一起；沿用多年前的旧信息（旧地址、已停产的产品线）；把行业通用的认证安到你身上，或者漏掉你真正拥有的认证。
+
+减少这类错误，关键是让公开资料“多、准、一致”。第一，官网用文字（不是图片）写清公司全称、成立时间、地址、产品范围、认证编号与主要市场，并用 Organization 等结构化数据标注。第二，平台店铺、行业目录、社交账号、新闻稿上的信息与官网保持一致，相互印证的来源越多，AI 越容易采信。第三，定期用带品牌名的问题检查 AI 对你的描述，发现错误就追查它引用的来源，从源头更正。
+
+AI 平台一般不提供直接修改回答的入口，更正只能通过改进公开资料、等模型或索引更新来实现，需要时间。`,
+    realWorldExample: '本站测评固定包含两个带品牌名的问题（“你对这家公司了解多少、做什么产品”“它是不是可靠的供应商、优缺点是什么”），用来检查 AI 对被测企业的描述是否准确，报告里的“品牌认知”指标就来自这两题。',
+    commonPitfalls: [
+      '发现 AI 说错后只在官网加一句声明，不去更正被 AI 引用的第三方来源，错误会继续出现。',
+      '中英文公司名、旧品牌名不统一，AI 把两个名字当成两家公司。',
+      '为了“纠正”AI 批量发布重复的宣传稿，反而增加了低质来源。'
+    ],
+    relatedTerms: ['实体', '结构化数据', 'RAG', 'E-E-A-T'],
+    relatedLessonId: 'lesson-c-1-2',
+    schemaType: 'DefinedTerm'
+  },
+  {
+    id: 'term-xml-sitemap',
+    term: 'XML 网站地图 (XML Sitemap)',
+    englishTerm: 'XML Sitemap',
+    category: '技术底座',
+    questionTitle: '什么是 XML 网站地图（sitemap.xml）？外贸站要怎么写、怎么提交？',
+    oneLineDefinition: 'XML 网站地图是列出网站所有希望被收录的网址的文件（通常是 /sitemap.xml），帮助 Google、Bing 等更快发现新页面和更新过的页面。它不保证收录，但新站和页面多的站点几乎都应该提供。',
+    detailedExplanation: `网站地图的格式由 sitemaps.org 协议规定：每个网址一个 <url> 条目，写明地址 <loc>，可选写上最后修改时间 <lastmod>。单个文件最多 50,000 个网址、未压缩不超过 50MB，超过就拆成多个文件，再用一个索引文件汇总。多语言网站可以在网站地图里为每个网址标注 hreflang 对应关系，视频和图片也有各自的扩展写法。
+
+按 Google 的官方说明，Google 会忽略 <priority> 和 <changefreq>，但如果 <lastmod> 一直准确，就会参考它安排重新抓取。所以 lastmod 应当只在页面内容真正变化时更新，不要每次部署都把所有页面改成今天。网站地图里只放返回 200、可以被收录、canonical 指向自己的网址，跳转页、404 页和 noindex 页都不要放。
+
+提交方式有三种，可以同时用：在 robots.txt 里写一行 Sitemap: 地址；在 Google Search Console、Bing Webmaster Tools 里提交；对 Bing 等支持 IndexNow 的搜索引擎，页面更新时主动推送。提交后到站长平台查看“已发现”和“已收录”的数量，两者差距大时要逐页查原因。`,
+    realWorldExample: '本站的 sitemap.xml 由路由表自动生成，包含中英文全部可索引页面、hreflang 对应关系与课程视频信息；文章的 lastmod 取真实的更新日期，并在 robots.txt 中声明地址。',
+    commonPitfalls: [
+      '网站地图里混着跳转、404 或 noindex 的网址，站长平台报大量错误，搜索引擎也会降低对这份文件的信任。',
+      '每次构建都把所有页面的 lastmod 改成当天，搜索引擎发现不准后就不再参考。',
+      '以为提交了网站地图就会被收录。是否收录仍取决于页面质量与重复程度。'
+    ],
+    relatedTerms: ['IndexNow', 'hreflang', 'AI 爬虫', '结构化数据'],
+    relatedLessonId: 'lesson-b-1-3',
+    schemaType: 'DefinedTerm'
+  }
+
 ];
 
 export const GLOSSARY_TERMS: GlossaryTerm[] = SHOW_FDE ? ALL_GLOSSARY_TERMS : ALL_GLOSSARY_TERMS.filter((term) => term.id !== 'term-fde');

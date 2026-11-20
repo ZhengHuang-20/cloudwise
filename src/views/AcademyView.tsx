@@ -140,7 +140,7 @@ export const AcademyView: React.FC = () => {
 
   const currentCourse = courses.find((c) => c.id === activeCourseId) || courses[2];
   const currentTitle = splitTitle(currentCourse.title);
-  const currentProgress = getCourseProgressPercentage(currentCourse.id);
+  const currentProgress = getCourseProgressPercentage(currentCourse);
   const currentFriction = lang === 'en' ? FRICTION_EN[currentCourse.frictionPoint] : currentCourse.frictionPoint;
 
   const toggleModule = (modIdx: number) => {
