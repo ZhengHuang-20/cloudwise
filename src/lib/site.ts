@@ -18,12 +18,12 @@ export const BRAND = {
 /** 一句话定位：页面描述、Organization schema、llms.txt 共用 */
 export const TAGLINE = SHOW_FDE
   ? {
-      zh: '面向中国出海企业的 AI 售前支持系统：GEO、FDE 驻场、独立站、SEO 与 AI 客服',
-      en: 'AI pre-sales support for Chinese companies going global: GEO, FDE on-site engineering, websites, SEO and AI customer service',
+      zh: '专注中国 B2B 出海 GEO 的服务商：让 ChatGPT、Perplexity、Gemini 等 AI 推荐你的品牌，并配套独立站、SEO、AI 客服与 FDE 驻场',
+      en: 'GEO specialist for Chinese B2B exporters: get your brand recommended by ChatGPT, Perplexity and Gemini, backed by websites, SEO, AI customer service and FDE on-site engineering',
     }
   : {
-      zh: '面向中国出海企业的 AI 售前支持系统：GEO、独立站、SEO 与 AI 客服',
-      en: 'AI pre-sales support for Chinese companies going global: GEO, websites, SEO and AI customer service',
+      zh: '专注中国 B2B 出海 GEO 的服务商：让 ChatGPT、Perplexity、Gemini 等 AI 推荐你的品牌，并配套独立站、SEO 与 AI 客服',
+      en: 'GEO specialist for Chinese B2B exporters: get your brand recommended by ChatGPT, Perplexity and Gemini, backed by websites, SEO and AI customer service',
     };
 
 /**
@@ -87,6 +87,6 @@ export const BILIBILI_VIDEOS: Record<string, string> = {
  * 文章以外的页面内容最近一次更新的日期（YYYY-MM-DD）：sitemap 的 lastModified、JSON-LD 的 dateModified、
  * Markdown 版页面共用。改了页面内容（服务、案例、课程、术语、首页等）记得更新。
  */
-export const CONTENT_UPDATED = '2026-11-16';
+export const CONTENT_UPDATED = '2026-11-20';
 
 export const absoluteUrl = (path: string) => `${SITE_URL}${path === '/' ? '' : path}`;

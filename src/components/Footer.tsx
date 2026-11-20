@@ -18,8 +18,8 @@ export const Footer: React.FC = () => {
             </p>
             <p className="mt-2 max-w-60 text-caption text-label-secondary">
               {t(
-                'AI 出海售前支持系统与能力样板间。让海外买家找到你，让 AI 替你接住生意。',
-                'An AI pre-sales support system and capability showroom for companies going global. Help overseas buyers find you, and let AI take the enquiries.'
+                '专注中国 B2B 出海 GEO。让海外买家找到你，让 AI 推荐你、替你接住生意。',
+                'GEO specialist for Chinese B2B exporters. Help overseas buyers find you, let AI recommend you and take the enquiries.'
               )}
             </p>
           </div>

@@ -1,6 +1,6 @@
 {
-  "name": "云端智荐 - AI出海售前支持系统与能力样板间",
-  "description": "专为出海企业打造的AI售前支持系统与能力样板间，涵盖GEO、FDE驻场、独立站、SEO与AI智能客服五项服务，包含出海学院、AI可见性测评、方案规划与专属商机空间。",
+  "name": "云端智荐 - 中国B2B出海GEO服务商",
+  "description": "专注中国B2B出海GEO的服务商，涵盖GEO、FDE驻场、独立站、SEO与AI智能客服五项服务，包含出海学院、AI可见性测评、方案规划与专属商机空间。",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

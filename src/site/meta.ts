@@ -48,8 +48,8 @@ export function routeMeta(route: Route, lang: Lang): PageMeta {
       return {
         absoluteTitle: true,
         title: t(
-          `${BRAND.zh} - 出海 GEO 优化、外贸 SEO 与独立站建设 | AI 出海售前支持`,
-          `${BRAND.en} - GEO, SEO and export websites for Chinese manufacturers`
+          `${BRAND.zh} - 中国 B2B 出海 GEO 服务商 | 外贸 SEO 与独立站`,
+          `${BRAND.en} - GEO services for Chinese B2B exporters`
         ),
         shortTitles: [t(`${BRAND.zh} - 出海 GEO 优化、外贸 SEO 与独立站建设`, `${BRAND.en}: GEO, SEO and websites for Chinese exporters`)],
         description: t(
@@ -179,8 +179,8 @@ export function routeMeta(route: Route, lang: Lang): PageMeta {
       return {
         title: t(`关于${BRAND.zh}（${BRAND.en}）`, `About ${BRAND.en} (${BRAND.zh})`),
         description: t(
-          `${BRAND.zh}（${BRAND.en}）是面向中国出海企业的 AI 售前支持团队，提供${svcList}服务。公司信息、做事原则、创始人、案例与联系方式。`,
-          `${BRAND.en} (${BRAND.zh}) is an AI pre-sales team for Chinese exporters: ${svcShort}. Company facts, founder, cases and contacts.`
+          `${BRAND.zh}（${BRAND.en}）是专注中国 B2B 出海 GEO 的服务商，提供${svcList}服务。公司信息、做事原则、创始人、案例与联系方式。`,
+          `${BRAND.en} (${BRAND.zh}) is a GEO specialist for Chinese B2B exporters:${svcShort}. Company facts, founder, cases and contacts.`
         ),
       };
     case 'configurator':
