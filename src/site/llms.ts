@@ -112,6 +112,7 @@ export function llmsFullTxt(lang: Lang): string {
       '',
       `${t('案例：', 'Case: ')}${pick(s.caseName, lang)}`,
       '',
+      ...(s.guide ? [absolutizeLinks(pick(s.guide, lang), lang).replace(/^## /gm, '#### ').replace(/^### /gm, '##### '), ''] : []),
       ...s.faqs.flatMap((f) => [`**${pick(f.q, lang)}**`, pick(f.a, lang), ''])
     );
   }
@@ -135,7 +136,8 @@ export function llmsFullTxt(lang: Lang): string {
       '',
       c.results.directOutcome,
       '',
-      `${t('数据口径：', 'Basis of the data: ')}${c.dataScopeStatement}`
+      `${t('数据口径：', 'Basis of the data: ')}${c.dataScopeStatement}`,
+      ...(c.evidenceLinks?.length ? ['', t('可以自己核对：', 'Check it yourself:'), ...c.evidenceLinks.map((e) => `- [${e.label}](${e.url})`)] : [])
     );
   }
 

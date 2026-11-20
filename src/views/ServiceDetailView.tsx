@@ -6,6 +6,7 @@ import { SERVICE_IDENTITY } from '../components/ui/serviceIdentity';
 import { FdeBuildLayers } from '../components/FdeBuildLayers';
 import { FdeWhyUs } from '../components/FdeWhyUs';
 import { FaqList } from '../components/FaqList';
+import { Markdown } from '../components/Markdown';
 import { useLang } from '../context/LanguageContext';
 import { courseList } from '../data/coursesData';
 import { INSIGHTS } from '../data/insights';
@@ -70,6 +71,12 @@ export const ServiceDetailView: React.FC<{ slug: string }> = ({ slug }) => {
             <dd className="mt-1 text-body">{tb(svc.caseName)}</dd>
           </dl>
         </article>
+
+        {svc.guide && (
+          <article className="tile">
+            <Markdown source={tb(svc.guide)} />
+          </article>
+        )}
 
         {svc.key === 'fde' && <FdeBuildLayers />}
         {svc.key === 'fde' && <FdeWhyUs />}

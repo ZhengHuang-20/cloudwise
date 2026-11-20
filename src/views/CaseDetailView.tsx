@@ -134,6 +134,20 @@ export const CaseDetailView: React.FC<{ slug: string }> = ({ slug }) => {
           <div className="mt-10 border-t border-separator pt-8">
             <h2 className="text-caption font-semibold text-label">{t('数据口径', 'Basis of the data')}</h2>
             <p className="mt-2 max-w-3xl text-caption text-label-secondary">{currentCase.dataScopeStatement}</p>
+            {currentCase.evidenceLinks && currentCase.evidenceLinks.length > 0 && (
+              <>
+                <h3 className="mt-6 text-caption font-semibold text-label">{t('可以自己核对', 'Check it yourself')}</h3>
+                <ul className="mt-2 space-y-2 text-caption">
+                  {currentCase.evidenceLinks.map((item) => (
+                    <li key={item.url}>
+                      <a href={item.url} target="_blank" rel="noopener" className="link">
+                        {item.label}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
           </div>
         </article>
 

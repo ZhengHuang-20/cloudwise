@@ -22,6 +22,8 @@ export interface CaseStudy {
     directOutcome: string;
   };
   dataScopeStatement: string; // 口径声明
+  /** 可选：读者可以自己点开核对的公开链接（客户官网、评测工具等），只放真实存在的地址 */
+  evidenceLinks?: { label: string; url: string }[];
   relatedLessons: string[];
   reusableExperience: string[];
   testimonial?: {
@@ -77,6 +79,11 @@ export const CASE_STUDIES: CaseStudy[] = [
       directOutcome: '在欧洲与拉美多次医院国际招投标的调研提问中，ChatGPT 与 Perplexity 将其列为亚太地区推荐供应商的前三位。'
     },
     dataScopeStatement: '注：47 分是现有国内官网 (ak-medical.net)、95 分是新建海外官网 (ak-medical-global.com) 的 GEO / SEO 评分，是两个站点的对比，而非同一站点改造前后的变化；两者均由第三方评测工具 arobis.ai 按同一口径（全网站点信号、Schema 定义完整度与信源权重）测得；引荐流量与询盘来源于 Google Analytics 4 与 CRM 真实埋点。',
+    evidenceLinks: [
+      { label: '新建海外官网 ak-medical-global.com', url: 'https://ak-medical-global.com' },
+      { label: '现有国内官网 ak-medical.net', url: 'https://ak-medical.net' },
+      { label: '第三方评测工具 arobis.ai', url: 'https://arobis.ai' },
+    ],
     relatedLessons: ['lesson-a-1-2', 'lesson-a-7-4', 'lesson-c-1-1', 'lesson-c-10-2'],
     reusableExperience: [
       '先弄清海外买家会问 AI 什么，再写内容',
@@ -194,6 +201,7 @@ const localizeCase = (item: CaseStudy): CaseStudy => {
     whatWeDid: en.whatWeDid,
     results: { ...item.results, metrics: en.results.metrics, directOutcome: en.results.directOutcome },
     dataScopeStatement: en.dataScopeStatement,
+    evidenceLinks: en.evidenceLinks ?? item.evidenceLinks,
     reusableExperience: en.reusableExperience,
     testimonial: en.testimonial ?? item.testimonial,
   };

@@ -5,7 +5,7 @@ import { Reveal } from '../components/ui/Reveal';
 import { SERVICE_IDENTITY, ServiceKey } from '../components/ui/serviceIdentity';
 import { SERVICE_COUNT_CN, SERVICE_COUNT_EN, SHOW_FDE } from '../lib/features';
 import { Bi, useLang } from '../context/LanguageContext';
-import { VisibilityAudit } from './home/VisibilityAudit';
+import { VisibilityAudit } from './home/LazyVisibilityAudit';
 import { useSite } from '../site/SiteContext';
 import { SERVICES as SERVICE_DATA } from '../data/servicesData';
 import { HOME_FAQS } from '../data/homeFaqs';
@@ -172,12 +172,12 @@ export const HomeView: React.FC = () => {
         <h1 className="mt-4 text-display">
           {t('让海外买家找到你', 'Help overseas buyers find you')}
           <br />
-          <span className="text-accent">{t('让 AI 替你接住生意', 'Let AI take the enquiries')}</span>
+          <span className="text-accent">{t('让 AI 推荐你的品牌', 'Get recommended by AI')}</span>
         </h1>
         <p className="mx-auto mt-6 max-w-2xl text-intro text-label-secondary">
           {t(
-            `${SHOW_FDE ? 'GEO 与 FDE 驻场' : 'GEO'}，加上独立站、SEO、AI 客服与系统对接。帮中国中型制造企业让海外买家找得到、读得懂、信得过，询盘来了有人接。`,
-            `${SHOW_FDE ? 'GEO and FDE on-site engineering' : 'GEO'}, plus websites, SEO, AI customer service and system integration. We help mid-sized Chinese manufacturers get found, get read, get trusted, and answer every enquiry.`
+            `以 GEO 为核心，配套独立站、SEO、AI 客服${SHOW_FDE ? '与 FDE 驻场' : ''}。帮中国中型制造企业在 ChatGPT、Perplexity、Gemini 和 Google 里被海外买家找得到、读得懂、信得过，询盘来了有人接。`,
+            `GEO at the core, backed by websites, SEO, AI customer service${SHOW_FDE ? ' and FDE on-site engineering' : ''}. We help mid-sized Chinese manufacturers get found, understood and trusted by overseas buyers on ChatGPT, Perplexity, Gemini and Google, and answer every enquiry.`
           )}
         </p>
         <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">

@@ -24,6 +24,8 @@ export interface Service {
   seo: { title: Bi; description: Bi };
   /** 详情页的常见问题，同时输出为 FAQPage 结构化数据 */
   faqs: { q: Bi; a: Bi }[];
+  /** 可选：详情页的完整说明（Markdown 子集，见 src/lib/markdown.ts，从 ## 开始），也进入 .md 页面与 llms-full.txt */
+  guide?: Bi;
 }
 
 /** 顺序即展示顺序：GEO 与 FDE 是主推服务，排在最前（code 与课程字母保持不变） */
@@ -74,6 +76,96 @@ const ALL_SERVICES: Service[] = [
     judgement: {
       zh: '没有出处的说法，AI 不会引用，采购方也不会采信。',
       en: 'A claim without a source will not be cited by AI, and buyers will not trust it either.',
+    },
+    guide: {
+      zh: `## 适合谁
+
+- 产品面向海外 B2B 买家的中国制造企业：工业设备、零部件、材料、新能源、医疗器械、电子制造等；
+- 有可以公开、可以被核对的资料：认证与检测报告、专利、参数与公差、工程案例；
+- 愿意让工程师参与审核技术内容。GEO 靠真实资料，资料越扎实，被引用的机会越大。
+
+如果产品还没有任何海外认证或案例，建议先补资料，再做 GEO；否则 AI 没有可以引用的东西。
+
+## 我们怎么做：六步闭环
+
+| 步骤 | 做什么 | 你能看到的结果 |
+|---|---|---|
+| 1. 诊断 | 用固定问题集在 ChatGPT、Perplexity、Gemini 上提问，检查官网能否被 AI 爬虫读取 | 基线报告，含各平台原始回答与引用来源 |
+| 2. 建模 | 梳理采购、工程师、合规、分销商各自会问 AI 的问题 | 问题簇清单，经你确认后固定下来 |
+| 3. 内容 | 把参数、认证、案例写成 AI 能直接引用的页面与技术文章 | 已发布的页面，参数为 HTML 表格，数字带出处 |
+| 4. 信源 | 在行业媒体、展会名录、认证机构数据库、协会目录建立可查证的第三方来源 | 第三方来源登记表（网址、日期、对应问题） |
+| 5. 口碑 | 统一各平台的公司信息，整理客户评价与工程案例，纠正错误信息 | 实体信息统一记录 |
+| 6. 监测 | 每月用同一组问题复测，与基线和竞品对比 | 月度复测报告，没有改善的指标也如实写 |
+
+完整的 90 天排期与验收方式见[90 天 GEO 试点交付什么](/insights/geo-90-day-pilot)，指标定义见[GEO 效果怎么衡量](/insights/how-to-measure-geo-results)。
+
+## 按行业的技术实施方案
+
+不同行业的买家问的问题、要核对的证据差别很大。我们按行业整理了具体做法与注意事项：
+
+- [储能与锂电池](/insights/geo-energy-storage-batteries)：UN 38.3、IEC 62619、UL 9540A 与欧盟电池法规
+- [光伏组件与逆变器](/insights/geo-solar-pv)：按国家整理认证与并网标准、PAN / OND 文件、供应链追溯
+- [机械设备与机床](/insights/geo-industrial-machinery)：精度口径、欧盟机械法规、售后与备件页面
+- [汽车零部件](/insights/geo-auto-parts)：OE 对照与适配车型数据、ACES / PIES 与 TecDoc
+- [PCB 与电子制造](/insights/geo-electronics-pcb)：工艺能力表、IPC 与 UL 资质、RoHS / REACH
+- [医疗器械](/solutions/medical)与[环保市政工程](/solutions/environmental)：行业方案
+
+## 和 SEO、独立站的关系
+
+AI 联网回答时，常常先检索搜索引擎的结果，所以页面要先能被收录、被读懂。官网如果是只在浏览器里渲染的单页应用，或者参数都在 PDF 和图片里，GEO 的第一步就是修这些。属于[海外独立站](/services/website)或[外贸 SEO](/services/seo)范围的修复，我们可以一并完成；两者的区别见[GEO 和 SEO 有什么区别](/insights/geo-vs-seo)。
+
+## 我们不做什么
+
+- 不承诺“保证 AI 推荐”或“保证排名第一”；
+- 不刷量、不批量发布低质内容、不在问答平台冒充用户、不买卖链接；
+- 不编造数据、案例或客户评价，没有授权的客户信息不公开；
+- 账号用你的企业主体注册，内容与数据归你，见[网站、内容、数据和账号归谁](/insights/chingeo-asset-ownership)。
+
+想先看看现状，[做一次免费的 AI 可见性测评](/audit)；怎么评估任何一家服务商，见[GEO 服务商怎么选](/insights/geo-agency-selection)。`,
+      en: `## Who it is for
+
+- Chinese manufacturers selling to overseas B2B buyers: industrial equipment, components, materials, new energy, medical devices, electronics manufacturing and similar;
+- Companies with material that can be published and checked: certifications and test reports, patents, parameters and tolerances, engineering cases;
+- Teams willing to have engineers review technical content. GEO runs on real material, and the more solid it is, the better the chance of being cited.
+
+If a product has no overseas certifications or cases yet, build that material first. Otherwise AI has nothing to cite.
+
+## How we work: a six-step loop
+
+| Step | What we do | What you see |
+|---|---|---|
+| 1. Diagnosis | Ask a fixed question set on ChatGPT, Perplexity and Gemini, and check whether AI crawlers can read your site | A baseline report with raw answers and cited sources per platform |
+| 2. Modelling | Map the questions procurement, engineers, compliance and distributors each ask AI | A question cluster list, fixed once you confirm it |
+| 3. Content | Turn parameters, certifications and cases into pages and technical articles AI can cite directly | Published pages with HTML parameter tables and sourced figures |
+| 4. Sources | Build verifiable third-party sources in trade media, trade-fair listings, certification databases and association directories | A third-party source register (URL, date, question served) |
+| 5. Reputation | Align company details across platforms, gather customer reviews and engineering cases, correct wrong information | A record of aligned entity details |
+| 6. Monitoring | Re-test monthly with the same questions against the baseline and competitors | A monthly re-test report, including metrics that did not improve |
+
+The full 90-day schedule and acceptance method are in [what a 90-day GEO pilot delivers](/insights/geo-90-day-pilot), and the metrics in [how to measure GEO results](/insights/how-to-measure-geo-results).
+
+## Implementation guides by industry
+
+Buyers in different industries ask different questions and check different evidence. We have written up the specifics and pitfalls by industry:
+
+- [Energy storage and lithium batteries](/insights/geo-energy-storage-batteries): UN 38.3, IEC 62619, UL 9540A and the EU Battery Regulation
+- [Solar modules and inverters](/insights/geo-solar-pv): certifications and grid codes by country, PAN / OND files, supply-chain traceability
+- [Machinery and machine tools](/insights/geo-industrial-machinery): accuracy definitions, the EU Machinery Regulation, service and spare parts pages
+- [Auto parts](/insights/geo-auto-parts): OE cross references and fitment data, ACES / PIES and TecDoc
+- [PCB and electronics manufacturing](/insights/geo-electronics-pcb): capability tables, IPC and UL credentials, RoHS / REACH
+- [Medical devices](/solutions/medical) and [environmental and municipal engineering](/solutions/environmental): industry plans
+
+## How it relates to SEO and your website
+
+When AI answers with live search, it often retrieves search engine results first, so pages must be indexable and readable. If your site is a single-page app that only renders in the browser, or the parameters live in PDFs and images, fixing that is the first step of GEO. Fixes within a [website](/services/website) or [export SEO](/services/seo) project can be done as part of the work; the difference between the two is in [GEO vs SEO](/insights/geo-vs-seo).
+
+## What we do not do
+
+- No promise that AI will recommend you or that you will rank first;
+- No fake traffic, no mass low-quality content, no posing as users on Q&A sites, no buying or selling links;
+- No invented data, cases or reviews, and no customer details published without permission;
+- Accounts are registered under your company, and the content and data are yours; see [who owns the website, content, data and accounts](/insights/chingeo-asset-ownership).
+
+To see where you stand, [run a free AI visibility audit](/audit). To evaluate any provider, see [how to choose a GEO agency](/insights/geo-agency-selection).`,
     },
   },
   {

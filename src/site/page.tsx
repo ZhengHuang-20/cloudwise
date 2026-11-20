@@ -35,6 +35,17 @@ const TITLE_LIMIT: Record<Lang, number> = { zh: 30, en: 60 };
 const titleWidth = (text: string, lang: Lang) =>
   lang === 'en' ? text.length : [...text].reduce((n, ch) => n + (/[\u2e80-\u9fff\uff00-\uffef]/.test(ch) ? 1 : 0.5), 0);
 
+/** 英文标题都放不下时的兜底：优先取冒号前的主题（不少于 25 个字符），否则按词截断，并去掉结尾的虚词，不加省略号 */
+const TRAILING_WORDS = /\s+(a|an|the|and|or|of|to|for|from|with|on|in|at|by|how|what|when|is|are|vs)$/i;
+function shortenEnglish(text: string, limit: number): string {
+  if (text.length <= limit) return text;
+  const head = text.split(/[:\u2014]/)[0].trim();
+  if (head.length >= 25 && head.length <= limit) return head;
+  let cut = text.slice(0, limit + 1).replace(/\s+\S*$/, '').replace(/[,;:\s]+$/, '');
+  while (TRAILING_WORDS.test(cut)) cut = cut.replace(TRAILING_WORDS, '');
+  return cut;
+}
+
 export function fitTitle(candidates: string[], lang: Lang): Metadata['title'] {
   const suffix = ` - ${lang === 'en' ? BRAND.en : BRAND.zh}`;
   const limit = TITLE_LIMIT[lang];
@@ -42,7 +53,8 @@ export function fitTitle(candidates: string[], lang: Lang): Metadata['title'] {
     if (titleWidth(text + suffix, lang) <= limit) return text;
     if (titleWidth(text, lang) <= limit) return { absolute: text };
   }
-  return { absolute: candidates.reduce((a, b) => (titleWidth(b, lang) < titleWidth(a, lang) ? b : a)) };
+  const shortest = candidates.reduce((a, b) => (titleWidth(b, lang) < titleWidth(a, lang) ? b : a));
+  return { absolute: lang === 'en' ? shortenEnglish(shortest, limit) : shortest };
 }
 
 export function siteMetadata(lang: Lang, slug?: string[]): Metadata {

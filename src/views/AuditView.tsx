@@ -6,7 +6,7 @@ import { FaqList } from '../components/FaqList';
 import { useLang } from '../context/LanguageContext';
 import { findInsight } from '../site/routes';
 import { useSite } from '../site/SiteContext';
-import { VisibilityAudit } from './home/VisibilityAudit';
+import { VisibilityAudit } from './home/LazyVisibilityAudit';
 
 const METHOD_SLUG = 'ai-visibility-audit-methodology';
 
