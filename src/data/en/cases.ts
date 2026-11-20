@@ -12,6 +12,7 @@ export interface CaseStudyEn {
   whatWeDid: string[];
   results: { metrics: string[]; directOutcome: string };
   dataScopeStatement: string;
+  evidenceLinks?: { label: string; url: string }[];
   reusableExperience: string[];
   testimonial?: { quote: string; author: string; title: string };
 }
@@ -60,6 +61,11 @@ export const CASE_STUDIES_EN: Record<string, CaseStudyEn> = {
     },
     dataScopeStatement:
       'Note: 47 is the GEO / SEO score of the current domestic site (ak-medical.net), and 95 is the score of the new overseas site (ak-medical-global.com). This compares two sites, not a before-and-after on the same site. Both were measured by the third-party tool arobis.ai on the same basis (site-wide signals, Schema definition completeness and source weighting). Referral traffic and enquiry sources come from real Google Analytics 4 and CRM tracking.',
+    evidenceLinks: [
+      { label: 'New overseas site: ak-medical-global.com', url: 'https://ak-medical-global.com' },
+      { label: 'Current domestic site: ak-medical.net', url: 'https://ak-medical.net' },
+      { label: 'Third-party scoring tool: arobis.ai', url: 'https://arobis.ai' },
+    ],
     reusableExperience: [
       'Find out what overseas buyers ask AI before writing content',
       'Make the official site the single source of truth: every third-party media report and LinkedIn post links back to the site’s definition pages',

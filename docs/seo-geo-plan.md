@@ -36,6 +36,18 @@
 - 结构化数据补强：Organization 全站带创始人与更完整的 `knowsAbout`；WebPage 带 `dateModified`、`mainEntity`、主图；案例与方案的 Article 带更新日期与图片；课程带 `hasCourseInstance` 与 `offers.category = Free`（Google 课程富结果的必填项，不含金额）；视频带 B 站 `embedUrl`；文章带 `wordCount` 与栏目；案例与洞察列表页输出 ItemList。
 - sitemap 的 hreflang 补上 `x-default`；robots.txt 追加放行 Amazonbot、DuckAssistBot、PetalBot、ChatGLM-Spider 等爬虫；洞察列表页的标题层级改为 H1 → H2。
 
+**2026-11-20 补充**（全面评估后补短板）：
+
+- 评估结论：站内技术接近满分，短板在站外信源、收录、案例证据与核心页深度。
+- 新增 5 篇行业 GEO 实施文章（储能与锂电池、光伏、机械设备与机床、汽车零部件、PCB 与电子制造），中英文共 10 个地址；写作规范取消每日篇数上限（见 `geo-content-guide.md`）。
+- GEO 服务页新增完整说明（适合谁、六步闭环、按行业的实施方案入口、与 SEO 和独立站的关系、我们不做什么），英文正文从约 600 词扩到约 1200 词；服务数据新增可选的 `guide` 字段，同步进入 `.md` 页面与 llms-full.txt。
+- 案例新增「可以自己核对」的外部链接（`evidenceLinks`，爱康医疗的两个官网与 arobis.ai）。
+- 首页 H1 第二行改为「让 AI 推荐你的品牌」，导语与描述改为 GEO 在前，与定位一致。
+- 英文 `<title>` 都放不下时按冒号或词边界截断（`page.tsx` 的 `shortenEnglish`），全站英文标题不再超过 60 字符。
+- 测评组件改为按需加载，不再进入其他页面的初始脚本。
+
+**仍需人工完成**：站长平台验证与 sitemap 提交状态核对；LinkedIn 公司页、Clutch / GoodFirms、Wikidata 条目，开通后加进 `SAME_AS`；域名邮箱替换 `COMPANY.email`；案例补带日期的 AI 回答截图、客户官网反向链接；泰宁科创的可公开链接；原创数据报告；争取第三方媒体与“服务商榜单”收录。
+
 站内技术项到这里基本做满，之后的提升主要来自三件事：按节奏持续发文与扩充术语（§4.3）、站外信源（§5）、收录与监测（§3.6、§6）。
 
 **还需要你做的**：在 Vercel 绑定 chingeo.com 并设为主域名（`www` 与 `*.vercel.app` 301 到主域名）；开通各站长平台、把验证码填进环境变量后重新部署、提交 sitemap（见 §3.6）；审核并合并定时任务提交的文章 PR；开通并登记官方账号（§5.2、§5.3）。

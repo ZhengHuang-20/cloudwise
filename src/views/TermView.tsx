@@ -3,21 +3,20 @@ import Link from 'next/link';
 import { ChevronRight, X } from 'lucide-react';
 import { PageHeader } from '../components/ui/PageHeader';
 import { glossaryList, GLOSSARY_CATEGORY_EN } from '../data/glossaryData';
-import { INSIGHTS } from '../data/insights';
 import { useLang } from '../context/LanguageContext';
-import { findTerm, lessonPath, termSlug } from '../site/routes';
+import { findTerm, lessonPath, termSlug } from '../site/links';
+import type { InsightSummary } from '../site/pageData';
 import { InsightCard } from './InsightsView';
 
 // 「相关术语」写的是术语名（如 SEO、E-E-A-T），能对上已有词条的就链接过去
 const normalize = (s: string) => s.toLowerCase().replace(/[^a-z0-9一-龥]/g, '');
 
 /** 术语详情页 /glossary/<slug> */
-export const TermView: React.FC<{ slug: string }> = ({ slug }) => {
+export const TermView: React.FC<{ slug: string; insights?: InsightSummary[] }> = ({ slug, insights = [] }) => {
   const { t, lang, path } = useLang();
   const id = findTerm(slug)!.id;
   const terms = glossaryList(lang);
   const term = terms.find((item) => item.id === id)!;
-  const insights = INSIGHTS.filter((item) => item.relatedTerms.includes(id)).slice(0, 3);
   const linkFor = (name: string) =>
     terms.find(
       (item) =>

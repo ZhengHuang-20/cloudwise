@@ -118,6 +118,7 @@ function body(route: Route, lang: Lang): string[] {
         pick(s.caseName, lang),
         '',
         `> ${pick(s.judgement, lang)}`,
+        ...(s.guide ? ['', absolutizeLinks(pick(s.guide, lang), lang)] : []),
         ...faqLines(s.faqs.map((f) => ({ q: pick(f.q, lang), a: pick(f.a, lang) })), lang),
       ];
     }
@@ -151,6 +152,7 @@ function body(route: Route, lang: Lang): string[] {
         '',
         `## ${t('数据口径', 'Basis of the data')}`,
         c.dataScopeStatement,
+        ...(c.evidenceLinks?.length ? ['', `### ${t('可以自己核对', 'Check it yourself')}`, ...bullets(c.evidenceLinks.map((e) => `[${e.label}](${e.url})`))] : []),
         '',
         `## ${t('可复用的经验', 'Reusable lessons')}`,
         ...bullets(c.reusableExperience),

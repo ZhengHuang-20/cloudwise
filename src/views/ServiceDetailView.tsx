@@ -6,23 +6,23 @@ import { SERVICE_IDENTITY } from '../components/ui/serviceIdentity';
 import { FdeBuildLayers } from '../components/FdeBuildLayers';
 import { FdeWhyUs } from '../components/FdeWhyUs';
 import { FaqList } from '../components/FaqList';
+import { Markdown } from '../components/Markdown';
 import { useLang } from '../context/LanguageContext';
 import { courseList } from '../data/coursesData';
-import { INSIGHTS } from '../data/insights';
 import { glossaryList } from '../data/glossaryData';
-import { findService, termSlug } from '../site/routes';
+import { findService, termSlug } from '../site/links';
+import type { InsightSummary } from '../site/pageData';
 import { useSite } from '../site/SiteContext';
 import { InsightCard } from './InsightsView';
 
 /** 单项服务详情页 /services/<slug> */
-export const ServiceDetailView: React.FC<{ slug: string }> = ({ slug }) => {
+export const ServiceDetailView: React.FC<{ slug: string; insights?: InsightSummary[] }> = ({ slug, insights = [] }) => {
   const { t, tb, lang, path } = useLang();
   const { openBooking, goToConfigurator } = useSite();
   const svc = findService(slug)!;
   const identity = SERVICE_IDENTITY[svc.key];
   const Icon = identity.icon;
   const course = courseList(lang).find((c) => c.code === svc.code);
-  const insights = INSIGHTS.filter((item) => item.relatedServices.includes(svc.slug)).slice(0, 3);
   // 术语按「相关课时」归到课程，课程与服务一一对应（课程 C ↔ 服务 C）
   const terms = glossaryList(lang).filter((term) => term.relatedLessonId?.split('-')[1]?.toUpperCase() === svc.code);
   const name = t(identity.name, identity.nameEn);
@@ -70,6 +70,12 @@ export const ServiceDetailView: React.FC<{ slug: string }> = ({ slug }) => {
             <dd className="mt-1 text-body">{tb(svc.caseName)}</dd>
           </dl>
         </article>
+
+        {svc.guide && (
+          <article className="tile">
+            <Markdown source={tb(svc.guide)} />
+          </article>
+        )}
 
         {svc.key === 'fde' && <FdeBuildLayers />}
         {svc.key === 'fde' && <FdeWhyUs />}

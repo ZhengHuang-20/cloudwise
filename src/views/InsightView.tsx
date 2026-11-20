@@ -5,29 +5,28 @@ import { PageHeader } from '../components/ui/PageHeader';
 import { Markdown } from '../components/Markdown';
 import { FaqList } from '../components/FaqList';
 import { useLang } from '../context/LanguageContext';
-import { INSIGHT_TOPIC_LABEL, moreInsights } from '../data/insights';
+import { INSIGHT_TOPIC_LABEL } from '../data/insights/topics';
 import { SERVICES } from '../data/servicesData';
 import { glossaryList } from '../data/glossaryData';
 import { courseList } from '../data/coursesData';
 import { SERVICE_IDENTITY } from '../components/ui/serviceIdentity';
 import { AUTHORS } from '../data/authors';
-import { findInsight, lessonPath, termSlug } from '../site/routes';
+import { lessonPath, termSlug } from '../site/links';
+import type { InsightPage } from '../site/pageData';
 import { useSite } from '../site/SiteContext';
 import { InsightCard } from './InsightsView';
 
 /** 「GEO 洞察」文章页 /insights/<slug> */
-export const InsightView: React.FC<{ slug: string }> = ({ slug }) => {
+export const InsightView: React.FC<{ insight: InsightPage }> = ({ insight }) => {
   const { t, tb, lang, path } = useLang();
   const { openBooking } = useSite();
-  const insight = findInsight(slug)!;
-  const content = insight[lang];
+  const { content, more } = insight;
   const author = AUTHORS[insight.author];
   const services = SERVICES.filter((s) => insight.relatedServices.includes(s.slug));
   const terms = glossaryList(lang).filter((term) => insight.relatedTerms.includes(term.id));
   const lessons = courseList(lang)
     .flatMap((c) => c.modules.flatMap((m) => m.lessons))
     .filter((lesson) => insight.relatedLessons.includes(lesson.id));
-  const more = moreInsights(slug);
 
   return (
     <div>

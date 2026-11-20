@@ -10,7 +10,7 @@ import { SERVICES } from '../data/servicesData';
 import { caseList } from '../data/caseStudiesData';
 import { SERVICE_COUNT_CN, SERVICE_COUNT_EN, SHOW_FDE } from '../lib/features';
 import { BRAND, COMPANY, OFFICIAL_ACCOUNTS, SITE_URL, XIAOHONGSHU } from '../lib/site';
-import { caseSlug } from '../site/routes';
+import { caseSlug } from '../site/links';
 import { splitName } from './CasesView';
 
 /** 关于我们 /about：公司是谁、做什么、怎么做、怎么联系。只写可核实的事实 */

@@ -53,8 +53,8 @@ export function routeMeta(route: Route, lang: Lang): PageMeta {
         ),
         shortTitles: [t(`${BRAND.zh} - 出海 GEO 优化、外贸 SEO 与独立站建设`, `${BRAND.en}: GEO, SEO and websites for Chinese exporters`)],
         description: t(
-          `${BRAND.zh}帮中国制造企业让海外买家找得到、读得懂、信得过：${svcList}${SERVICE_COUNT_CN}项服务，并提供免费 AI 可见性测评、出海学院与方案规划。`,
-          `${BRAND.en} helps Chinese manufacturers get found and trusted by overseas buyers: ${svcShort}, plus a free AI visibility audit.`
+          `${BRAND.zh}专注中国 B2B 出海 GEO：让 ChatGPT、Perplexity、Gemini 推荐你的品牌，配套独立站、外贸 SEO、AI 客服${SHOW_FDE ? '与 FDE 驻场' : ''}，并提供免费 AI 可见性测评。`,
+          `${BRAND.en} is a GEO specialist for Chinese B2B exporters: get recommended by ChatGPT, Perplexity and Gemini, backed by websites, SEO and AI support. Free audit.`
         ),
       };
     case 'services':
@@ -180,7 +180,7 @@ export function routeMeta(route: Route, lang: Lang): PageMeta {
         title: t(`关于${BRAND.zh}（${BRAND.en}）`, `About ${BRAND.en} (${BRAND.zh})`),
         description: t(
           `${BRAND.zh}（${BRAND.en}）是专注中国 B2B 出海 GEO 的服务商，提供${svcList}服务。公司信息、做事原则、创始人、案例与联系方式。`,
-          `${BRAND.en} (${BRAND.zh}) is a GEO specialist for Chinese B2B exporters:${svcShort}. Company facts, founder, cases and contacts.`
+          `${BRAND.en} (${BRAND.zh}) is a GEO specialist for Chinese B2B exporters: ${svcShort}. Company facts, founder, cases and contacts.`
         ),
       };
     case 'configurator':

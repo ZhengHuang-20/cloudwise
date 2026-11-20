@@ -78,14 +78,15 @@ bun run create-admin <email>   # 创建管理员并打印一次性初始密码
 ### 页面与路由（服务端渲染，SEO / GEO 的底座）
 
 - 每个页面有独立路径，构建时静态生成完整 HTML（正文、标题、描述、canonical、hreflang、JSON-LD 都在首屏 HTML 里，不执行 JS 的 AI 爬虫也能读到）。中文无前缀，英文在 `/en` 下，两种语言路径结构一致；后台（`/login`、`/console/*`）只有中文且 noindex。
-- **路由表** `src/site/routes.ts`：`Route` 类型、`resolveRoute`（URL → 路由，找不到为 404）、`routePath`、`allRoutes`（静态生成与 sitemap）、`isIndexable` / `hasEnglish`，以及数据 id ↔ slug 的换算（`/services/geo`、`/cases/ak-medical`、`/solutions/medical`、`/academy/geo`、`/academy/geo/c-1-1`、`/insights/<slug>`、`/glossary/geo`、`/audit`、`/about`、`/configurator`、`/deal-room`）。
+- **路由表**分两个文件：`src/site/links.ts`（前端可用：`Route` 类型、`routePath`、`isIndexable` / `hasEnglish`、`lessonPath`，以及数据 id ↔ slug 的换算）与 `src/site/routes.ts`（只在服务端用：`resolveRoute`（URL → 路由，找不到为 404）、`allRoutes`（静态生成与 sitemap）、`routeModified`、`findInsight`，并 re-export `links.ts`）。**客户端组件（views、components）只能从 `links.ts` 引入**，`routes.ts` 引入了全部文章数据，从客户端引入会把所有文章正文打进全站脚本。数据 id ↔ slug 的换算（`/services/geo`、`/cases/ak-medical`、`/solutions/medical`、`/academy/geo`、`/academy/geo/c-1-1`、`/insights/<slug>`、`/glossary/geo`、`/audit`、`/about`、`/configurator`、`/deal-room`）。
 - **服务端入口** `src/site/page.tsx`：解析路由 → `siteMetadata`（标题模板、canonical、hreflang、Open Graph、noindex）→ 输出 JSON-LD（`src/site/schema.ts`：Organization、WebSite、WebPage、BreadcrumbList，以及 Service、Article、Course、LearningResource、VideoObject、DefinedTerm、FAQPage 等）→ 渲染 `src/site/RouteView.tsx`。每个页面的标题与描述只在 `src/site/meta.ts` 定义；`<title>` 超长（中文约 30 个汉字、英文 60 字符）时，`page.tsx` 的 `fitTitle` 去掉「 - 品牌」后缀或换用 `shortTitles`，JSON-LD 与 llms.txt 仍用完整标题。
 - **客户端外壳** `src/site/SiteShell.tsx`（`'use client'`，放在根布局里，站内跳转不重置状态）：Provider、Header / Footer、AI 顾问入口、全局弹窗与 Toast；登录与后台是全屏布局，不显示页眉页脚。旧的 hash 地址（`#/services`、`#/resources`、`#/console/leads`）在这里跳到新路径。
+- **文章数据只走 props**：客户端代码不 import `src/data/insights`（主题名用 `src/data/insights/topics.ts`）。服务端的 `src/site/pageData.ts` 按路由算出当前页面需要的文章数据（列表页的摘要、文章页的正文与「更多文章」、服务页与术语页的相关文章、/audit 的测评方法问答），由 `page.tsx` 传给 `RouteView` 的 `data`，再作为 props 交给对应 view。新增需要文章数据的页面时在 `pageData` 补一个分支，不要在 view 里直接引入文章数据。
 - `RouteView`（`'use client'`）按路由渲染 `src/views/*`。views 本身不写 `'use client'`，因为只从 RouteView 引入；它们会在服务端预渲染，所以**渲染阶段不能读 `window` / `localStorage`**（放到 effect 或事件里），日期等也不能用依赖区域设置的格式化，否则水合不一致。服务端代码（`src/site/meta.ts`、`schema.ts`、`llms.ts`、`app/*.ts`）不能 import 调用 `createContext` 的模块，双语类型与 `pick` 从 `src/lib/i18n.ts` 引入。
 - 页面间跳转：链接一律用 `next/link` 的 `<Link href={path('/services')}>`（真实 `<a href>`，爬虫能顺着走）；需要逻辑的跳转用 `useSite()`（`src/site/SiteContext.ts`）的 `navigate(path)`、`openBooking`、`goToAudit`（去 `/audit`）、`goToConfigurator(prefill)`、`goToCourseTarget`。学院里的课时链接普通点击打开课程弹窗，新标签页或爬虫进入课时页。
 - 导航分组（了解 / 决策）与短标签、全称、`href` 只定义在 `src/components/navigation.ts`，`Header`、`Footer` 共用。
 - **站内唯一的自测工具是 AI 可见性测评**（组件 `src/views/home/VisibilityAudit.tsx`，同时用在首页的 `#audit` 区块与独立页 `/audit`；接口封装在 `src/lib/audit.ts`，调用服务端的真实测评；接口不可用时显示错误提示，不展示本地示例报告，避免联系方式没入库却看到结果）。其他页面与课程要引导自测时用 `useSite().goToAudit`（进入 `/audit`）；课程「下一步」的目标由 `goToCourseTarget` 分流（方案规划 / 预约 / 测评）。
-- 新增页面：在 `src/site/routes.ts` 加路由、在 `src/site/meta.ts` 写标题与描述、在 `RouteView` 加渲染分支、新建 view（以 `PageHeader` 开头，详情页传 `breadcrumbs`）；需要结构化数据时在 `schema.ts` 补一类；要进导航再改 `navigation.ts`。sitemap 与 llms.txt 从路由表和数据自动生成。
+- 新增页面：在 `src/site/links.ts` 的 `Route` 与 `routePath`、`src/site/routes.ts` 的 `resolveRoute` / `allRoutes` 加路由、在 `src/site/meta.ts` 写标题与描述、在 `RouteView` 加渲染分支、新建 view（以 `PageHeader` 开头，详情页传 `breadcrumbs`）；需要结构化数据时在 `schema.ts` 补一类；要进导航再改 `navigation.ts`。sitemap 与 llms.txt 从路由表和数据自动生成。
 - 全局弹窗都在 `SiteShell` 渲染，外壳统一用 `src/components/ui/Dialog.tsx`（Esc、焦点圈定、滚动锁定已内置）。`AiConsultantModal` 由 context 控制（`setAiAdvisorOpen` / `triggerAiAdvisorWithQuery(query)` 可带预设问题打开，CRM 透视开关在弹窗标题栏），预约与「我的空间」弹窗由 `useSite()` 打开。
 - `Header` 的移动端菜单渲染在 `<header>` 之外：`backdrop-filter` 会让 header 成为 fixed 子元素的定位容器。
 
@@ -116,7 +117,7 @@ bun run create-admin <email>   # 创建管理员并打印一次性初始密码
 
 ### SEO / GEO
 
-- 方案与进度见 `docs/seo-geo-plan.md`；文章与术语的写作规范见 `docs/geo-content-guide.md`（先给答案、写清出处、中英文同时写、不写价格、不编造）。规范里还有选词与发布节奏（先看 SERP、一页一词、每周 1～2 篇、发布后观察 90 天）；被更正后把规则记入 `docs/seo-lessons.md`，写内容前先读它。
+- 方案与进度见 `docs/seo-geo-plan.md`；文章与术语的写作规范见 `docs/geo-content-guide.md`（先给答案、写清出处、中英文同时写、不写价格、不编造）。规范里还有选词与发布节奏（先看 SERP、一页一词、不设每日篇数上限但不发同质化内容、发布后观察 90 天）；被更正后把规则记入 `docs/seo-lessons.md`，写内容前先读它。
 - 「GEO 洞察」文章每篇一个文件 `src/data/insights/<slug>.ts`（类型 `types.ts`，在 `index.ts` 登记），正文是 `src/lib/markdown.ts` 支持的 Markdown 子集，站内链接写相对路径。页面、sitemap、llms.txt 与 Article / FAQPage 结构化数据自动生成。
 - 站点身份（正式域名、中英文品牌名、一句话定位、公司主体 `COMPANY`（营业执照上的全称、信用代码、成立日期、地址、邮箱）、官方账号 `OFFICIAL_ACCOUNTS` / `SAME_AS`）只在 `src/lib/site.ts` 维护；文章署名作者在 `src/data/authors.ts`（Insight 的 `author` 字段），文章页输出作者的 `Person` 并由 Article.author 引用其 @id；新开官方账号（知乎、公众号、头条号、LinkedIn 等）后加进 `SAME_AS`。
 - `app/robots.ts` 明确放行搜索引擎与 AI 爬虫（含 Bytespider、Doubaobot 等字节系爬虫），只挡 `/api/`。不要屏蔽 AI 爬虫。

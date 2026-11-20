@@ -6,6 +6,11 @@ import { aiVisibilityAuditMethodology } from './ai-visibility-audit-methodology'
 import { chingeoAssetOwnership } from './chingeo-asset-ownership';
 import { b2bWebsitePlatformChoice } from './b2b-website-platform-choice';
 import { geo90DayPilot } from './geo-90-day-pilot';
+import { geoAutoParts } from './geo-auto-parts';
+import { geoElectronicsPcb } from './geo-electronics-pcb';
+import { geoEnergyStorageBatteries } from './geo-energy-storage-batteries';
+import { geoIndustrialMachinery } from './geo-industrial-machinery';
+import { geoSolarPv } from './geo-solar-pv';
 import { geoAgencySelection } from './geo-agency-selection';
 import { geoUsCanadaBuyers } from './geo-us-canada-buyers';
 import { geoVsSeo } from './geo-vs-seo';
@@ -27,6 +32,11 @@ const ALL_INSIGHTS: Insight[] = [
   b2bWebsitePlatformChoice,
   chingeoAssetOwnership,
   geo90DayPilot,
+  geoAutoParts,
+  geoElectronicsPcb,
+  geoEnergyStorageBatteries,
+  geoIndustrialMachinery,
+  geoSolarPv,
   geoAgencySelection,
   geoUsCanadaBuyers,
   geoVsSeo,
@@ -65,11 +75,4 @@ export function moreInsights(slug: string, count = 3): Insight[] {
   return picked;
 }
 
-export const INSIGHT_TOPIC_LABEL: Record<Insight['topic'], { zh: string; en: string }> = {
-  geo: { zh: 'GEO', en: 'GEO' },
-  seo: { zh: 'SEO', en: 'SEO' },
-  website: { zh: '独立站', en: 'Websites' },
-  'ai-customer-service': { zh: 'AI 客服', en: 'AI customer service' },
-  fde: { zh: 'FDE 驻场', en: 'FDE on-site' },
-  audit: { zh: 'AI 可见性测评', en: 'AI visibility audit' },
-};
+export { INSIGHT_TOPIC_LABEL } from './topics';

@@ -7,7 +7,7 @@ import { useLang } from '../context/LanguageContext';
 import { PageHeader } from '../components/ui/PageHeader';
 import { LessonArticle } from '../components/LessonArticle';
 import { BILIBILI_VIDEOS } from '../lib/site';
-import { courseSlug, findLesson, lessonPath } from '../site/routes';
+import { courseSlug, findLesson, lessonPath } from '../site/links';
 import { useSite } from '../site/SiteContext';
 import { splitTitle } from './AcademyView';
 

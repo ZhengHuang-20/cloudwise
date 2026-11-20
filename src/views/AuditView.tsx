@@ -4,18 +4,15 @@ import { ChevronRight } from 'lucide-react';
 import { PageHeader } from '../components/ui/PageHeader';
 import { FaqList } from '../components/FaqList';
 import { useLang } from '../context/LanguageContext';
-import { findInsight } from '../site/routes';
 import { useSite } from '../site/SiteContext';
-import { VisibilityAudit } from './home/VisibilityAudit';
-
-const METHOD_SLUG = 'ai-visibility-audit-methodology';
+import type { PageData } from '../site/pageData';
+import { VisibilityAudit } from './home/LazyVisibilityAudit';
 
 /** AI 可见性测评独立页 /audit（首页的 #audit 区块是同一个组件） */
-export const AuditView: React.FC = () => {
-  const { t, lang, path } = useLang();
+export const AuditView: React.FC<{ method?: PageData['auditMethod'] }> = ({ method }) => {
+  const { t, path } = useLang();
   const { openBooking, navigate } = useSite();
   const inputRef = useRef<HTMLInputElement>(null);
-  const method = findInsight(METHOD_SLUG);
 
   const steps = [
     {
@@ -69,14 +66,14 @@ export const AuditView: React.FC = () => {
             ))}
           </ol>
           {method && (
-            <Link href={path(`/insights/${METHOD_SLUG}`)} className="link mt-6 text-body">
+            <Link href={path(`/insights/${method.slug}`)} className="link mt-6 text-body">
               {t('完整的测评方法、评分口径与局限', 'The full method, scoring and limits')}
               <ChevronRight />
             </Link>
           )}
         </section>
 
-        {method && <FaqList items={method[lang].faqs} className="mt-16" />}
+        {method && <FaqList items={method.faqs} className="mt-16" />}
 
         <section className="tile mt-16 text-center">
           <h2 className="text-title-2">{t('想要人工解读？', 'Want a human read-through?')}</h2>
