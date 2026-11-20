@@ -75,11 +75,4 @@ export function moreInsights(slug: string, count = 3): Insight[] {
   return picked;
 }
 
-export const INSIGHT_TOPIC_LABEL: Record<Insight['topic'], { zh: string; en: string }> = {
-  geo: { zh: 'GEO', en: 'GEO' },
-  seo: { zh: 'SEO', en: 'SEO' },
-  website: { zh: '独立站', en: 'Websites' },
-  'ai-customer-service': { zh: 'AI 客服', en: 'AI customer service' },
-  fde: { zh: 'FDE 驻场', en: 'FDE on-site' },
-  audit: { zh: 'AI 可见性测评', en: 'AI visibility audit' },
-};
+export { INSIGHT_TOPIC_LABEL } from './topics';

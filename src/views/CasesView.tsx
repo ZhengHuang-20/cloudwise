@@ -4,7 +4,7 @@ import { ArrowRight, ChevronRight } from 'lucide-react';
 import { caseList, solutionList } from '../data/caseStudiesData';
 import { useLang } from '../context/LanguageContext';
 import { PageHeader } from '../components/ui/PageHeader';
-import { caseSlug, solutionSlug } from '../site/routes';
+import { caseSlug, solutionSlug } from '../site/links';
 
 // 数据里的客户名形如「爱康医疗 (AK Medical)」，展示时拆成主名与英文名
 export const splitName = (name: string) => {

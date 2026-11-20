@@ -4,7 +4,7 @@ import { ChevronRight, Search } from 'lucide-react';
 import { glossaryList, GLOSSARY_CATEGORY_EN } from '../data/glossaryData';
 import { useLang } from '../context/LanguageContext';
 import { PageHeader } from '../components/ui/PageHeader';
-import { termSlug } from '../site/routes';
+import { termSlug } from '../site/links';
 
 // 分类从数据中派生，避免新增分类后筛选不到；筛选值保持中文，英文界面只改显示
 

@@ -1,7 +1,9 @@
 /**
- * 官网的路由表：URL ↔ 页面。服务端页面（app/(zh)、app/(en)）、metadata、sitemap、llms.txt 与前端导航共用。
+ * 官网的路由表：URL ↔ 页面。服务端页面（app/(zh)、app/(en)）、metadata、sitemap、llms.txt 共用。
  * 中文无前缀（/services），英文加 /en（/en/services）；两种语言的路径结构完全一致。
- * 新增页面：在 Route 里加一种 kind，并同步 resolveRoute / routePath / allRoutes，再到 RouteView 加渲染分支。
+ * 新增页面：在 links.ts 的 Route 里加一种 kind 并同步 routePath，在这里同步 resolveRoute / allRoutes，再到 RouteView 加渲染分支。
+ *
+ * 只在服务端使用：这里引入了全部文章数据。客户端组件从 links.ts 取路由工具。
  */
 import { SERVICES } from '../data/servicesData';
 import { CASE_STUDIES, INDUSTRY_SOLUTIONS } from '../data/caseStudiesData';
@@ -9,64 +11,24 @@ import { COURSES } from '../data/coursesData';
 import { GLOSSARY_TERMS } from '../data/glossaryData';
 import { INSIGHTS } from '../data/insights';
 import { CONTENT_UPDATED } from '../lib/site';
-export { localizePath, splitLocale } from './locale';
+import {
+  CONSOLE_SECTIONS,
+  caseSlug,
+  courseSlug,
+  findCase,
+  findCourse,
+  findLesson,
+  findService,
+  findSolution,
+  findTerm,
+  lessonSlug,
+  solutionSlug,
+  termSlug,
+  type Route,
+} from './links';
+export * from './links';
 
-export type Route =
-  | { kind: 'home' }
-  | { kind: 'services' }
-  | { kind: 'service'; slug: string }
-  | { kind: 'cases' }
-  | { kind: 'case'; slug: string }
-  | { kind: 'solution'; slug: string }
-  | { kind: 'academy' }
-  | { kind: 'course'; slug: string }
-  | { kind: 'lesson'; course: string; slug: string }
-  | { kind: 'insights' }
-  | { kind: 'insight'; slug: string }
-  | { kind: 'glossary' }
-  | { kind: 'term'; slug: string }
-  | { kind: 'audit' }
-  | { kind: 'about' }
-  | { kind: 'configurator' }
-  | { kind: 'deal-room' }
-  | { kind: 'login' }
-  | { kind: 'console'; section?: string };
-
-export type RouteKind = Route['kind'];
-
-// ---------- 数据 id ↔ URL slug ----------
-
-export const caseSlug = (id: string) => id.replace(/^case-/, '');
-export const solutionSlug = (id: string) => id.replace(/^solution-/, '');
-export const termSlug = (id: string) => id.replace(/^term-/, '');
-export const lessonSlug = (id: string) => id.replace(/^lesson-/, '');
-/** 课程与服务一一对应（课程 C ↔ 服务 C），共用同一个 slug */
-export const courseSlug = (code: string) => SERVICES.find((s) => s.code === code)?.slug ?? code.toLowerCase();
-
-export const findService = (slug: string) => SERVICES.find((s) => s.slug === slug);
-export const findCase = (slug: string) => CASE_STUDIES.find((c) => caseSlug(c.id) === slug);
-export const findSolution = (slug: string) => INDUSTRY_SOLUTIONS.find((s) => solutionSlug(s.id) === slug);
-export const findCourse = (slug: string) => COURSES.find((c) => courseSlug(c.code) === slug);
-export const findTerm = (slug: string) => GLOSSARY_TERMS.find((t) => termSlug(t.id) === slug);
 export const findInsight = (slug: string) => INSIGHTS.find((i) => i.slug === slug);
-export const findLesson = (courseSlugValue: string, slug: string) => {
-  const course = findCourse(courseSlugValue);
-  const lesson = course?.modules.flatMap((m) => m.lessons).find((l) => lessonSlug(l.id) === slug);
-  return course && lesson ? { course, lesson } : null;
-};
-
-/** 课时 id → 课时页路径（不带语言前缀） */
-export const lessonPath = (lessonId: string) => {
-  for (const course of COURSES) {
-    if (course.modules.some((m) => m.lessons.some((l) => l.id === lessonId))) {
-      return `/academy/${courseSlug(course.code)}/${lessonSlug(lessonId)}`;
-    }
-  }
-  return '/academy';
-};
-
-/** 后台的子页面（与 src/views/console/ConsoleContext 的 Section 对应） */
-export const CONSOLE_SECTIONS = ['overview', 'leads', 'install', 'orgs', 'users', 'sites'] as const;
 
 // ---------- URL → Route ----------
 
@@ -110,40 +72,6 @@ export function resolveRoute(segments: string[] = []): Route | null {
   }
 }
 
-// ---------- Route → URL ----------
-
-/** 不带语言前缀的路径，例如 /services/geo */
-export function routePath(route: Route): string {
-  switch (route.kind) {
-    case 'home':
-      return '/';
-    case 'service':
-      return `/services/${route.slug}`;
-    case 'case':
-      return `/cases/${route.slug}`;
-    case 'solution':
-      return `/solutions/${route.slug}`;
-    case 'course':
-      return `/academy/${route.slug}`;
-    case 'lesson':
-      return `/academy/${route.course}/${route.slug}`;
-    case 'insight':
-      return `/insights/${route.slug}`;
-    case 'term':
-      return `/glossary/${route.slug}`;
-    case 'console':
-      return route.section ? `/console/${route.section}` : '/console';
-    default:
-      return `/${route.kind}`;
-  }
-}
-
-/** 后台与个人方案页不进搜索引擎 */
-export const isIndexable = (route: Route) => !['deal-room', 'login', 'console'].includes(route.kind);
-
-/** 后台只有中文 */
-export const hasEnglish = (route: Route) => !['login', 'console'].includes(route.kind);
-
 /** 页面内容的更新日期（YYYY-MM-DD）：文章取自己的 updatedAt，其他页面取 CONTENT_UPDATED */
 export const routeModified = (route: Route): string =>
   route.kind === 'insight' ? (findInsight(route.slug)?.updatedAt ?? CONTENT_UPDATED) : CONTENT_UPDATED;
@@ -178,22 +106,3 @@ export function allRoutes(): Route[] {
   ];
 }
 
-/** Header 高亮用：路由属于哪个导航项 */
-export const navSection = (route: Route): string => {
-  switch (route.kind) {
-    case 'service':
-      return 'services';
-    case 'case':
-    case 'solution':
-      return 'cases';
-    case 'course':
-    case 'lesson':
-      return 'academy';
-    case 'insight':
-      return 'insights';
-    case 'term':
-      return 'glossary';
-    default:
-      return route.kind;
-  }
-};

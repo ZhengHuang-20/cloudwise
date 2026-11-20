@@ -8,10 +8,12 @@ import { pageSchema } from './schema';
 import { hasMarkdown, markdownPath } from './markdown';
 import { feedPath } from './feed';
 import { RouteView } from './RouteView';
+import { pageData } from './pageData';
 
 /**
  * 官网页面的服务端入口：app/(zh)/[[...slug]] 与 app/(en)/en/[[...slug]] 都只是转发到这里。
  * 解析路由 → 输出 metadata 与 JSON-LD → 由 RouteView（客户端组件，服务端预渲染）渲染页面。
+ * 文章数据由 pageData 按路由算好、作为 props 传入，客户端组件不直接引入文章数据（见 pageData.ts）。
  */
 
 const resolve = (lang: Lang, slug?: string[]): Route | null => {
@@ -110,7 +112,7 @@ export function SitePage({ lang, slug }: { lang: Lang; slug?: string[] }) {
   return (
     <>
       {isIndexable(route) && <JsonLd data={pageSchema(route, lang)} />}
-      <RouteView route={route} />
+      <RouteView route={route} data={pageData(route, lang)} />
     </>
   );
 }

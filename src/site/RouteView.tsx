@@ -3,7 +3,8 @@
 import React from 'react';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
-import type { Route } from './routes';
+import type { Route } from './links';
+import type { PageData } from './pageData';
 import { useSite } from './SiteContext';
 import { HomeView } from '../views/HomeView';
 import { ServicesView } from '../views/ServicesView';
@@ -31,7 +32,7 @@ const ConsoleApp = dynamic(() => import('../views/console/ConsoleApp'), {
 });
 
 /** 按路由渲染页面。路由由服务端页面解析后传入（可序列化），回调统一从 useSite() 取 */
-export function RouteView({ route }: { route: Route }) {
+export function RouteView({ route, data }: { route: Route; data: PageData }) {
   const site = useSite();
   const router = useRouter();
 
@@ -41,7 +42,7 @@ export function RouteView({ route }: { route: Route }) {
     case 'services':
       return <ServicesView />;
     case 'service':
-      return <ServiceDetailView slug={route.slug} />;
+      return <ServiceDetailView slug={route.slug} insights={data.insights} />;
     case 'cases':
       return <CasesView />;
     case 'case':
@@ -55,15 +56,15 @@ export function RouteView({ route }: { route: Route }) {
     case 'lesson':
       return <LessonView course={route.course} slug={route.slug} />;
     case 'insights':
-      return <InsightsView />;
+      return <InsightsView insights={data.insights ?? []} />;
     case 'insight':
-      return <InsightView slug={route.slug} />;
+      return data.insight ? <InsightView insight={data.insight} /> : <NotFoundView />;
     case 'glossary':
       return <GlossaryView />;
     case 'term':
-      return <TermView slug={route.slug} />;
+      return <TermView slug={route.slug} insights={data.insights} />;
     case 'audit':
-      return <AuditView />;
+      return <AuditView method={data.auditMethod} />;
     case 'about':
       return <AboutView />;
     case 'configurator':

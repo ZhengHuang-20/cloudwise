@@ -5,7 +5,7 @@ import { caseList, solutionList } from '../data/caseStudiesData';
 import { courseList } from '../data/coursesData';
 import { useLang } from '../context/LanguageContext';
 import { PageHeader } from '../components/ui/PageHeader';
-import { findCase, lessonPath, solutionSlug } from '../site/routes';
+import { findCase, lessonPath, solutionSlug } from '../site/links';
 import { useSite } from '../site/SiteContext';
 import { splitName } from './CasesView';
 

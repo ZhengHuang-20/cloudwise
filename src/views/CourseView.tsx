@@ -5,7 +5,7 @@ import { courseList, FRICTION_EN } from '../data/coursesData';
 import { useApp } from '../context/AppContext';
 import { useLang } from '../context/LanguageContext';
 import { PageHeader } from '../components/ui/PageHeader';
-import { findCourse, lessonPath } from '../site/routes';
+import { findCourse, lessonPath } from '../site/links';
 import { splitTitle } from './AcademyView';
 
 /** 课程主页 /academy/<slug>：课程简介与全部课时的链接 */

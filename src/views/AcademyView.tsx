@@ -8,7 +8,7 @@ import { LessonModal } from '../components/LessonModal';
 import { PageHeader } from '../components/ui/PageHeader';
 import { SegmentedControl } from '../components/ui/SegmentedControl';
 import { SERVICE_COUNT_CN, SERVICE_COUNT_EN } from '../lib/features';
-import { courseSlug, lessonPath } from '../site/routes';
+import { courseSlug, lessonPath } from '../site/links';
 import { useSite } from '../site/SiteContext';
 
 const TOTAL_LESSONS = COURSES.reduce((sum, course) => sum + course.totalLessons, 0);

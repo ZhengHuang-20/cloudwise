@@ -4,7 +4,7 @@ import { Check, ChevronRight } from 'lucide-react';
 import { caseList, solutionList } from '../data/caseStudiesData';
 import { useLang } from '../context/LanguageContext';
 import { PageHeader } from '../components/ui/PageHeader';
-import { caseSlug, findSolution } from '../site/routes';
+import { caseSlug, findSolution } from '../site/links';
 import { useSite } from '../site/SiteContext';
 import { splitName } from './CasesView';
 
