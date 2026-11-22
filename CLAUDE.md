@@ -4,9 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 项目概述
 
-「云端智荐」（英文名 **ChinGEO**，正式域名 https://chingeo.com）—— 专注中国 B2B 出海 GEO 的服务商（GEO 是核心定位，独立站 / SEO / AI 客服 / FDE 驻场是配套的五项服务；对外不要再自称“AI 售前支持系统”或“能力样板间”，见 `src/lib/site.ts` 的 `TAGLINE`），同时承载客户后台（访问统计、线索）。技术栈：**Next.js 16（App Router）+ React 19 + TypeScript 7 + Tailwind CSS v4**（登录页与客户后台另用 **antd 6**），部署在 **Vercel**，数据库为 **Neon Postgres**；AI 能力来自服务端调用的 Gemini（REST）。界面默认为简体中文，官网同时提供英文（见下文「多语言」），新增文案需同时写中英文。
+「云端智荐」（英文名 **ChinGEO**，正式域名 https://chingeo.com）—— 专注中国 B2B 出海 GEO 的服务商（GEO 是核心定位，独立站 / SEO / AI 客服是配套服务，共四项；FDE 驻场已下线，见下文「FDE 展示开关」；对外不要再自称“AI 售前支持系统”或“能力样板间”，见 `src/lib/site.ts` 的 `TAGLINE`），同时承载客户后台（访问统计、线索）。技术栈：**Next.js 16（App Router）+ React 19 + TypeScript 7 + Tailwind CSS v4**（登录页与客户后台另用 **antd 6**），部署在 **Vercel**，数据库为 **Neon Postgres**；AI 能力来自服务端调用的 Gemini（REST）。界面默认为简体中文，官网同时提供英文（见下文「多语言」），新增文案需同时写中英文。
 
-**站点定位已定，不得改动**：对外定位固定为「专注中国 B2B 出海 GEO 的服务商」（英文 *GEO specialist for Chinese B2B exporters*），GEO 是核心，独立站 / SEO / AI 客服 / FDE 是配套。定位只在 `src/lib/site.ts` 的 `TAGLINE` 维护，首页标题与描述（`src/site/meta.ts`）、关于页、页脚、首页 eyebrow、AI 顾问知识库（`src/server/knowledge.ts`）、`metadata.json` 都与它保持一致。除非用户明确要求改定位，修改网站其他内容（文案、服务、案例、文章、SEO 等）时**不要**改动、弱化或重新措辞这些位置的定位表述，也不要再引入「AI 售前支持系统」「能力样板间」「售前系统」这类自我定位。新增页面或文案涉及“我们是谁”时，沿用此定位。（站内「AI 售前顾问」是聊天功能名称，不属于定位，可保留。）
+**站点定位已定，不得改动**：对外定位固定为「专注中国 B2B 出海 GEO 的服务商」（英文 *GEO specialist for Chinese B2B exporters*），GEO 是核心，独立站 / SEO / AI 客服是配套（FDE 已下线，`TAGLINE` 随 `SHOW_FDE` 自动去掉 FDE）。定位只在 `src/lib/site.ts` 的 `TAGLINE` 维护，首页标题与描述（`src/site/meta.ts`）、关于页、页脚、首页 eyebrow、AI 顾问知识库（`src/server/knowledge.ts`）、`metadata.json` 都与它保持一致。除非用户明确要求改定位，修改网站其他内容（文案、服务、案例、文章、SEO 等）时**不要**改动、弱化或重新措辞这些位置的定位表述，也不要再引入「AI 售前支持系统」「能力样板间」「售前系统」这类自我定位。新增页面或文案涉及“我们是谁”时，沿用此定位。（站内「AI 售前顾问」是聊天功能名称，不属于定位，可保留。）
 
 **任何 UI 改动前先读 [`DESIGN.md`](./DESIGN.md)**（设计规范：token、组件、页面模板、文案与无障碍规则），改动后按其第 8 节评审清单自查。后台（`/login`、`/console/*`）用 antd，规则见 DESIGN.md 第 10 节；官网页面不要引入 antd。
 
@@ -143,7 +143,7 @@ bun run create-admin <email>   # 创建管理员并打印一次性初始密码
 
 ## 其他注意事项
 
-- **FDE 展示开关**：`src/lib/features.ts` 的 `SHOW_FDE`（当前为 `true`，对外展示）同时控制前端与服务端（服务端可用 `SHOW_FDE` 环境变量覆盖）。关闭时服务页（含 `/services/fde`）、首页、课程 E、术语、FDE 主题的洞察文章、方案规划与 AI 顾问都不出现 FDE，“五项服务 / 五门课”随 `SERVICE_COUNT_CN` 变为“四”。新增涉及 FDE 或服务数量的文案也要走这个开关；页面标题与描述（`src/site/meta.ts`）、`TAGLINE`（`src/lib/site.ts`）也读取这个开关。
+- **FDE 展示开关**：`src/lib/features.ts` 的 `SHOW_FDE`（当前为 `false`：FDE 已从网站下线，文案与数据保留；`next.config.mjs` 读取同一个值，关闭时把 `/services/fde`、`/academy/fde/*`、`/glossary/fde` 及英文版永久跳转到对应列表页）同时控制前端与服务端（服务端可用 `SHOW_FDE` 环境变量覆盖）。关闭时服务页（含 `/services/fde`）、首页、课程 E、术语、FDE 主题的洞察文章、方案规划与 AI 顾问都不出现 FDE，“五项服务 / 五门课”随 `SERVICE_COUNT_CN` 变为“四”。新增涉及 FDE 或服务数量的文案也要走这个开关；页面标题与描述（`src/site/meta.ts`）、`TAGLINE`（`src/lib/site.ts`）也读取这个开关。
 - **Vercel Web Analytics**：`app/layout.tsx` 渲染 `@vercel/analytics/next` 的 `<Analytics />`。项目在 Vercel 开启 Web Analytics 后才会上报；本地 `/_vercel/insights/script.js` 加载失败属正常现象。
 - **Microsoft Clarity**（热力图与会话回放，项目在 Bing Webmaster Tools 里创建）：`src/site/Clarity.tsx` 在挂载后插入脚本，项目 ID 是 `src/lib/site.ts` 的 `CLARITY_PROJECT_ID`。和 `cw.js` 一样只在 `VERCEL_ENV=production` 加载，遵守 `?cw_ignore=1`；`/login`、`/console/*` 不加载，站内跳进后台时由 `SiteShell` 的 `data-clarity-mask` 遮罩整个后台，AI 顾问的对话区同样遮罩。新增展示访客联系方式或客户数据的界面时也要加 `data-clarity-mask="True"`。
 - 路径别名 `@/` 指向**仓库根目录**而不是 `src/`（`tsconfig.json`）；现有代码均使用相对路径导入。

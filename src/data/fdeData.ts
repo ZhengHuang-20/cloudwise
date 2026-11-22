@@ -1,6 +1,7 @@
 // FDE 驻场服务的方法论内容：三层建设、每周闭环与离场设计。
 // 服务页的三层图使用这里的数据；AI 顾问的知识库（src/server/knowledge.ts）与课程 E、术语表中的同类表述需保持一致。
 import type { Bi } from '../lib/i18n';
+import { SHOW_FDE } from '../lib/features';
 
 export interface FdeLayer {
   step: 1 | 2 | 3;
@@ -90,7 +91,7 @@ export const FOUNDER = {
     'Search Engine Optimization (SEO)',
     'Enterprise system architecture',
     'B2B export websites',
-    'Forward Deployed Engineering',
+    ...(SHOW_FDE ? ['Forward Deployed Engineering'] : []),
   ],
   intro: {
     zh: '12 年企业系统建设经验。先后在保险、支付、电商平台和教育出海领域主导过多个从 0 到 1 的系统，从需求梳理、架构设计到上线运营全程负责。',
