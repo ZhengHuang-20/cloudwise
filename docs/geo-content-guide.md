@@ -65,7 +65,7 @@ curl -s localhost:3000/sitemap.xml | grep <slug>
 curl -s localhost:3000/llms.txt | grep <slug>
 ```
 
-页面、sitemap、`llms.txt` / `llms-full.txt` 与 JSON-LD（Article + FAQPage）都会自动生成，不需要另外改。
+页面、sitemap、`llms.txt` / `llms-full.txt` 与 JSON-LD（Article + FAQPage）都会自动生成，不需要另外改。文章的 sitemap 日期取 `updatedAt`，生产部署时 `scripts/indexnow.ts` 会自动把日期变了的地址推给 IndexNow。新增或修改术语（以及课程、服务、案例等文章以外的页面）时，把 `src/lib/site.ts` 里 `PAGE_UPDATED` 对应的那一项改成当天，其他类别不动。
 
 **发布节奏与观察期**：
 

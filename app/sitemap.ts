@@ -6,24 +6,13 @@ import { allRoutes, findLesson, hasEnglish, isIndexable, localizePath, routeModi
 
 /**
  * sitemap.xml：全部可索引页面的中英文地址，带 hreflang 互指；课时页附带视频信息。
- * lastModified：文章取更新日期，其他页面取 src/lib/site.ts 的 CONTENT_UPDATED（改动页面内容时更新它）。
+ *
+ * lastmod 是这里唯一起作用的“新鲜度”字段：取 routeModified（文章取 updatedAt，其他页面按类别取
+ * src/lib/site.ts 的 PAGE_UPDATED），只在正文有实质改动时变化。Google 与 Bing 都只在 lastmod 持续准确时
+ * 才采信它；Bing 说明在 AI 驱动的搜索里，准确的 lastmod 帮它优先抓取更新过的页面。
+ * 不输出 changefreq 与 priority：Google 与 Bing 的官方文档都写明会忽略这两个字段。
+ * Markdown 版（*.md）是 noindex 且 canonical 指回 HTML 页，不进 sitemap。
  */
-
-const PRIORITY: Partial<Record<Route['kind'], number>> = {
-  home: 1,
-  services: 0.9,
-  service: 0.9,
-  audit: 0.9,
-  insights: 0.8,
-  insight: 0.8,
-  cases: 0.8,
-  case: 0.8,
-  academy: 0.7,
-  course: 0.7,
-  lesson: 0.6,
-  glossary: 0.7,
-  term: 0.7,
-};
 
 function lessonVideo(route: Route) {
   if (route.kind !== 'lesson') return undefined;
@@ -62,8 +51,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
       return langs.map((lang) => ({
         url: absoluteUrl(localizePath(path, lang)),
         lastModified: routeModified(route),
-        changeFrequency: route.kind === 'insights' || route.kind === 'home' ? ('weekly' as const) : ('monthly' as const),
-        priority: PRIORITY[route.kind] ?? 0.5,
         alternates: languages ? { languages } : undefined,
         // 视频是中文讲解，只挂在中文课时页上
         videos: lang === 'zh' ? lessonVideo(route) : undefined,
