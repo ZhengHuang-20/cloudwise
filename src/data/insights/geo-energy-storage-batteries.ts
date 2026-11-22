@@ -14,8 +14,8 @@ export const geoEnergyStorageBatteries: Insight = {
   relatedTerms: ['term-structured-data', 'term-entity', 'term-ai-crawlers'],
   relatedLessons: ['lesson-c-3-1', 'lesson-c-1-2'],
   zh: {
-    title: '储能与锂电池企业怎么做 GEO？技术实现与注意事项',
-    seoTitle: '储能与锂电池企业 GEO：技术实现与注意事项',
+    title: '储能与锂电池企业怎么做 GEO？2026 年技术实现与注意事项',
+    seoTitle: '储能与锂电池企业 GEO 指南（2026）：实现与注意事项',
     description:
       '储能与锂电池企业怎么做出海 GEO：买家问 AI 的问题、UN 38.3 与 UL 9540A 等认证怎么公开、产品页与结构化数据的做法，以及循环寿命与欧盟电池法规的注意事项。',
     answer:
@@ -108,8 +108,8 @@ AI 回答这类问题时，会去检索它能读到的公开资料，挑出**能
     ],
   },
   en: {
-    title: 'GEO for energy storage and lithium battery makers: implementation and pitfalls',
-    seoTitle: 'GEO for energy storage and battery manufacturers',
+    title: 'GEO for energy storage and lithium battery makers in 2026: implementation and pitfalls',
+    seoTitle: 'GEO for energy storage and battery makers: a 2026 guide',
     description:
       'How storage and battery makers get cited by AI: buyer questions, UN 38.3 and UL 9540A evidence, product pages, structured data and EU Battery Regulation pitfalls.',
     answer:

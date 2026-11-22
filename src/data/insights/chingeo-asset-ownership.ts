@@ -14,7 +14,8 @@ export const chingeoAssetOwnership: Insight = {
   relatedTerms: ['term-geo'],
   relatedLessons: ['lesson-c-3-1'],
   zh: {
-    title: '和云端智荐合作，网站、内容、数据和账号归谁？',
+    title: '和云端智荐合作，网站、内容、数据和账号归谁？（2026 版）',
+    seoTitle: '和云端智荐合作，网站和账号归谁？（2026 版）',
     description:
       '和云端智荐合作，源码、内容、数据、知识库都归客户，所有账号从第一天起用客户的企业主体和邮箱注册，合作结束提供交接清单。本文写清资产清单、交接内容与白帽承诺。',
     answer:
@@ -94,8 +95,8 @@ GEO 做的是让 AI 找到真实、可查证的资料，所以我们不做这些
     ],
   },
   en: {
-    title: 'Who owns the website, content, data and accounts at ChinGEO?',
-    seoTitle: 'Who owns the website, content and accounts at ChinGEO?',
+    title: 'Who owns the website, content, data and accounts at ChinGEO? (2026)',
+    seoTitle: 'Who owns the website and accounts at ChinGEO? (2026)',
     description:
       'At ChinGEO, code, content, data and knowledge bases belong to the client, and accounts use the client’s company and email. Handover and white-hat terms.',
     answer:

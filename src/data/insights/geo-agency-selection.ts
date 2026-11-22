@@ -20,7 +20,7 @@ export const geoAgencySelection: Insight = {
   relatedTerms: ['term-geo', 'term-ai-crawlers', 'term-structured-data', 'term-entity'],
   relatedLessons: ['lesson-c-3-1', 'lesson-c-1-2'],
   zh: {
-    title: '未来 B2B 出海企业 GEO 服务商怎么选？',
+    title: '2026 年及以后，B2B 出海企业 GEO 服务商怎么选？',
     description:
       '结合 AI 搜索现状与未来三年趋势，预测 Google、ChatGPT、Copilot、Perplexity、Claude 的收录规则，给出选 GEO 服务商的框架与 8 个问题。',
     answer:
@@ -238,8 +238,8 @@ AI 更愿意引用独立来源，这是 GEO 的核心工作，也容易出问题
     ],
   },
   en: {
-    title: 'How should B2B exporters choose a GEO agency for the AI era ahead?',
-    seoTitle: 'Choosing a GEO agency: a guide for B2B exporters',
+    title: 'How should B2B exporters choose a GEO agency in 2026 and beyond?',
+    seoTitle: 'Choosing a GEO agency in 2026: a guide for B2B exporters',
     description:
       'Where AI search is heading, how Google, ChatGPT, Copilot, Perplexity and Claude choose sources, and eight questions B2B exporters should ask a GEO agency.',
     answer:

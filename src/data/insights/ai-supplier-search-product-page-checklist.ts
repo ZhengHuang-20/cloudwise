@@ -20,7 +20,8 @@ export const aiSupplierSearchProductPageChecklist: Insight = {
   relatedTerms: ['term-geo', 'term-eeat', 'term-structured-data'],
   relatedLessons: ['lesson-c-1-1'],
   zh: {
-    title: '买家问 AI 找供应商：外贸官网产品页 6 项自查清单',
+    title: '买家问 AI 找供应商：2026 年外贸官网产品页 6 项自查清单',
+    seoTitle: '买家问 AI 找供应商：2026 产品页 6 项自查',
     description:
       '一次 Gemini 实测中，AI 介绍供应商时反复用到 6 类信息。据此给出外贸官网产品页 6 项自查清单和英文改写模板，帮你查出产品页缺了什么。',
     answer:
@@ -162,8 +163,8 @@ export const aiSupplierSearchProductPageChecklist: Insight = {
     ],
   },
   en: {
-    title: 'Buyers ask AI to find suppliers: a 6-point product page checklist',
-    seoTitle: 'AI supplier search: a 6-point product page checklist',
+    title: 'Buyers ask AI to find suppliers: a 2026 product page checklist',
+    seoTitle: 'AI supplier search: a 2026 product page checklist',
     description:
       'In a Gemini test, AI kept describing suppliers with the same 6 types of facts. Here is a 6-point product page checklist and copy templates for manufacturer websites.',
     answer:

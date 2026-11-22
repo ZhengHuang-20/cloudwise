@@ -14,7 +14,8 @@ export const googleAiOverviewsB2b: Insight = {
   relatedTerms: ['term-ai-overviews', 'term-zero-click', 'term-aeo', 'term-eeat', 'term-structured-data'],
   relatedLessons: ['lesson-b-1-3', 'lesson-c-1-1'],
   zh: {
-    title: 'Google AI 概览引用哪些网页？B2B 制造商怎么应对',
+    title: '2026 年 Google AI 概览引用哪些网页？B2B 制造商怎么应对',
+    seoTitle: '2026 年 Google AI 概览引用哪些网页？',
     description:
       'Google AI 概览会引用哪些网页、点击会少多少、B2B 制造企业该怎么应对？本文依据 Google 官方文档与一项随机对照实验，给出页面写法、衡量口径与应对清单。',
     answer:
@@ -176,7 +177,8 @@ AI 概览靠 Google 的索引；ChatGPT、Perplexity 等助手的检索来源不
     ],
   },
   en: {
-    title: 'AI Overviews and B2B manufacturers: which pages get cited?',
+    title: 'AI Overviews and B2B manufacturers in 2026: which pages get cited?',
+    seoTitle: 'Google AI Overviews in 2026: which pages get cited?',
     description:
       'Which pages Google AI Overviews cite, how much organic clicks fall, and what B2B manufacturers should do, based on Google documentation and a field experiment.',
     answer:

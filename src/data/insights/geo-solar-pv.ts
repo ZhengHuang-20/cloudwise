@@ -14,8 +14,8 @@ export const geoSolarPv: Insight = {
   relatedTerms: ['term-structured-data', 'term-entity', 'term-hreflang'],
   relatedLessons: ['lesson-c-3-1', 'lesson-c-1-2'],
   zh: {
-    title: '光伏组件与逆变器企业怎么做 GEO？技术实现与注意事项',
-    seoTitle: '光伏组件与逆变器企业 GEO：实现与注意事项',
+    title: '光伏组件与逆变器企业怎么做 GEO？2026 年技术实现与注意事项',
+    seoTitle: '光伏组件与逆变器企业 GEO 指南（2026）',
     description:
       '光伏组件与逆变器企业怎么做出海 GEO：按国家公开 IEC 与并网认证、HTML 数据表与 PAN / OND 文件、结构化数据，以及供应链追溯与质保表述的注意事项。',
     answer:
@@ -102,8 +102,8 @@ PV Magazine、PV Tech 等行业媒体的报道、独立检测机构（如 PVEL �
     ],
   },
   en: {
-    title: 'GEO for solar module and inverter makers: implementation and pitfalls',
-    seoTitle: 'GEO for solar module and inverter manufacturers',
+    title: 'GEO for solar module and inverter makers in 2026: implementation and pitfalls',
+    seoTitle: 'GEO for solar module and inverter makers: a 2026 guide',
     description:
       'How solar module and inverter makers get cited by AI: certifications and grid codes by country, HTML datasheets, PAN / OND files and supply-chain traceability.',
     answer:

@@ -14,7 +14,7 @@ export const b2bWebsitePlatformChoice: Insight = {
   relatedTerms: ['term-core-web-vitals', 'term-structured-data', 'term-hreflang', 'term-ai-crawlers'],
   relatedLessons: ['lesson-a-1-1', 'lesson-a-1-2', 'lesson-d-1-2'],
   zh: {
-    title: '外贸独立站什么时候需要 Next.js 定制开发？',
+    title: '2026 年外贸独立站什么时候需要 Next.js 定制开发？',
     description:
       '外贸独立站什么时候值得做 Next.js 定制？从成交方式、型号规模、系统对接、AI 计划和维护人手判断，说明现成平台更合适的情况、换平台的步骤和云端智荐能提供什么。',
     answer:
@@ -171,7 +171,7 @@ Next.js 的页面默认是服务端组件，可以在服务端取数据、渲染
     ],
   },
   en: {
-    title: 'When does a B2B website need a custom Next.js build?',
+    title: 'When does a B2B website need a custom Next.js build in 2026?',
     description:
       'When is a custom Next.js build worth it for a B2B export website? Five questions to decide, when off-the-shelf platforms fit better, and how to migrate safely.',
     answer:

@@ -14,7 +14,7 @@ export const geo90DayPilot: Insight = {
   relatedTerms: ['term-geo', 'term-ai-crawlers'],
   relatedLessons: ['lesson-c-3-1', 'lesson-c-10-2'],
   zh: {
-    title: '90 天 GEO 试点交付什么？怎么验收',
+    title: '2026 年 90 天 GEO 试点交付什么？怎么验收',
     description:
       '90 天 GEO 试点按周写清时间线与交付物：先测基线，再修技术、写内容、建第三方来源，三次复测后交接。验收分交付物与效果指标，并列出企业需配合的事项。',
     answer:
@@ -101,8 +101,8 @@ GEO 靠的是你的真实资料，企业配合得越到位，结果越可靠。
     ],
   },
   en: {
-    title: 'What does a 90-day GEO pilot deliver, and how is it accepted?',
-    seoTitle: 'What a 90-day GEO pilot delivers and how to accept it',
+    title: 'What does a 90-day GEO pilot deliver in 2026, and how is it accepted?',
+    seoTitle: 'A 90-day GEO pilot in 2026: deliverables and acceptance',
     description:
       'A week-by-week 90-day GEO pilot plan: baseline, technical fixes, content, third-party sources and three re-tests. Acceptance covers deliverables and metrics.',
     answer:

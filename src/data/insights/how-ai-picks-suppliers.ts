@@ -14,8 +14,8 @@ export const howAiPicksSuppliers: Insight = {
   relatedTerms: ['term-geo', 'term-ai-crawlers', 'term-entity', 'term-eeat'],
   relatedLessons: ['lesson-c-1-1', 'lesson-c-3-1'],
   zh: {
-    title: 'ChatGPT 和 Gemini 怎么挑选推荐供应商？工业企业能做什么',
-    seoTitle: 'ChatGPT、Gemini 怎么选推荐供应商？工业企业能做什么',
+    title: '2026 年 ChatGPT 和 Gemini 怎么挑选推荐供应商？工业企业能做什么',
+    seoTitle: '2026 年 ChatGPT、Gemini 怎么推荐供应商？',
     description:
       'AI 推荐供应商是先检索再归纳，不是打分排序。本文按被抓到、被看懂、被信任、被选择四个环节，讲清 Gemini、ChatGPT 的资料来源、中国工厂常见扣分项，以及为何不承诺排名。',
     answer:
@@ -113,8 +113,8 @@ AI 倾向于引用能互相印证的来源。扣分项集中在三处：
     ],
   },
   en: {
-    title: 'How do ChatGPT and Gemini pick suppliers? What manufacturers can do',
-    seoTitle: 'How ChatGPT and Gemini pick suppliers: a guide',
+    title: 'How do ChatGPT and Gemini pick suppliers in 2026? What manufacturers can do',
+    seoTitle: 'How ChatGPT and Gemini pick suppliers in 2026',
     description:
       'AI recommends suppliers by retrieving, then summarising. Four stages, what Gemini and ChatGPT say about their sources, and what costs Chinese factories.',
     answer:

@@ -14,7 +14,7 @@ export const geoVsSeo: Insight = {
   relatedTerms: ['term-geo', 'term-eeat', 'term-aeo'],
   relatedLessons: ['lesson-b-1-3', 'lesson-c-1-2'],
   zh: {
-    title: 'GEO 和 SEO 有什么区别？出海企业应该先做哪个',
+    title: 'GEO 和 SEO 有什么区别？2026 年出海企业应该先做哪个',
     description:
       'SEO 让网页在搜索结果里排得靠前，GEO 让 ChatGPT、Perplexity、Gemini 等 AI 在回答里提到并引用你。本文对比两者的目标、衡量方式与工作内容，并给出出海企业的推进顺序。',
     answer:
@@ -68,8 +68,8 @@ export const geoVsSeo: Insight = {
     ],
   },
   en: {
-    title: 'GEO vs SEO: what is the difference, and which should exporters do first?',
-    seoTitle: 'GEO vs SEO: the difference, and which exporters do first',
+    title: 'GEO vs SEO in 2026: what is the difference, and which should exporters do first?',
+    seoTitle: 'GEO vs SEO in 2026: which should exporters do first?',
     description:
       'SEO gets pages ranked in search results; GEO gets ChatGPT, Perplexity, Gemini and other AI assistants to mention and cite you. We compare the goals, measurement and work involved, and set out the order exporters should follow.',
     answer:

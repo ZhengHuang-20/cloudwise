@@ -14,7 +14,7 @@ export const geoUsCanadaBuyers: Insight = {
   relatedTerms: ['term-geo', 'term-hreflang', 'term-entity'],
   relatedLessons: ['lesson-c-1-1', 'lesson-c-3-1'],
   zh: {
-    title: '面向美国、加拿大采购商做 GEO，要注意什么？',
+    title: '2026 年面向美国、加拿大采购商做 GEO，要注意什么？',
     description:
       '面向北美采购商做 GEO，要看渠道、认证、语言单位和采购条件：Thomasnet 等目录与展会、UL 与 CSA 认证、魁北克法语、原产地、关税、交期与库存。不涉及具体税率。',
     answer:
@@ -91,7 +91,8 @@ export const geoUsCanadaBuyers: Insight = {
     ],
   },
   en: {
-    title: 'GEO for US and Canadian buyers: what exporters should know',
+    title: 'GEO for US and Canadian buyers in 2026: what exporters should know',
+    seoTitle: 'GEO for US and Canadian buyers in 2026',
     description:
       'GEO for North American buyers: sourcing channels, certifications, units and Quebec French, plus origin, duties, lead time and local stock. No duty rates quoted.',
     answer:

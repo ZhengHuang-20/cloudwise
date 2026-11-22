@@ -14,7 +14,8 @@ export const howToMeasureGeoResults: Insight = {
   relatedTerms: ['term-geo', 'term-ai-crawlers'],
   relatedLessons: ['lesson-c-3-1', 'lesson-c-10-2'],
   zh: {
-    title: 'GEO 效果怎么衡量？提及率、推荐率、引用率与 AI 询盘',
+    title: 'GEO 效果怎么衡量？2026 年看提及率、推荐率、引用率与 AI 询盘',
+    seoTitle: '2026 年 GEO 效果怎么衡量？四个指标',
     description:
       'GEO 效果可以量化：提及率、推荐率、引用率看 AI 的回答，AI 询盘看业务结果。本文给出四个指标的定义与公式、问题集设计、测试方法、询盘追踪办法，并说明抽样测试的局限。',
     answer:
@@ -112,8 +113,8 @@ AI 带来的询盘，只能靠多种来源信息拼起来，没有单一的准�
     ],
   },
   en: {
-    title: 'How to measure GEO results: mention, recommendation, citation',
-    seoTitle: 'How to measure GEO results: four metrics',
+    title: 'How to measure GEO results in 2026: mention, recommendation, citation',
+    seoTitle: 'How to measure GEO results in 2026: four metrics',
     description:
       'Measure GEO with four metrics: mention, recommendation and citation rates plus AI-referred enquiries. Formulas, question design, test method and limits.',
     answer:
