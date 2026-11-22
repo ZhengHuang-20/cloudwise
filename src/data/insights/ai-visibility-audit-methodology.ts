@@ -14,7 +14,8 @@ export const aiVisibilityAuditMethodology: Insight = {
   relatedTerms: ['term-geo', 'term-ai-crawlers'],
   relatedLessons: ['lesson-c-10-2', 'lesson-c-3-1'],
   zh: {
-    title: 'AI 可见性测评怎么做？我们的测评方法、评分口径与局限',
+    title: 'AI 可见性测评怎么做？2026 版测评方法、评分口径与局限',
+    seoTitle: 'AI 可见性测评怎么做？2026 版方法与评分口径',
     description:
       '云端智荐 AI 可见性测评的完整方法：如何抓取官网、如何以海外买家身份向 ChatGPT、Perplexity、Gemini 提问，提及率、引用率、品牌认知与官网可读性怎么计分，以及测评的局限。',
     answer:
@@ -89,8 +90,8 @@ export const aiVisibilityAuditMethodology: Insight = {
     ],
   },
   en: {
-    title: 'How does an AI visibility audit work? Our method, scoring and limits',
-    seoTitle: 'How an AI visibility audit works: method, scoring, limits',
+    title: 'How does an AI visibility audit work? Our 2026 method, scoring and limits',
+    seoTitle: 'How an AI visibility audit works: our 2026 method',
     description:
       'The full method behind the ChinGEO AI visibility audit: how we check your website, how we ask ChatGPT, Perplexity and Gemini questions as an overseas buyer, how mention, citation, brand knowledge and site readability are scored, and the limits.',
     answer:

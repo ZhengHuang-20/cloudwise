@@ -14,9 +14,9 @@ export const llmsTxtGuide: Insight = {
   relatedTerms: ['term-geo', 'term-ai-crawlers'],
   relatedLessons: ['lesson-a-1-2'],
   zh: {
-    title: 'llms.txt 是什么，企业官网要不要做？',
+    title: 'llms.txt 是什么，2026 年企业官网还要不要做？',
     description:
-      'llms.txt 是放在网站根目录、写给大模型看的 Markdown 文件。本文说明它的来历、格式与写法，目前哪些平台会读、哪些不会，以及它在 GEO 里应该放在什么位置。',
+      'llms.txt 是放在网站根目录、写给大模型看的 Markdown 文件。本文说明它的来历、格式与写法，截至 2026 年哪些平台会读、哪些不会，以及它在 GEO 里应该放在什么位置。',
     answer:
       'llms.txt 是放在网站根目录（/llms.txt）的 Markdown 文件，用一段简介加若干链接列表，告诉大模型“这个网站是什么、最重要的内容在哪”。它由 Answer.AI 的 Jeremy Howard 在 2024 年 9 月提出，至今仍是社区提议而非正式标准，主流 AI 平台也没有公开确认会在回答时读取它。做一份成本很低，可以做，但它替代不了服务端渲染、结构化数据和第三方信源。',
     body: `## 它解决什么问题
@@ -74,9 +74,10 @@ export const llmsTxtGuide: Insight = {
     ],
   },
   en: {
-    title: 'What is llms.txt, and does your company website need one?',
+    title: 'What is llms.txt, and does your company website need one in 2026?',
+    seoTitle: 'What is llms.txt, and do you need one in 2026?',
     description:
-      'llms.txt is a Markdown file at the root of a website, written for large language models. Where it came from, how to format it, which platforms read it today and which do not, and where it belongs in a GEO plan.',
+      'llms.txt is a Markdown file at the root of a website, written for large language models. Where it came from, how to format it, which platforms read it as of 2026 and which do not, and where it belongs in a GEO plan.',
     answer:
       'llms.txt is a Markdown file at the root of a website (/llms.txt) that uses a short summary and lists of links to tell language models what the site is and where its most important content lives. It was proposed by Jeremy Howard of Answer.AI in September 2024 and is still a community proposal rather than a formal standard; no major AI platform has publicly confirmed reading it when answering. It is cheap to add, so it is worth doing, but it cannot replace server-side rendering, structured data or third-party sources.',
     body: `## The problem it solves

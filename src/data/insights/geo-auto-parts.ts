@@ -14,8 +14,8 @@ export const geoAutoParts: Insight = {
   relatedTerms: ['term-structured-data', 'term-entity', 'term-ai-crawlers'],
   relatedLessons: ['lesson-c-3-1', 'lesson-b-1-3'],
   zh: {
-    title: '汽车零部件企业怎么做 GEO？技术实现与注意事项',
-    seoTitle: '汽车零部件企业 GEO：技术实现与注意事项',
+    title: '汽车零部件企业怎么做 GEO？2026 年技术实现与注意事项',
+    seoTitle: '汽车零部件企业 GEO 指南（2026）：实现与注意事项',
     description:
       '汽车零部件企业怎么做出海 GEO：OE 对照与适配车型数据、ACES / PIES 与 TecDoc、IATF 16949 与 E-mark 怎么公开，以及商标与适配错误的注意事项。',
     answer:
@@ -104,8 +104,8 @@ IATF 16949 证书可以在 IATF 的全球监督数据库中查询，证书编号
     ],
   },
   en: {
-    title: 'GEO for auto parts manufacturers: implementation and pitfalls',
-    seoTitle: 'GEO for auto parts manufacturers: how to implement it',
+    title: 'GEO for auto parts manufacturers in 2026: implementation and pitfalls',
+    seoTitle: 'GEO for auto parts manufacturers: a 2026 guide',
     description:
       'How auto parts makers get cited by AI: OE cross references and fitment data, ACES / PIES and TecDoc, IATF 16949 and E-mark, plus trademark pitfalls.',
     answer:

@@ -14,8 +14,8 @@ export const geoElectronicsPcb: Insight = {
   relatedTerms: ['term-structured-data', 'term-entity', 'term-eeat'],
   relatedLessons: ['lesson-c-3-1', 'lesson-a-1-2'],
   zh: {
-    title: 'PCB 与电子制造企业怎么做 GEO？技术实现与注意事项',
-    seoTitle: 'PCB 与电子制造企业 GEO：实现与注意事项',
+    title: 'PCB 与电子制造企业怎么做 GEO？2026 年技术实现与注意事项',
+    seoTitle: 'PCB 与电子制造企业 GEO 指南（2026）',
     description:
       'PCB 与电子制造企业怎么做出海 GEO：工艺能力表怎么写、IPC 与 UL 资质、RoHS / REACH 合规，以及量产能力与打样能力为什么要分开写。',
     answer:
@@ -109,8 +109,8 @@ UL 的认证可以在 UL 的公开认证数据库中按档案号查询，档案�
     ],
   },
   en: {
-    title: 'GEO for PCB and electronics manufacturers: implementation and pitfalls',
-    seoTitle: 'GEO for PCB and electronics manufacturers',
+    title: 'GEO for PCB and electronics manufacturers in 2026: implementation and pitfalls',
+    seoTitle: 'GEO for PCB and electronics manufacturers: a 2026 guide',
     description:
       'How PCB, PCBA and EMS makers get cited by AI: capability tables, IPC and UL credentials, RoHS / REACH, and why volume and prototype capability differ.',
     answer:

@@ -14,8 +14,8 @@ export const geoIndustrialMachinery: Insight = {
   relatedTerms: ['term-structured-data', 'term-entity', 'term-eeat'],
   relatedLessons: ['lesson-c-3-1', 'lesson-a-1-2'],
   zh: {
-    title: '机械设备与机床企业怎么做 GEO？技术实现与注意事项',
-    seoTitle: '机械设备与机床企业 GEO：实现与注意事项',
+    title: '机械设备与机床企业怎么做 GEO？2026 年技术实现与注意事项',
+    seoTitle: '机械设备与机床企业 GEO 指南（2026）',
     description:
       '机械设备与机床企业怎么做出海 GEO：买家问 AI 的问题、精度与参数怎么写、CE 与欧盟机械法规、售后与备件页面，以及结构化数据和常见扣分项。',
     answer:
@@ -103,8 +103,8 @@ AI 会挑能说明**加工能力、合规与服务**的来源。只写“高精�
     ],
   },
   en: {
-    title: 'GEO for machinery and machine tool makers: implementation and pitfalls',
-    seoTitle: 'GEO for machinery and machine tool manufacturers',
+    title: 'GEO for machinery and machine tool makers in 2026: implementation and pitfalls',
+    seoTitle: 'GEO for machinery and machine tool makers: a 2026 guide',
     description:
       'How machinery and CNC makers get cited by AI: buyer questions, accuracy and specs, CE and the EU Machinery Regulation, service pages and structured data.',
     answer:

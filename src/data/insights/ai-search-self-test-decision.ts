@@ -20,7 +20,8 @@ export const aiSearchSelfTestDecision: Insight = {
   relatedTerms: ['term-geo', 'term-zero-click'],
   relatedLessons: ['lesson-c-1-1'],
   zh: {
-    title: 'AI 搜索要不要研究？半天自测，按结果决定下一步',
+    title: '2026 年 AI 搜索要不要研究？半天自测，按结果决定下一步',
+    seoTitle: '2026 年要不要研究 AI 搜索？半天自测再决定',
     description:
       '要不要研究 AI 搜索？准备 5 个英文问题，在 ChatGPT 和 Gemini 各问 3 遍，用三个数判断。附问题模板、记录表和三档判读门槛。',
     answer:
@@ -154,7 +155,8 @@ export const aiSearchSelfTestDecision: Insight = {
     ],
   },
   en: {
-    title: 'Should you invest in AI search? A half-day self-test decides',
+    title: 'Should you invest in AI search in 2026? A half-day self-test decides',
+    seoTitle: 'AI search in 2026: a half-day self-test to decide',
     description:
       'Ask 5 English questions, 3 times each in ChatGPT and Gemini, and read three numbers to decide. Includes question templates, a log sheet and three result bands.',
     answer:
