@@ -98,6 +98,13 @@ export interface Config {
   smsEndpoint: string;
   /** 每个号码每天（北京时间）最多收到几条新线索短信，超出的只记日志不发送 */
   smsDailyLimit: number;
+
+  /** Vercel Cron 的密钥：Vercel 调用定时任务时带 Authorization: Bearer <CRON_SECRET>；为空时定时接口拒绝执行 */
+  cronSecret: string;
+  /** 定期自测的目标（域名或品牌名，逗号分隔）。官网自己的域名总会被测，这里填额外的目标，如案例客户的官网 */
+  monitorTargets: string[];
+  /** 同一目标两次自测的最短间隔（天） */
+  monitorIntervalDays: number;
 }
 
 let cached: Config | null = null;
@@ -137,6 +144,13 @@ export function config(): Config {
     smsTemplateLead: env('ALIYUN_SMS_TEMPLATE_LEAD'),
     smsEndpoint: env('ALIYUN_SMS_ENDPOINT', 'dysmsapi.aliyuncs.com'),
     smsDailyLimit: envInt('SMS_DAILY_LIMIT', 30),
+
+    cronSecret: env('CRON_SECRET'),
+    monitorTargets: env('MONITOR_TARGETS')
+      .split(/[,，\n]/)
+      .map((s) => s.trim())
+      .filter(Boolean),
+    monitorIntervalDays: envInt('MONITOR_INTERVAL_DAYS', 7),
   };
   return cached;
 }

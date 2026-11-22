@@ -9,7 +9,8 @@
     "start": "next start --port 3000",
     "lint": "tsc --noEmit",
     "db:migrate": "tsx scripts/migrate.ts",
-    "create-admin": "tsx scripts/create-admin.ts"
+    "create-admin": "tsx scripts/create-admin.ts",
+    "audit-stats": "tsx scripts/audit-stats.ts"
   },
   "dependencies": {
     "@node-rs/argon2": "^2.0.2",
