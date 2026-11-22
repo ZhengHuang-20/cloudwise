@@ -24,6 +24,12 @@ export interface CaseStudy {
   dataScopeStatement: string; // 口径声明
   /** 可选：读者可以自己点开核对的公开链接（客户官网、评测工具等），只放真实存在的地址 */
   evidenceLinks?: { label: string; url: string }[];
+  /**
+   * 可选：带日期的 AI 回答记录，证明「某天在某个 AI 平台问某个买家问题时，回答提到了客户」。
+   * 只登记真实发生过、留有截图的记录，不改写回答内容；截图放 public/cases/<案例 slug>/，写站内路径。
+   * 英文覆盖层可以只翻译 question 与 result，日期、平台、截图沿用中文数据（按顺序对应）。
+   */
+  aiChecks?: AiCheck[];
   relatedLessons: string[];
   reusableExperience: string[];
   testimonial?: {
@@ -31,6 +37,19 @@ export interface CaseStudy {
     author: string;
     title: string;
   };
+}
+
+export interface AiCheck {
+  /** 提问日期 YYYY-MM-DD */
+  date: string;
+  /** AI 平台，如 ChatGPT、Perplexity、Gemini、Google AI Overviews、豆包 */
+  platform: string;
+  /** 原样记录的提问 */
+  question: string;
+  /** 回答里与客户有关的结果，如「推荐的 5 家供应商中排第 2，并引用了官网产品页」 */
+  result: string;
+  /** 截图的站内路径，如 /cases/ak-medical/2026-11-20-chatgpt.png */
+  screenshot?: string;
 }
 
 export interface IndustrySolution {
@@ -202,6 +221,7 @@ const localizeCase = (item: CaseStudy): CaseStudy => {
     results: { ...item.results, metrics: en.results.metrics, directOutcome: en.results.directOutcome },
     dataScopeStatement: en.dataScopeStatement,
     evidenceLinks: en.evidenceLinks ?? item.evidenceLinks,
+    aiChecks: item.aiChecks?.map((check, i) => ({ ...check, ...en.aiChecks?.[i] })),
     reusableExperience: en.reusableExperience,
     testimonial: en.testimonial ?? item.testimonial,
   };

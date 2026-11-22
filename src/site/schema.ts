@@ -15,8 +15,9 @@ import { SHOW_FDE } from '../lib/features';
 import { VIDEO_META, videoPoster } from '../data/videoMeta';
 import { CONTACTS } from '../data/contactsData';
 import { AUTHORS, type AuthorId } from '../data/authors';
-import { BILIBILI_VIDEOS, BRAND, COMPANY, SAME_AS, SITE_URL, TAGLINE, absoluteUrl } from '../lib/site';
+import { ALTERNATE_NAMES, BILIBILI_VIDEOS, BRAND, COMPANY, DISAMBIGUATION, SAME_AS, SITE_URL, TAGLINE, absoluteUrl } from '../lib/site';
 import { routeMeta } from './meta';
+import { ogImagePath } from './ogPath';
 import {
   courseSlug,
   findCase,
@@ -52,7 +53,7 @@ function organization(lang: Lang): Json {
     '@type': 'Organization',
     '@id': ORG_ID,
     name: pick(BRAND, lang),
-    alternateName: lang === 'en' ? BRAND.zh : BRAND.en,
+    alternateName: ALTERNATE_NAMES.filter((n) => n !== pick(BRAND, lang)),
     legalName: COMPANY.legalName.zh,
     taxID: COMPANY.creditCode,
     identifier: { '@type': 'PropertyValue', propertyID: '统一社会信用代码', value: COMPANY.creditCode },
@@ -68,6 +69,8 @@ function organization(lang: Lang): Json {
     url: SITE_URL,
     logo: { '@type': 'ImageObject', url: absoluteUrl('/brand/logo-mark.png'), width: 235, height: 204 },
     description: pick(TAGLINE, lang),
+    disambiguatingDescription: pick(DISAMBIGUATION, lang),
+    knowsLanguage: ['zh-CN', 'en'],
     knowsAbout: [
       'Generative Engine Optimization (GEO)',
       'Answer Engine Optimization (AEO)',
@@ -237,7 +240,7 @@ function mainEntities(route: Route, lang: Lang, pageUrl: string): Json[] {
           about: { '@type': 'Organization', name: c.clientName },
           articleSection: lang === 'en' ? 'Case studies' : '出海案例',
           dateModified: routeModified(route),
-          image: absoluteUrl('/og.png'),
+          image: absoluteUrl(ogImagePath(route, lang)),
           author: orgRef,
           publisher: orgRef,
           inLanguage: inLanguage(lang),
@@ -256,7 +259,7 @@ function mainEntities(route: Route, lang: Lang, pageUrl: string): Json[] {
           description: s.description,
           articleSection: lang === 'en' ? 'Industry solutions' : '行业方案',
           dateModified: routeModified(route),
-          image: absoluteUrl('/og.png'),
+          image: absoluteUrl(ogImagePath(route, lang)),
           author: orgRef,
           publisher: orgRef,
           inLanguage: inLanguage(lang),
@@ -368,7 +371,7 @@ function mainEntities(route: Route, lang: Lang, pageUrl: string): Json[] {
           articleSection: pick(INSIGHT_TOPIC_LABEL[item.topic], lang),
           wordCount: wordCount(`${content.answer} ${content.body}`, lang),
           mainEntityOfPage: pageUrl,
-          image: absoluteUrl('/og.png'),
+          image: absoluteUrl(ogImagePath(route, lang)),
         },
         person(item.author, lang),
         faqPage(pageUrl, content.faqs),
@@ -466,7 +469,7 @@ export function pageSchema(route: Route, lang: Lang): Json {
       dateModified: routeModified(route),
       isPartOf: { '@id': WEBSITE_ID },
       publisher: orgRef,
-      primaryImageOfPage: { '@type': 'ImageObject', url: absoluteUrl('/og.png'), width: 1200, height: 630 },
+      primaryImageOfPage: { '@type': 'ImageObject', url: absoluteUrl(ogImagePath(route, lang)), width: 1200, height: 630 },
       about: route.kind === 'home' || route.kind === 'about' ? orgRef : undefined,
       mainEntity: main ? { '@id': main } : undefined,
       breadcrumb: trail.length ? { '@id': `${pageUrl}#breadcrumb` } : undefined,

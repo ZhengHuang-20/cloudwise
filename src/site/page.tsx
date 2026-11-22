@@ -9,6 +9,7 @@ import { hasMarkdown, markdownPath } from './markdown';
 import { feedPath } from './feed';
 import { RouteView } from './RouteView';
 import { pageData } from './pageData';
+import { ogImagePath } from './ogPath';
 
 /**
  * 官网页面的服务端入口：app/(zh)/[[...slug]] 与 app/(en)/en/[[...slug]] 都只是转发到这里。
@@ -94,10 +95,10 @@ export function siteMetadata(lang: Lang, slug?: string[]): Metadata {
       description: meta.description,
       locale: lang === 'en' ? 'en_US' : 'zh_CN',
       alternateLocale: hasEnglish(route) ? [lang === 'en' ? 'zh_CN' : 'en_US'] : undefined,
-      images: [{ url: '/og.png', width: 1200, height: 630, alt: lang === 'en' ? BRAND.en : BRAND.zh }],
+      images: [{ url: ogImagePath(route, lang), width: 1200, height: 630, type: 'image/png', alt: ogTitle }],
       ...(meta.article ? { publishedTime: meta.article.publishedTime, modifiedTime: meta.article.modifiedTime } : {}),
     },
-    twitter: { card: 'summary_large_image', title: ogTitle, description: meta.description, images: ['/og.png'] },
+    twitter: { card: 'summary_large_image', title: ogTitle, description: meta.description, images: [ogImagePath(route, lang)] },
   };
 }
 

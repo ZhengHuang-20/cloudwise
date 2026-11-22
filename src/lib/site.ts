@@ -30,6 +30,19 @@ export const TAGLINE = SHOW_FDE
     };
 
 /**
+ * 实体消歧：品牌名里的 GEO 容易被理解成地理信息，ChinGEO 也和测绘展会 ChinterGEO、中国地质工程集团等名称相近，
+ * 英文名还和北京的云智慧（Cloudwise）相近。Organization.disambiguatingDescription、llms.txt 与关于页共用这段话，
+ * 帮助搜索引擎与 AI 把本站识别成一家 GEO 服务商。全网资料的统一写法见 docs/entity-profiles.md。
+ */
+export const DISAMBIGUATION = {
+  zh: '云端智荐（ChinGEO）是位于深圳的中国 B2B 出海 GEO 服务商，这里的 GEO 指生成式引擎优化（Generative Engine Optimization），不是地理信息。云端智荐与测绘地理信息展会 ChinterGEO、中国地质工程集团（China Geo-Engineering）以及北京的 IT 运维公司云智慧（Cloudwise）均无关联。',
+  en: 'ChinGEO (云端智荐) is a Shenzhen-based GEO agency for Chinese B2B exporters. GEO here means generative engine optimization, not geography or geospatial data. ChinGEO is not affiliated with the ChinterGEO surveying and mapping exhibition, China Geo-Engineering Corporation, or the Beijing IT operations company Cloudwise (云智慧).',
+};
+
+/** 品牌的其他写法（Organization.alternateName）：各平台资料出现的写法都列在这里，帮助 AI 把它们归到同一个实体 */
+export const ALTERNATE_NAMES = ['云端智荐', 'ChinGEO', '云端智荐（ChinGEO）', 'ChinGEO 云端智荐', 'chingeo.com'];
+
+/**
  * 公司主体信息，以营业执照为准：Organization schema、页脚、关于页、llms.txt 共用。
  * 英文名与英文地址是译名（执照上只有中文），schema 的 legalName 与 address 一律用中文原文。
  */
@@ -93,6 +106,6 @@ export const BILIBILI_VIDEOS: Record<string, string> = {
  * 文章以外的页面内容最近一次更新的日期（YYYY-MM-DD）：sitemap 的 lastModified、JSON-LD 的 dateModified、
  * Markdown 版页面共用。改了页面内容（服务、案例、课程、术语、首页等）记得更新。
  */
-export const CONTENT_UPDATED = '2026-11-20';
+export const CONTENT_UPDATED = '2026-11-22';
 
 export const absoluteUrl = (path: string) => `${SITE_URL}${path === '/' ? '' : path}`;

@@ -4,7 +4,7 @@ import { Check, ChevronRight } from 'lucide-react';
 import { PageHeader } from '../components/ui/PageHeader';
 import { SERVICE_IDENTITY } from '../components/ui/serviceIdentity';
 import { FdeBuildLayers } from '../components/FdeBuildLayers';
-import { SERVICE_COUNT_CN, SERVICE_COUNT_EN } from '../lib/features';
+import { SERVICE_COUNT_CN, SERVICE_COUNT_EN, SHOW_FDE } from '../lib/features';
 import { useLang } from '../context/LanguageContext';
 import { SERVICES as SUBSYSTEMS } from '../data/servicesData';
 import { useSite } from '../site/SiteContext';
@@ -25,10 +25,17 @@ export const ServicesView: React.FC = () => {
       <PageHeader
         eyebrow={t(`${SERVICE_COUNT_CN}项服务`, `${SERVICE_COUNT_EN} services`)}
         title={t(`${SERVICE_COUNT_CN}项服务，各解决一个卡点`, `${SERVICE_COUNT_EN} services, each solving one bottleneck`)}
-        intro={t(
-          `${SERVICE_COUNT_CN}项服务共用同一套企业资料：AI 推荐（GEO）、FDE 驻场、独立站、搜索、客服和内部系统，各解决一个卡点，内容可以互相复用。`,
-          'The services share one set of company material: AI recommendations (GEO), FDE on-site engineering, websites, search, customer service and internal systems. Each one solves a single bottleneck, and the content is reused across them.'
-        )}
+        intro={
+          SHOW_FDE
+            ? t(
+                `${SERVICE_COUNT_CN}项服务共用同一套企业资料：AI 推荐（GEO）、FDE 驻场、独立站、搜索、客服和内部系统，各解决一个卡点，内容可以互相复用。`,
+                'The services share one set of company material: AI recommendations (GEO), FDE on-site engineering, websites, search, customer service and internal systems. Each one solves a single bottleneck, and the content is reused across them.'
+              )
+            : t(
+                `${SERVICE_COUNT_CN}项服务共用同一套企业资料：AI 推荐（GEO）、独立站、搜索和客服，各解决一个卡点，内容可以互相复用。`,
+                'The services share one set of company material: AI recommendations (GEO), websites, search and customer service. Each one solves a single bottleneck, and the content is reused across them.'
+              )
+        }
       >
         {/* 页内索引 */}
         <nav aria-label={t('服务索引', 'Service index')} className="flex flex-wrap justify-center gap-2">

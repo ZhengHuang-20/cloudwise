@@ -131,6 +131,34 @@ export const CaseDetailView: React.FC<{ slug: string }> = ({ slug }) => {
             </figure>
           )}
 
+          {/* 带日期的 AI 回答记录：没有登记时整块不显示 */}
+          {currentCase.aiChecks && currentCase.aiChecks.length > 0 && (
+            <section className="mt-10 border-t border-separator pt-10" aria-labelledby="ai-checks-title">
+              <h2 id="ai-checks-title" className="text-title-3">
+                {t('AI 回答记录', 'What AI assistants answered')}
+              </h2>
+              <p className="mt-2 max-w-3xl text-body text-label-secondary">
+                {t('按日期记录的真实提问与回答，附截图。AI 的回答会变化，以记录日期为准。', 'Real questions and answers, recorded by date with screenshots. AI answers change over time, so each record holds for its date.')}
+              </p>
+              <ul className="mt-6 space-y-4">
+                {currentCase.aiChecks.map((check) => (
+                  <li key={`${check.date}-${check.platform}-${check.question}`} className="well">
+                    <p className="text-caption text-label-secondary tabular-nums">
+                      <time dateTime={check.date}>{check.date}</time> · {check.platform}
+                    </p>
+                    <p className="mt-2 text-body font-semibold">{check.question}</p>
+                    <p className="mt-1 text-body">{check.result}</p>
+                    {check.screenshot && (
+                      <a href={check.screenshot} target="_blank" rel="noopener" className="link mt-2 text-caption">
+                        {t('查看截图', 'View screenshot')}
+                      </a>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+
           <div className="mt-10 border-t border-separator pt-8">
             <h2 className="text-caption font-semibold text-label">{t('数据口径', 'Basis of the data')}</h2>
             <p className="mt-2 max-w-3xl text-caption text-label-secondary">{currentCase.dataScopeStatement}</p>

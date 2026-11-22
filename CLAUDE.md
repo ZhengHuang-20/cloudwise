@@ -4,9 +4,21 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 项目概述
 
-「云端智荐」（英文名 **ChinGEO**，正式域名 https://chingeo.com）—— 专注中国 B2B 出海 GEO 的服务商（GEO 是核心定位，独立站 / SEO / AI 客服 / FDE 驻场是配套的五项服务；对外不要再自称“AI 售前支持系统”或“能力样板间”，见 `src/lib/site.ts` 的 `TAGLINE`），同时承载客户后台（访问统计、线索）。技术栈：**Next.js 16（App Router）+ React 19 + TypeScript 7 + Tailwind CSS v4**（登录页与客户后台另用 **antd 6**），部署在 **Vercel**，数据库为 **Neon Postgres**；AI 能力来自服务端调用的 Gemini（REST）。界面默认为简体中文，官网同时提供英文（见下文「多语言」），新增文案需同时写中英文。
+「云端智荐」（英文名 **ChinGEO**，正式域名 https://chingeo.com）—— 专注中国 B2B 出海 GEO 的服务商（GEO 是核心定位，独立站 / SEO / AI 客服是配套服务，共四项；FDE 驻场已下线，见下文「FDE 展示开关」；对外不要再自称“AI 售前支持系统”或“能力样板间”，见 `src/lib/site.ts` 的 `TAGLINE`），同时承载客户后台（访问统计、线索）。技术栈：**Next.js 16（App Router）+ React 19 + TypeScript 7 + Tailwind CSS v4**（登录页与客户后台另用 **antd 6**），部署在 **Vercel**，数据库为 **Neon Postgres**；AI 能力来自服务端调用的 Gemini（REST）。界面默认为简体中文，官网同时提供英文（见下文「多语言」），新增文案需同时写中英文。
 
-**站点定位已定，不得改动**：对外定位固定为「专注中国 B2B 出海 GEO 的服务商」（英文 *GEO specialist for Chinese B2B exporters*），GEO 是核心，独立站 / SEO / AI 客服 / FDE 是配套。定位只在 `src/lib/site.ts` 的 `TAGLINE` 维护，首页标题与描述（`src/site/meta.ts`）、关于页、页脚、首页 eyebrow、AI 顾问知识库（`src/server/knowledge.ts`）、`metadata.json` 都与它保持一致。除非用户明确要求改定位，修改网站其他内容（文案、服务、案例、文章、SEO 等）时**不要**改动、弱化或重新措辞这些位置的定位表述，也不要再引入「AI 售前支持系统」「能力样板间」「售前系统」这类自我定位。新增页面或文案涉及“我们是谁”时，沿用此定位。（站内「AI 售前顾问」是聊天功能名称，不属于定位，可保留。）
+**站点定位已定，不得改动**：对外定位固定为「专注中国 B2B 出海 GEO 的服务商」（英文 *GEO specialist for Chinese B2B exporters*），GEO 是核心，独立站 / SEO / AI 客服是配套（FDE 已下线，`TAGLINE` 随 `SHOW_FDE` 自动去掉 FDE）。定位只在 `src/lib/site.ts` 的 `TAGLINE` 维护，首页标题与描述（`src/site/meta.ts`）、关于页、页脚、首页 eyebrow、AI 顾问知识库（`src/server/knowledge.ts`）、`metadata.json` 都与它保持一致。除非用户明确要求改定位，修改网站其他内容（文案、服务、案例、文章、SEO 等）时**不要**改动、弱化或重新措辞这些位置的定位表述，也不要再引入「AI 售前支持系统」「能力样板间」「售前系统」这类自我定位。新增页面或文案涉及“我们是谁”时，沿用此定位。（站内「AI 售前顾问」是聊天功能名称，不属于定位，可保留。）
+
+**真实性红线（最高优先级，适用于网站正文、AI 顾问的提示词与 fallback、llms.txt、结构化数据、分享图、对外资料与文档里所有写给外部看的内容）**：我们卖的是「让 AI 信任你」，站内任何一条虚假或夸大的信息都会直接毁掉这件事。
+
+1. **不编造**：数据、客户、案例、成果、客户评价与引语、资质与荣誉（上市、“小巨人”、认证、奖项、合作伙伴）、媒体报道、文件或报告名称、平台规则，一律不编。不确定的不写，先问用户。
+2. **每个数字都要有出处**：外部数据附原文链接；客户数据写明来源系统（GA4、CRM、Search Console 等）、时间段和口径，百分比、倍数要说得出基数与期间。找不到出处的改成不带数字的说法。
+3. **客户事实只来自用户提供的材料**，并登记在 [`docs/fact-check.md`](./docs/fact-check.md)（出处与核实状态）。新增或修改案例、资质、成果、评价前先查登记表；状态不是「已核实」的说法不要再扩散到新的页面、课程、术语、文章或 AI 顾问里。
+4. **引用只写真实存在的东西**：AI 顾问的 `sourceCitations`、文章与课程里的「来源」只写站内真实页面或可访问的公开文件，不起虚构的文件名（如《××标准》《××白皮书》）。
+5. **不用绝对化、无法证明的用语**：最、第一、唯一、龙头、顶级、权威、首选、稳居、保证、确保、源源不断等（《广告法》第九条也禁止绝对化用语）。第三方的排名或评价只在有原文链接时引用，并写明出处。
+6. **不承诺结果**：不写“保证 AI 推荐”“保证排名”；描述效果用“提高机会”，并说明会复测。
+7. **不写技术上得不到的结论**：例如 GA4 无法知道访客的职业，就不能写“采购工程师来访”；一次测试的结果不能写成“持续”“稳定”。
+8. **示例与演示数据必须标明“示例”**；测试时临时加的数据，提交前删除并确认（`grep` 一遍）。
+9. 发现疑似虚假、过时或无法核实的内容时，不要自己“润色”成更可信的样子，列出来问用户，确认前不扩散。
 
 **任何 UI 改动前先读 [`DESIGN.md`](./DESIGN.md)**（设计规范：token、组件、页面模板、文案与无障碍规则），改动后按其第 8 节评审清单自查。后台（`/login`、`/console/*`）用 antd，规则见 DESIGN.md 第 10 节；官网页面不要引入 antd。
 
@@ -22,6 +34,7 @@ bun run build        # 先跑数据库迁移（未配置数据库时跳过），
 bun run start        # next start（需先 build）
 bun run db:migrate   # 只跑迁移（db/migrations/*.sql）
 bun run create-admin <email>   # 创建管理员并打印一次性初始密码
+bun run audit-stats [--since YYYY-MM-DD --until YYYY-MM-DD --min 5 --out 文件]   # 测评数据的匿名聚合（原创数据报告素材，只读）
 ```
 
 - 项目**没有测试框架和测试用例**；改动后用 `bun run lint` + `bun run build` 验证，涉及 API 时启动后 `curl localhost:3000/api/health`。UI 改动还应在 390px 与 1440px 两个宽度下截图检查（环境里有全局 Playwright，页面直接用路径打开，如 `http://localhost:3000/services/geo`）。涉及页面结构时再用 `curl` 看一眼服务端 HTML：正文、`<title>`、canonical、hreflang 与 JSON-LD 都应该在里面。
@@ -33,7 +46,7 @@ bun run create-admin <email>   # 创建管理员并打印一次性初始密码
 
 ### 部署（Vercel + Neon）
 
-- Vercel 通过 Git 集成自动部署（push 到 `main` 即生产部署，其他分支为预览部署），框架自动识别为 Next.js，不需要 `vercel.json`。仓库里没有 Dockerfile、服务器部署脚本或 GitHub Actions 部署工作流。
+- Vercel 通过 Git 集成自动部署（push 到 `main` 即生产部署，其他分支为预览部署），框架自动识别为 Next.js；`vercel.json` 只用来声明 Cron（每天调用 `/api/cron/self-audit`，见下文「AI 可见性测评」）。仓库里没有 Dockerfile、服务器部署脚本或 GitHub Actions 部署工作流。
 - 数据库在 Vercel 项目里连接 Neon（Storage / Integrations），会自动注入 `DATABASE_URL`（pooled，运行时用）与 `DATABASE_URL_UNPOOLED`（直连，迁移用）；连接时设了变量前缀的（如 `STORAGE_DATABASE_URL`）也能识别（`src/server/config.ts` 的 `databaseUrls`）。**生产环境必须连上数据库**，否则 `/api/health` 的 `dbStatus` 为 `unconfigured`，账号后台不可用。若开启 Neon 的预览分支，每个预览部署有独立的数据库分支。
 - 构建命令就是 `bun run build`：先执行 `scripts/migrate.ts`（advisory lock 防并发，每个迁移文件一个事务；迁移失败会让部署失败），再 `next build`。设置 `SKIP_DB_MIGRATE=1` 可跳过迁移。迁移后若设置了 `CW_ADMIN_EMAIL` / `CW_ADMIN_PASSWORD`，会创建首个管理员（只创建不修改）。`next build` 之后执行 `scripts/indexnow.ts`：只在 `VERCEL_ENV=production` 时把全部可索引地址推送给 IndexNow（密钥文件 `public/<INDEXNOW_KEY>.txt`，密钥在 `src/lib/site.ts`），配了 `BAIDU_PUSH_TOKEN` 时同时推送百度普通收录；失败只打日志，不影响部署，`SKIP_INDEXNOW=1` 跳过。
 - 其余运行时配置（Gemini / OpenRouter / OpenAI / Perplexity 的 key 与模型、`GEMINI_AUDIT_DAILY_LIMIT`、`SHOW_FDE`、`NEXT_PUBLIC_SITE_URL`、各站长平台验证码）都在 Vercel 的 Environment Variables 里配置，清单见 `.env.example`。改了环境变量要重新部署才生效（页面是构建时静态生成的）。
@@ -46,7 +59,7 @@ bun run create-admin <email>   # 创建管理员并打印一次性初始密码
 - `src/server/` 只在服务端使用，不要从前端代码 import：`config.ts`（环境变量）、`db.ts`（`pg` 连接池 + `attachDatabasePool`，`query` / `queryOne` / `exec` / `tx`；BIGINT 已解析为 number）、`http.ts`（`route()` 包装、`json` / `apiError`、`readJSON`、`clientIP`）、`auth.ts`（argon2id、会话、`authed()` 鉴权包装、`siteAccess`）、`ratelimit.ts`、`sms.ts`（阿里云短信）、`leadNotify.ts`（新线索短信提醒）、`channels.ts`（访问来源归类）、`useragent.ts`（设备 / 浏览器 / 系统 / 爬虫识别）、`vercel.ts`（读取 Vercel Web Analytics，数据概览以它为准）、`gemini.ts`、`knowledge.ts`、`engines.ts`、`audit*.ts`、`migrate.ts`。
 - 错误响应统一为 `{ error: 中文说明, code }`，前端 `src/lib/api.ts` 依赖这个格式。处理函数里 `throw new HttpError(...)` 或直接 `return apiError(...)`；其他异常由 `route()` 记日志并返回 500。
 - **Serverless 约束**：函数实例之间不共享内存（创建测评的 POST 与轮询的 GET 常落在不同实例），所以限流计数（`rate_limits` 表）、测评任务状态（`audits` 表）都放数据库；测评必须配置数据库（联系方式要入库，未配置时 POST 返回 503），所以不再有进程内的测评实现，任务状态一律走数据库。不要再引入只存内存、却需要跨请求一致的状态。
-- 接口：`GET /api/health`、`POST /api/gemini/chat`（AI 售前顾问）、`/api/auth/*`（登录、登出、me、改密）、`/api/sites`（我的站点）、`/api/admin/*`（公司、企业联系人、账号、站点、授权）、`/api/public/*`（采集、线索、测评）。
+- 接口：`GET /api/cron/self-audit`（Vercel Cron，需 `CRON_SECRET`）、`GET /api/health`、`POST /api/gemini/chat`（AI 售前顾问）、`/api/auth/*`（登录、登出、me、改密）、`/api/sites`（我的站点）、`/api/admin/*`（公司、企业联系人、账号、站点、授权）、`/api/public/*`（采集、线索、测评）。
 
 ### AI 售前顾问
 
@@ -69,6 +82,8 @@ bun run create-admin <email>   # 创建管理员并打印一次性初始密码
 - **企业联系人与新线索短信**（`src/server/sms.ts`、`leadNotify.ts`、`routes/orgContacts.ts`，迁移 `009_org_contacts_sms.sql`）：管理员在「客户公司」每行的「联系人」抽屉里登记联系人（姓名、职务、11 位大陆手机号，`org_contacts`），打开「新线索短信」的联系人会在该公司任一站点收到新线索时收到一条短信（公开线索接口与测评留资都会触发，入库后用 `after()` 在响应之后发送）。短信走阿里云短信服务（Dysmsapi `SendSms`，RPC + HMAC-SHA1 签名，不依赖 SDK），环境变量 `ALIYUN_ACCESS_KEY_ID` / `ALIYUN_ACCESS_KEY_SECRET` / `ALIYUN_SMS_SIGN_NAME` / `ALIYUN_SMS_TEMPLATE_LEAD` 四项配齐才发送（`/api/health` 的 `hasSms`）；模板变量固定为 `${sitename}`（站点名）、`${customer}`（称呼），属性都选「其他」，模板类型必须是「短信通知」。短信里不放线索的手机号：变量属性为「电话号码」时阿里云要求报备号码（引流信息），线索号码无法预先报备，改变量要同步 `leadSmsParams`（阿里云不允许用 email、mobile、nick、id、site 作变量名）。每次发送（含失败与跳过）写 `sms_logs`，抽屉里显示最近 50 条并可「测试」发送；每个号码每天（北京时间）最多 `SMS_DAILY_LIMIT`（默认 30）条。接口：`GET|POST /api/admin/organizations/{id}/contacts`、`PATCH|DELETE .../contacts/{contactId}`、`POST .../contacts/{contactId}/test`。
 
 ### AI 可见性测评（`src/server/audit.ts`、`auditSite.ts`、`auditStore.ts`、`engines.ts`，迁移 `003_audits.sql`）
+
+- **定期自测**（`src/server/routes/cron.ts`）：Vercel Cron 每天调用 `GET /api/cron/self-audit`（只认 `Authorization: Bearer <CRON_SECRET>`，未配置时 503），依次检查官网自己的域名与 `MONITOR_TARGETS`，第一个超过 `MONITOR_INTERVAL_DAYS` 天（默认 7）没有非失败测评的目标发起一次测评（每次最多一个，不写线索、不占公开额度），结果在后台「测评报告」按时间查看。`scripts/audit-stats.ts` 把真实测评做匿名聚合（每个目标取最后一次，排除自测目标，分组少于 `--min` 不输出），供季度报告使用。
 
 - `POST /api/public/audits {target, contactName, contactPhone}` 创建异步任务，`GET /api/public/audits/{id}` 轮询进度与报告。联系人姓名与 11 位手机号必填（`src/lib/contact.ts` 前后端共用校验），每次提交都写入 `audit_contacts`（迁移 `004_audit_contacts.sql`，包括复用已有报告的提交），只通过服务端写入、没有公开的读取接口；同时写入官网（`ANALYTICS_SITE_KEY` 对应的站点）的线索 `leads`（`leads.audit_id` 记录对应的测评任务，迁移 `007`；后台线索详情的「查看测评报告」经 `GET /api/sites/{id}/leads/{leadId}/audit` 读取，旧线索按留言里的目标回查测评，优先已完成的，没有则取最近一次），`message` 为「AI 可见性测评：<目标>」，来源页面取 Referer 的路径，站点未登记时不写入。POST 返回后测评用 Next 的 `after()` 在同一次函数调用里继续执行，受该路由 `maxDuration = 300` 限制：提问最晚在开始后 210 秒截止（未完成的记为超时），整个任务 280 秒内写完结果；超过 6 分钟没有进度更新的任务按「测评超时」失败处理。任务进度、提问日志与报告都写在 `audits` 表，所以轮询可以落在任意实例。
 - 输入可以是官网域名或品牌名称（`parseAuditInput`：像 ASCII 域名的按域名处理，否则当作 2～60 字的品牌名）；只给品牌名时第①步先用 Gemini 联网搜索查找官网（`resolveDomain`，排除平台、目录与社交网站），报告的 `domainSource` 标明 `input` / `resolved` / `none`，找不到官网时跳过官网检查、总分只按 AI 部分计算，用户输入的品牌名会加进别名用于匹配。
@@ -111,7 +126,7 @@ bun run create-admin <email>   # 创建管理员并打印一次性初始密码
 
 ### 静态内容
 
-课程、案例、术语、服务说明（`servicesData.ts`：五项服务的文案、详情页 SEO 标题与常见问题）、服务组合、GEO 洞察文章（`src/data/insights/`）都是 `src/data/*.ts` 中的类型化常量。原来的「模板与白皮书」因为没有可下载的文件已经删除，不要再加没有真实文件的下载项。对外联系人（姓名、职务、手机）只在 `contactsData.ts` 维护，页脚、方案空间、AI 顾问知识库与 chat fallback 都引用它，不要在别处写死电话。FDE 的方法论（标准化 → 信息化 → 智能化三层建设、每周“观察-原型-试用-沉淀”）集中在 `fdeData.ts`，服务页三层图使用它；课程 E、术语表和 `SYSTEM_KNOWLEDGE_INSTRUCTION` 中的同类表述要与之一致。方案规划页（`/configurator`）的周期、交付物与阶段排期由 `servicePackages.ts` 的 `buildProposalPlan` 生成。内容类改动优先改这些数据文件，不要改组件。
+案例可以登记带日期的 AI 回答记录 `aiChecks`（日期、平台、原样提问、结果、截图放 `public/cases/<slug>/`），案例页、`.md` 与 llms-full.txt 自动展示，只登记真实发生、有截图的记录。课程、案例、术语、服务说明（`servicesData.ts`：五项服务的文案、详情页 SEO 标题与常见问题）、服务组合、GEO 洞察文章（`src/data/insights/`）都是 `src/data/*.ts` 中的类型化常量。原来的「模板与白皮书」因为没有可下载的文件已经删除，不要再加没有真实文件的下载项。对外联系人（姓名、职务、手机）只在 `contactsData.ts` 维护，页脚、方案空间、AI 顾问知识库与 chat fallback 都引用它，不要在别处写死电话。FDE 的方法论（标准化 → 信息化 → 智能化三层建设、每周“观察-原型-试用-沉淀”）集中在 `fdeData.ts`，服务页三层图使用它；课程 E、术语表和 `SYSTEM_KNOWLEDGE_INSTRUCTION` 中的同类表述要与之一致。方案规划页（`/configurator`）的周期、交付物与阶段排期由 `servicePackages.ts` 的 `buildProposalPlan` 生成。内容类改动优先改这些数据文件，不要改组件。
 
 课程视频放在 `public/videos/<课程字母>/<课程编号>.mp4`，由 `coursesData.ts` 的 `Lesson.videoUrl` 引用，课程弹窗与课时页直接播放；同名 `.jpg` 是封面（`ffmpeg -ss 2 -i x.mp4 -frames:v 1 -vf scale=1280:-2 -q:v 5 x.jpg`），时长与上线日期登记在 `src/data/videoMeta.ts`（VideoObject 与 video sitemap 用），对应的 B 站 BV 号登记在 `src/lib/site.ts` 的 `BILIBILI_VIDEOS`。新增视频建议先压缩（画面流直接复制，音频转 96 kbps AAC，并加 `-movflags +faststart`），B 站投稿清单在 `docs/course-videos.md`（不要放进 `public/`，会被公开访问）。
 
@@ -119,10 +134,10 @@ bun run create-admin <email>   # 创建管理员并打印一次性初始密码
 
 - 方案与进度见 `docs/seo-geo-plan.md`；文章与术语的写作规范见 `docs/geo-content-guide.md`（先给答案、写清出处、中英文同时写、不写价格、不编造）。规范里还有选词与发布节奏（先看 SERP、一页一词、不设每日篇数上限但不发同质化内容、发布后观察 90 天）；被更正后把规则记入 `docs/seo-lessons.md`，写内容前先读它。
 - 「GEO 洞察」文章每篇一个文件 `src/data/insights/<slug>.ts`（类型 `types.ts`，在 `index.ts` 登记），正文是 `src/lib/markdown.ts` 支持的 Markdown 子集，站内链接写相对路径。页面、sitemap、llms.txt 与 Article / FAQPage 结构化数据自动生成。
-- 站点身份（正式域名、中英文品牌名、一句话定位、公司主体 `COMPANY`（营业执照上的全称、信用代码、成立日期、地址、邮箱）、官方账号 `OFFICIAL_ACCOUNTS` / `SAME_AS`）只在 `src/lib/site.ts` 维护；文章署名作者在 `src/data/authors.ts`（Insight 的 `author` 字段），文章页输出作者的 `Person` 并由 Article.author 引用其 @id；新开官方账号（知乎、公众号、头条号、LinkedIn 等）后加进 `SAME_AS`。
+- 站点身份（正式域名、中英文品牌名、一句话定位、实体消歧说明 `DISAMBIGUATION` 与其他写法 `ALTERNATE_NAMES`（进入 Organization 的 `disambiguatingDescription` / `alternateName`、关于页与 llms.txt）、公司主体 `COMPANY`（营业执照上的全称、信用代码、成立日期、地址、邮箱）、官方账号 `OFFICIAL_ACCOUNTS` / `SAME_AS`）只在 `src/lib/site.ts` 维护；文章署名作者在 `src/data/authors.ts`（Insight 的 `author` 字段），文章页输出作者的 `Person` 并由 Article.author 引用其 @id；新开官方账号（知乎、公众号、头条号、LinkedIn 等）后加进 `SAME_AS`；各平台资料的统一写法见 `docs/entity-profiles.md`。
 - `app/robots.ts` 明确放行搜索引擎与 AI 爬虫（含 Bytespider、Doubaobot 等字节系爬虫），只挡 `/api/`。不要屏蔽 AI 爬虫。
 - 站长平台验证码走环境变量（`GOOGLE_SITE_VERIFICATION`、`BING_SITE_VERIFICATION`、`BAIDU_SITE_VERIFICATION`、`TOUTIAO_SITE_VERIFICATION`、`SO360_SITE_VERIFICATION`、`SOGOU_SITE_VERIFICATION`），在 `src/site/RootLayout.tsx` 输出为 meta 标签。
-- 分享图是静态的 `public/og.png`（1200×630）。页面的更新日期（sitemap 的 `lastModified`、JSON-LD 的 `dateModified`、Markdown 版）：文章取 `updatedAt`，其他页面取 `src/lib/site.ts` 的 `CONTENT_UPDATED`（`routeModified`），改了页面内容记得更新。
+- 分享图按页面生成（`src/site/og.tsx`，地址 `/og/<lang>/<路径>`，由 `src/site/ogPath.ts` 的 `ogImagePath` 给出，构建时静态输出；字体是 `assets/og/` 里按 GB2312 裁剪的 Noto Sans SC，标题出现生僻字时按 `assets/og/README.md` 重新裁剪）。首页图的两行标题与 `HomeView` 的 H1 同步。不收录的页面用静态的 `public/og.png`（与首页分享图相同）。页面的更新日期（sitemap 的 `lastModified`、JSON-LD 的 `dateModified`、Markdown 版）：文章取 `updatedAt`，其他页面取 `src/lib/site.ts` 的 `CONTENT_UPDATED`（`routeModified`），改了页面内容记得更新。
 - **Markdown 版页面**（`src/site/markdown.ts`）：每个可索引的内容页在地址后加 `.md` 就是干净的 Markdown 全文（`/services/geo.md`、`/en/glossary/geo.md`，首页 `/index.md`、`/en/index.md`），写给 AI 助手与智能体。构建时由 `app/md-pages/[lang]/[[...slug]]/route.ts` 生成，`next.config.mjs` 的 `rewrites` 把 `*.md` 改写过去；响应带 `X-Robots-Tag: noindex` 与指回 HTML 页的 `Link: rel="canonical"`，页面 `<head>` 用 `<link rel="alternate" type="text/markdown">` 声明。新增一种页面时在 `markdown.ts` 的 `body()` 补对应分支（不补则只有标题与描述）。
 - **RSS**（`src/site/feed.ts`）：`/feed.xml`（中文）与 `/en/feed.xml`（英文）列出全部洞察文章，`<head>` 里有 `application/rss+xml` 声明。
 - 首页的常见问题在 `src/data/homeFaqs.ts`（页面与 FAQPage 结构化数据共用），回答「是谁、做什么、适合谁、怎么收费」；改服务或案例时一并核对。
@@ -143,7 +158,7 @@ bun run create-admin <email>   # 创建管理员并打印一次性初始密码
 
 ## 其他注意事项
 
-- **FDE 展示开关**：`src/lib/features.ts` 的 `SHOW_FDE`（当前为 `true`，对外展示）同时控制前端与服务端（服务端可用 `SHOW_FDE` 环境变量覆盖）。关闭时服务页（含 `/services/fde`）、首页、课程 E、术语、FDE 主题的洞察文章、方案规划与 AI 顾问都不出现 FDE，“五项服务 / 五门课”随 `SERVICE_COUNT_CN` 变为“四”。新增涉及 FDE 或服务数量的文案也要走这个开关；页面标题与描述（`src/site/meta.ts`）、`TAGLINE`（`src/lib/site.ts`）也读取这个开关。
+- **FDE 展示开关**：`src/lib/features.ts` 的 `SHOW_FDE`（当前为 `false`：FDE 已从网站下线，文案与数据保留；`next.config.mjs` 读取同一个值，关闭时把 `/services/fde`、`/academy/fde/*`、`/glossary/fde` 及英文版永久跳转到对应列表页）同时控制前端与服务端（服务端可用 `SHOW_FDE` 环境变量覆盖）。关闭时服务页（含 `/services/fde`）、首页、课程 E、术语、FDE 主题的洞察文章、方案规划与 AI 顾问都不出现 FDE，“五项服务 / 五门课”随 `SERVICE_COUNT_CN` 变为“四”。新增涉及 FDE 或服务数量的文案也要走这个开关；页面标题与描述（`src/site/meta.ts`）、`TAGLINE`（`src/lib/site.ts`）也读取这个开关。
 - **Vercel Web Analytics**：`app/layout.tsx` 渲染 `@vercel/analytics/next` 的 `<Analytics />`。项目在 Vercel 开启 Web Analytics 后才会上报；本地 `/_vercel/insights/script.js` 加载失败属正常现象。
 - **Microsoft Clarity**（热力图与会话回放，项目在 Bing Webmaster Tools 里创建）：`src/site/Clarity.tsx` 在挂载后插入脚本，项目 ID 是 `src/lib/site.ts` 的 `CLARITY_PROJECT_ID`。和 `cw.js` 一样只在 `VERCEL_ENV=production` 加载，遵守 `?cw_ignore=1`；`/login`、`/console/*` 不加载，站内跳进后台时由 `SiteShell` 的 `data-clarity-mask` 遮罩整个后台，AI 顾问的对话区同样遮罩。新增展示访客联系方式或客户数据的界面时也要加 `data-clarity-mask="True"`。
 - 路径别名 `@/` 指向**仓库根目录**而不是 `src/`（`tsconfig.json`）；现有代码均使用相对路径导入。

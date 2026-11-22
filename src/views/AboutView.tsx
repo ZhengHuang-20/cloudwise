@@ -9,7 +9,7 @@ import { FOUNDER } from '../data/fdeData';
 import { SERVICES } from '../data/servicesData';
 import { caseList } from '../data/caseStudiesData';
 import { SERVICE_COUNT_CN, SERVICE_COUNT_EN, SHOW_FDE } from '../lib/features';
-import { BRAND, COMPANY, OFFICIAL_ACCOUNTS, SITE_URL, XIAOHONGSHU } from '../lib/site';
+import { BRAND, COMPANY, DISAMBIGUATION, OFFICIAL_ACCOUNTS, SITE_URL, XIAOHONGSHU } from '../lib/site';
 import { caseSlug } from '../site/links';
 import { splitName } from './CasesView';
 
@@ -80,6 +80,10 @@ export const AboutView: React.FC = () => {
                   'Chinese manufacturers expanding overseas, especially in B2B sectors such as medical devices, industrial equipment and environmental engineering.'
                 )}
               </dd>
+            </div>
+            <div className="sm:col-span-2">
+              <dt className="text-caption text-label-secondary">{t('名称说明', 'About the name')}</dt>
+              <dd className="mt-1 text-body">{tb(DISAMBIGUATION)}</dd>
             </div>
           </dl>
         </section>

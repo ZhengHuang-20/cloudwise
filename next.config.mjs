@@ -1,3 +1,16 @@
+import { readFileSync } from 'node:fs';
+
+// FDE 展示开关的单一来源是 src/lib/features.ts（next.config 不能引入 TS 模块，这里读取源码里的值）
+const SHOW_FDE = /export const SHOW_FDE = true\b/.test(readFileSync(new URL('./src/lib/features.ts', import.meta.url), 'utf8'));
+
+// 关闭 FDE 后，已被收录的 FDE 页面永久跳转到对应的列表页，不留 404；重新打开时这些跳转自动失效
+const FDE_REDIRECTS = ['', '/en'].flatMap((prefix) => [
+  { source: `${prefix}/services/fde`, destination: `${prefix}/services` },
+  { source: `${prefix}/academy/fde`, destination: `${prefix}/academy` },
+  { source: `${prefix}/academy/fde/:lesson`, destination: `${prefix}/academy` },
+  { source: `${prefix}/glossary/fde`, destination: `${prefix}/glossary` },
+]);
+
 // 预览部署（*.vercel.app）不进搜索引擎，正式站才允许收录；robots.txt 也按同一变量区分（app/robots.ts）
 const isPreview = process.env.VERCEL_ENV === 'preview';
 
@@ -9,6 +22,9 @@ const nextConfig = {
   // 类型检查改由 `bun run lint`（tsc --noEmit）负责。
   typescript: { ignoreBuildErrors: true },
   // 每个内容页的 Markdown 版本（src/site/markdown.ts）：/services/geo.md → app/md-pages/zh/services/geo
+  async redirects() {
+    return SHOW_FDE ? [] : FDE_REDIRECTS.map((r) => ({ ...r, permanent: true }));
+  },
   async rewrites() {
     return [
       { source: '/index.md', destination: '/md-pages/zh' },
