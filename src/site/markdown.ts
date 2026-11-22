@@ -13,7 +13,7 @@ import { glossaryList } from '../data/glossaryData';
 import { HOME_FAQS } from '../data/homeFaqs';
 import { INSIGHTS } from '../data/insights';
 import { SERVICES } from '../data/servicesData';
-import { BILIBILI_VIDEOS, BRAND, COMPANY, OFFICIAL_ACCOUNTS, SITE_URL, TAGLINE, absoluteUrl } from '../lib/site';
+import { BILIBILI_VIDEOS, BRAND, COMPANY, DISAMBIGUATION, OFFICIAL_ACCOUNTS, SITE_URL, TAGLINE, absoluteUrl } from '../lib/site';
 import { routeMeta } from './meta';
 import {
   allRoutes,
@@ -150,6 +150,17 @@ function body(route: Route, lang: Lang): string[] {
         '',
         c.results.directOutcome,
         '',
+        ...(c.aiChecks?.length
+          ? [
+              `## ${t('AI 回答记录', 'What AI assistants answered')}`,
+              ...bullets(
+                c.aiChecks.map(
+                  (a) => `${a.date} · ${a.platform}${t('：', ': ')}「${a.question}」${t('——', ' — ')}${a.result}${a.screenshot ? ` ([${t('截图', 'screenshot')}](${absoluteUrl(a.screenshot)}))` : ''}`
+                )
+              ),
+              '',
+            ]
+          : []),
         `## ${t('数据口径', 'Basis of the data')}`,
         c.dataScopeStatement,
         ...(c.evidenceLinks?.length ? ['', `### ${t('可以自己核对', 'Check it yourself')}`, ...bullets(c.evidenceLinks.map((e) => `[${e.label}](${e.url})`))] : []),
@@ -292,6 +303,9 @@ function body(route: Route, lang: Lang): string[] {
         `- ${t('邮箱', 'Email')}: ${COMPANY.email}`,
         `- ${t('官网', 'Website')}: ${SITE_URL}`,
         `- ${pick(COMPANY.endorsement, lang)}`,
+        '',
+        `## ${t('名称说明', 'About the name')}`,
+        pick(DISAMBIGUATION, lang),
         '',
         `## ${t('创始人', 'Founder')}`,
         `${pick(founder.name, lang)}${t('，', ', ')}${pick(founder.title, lang)}${t('。', '. ')}${pick(founder.intro, lang)}`,

@@ -13,6 +13,8 @@ export interface CaseStudyEn {
   results: { metrics: string[]; directOutcome: string };
   dataScopeStatement: string;
   evidenceLinks?: { label: string; url: string }[];
+  /** 与中文 aiChecks 按顺序对应，只需要翻译 question 与 result */
+  aiChecks?: { question: string; result: string }[];
   reusableExperience: string[];
   testimonial?: { quote: string; author: string; title: string };
 }
