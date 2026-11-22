@@ -10,7 +10,7 @@ import { INSIGHTS } from '../data/insights';
 import { SERVICES } from '../data/servicesData';
 import { CONTACTS } from '../data/contactsData';
 import { SERVICE_COUNT_CN, SERVICE_COUNT_EN } from '../lib/features';
-import { BRAND, COMPANY, SAME_AS, SITE_URL, TAGLINE, absoluteUrl } from '../lib/site';
+import { BRAND, COMPANY, DISAMBIGUATION, SAME_AS, SITE_URL, TAGLINE, absoluteUrl } from '../lib/site';
 import { absolutizeLinks } from './markdown';
 import { routeMeta } from './meta';
 import { caseSlug, courseSlug, lessonPath, localizePath, solutionSlug, termSlug, type Route } from './routes';
@@ -28,6 +28,10 @@ export function llmsTxt(): string {
     `> ${TAGLINE.zh}。${TAGLINE.en}.`,
     '',
     `${BRAND.zh}（英文名 ${BRAND.en}，官网 ${SITE_URL.replace(/^https:\/\//, '')}）帮助中国制造企业让海外买家找得到、读得懂、信得过：提供${SERVICE_COUNT_CN}项服务、免费的 AI 可见性测评、出海学院公开课与 SEO / GEO 实操文章。站点不公开任何价格，费用通过方案规划与诊断会沟通。中文页面无路径前缀，英文页面在 /en 下。`,
+    '',
+    DISAMBIGUATION.zh,
+    '',
+    DISAMBIGUATION.en,
     '',
     `每个页面都有 Markdown 版本：在页面地址后加 .md（首页为 /index.md），例如 ${absoluteUrl('/services/geo.md')}、${absoluteUrl('/en/glossary/geo.md')}。文章更新见 RSS：${absoluteUrl('/feed.xml')}（中文）、${absoluteUrl('/en/feed.xml')}（English）。`,
     '',
@@ -94,6 +98,8 @@ export function llmsFullTxt(lang: Lang): string {
       `Website: ${SITE_URL}/en. This file is the full-text version of the site, generated automatically from the site data. The site does not publish prices.`
     ),
     '',
+    pick(DISAMBIGUATION, lang),
+    '',
     `## ${t(`${SERVICE_COUNT_CN}项服务`, `${SERVICE_COUNT_EN} services`)}`,
   ];
 
@@ -136,6 +142,13 @@ export function llmsFullTxt(lang: Lang): string {
       '',
       c.results.directOutcome,
       '',
+      ...(c.aiChecks?.length
+        ? [
+            t('AI 回答记录：', 'What AI assistants answered:'),
+            ...c.aiChecks.map((a) => `- ${a.date} · ${a.platform}${t('：', ': ')}「${a.question}」${t('——', ' — ')}${a.result}`),
+            '',
+          ]
+        : []),
       `${t('数据口径：', 'Basis of the data: ')}${c.dataScopeStatement}`,
       ...(c.evidenceLinks?.length ? ['', t('可以自己核对：', 'Check it yourself:'), ...c.evidenceLinks.map((e) => `- [${e.label}](${e.url})`)] : [])
     );
