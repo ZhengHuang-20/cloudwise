@@ -189,7 +189,8 @@ export const AiConsultantModal: React.FC = () => {
         </button>
       }
     >
-      <div className="flex min-h-0 flex-1">
+      {/* 对话里可能出现访客留下的联系方式，Clarity 回放中遮罩 */}
+      <div className="flex min-h-0 flex-1" data-clarity-mask="True">
         {/* 会话 */}
         <div className={`min-w-0 flex-1 flex-col ${isInspectorMode ? 'hidden md:flex' : 'flex'}`}>
           <div className="flex-1 space-y-6 overflow-y-auto px-6 py-6 sm:px-8" aria-live="polite">

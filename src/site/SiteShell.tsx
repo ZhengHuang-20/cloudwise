@@ -69,7 +69,10 @@ function Chrome({ children }: { children: React.ReactNode }) {
   if (isConsole) {
     return (
       <SiteContext.Provider value={actions}>
-        {children}
+        {/* 后台有客户线索：从官网站内跳进来时 Clarity 已在运行，整体遮罩，回放里看不到内容 */}
+        <div data-clarity-mask="True" className="contents">
+          {children}
+        </div>
         <BookingModal isOpen={isBookingOpen} onClose={() => setIsBookingOpen(false)} />
       </SiteContext.Provider>
     );

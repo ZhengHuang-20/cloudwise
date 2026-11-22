@@ -56,6 +56,9 @@ export const COMPANY = {
 /** 官网自己的访问统计站点标识（公开，写在页面的 cw.js 标签里），对应客户后台「站点与授权」中的官网 */
 export const ANALYTICS_SITE_KEY = 'sk_b7b2303ec24b731047210b7e';
 
+/** Microsoft Clarity 的项目 ID（公开，写在页面脚本里），在 Bing Webmaster Tools 里为 chingeo.com 创建，见 src/site/Clarity.tsx */
+export const CLARITY_PROJECT_ID = 'zhipeemm3k';
+
 /** 官方账号（Organization.sameAs 与关于页）。新开账号后加到这里；没有主页地址的账号不要加 */
 export const OFFICIAL_ACCOUNTS: { url: string; label: { zh: string; en: string } }[] = [
   { url: 'https://space.bilibili.com/375232709', label: { zh: 'B 站 · 云端智荐出海学院', en: 'Bilibili · ChinGEO Export Academy' } },

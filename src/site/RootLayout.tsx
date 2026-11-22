@@ -3,6 +3,7 @@ import { Analytics } from '@vercel/analytics/next';
 import type { Lang } from '../lib/i18n';
 import { ANALYTICS_SITE_KEY, BRAND, SITE_URL } from '../lib/site';
 import { SiteShell } from './SiteShell';
+import { Clarity } from './Clarity';
 import '../index.css';
 
 /**
@@ -60,6 +61,8 @@ export function RootLayout({ lang, children }: { lang: Lang; children: React.Rea
         <SiteShell lang={lang}>{children}</SiteShell>
         {/* Vercel Web Analytics：项目在 Vercel 开启 Web Analytics 后才会上报 */}
         <Analytics />
+        {/* Microsoft Clarity：热力图与会话回放，同样只在正式部署加载（不含登录与后台） */}
+        {ANALYTICS_ON && <Clarity />}
       </body>
     </html>
   );
