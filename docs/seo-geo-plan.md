@@ -181,7 +181,7 @@
 
 - 正式域名 chingeo.com：在 Vercel 的 Domains 里设为主域名，`www.chingeo.com` 与 `*.vercel.app` 301 到它。
 - 开通并提交 `https://chingeo.com/sitemap.xml`：Google Search Console、**Bing Webmaster Tools**（Bing 索引同时供 Copilot 和 ChatGPT 搜索使用，比 Google 更直接影响 GEO）、百度搜索资源平台、**头条搜索站长平台**（字节系，与豆包同一生态）、360 与搜狗站长平台。各平台选“HTML 标签”验证，把验证码填进对应环境变量（见 `.env.example`）后重新部署即可。
-- **IndexNow**（Bing、Yandex 等）：已接入，`scripts/indexnow.ts` 在生产构建后推送全部可索引地址，密钥文件在 `public/`。百度「普通收录」API 在配置 `BAIDU_PUSH_TOKEN` 后一并推送。
+- **IndexNow**（Bing、Yandex 等）：已接入，`scripts/indexnow.ts` 在生产构建后只推送有变化的地址（与线上 sitemap 的 lastmod 比较；2026-11-22 起，之前是每次推送全部地址），密钥文件在 `public/`。百度「普通收录」API 在配置 `BAIDU_PUSH_TOKEN` 后一并推送。
 
 ---
 

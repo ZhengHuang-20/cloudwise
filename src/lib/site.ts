@@ -103,9 +103,34 @@ export const BILIBILI_VIDEOS: Record<string, string> = {
 };
 
 /**
- * 文章以外的页面内容最近一次更新的日期（YYYY-MM-DD）：sitemap 的 lastModified、JSON-LD 的 dateModified、
- * Markdown 版页面共用。改了页面内容（服务、案例、课程、术语、首页等）记得更新。
+ * 文章以外各类页面正文最近一次实质更新的日期（YYYY-MM-DD），按页面类别分开记：sitemap 的 lastmod、
+ * JSON-LD 的 dateModified、Markdown 版页面共用（src/site/routes.ts 的 routeModified）。文章用自己的 updatedAt，
+ * 「GEO 洞察」列表页自动取 insights 与最新文章日期中较晚的一个。
+ *
+ * 只改实际改动了正文的那一类：Google 与 Bing 只在 lastmod 持续准确时才采信它，一处改动让全站日期一起变，
+ * 会让搜索引擎不再信任本站的 lastmod。改样式、页脚、脚本这类非正文改动不要改日期。
  */
-export const CONTENT_UPDATED = '2026-11-22';
+export const PAGE_UPDATED = {
+  /** 首页 */
+  home: '2026-11-22',
+  /** 服务列表与服务详情页 */
+  services: '2026-11-22',
+  /** 案例列表、案例详情与行业方案页 */
+  cases: '2026-11-22',
+  /** 学院、课程与课时页 */
+  academy: '2026-11-22',
+  /** 「GEO 洞察」列表页自身的文案（不含文章） */
+  insights: '2026-11-20',
+  /** 术语列表与术语页 */
+  glossary: '2026-11-20',
+  /** AI 可见性测评页 */
+  audit: '2026-11-20',
+  /** 关于页 */
+  about: '2026-11-22',
+  /** 方案规划页（/configurator）与方案空间 */
+  configurator: '2026-11-22',
+} as const;
+
+export type PageGroup = keyof typeof PAGE_UPDATED;
 
 export const absoluteUrl = (path: string) => `${SITE_URL}${path === '/' ? '' : path}`;

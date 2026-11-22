@@ -10,7 +10,7 @@ import { CASE_STUDIES, INDUSTRY_SOLUTIONS } from '../data/caseStudiesData';
 import { COURSES } from '../data/coursesData';
 import { GLOSSARY_TERMS } from '../data/glossaryData';
 import { INSIGHTS } from '../data/insights';
-import { CONTENT_UPDATED } from '../lib/site';
+import { PAGE_UPDATED, type PageGroup } from '../lib/site';
 import {
   CONSOLE_SECTIONS,
   caseSlug,
@@ -72,9 +72,39 @@ export function resolveRoute(segments: string[] = []): Route | null {
   }
 }
 
-/** 页面内容的更新日期（YYYY-MM-DD）：文章取自己的 updatedAt，其他页面取 CONTENT_UPDATED */
-export const routeModified = (route: Route): string =>
-  route.kind === 'insight' ? (findInsight(route.slug)?.updatedAt ?? CONTENT_UPDATED) : CONTENT_UPDATED;
+/** 每种页面属于 src/lib/site.ts 的 PAGE_UPDATED 里哪一类 */
+const PAGE_GROUP: Record<Exclude<Route['kind'], 'insight'>, PageGroup> = {
+  home: 'home',
+  services: 'services',
+  service: 'services',
+  cases: 'cases',
+  case: 'cases',
+  solution: 'cases',
+  academy: 'academy',
+  course: 'academy',
+  lesson: 'academy',
+  insights: 'insights',
+  glossary: 'glossary',
+  term: 'glossary',
+  audit: 'audit',
+  about: 'about',
+  configurator: 'configurator',
+  'deal-room': 'configurator',
+  login: 'about',
+  console: 'about',
+};
+
+const latest = (dates: string[]) => dates.reduce((max, d) => (d > max ? d : max));
+
+/**
+ * 页面内容的更新日期（YYYY-MM-DD）：sitemap 的 lastmod、JSON-LD 的 dateModified、Markdown 版共用。
+ * 文章取自己的 updatedAt；「GEO 洞察」列表页列出全部文章，取列表文案与最新文章中较晚的日期；其他页面按类别取 PAGE_UPDATED。
+ */
+export const routeModified = (route: Route): string => {
+  if (route.kind === 'insight') return findInsight(route.slug)?.updatedAt ?? PAGE_UPDATED.insights;
+  if (route.kind === 'insights') return latest([PAGE_UPDATED.insights, ...INSIGHTS.map((i) => i.updatedAt)]);
+  return PAGE_UPDATED[PAGE_GROUP[route.kind]];
+};
 
 /** 全部可访问的页面（静态生成与 sitemap 用） */
 export function allRoutes(): Route[] {
