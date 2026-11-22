@@ -347,7 +347,7 @@ const ALL_COURSES: Course[] = [
       name: 'AI 可见性测评',
       type: 'ai_visibility',
     },
-    executiveModuleSummary: '买家的第一站正在从搜索框迁移到 AI 对话框。做 GEO 就是让你在 ChatGPT、Perplexity 和 Gemini 给出的 3~5 个供应商名字中稳居第一梯队。',
+    executiveModuleSummary: '买家的第一站正在从搜索框迁移到 AI 对话框。做 GEO 就是提高你出现在 ChatGPT、Perplexity 和 Gemini 给出的 3~5 个供应商名字里的机会。',
     modules: [
       {
         index: 1,
@@ -441,9 +441,9 @@ const ALL_COURSES: Course[] = [
             id: 'lesson-c-10-2',
             moduleIndex: 10,
             title: '10.2 案例实战：爱康医疗 47 分与 95 分的数据口径客观说明',
-            summary: '明确客观口径：47 分与 95 分分别是国内官网与新建海外官网的 GEO / SEO 评分，由第三方工具 arobis.ai 按同一口径测得，结合真实来自 chatgpt.com 的高价值引荐访问，讲真话体现专业敬畏。',
+            summary: '明确客观口径：47 分与 95 分分别是国内官网与新建海外官网的 GEO / SEO 评分，由第三方工具 arobis.ai 按同一口径测得，结合真实来自 chatgpt.com 的引荐访问，讲真话体现专业敬畏。',
             durationMinutes: 18,
-            conceptContent: `在画册中我们公开了爱康医疗的实战成果：现有国内官网 (ak-medical.net) 的 GEO / SEO 评分为 47 分，我们新建的海外官网 (ak-medical-global.com) 为 95 分。在向客户汇报时，必须主动讲清数据口径：\n- 这是两个站点之间的对比，而不是同一站点改造前后的变化；两个分数都由权威第三方评估平台 arobis.ai 基于网站内容结构、定义完整性与信源就绪度，按同一口径客观估算。\n- 更加确凿的业务成果，是来自 Google Analytics 4 后台的真实记录：chatgpt.com、perplexity 等 AI 域名作为 Referral（引荐流量）来源，连续数月源源不断带来海外骨科医院器械采购科工程师的访问，且平均停留时间达 4 分 35 秒。\n\n主动讲清口径，不搞数字游戏，是云端智荐作为专业出海工程师团队的立身之本。`,
+            conceptContent: `在画册中我们公开了爱康医疗的实战成果：现有国内官网 (ak-medical.net) 的 GEO / SEO 评分为 47 分，我们新建的海外官网 (ak-medical-global.com) 为 95 分。在向客户汇报时，必须主动讲清数据口径：\n- 这是两个站点之间的对比，而不是同一站点改造前后的变化；两个分数都由第三方评测工具 arobis.ai 基于网站内容结构、定义完整性与信源就绪度，按同一口径客观估算。\n- 更加确凿的业务成果，是来自 Google Analytics 4 后台的真实记录：chatgpt.com、perplexity 等 AI 域名作为 Referral（引荐流量）来源，连续数月持续带来引荐访问，且平均停留时间达 4 分 35 秒。\n\n主动讲清口径，不搞数字游戏，是云端智荐作为专业出海工程师团队的立身之本。`,
             caseSnippet: {
               company: '爱康医疗',
               title: '骨科 3D 打印龙头企业的全球化 GEO 样本',

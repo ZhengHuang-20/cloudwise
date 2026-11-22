@@ -9,7 +9,7 @@ export const courseC: CourseEn = {
   heroCase: 'Aikang Medical: 91 content items planned for the year and an AI recommendation score of 95',
   toolName: 'AI visibility audit',
   executiveModuleSummary:
-    'The buyer’s first stop is moving from the search box to the AI chat window. Doing GEO means staying in the first tier of the 3–5 supplier names that ChatGPT, Perplexity and Gemini give.',
+    'The buyer’s first stop is moving from the search box to the AI chat window. Doing GEO means raising your chance of being among the 3–5 supplier names that ChatGPT, Perplexity and Gemini give.',
   modules: {
     1: {
       name: 'M1 Foundations: the shift from the search box to the AI chat window',
@@ -94,10 +94,10 @@ SEO is the water channel; GEO is the knowledge that flows together into the sea.
     'lesson-c-10-2': {
       title: '10.2 Case study: stating the basis of Aikang Medical’s 47 and 95 points objectively',
       summary:
-        'Be clear about the basis. 47 and 95 are the GEO / SEO scores of the domestic site and the new overseas site, measured with the same third-party tool, arobis.ai. Alongside real, high-value referral visits from chatgpt.com, telling the truth shows professional respect.',
+        'Be clear about the basis. 47 and 95 are the GEO / SEO scores of the domestic site and the new overseas site, measured with the same third-party tool, arobis.ai. Alongside real referral visits from chatgpt.com, telling the truth shows professional respect.',
       conceptContent: `The brochure publicly shares Aikang Medical’s results. Its domestic site (ak-medical.net) has a GEO / SEO score of 47, and the new overseas site we built (ak-medical-global.com) scores 95. When reporting to clients, the basis of the data must be explained up front:
 - This compares two different sites. It is not a before-and-after of one site after a rebuild. Both scores were estimated by the third-party evaluation platform arobis.ai on the same basis, covering content structure, definition completeness and source readiness.
-- More solid business evidence comes from the Google Analytics 4 back end: AI domains such as chatgpt.com and perplexity appear as referral sources, and for several months they have consistently brought visits from engineers in overseas orthopaedic device procurement departments, with an average session of 4 minutes 35 seconds.
+- More solid business evidence comes from the Google Analytics 4 back end: AI domains such as chatgpt.com and perplexity appear as referral sources, and for several months they have consistently brought referral visits, with an average session of 4 minutes 35 seconds.
 
 Being upfront about the basis, and not playing with numbers, is what makes ChinGEO a credible export engineering team.`,
       caseSnippet: {

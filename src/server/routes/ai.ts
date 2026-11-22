@@ -115,7 +115,7 @@ function chatFallback(r: ChatRequest) {
   let intentReason = '常规业务咨询';
   const services: string[] = [];
   let next = '建议在首页完成“AI 可见性测评”，再用“方案规划”匹配最适合的服务组合。';
-  const citations = ['《云端智荐服务说明》', '《出海学院课程》'];
+  const citations = ['服务介绍（chingeo.com/services）', '出海学院（chingeo.com/academy）'];
 
   if (has('联系', '电话', '手机', '人工', '客户经理', '负责人', '微信')) {
     const list = CONTACTS.map((c) => `- ${c.title}：${c.name}，手机 ${c.phone}`).join('\n');
@@ -125,20 +125,20 @@ function chatFallback(r: ChatRequest) {
     next = '直接致电上方联系人，或预约 30 分钟线上诊断会。';
   } else if (has('geo', 'chatgpt', 'ai推荐', '可见性')) {
     answer =
-      'GEO（生成式引擎优化）是我们最具差异化的旗舰服务。不同于传统 SEO 仅在搜索结果列表排位，GEO 的核心是让 ChatGPT、Perplexity、Gemini 等主流 AI 在直接向海外采购商推荐供应商时，首选并权威引用您的品牌。\n\n我们通过六步闭环（诊断、建模、内容、信源、口碑、监测）建立权威证据链。以爱康医疗为例，其现有国内官网的 GEO / SEO 评分仅 47 分，我们新建的海外官网达到 95 分，ChatGPT 连续数月带来真实高意向采购商访问。';
+      'GEO（生成式引擎优化）是我们最具差异化的旗舰服务。不同于传统 SEO 仅在搜索结果列表排位，GEO 的核心是提高 ChatGPT、Perplexity、Gemini 等主流 AI 在向海外采购商推荐供应商时提到并引用您的品牌的机会；AI 的回答没有人能保证，所以我们每月用固定问题复测并汇报。\n\n我们通过六步闭环（诊断、建模、内容、信源、口碑、监测）建立权威证据链。以爱康医疗为例，其现有国内官网的 GEO / SEO 评分仅 47 分，我们新建的海外官网达到 95 分，ChatGPT 连续数月带来引荐访问（来自客户的 Google Analytics 4 记录）。';
     intent = 'HIGH';
     intentReason = '主动咨询最新 GEO 旗舰技术，具备强烈获客升级意向';
     services.push('出海 GEO 优化', '外贸 SEO 优化');
-    next = '立即在首页进行“AI 可见性测评”，免费检测您的品牌在 ChatGPT、Perplexity 里的实时推荐率。';
-    citations.push('《爱康医疗全球独立站与 GEO 落地案例》');
+    next = '立即在首页进行“AI 可见性测评”，免费检测您的品牌在 ChatGPT、Perplexity 等 AI 回答里被提到的情况。';
+    citations.push('案例：爱康医疗（chingeo.com/cases/ak-medical）');
   } else if (has('客服', '询盘', 'crm', '漏单')) {
     answer =
-      '海外客户存在 12 小时以上的跨时区时差，超 68% 的高价值询盘发生在我国凌晨。传统表单或人工响应通常需要等到次日上午，采购商早已向竞争对手询价。\n\n云端智荐的 AI 智能客服基于您企业的结构化知识库（参数表、认证、工程案例），在 03:00 凌晨以多语种即时答复买家技术疑问，并智能抽取采购数量、交期要求，自动写入您的 CRM/企业微信，实现“销售早晨上班直接发精准报价单”。';
+      '海外客户与我们有很大的时差，不少询盘发生在国内的夜间。传统表单或人工响应通常需要等到次日上午，采购商早已向竞争对手询价。\n\n云端智荐的 AI 智能客服基于您企业的结构化知识库（参数表、认证、工程案例），在 03:00 凌晨以多语种即时答复买家技术疑问，并智能抽取采购数量、交期要求，自动写入您的 CRM/企业微信，实现“销售早晨上班直接发精准报价单”。';
     intent = 'HIGH';
     intentReason = '关注询盘漏单与转化流失痛点，对应智能客服商机';
     services.push('AI 智能客服及系统对接');
     next = '建议用“方案规划”查看 AI 客服的交付周期与交付物，或预约 30 分钟诊断会演示凌晨询盘的接待流程。';
-    citations.push('《凌晨三点询盘自动化流转标准》');
+    citations.push('AI 智能客服（chingeo.com/services/ai-customer-service）');
   } else if (has('多少钱', '价格', '费用', '预算', '报价')) {
     const fdeWord = show ? '、FDE 驻场' : '';
     answer = `我们不在线上提供统一报价。GEO${fdeWord}、独立站、SEO、AI 客服的投入取决于产品 SKU 规模、目标市场与语种数量、年度内容量以及需要打通的企业系统，每家企业差异很大。\n\n建议分两步：先用站内“方案规划”组合服务，查看交付周期、阶段排期与交付物清单；再预约 30 分钟诊断会，由架构师结合实测结果出具定制方案。`;
@@ -188,7 +188,7 @@ function chatFallbackEn(r: ChatRequest) {
   let intentReason = 'General business question';
   const services: string[] = [];
   let next = 'Run the AI visibility audit on the homepage first, then use the Project planner to match the right service package.';
-  const citations = ['ChinGEO services overview', 'ChinGEO Export Academy courses'];
+  const citations = ['Services (chingeo.com/en/services)', 'Export Academy (chingeo.com/en/academy)'];
 
   if (has('contact', 'phone', 'call', 'human', 'account manager', 'talk to', 'speak to', 'wechat')) {
     const list = CONTACTS.map((c) => `- ${c.titleEn}: ${c.nameEn}, phone ${c.phone}`).join('\n');
@@ -198,20 +198,20 @@ function chatFallbackEn(r: ChatRequest) {
     next = 'Call the contacts above directly, or book a 30-minute online diagnosis call.';
   } else if (has('geo', 'chatgpt', 'perplexity', 'gemini', 'visibility', 'recommend')) {
     answer =
-      'GEO (generative engine optimisation) is our most distinctive flagship service. Unlike traditional SEO, which only competes for positions in a results list, GEO aims to make ChatGPT, Perplexity, Gemini and other leading AI tools name and cite your brand first when they recommend suppliers to overseas buyers.\n\nWe build the evidence chain through a six-step closed loop: diagnosis, modelling, content, sources, reputation and monitoring. Aikang Medical is an example: its domestic site scored 47 on GEO / SEO, while the new overseas site scored 95, and ChatGPT has sent high-intent overseas buyers for several months.';
+      'GEO (generative engine optimisation) is our most distinctive flagship service. Unlike traditional SEO, which only competes for positions in a results list, GEO raises the chance that ChatGPT, Perplexity, Gemini and other leading AI tools mention and cite your brand when they recommend suppliers to overseas buyers. Nobody can guarantee what an AI will answer, so we re-test a fixed set of questions every month and report the change.\n\nWe build the evidence chain through a six-step closed loop: diagnosis, modelling, content, sources, reputation and monitoring. Aikang Medical is an example: its domestic site scored 47 on GEO / SEO, while the new overseas site scored 95, and ChatGPT has sent referral visits for several months (from the client’s Google Analytics 4 records).';
     intent = 'HIGH';
     intentReason = 'Asked about the flagship GEO service, with a strong intent to upgrade lead generation';
     services.push('Export GEO', 'Export SEO');
     next = 'Run the free AI visibility audit on the homepage now to check how often your brand is recommended in ChatGPT and Perplexity.';
-    citations.push('Aikang Medical global site and GEO case');
+    citations.push('Case study: Aikang Medical (chingeo.com/en/cases/ak-medical)');
   } else if (has('enquir', 'inquir', 'crm', 'lead', 'overnight', 'after hours', 'missed', 'customer service')) {
     answer =
-      'Overseas buyers face a time-zone gap of more than 12 hours, and a large share of high-value enquiries arrive during the Chinese night. Traditional forms or manual replies usually wait until the next morning, and by then the buyer has already asked your competitors.\n\nChinGEO AI customer service works from your structured knowledge base (parameter sheets, certifications, engineering cases). At 3 a.m. it replies to technical questions in several languages, extracts order quantity and lead-time requirements, and writes them to your CRM and WeCom, so the salesperson can send an accurate quotation as soon as they start work.';
+      'Overseas buyers are many hours away, and many enquiries arrive during the Chinese night. Traditional forms or manual replies usually wait until the next morning, and by then the buyer has already asked your competitors.\n\nChinGEO AI customer service works from your structured knowledge base (parameter sheets, certifications, engineering cases). At 3 a.m. it replies to technical questions in several languages, extracts order quantity and lead-time requirements, and writes them to your CRM and WeCom, so the salesperson can send an accurate quotation as soon as they start work.';
     intent = 'HIGH';
     intentReason = 'Concerned about lost enquiries and conversion leakage, which points to an AI customer service opportunity';
     services.push('AI customer service and system integration');
     next = 'Use the Project planner to see the AI customer service timeline and deliverables, or book a 30-minute diagnosis call to see how an overnight enquiry is handled.';
-    citations.push('Standard for automated overnight enquiry routing');
+    citations.push('AI customer service (chingeo.com/en/services/ai-customer-service)');
   } else if (has('price', 'cost', 'budget', 'quote', 'how much', 'fee')) {
     const fdeWord = show ? ', FDE on-site engineering' : '';
     answer = `We do not publish a standard price online. The investment for GEO${fdeWord}, websites, SEO and AI customer service depends on the number of products, target markets and languages, the annual content volume and the company systems to be integrated, and it varies widely from company to company.\n\nTwo steps: use the Project planner on this site to combine services and review timelines and deliverables, then book a 30-minute diagnosis call so an architect can prepare a tailored plan based on real test results.`;
