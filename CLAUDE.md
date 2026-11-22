@@ -145,6 +145,7 @@ bun run create-admin <email>   # 创建管理员并打印一次性初始密码
 
 - **FDE 展示开关**：`src/lib/features.ts` 的 `SHOW_FDE`（当前为 `true`，对外展示）同时控制前端与服务端（服务端可用 `SHOW_FDE` 环境变量覆盖）。关闭时服务页（含 `/services/fde`）、首页、课程 E、术语、FDE 主题的洞察文章、方案规划与 AI 顾问都不出现 FDE，“五项服务 / 五门课”随 `SERVICE_COUNT_CN` 变为“四”。新增涉及 FDE 或服务数量的文案也要走这个开关；页面标题与描述（`src/site/meta.ts`）、`TAGLINE`（`src/lib/site.ts`）也读取这个开关。
 - **Vercel Web Analytics**：`app/layout.tsx` 渲染 `@vercel/analytics/next` 的 `<Analytics />`。项目在 Vercel 开启 Web Analytics 后才会上报；本地 `/_vercel/insights/script.js` 加载失败属正常现象。
+- **Microsoft Clarity**（热力图与会话回放，项目在 Bing Webmaster Tools 里创建）：`src/site/Clarity.tsx` 在挂载后插入脚本，项目 ID 是 `src/lib/site.ts` 的 `CLARITY_PROJECT_ID`。和 `cw.js` 一样只在 `VERCEL_ENV=production` 加载，遵守 `?cw_ignore=1`；`/login`、`/console/*` 不加载，站内跳进后台时由 `SiteShell` 的 `data-clarity-mask` 遮罩整个后台，AI 顾问的对话区同样遮罩。新增展示访客联系方式或客户数据的界面时也要加 `data-clarity-mask="True"`。
 - 路径别名 `@/` 指向**仓库根目录**而不是 `src/`（`tsconfig.json`）；现有代码均使用相对路径导入。
 - `metadata.json` 是 Google AI Studio 导出时留下的元数据，与部署无关。
 
