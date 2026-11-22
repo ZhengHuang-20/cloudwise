@@ -46,6 +46,17 @@
 - 英文 `<title>` 都放不下时按冒号或词边界截断（`page.tsx` 的 `shortenEnglish`），全站英文标题不再超过 60 字符。
 - 测评组件改为按需加载，不再进入其他页面的初始脚本。
 
+**2026-11-22 补充**（第二轮评估后的七项优化）：
+
+- 外部搜索发现：英文搜 “ChinGEO” 排在前面的是测绘展会 ChinterGEO 与中国地质工程集团；搜 “GEO agency for Chinese B2B exporters” 出现的是 AB客、GenOptima 的自建榜单、Clutch 上的服务商，没有本站。短板是实体识别与站外信源，不是站内技术。
+- **实体消歧**：`src/lib/site.ts` 新增 `DISAMBIGUATION`（GEO 指生成式引擎优化，与 ChinterGEO、中国地质工程集团、云智慧均无关联）与 `ALTERNATE_NAMES`，进入 Organization 的 `disambiguatingDescription` / `alternateName`、关于页「名称说明」、llms.txt 与 llms-full.txt。各平台资料的统一写法与 Wikidata / LinkedIn / Clutch 填写指南见 `docs/entity-profiles.md`。
+- **原创数据**：`bun run audit-stats` 把 audits 表的真实测评做匿名聚合（每个目标取最后一次、排除自测目标、分组少于 5 个不输出），输出 Markdown，作为季度报告与文章信息增量的素材（§4.3 第 5 条）。
+- **案例证据**：案例数据新增 `aiChecks`（日期、平台、原样提问、结果、截图），案例页、`.md` 与 llms-full.txt 自动展示；只登记真实发生、有截图的记录。
+- **发布节奏**：批量稿件每天最多上线 3 篇，每篇必须有信息增量（`geo-content-guide.md`）。
+- **获客渠道分工**：见 §5.0。
+- **监测闭环**：Vercel Cron 每天调用 `/api/cron/self-audit`，官网与 `MONITOR_TARGETS` 里的目标每 7 天自动测一次，结果在后台「测评报告」查看（§6）。需要在 Vercel 配 `CRON_SECRET`。
+- **分享图**：每个页面按标题生成 1200×630 的分享图（`opengraph-image`），替代全站共用的 `og.png`。
+
 **仍需人工完成**：站长平台验证与 sitemap 提交状态核对；LinkedIn 公司页、Clutch / GoodFirms、Wikidata 条目，开通后加进 `SAME_AS`；域名邮箱替换 `COMPANY.email`；案例补带日期的 AI 回答截图、客户官网反向链接；泰宁科创的可公开链接；原创数据报告；争取第三方媒体与“服务商榜单”收录。
 
 站内技术项到这里基本做满，之后的提升主要来自三件事：按节奏持续发文与扩充术语（§4.3）、站外信源（§5）、收录与监测（§3.6、§6）。
@@ -224,6 +235,19 @@ AI 引用的是「能直接回答问题的段落」，所以所有内容页统�
 
 AI 判断一个品牌是否可信，主要看**站外**有多少独立来源一致地描述它。
 
+### 5.0 获客渠道分工（谁来找我们、在哪里找）
+
+我们的客户是中国出海企业的老板与市场负责人，他们用中文在百度、豆包、DeepSeek、元宝、知乎、公众号里找「GEO 优化」「外贸 AI 搜索」「怎么让 ChatGPT 推荐我们」。官网部署在境外、没有 ICP 备案，百度收录与国内访问速度都吃亏，所以：
+
+| 渠道 | 作用 | 做法 |
+|---|---|---|
+| 知乎、微信公众号、头条号、小红书、抖音 / B 站 | **中文获客主战场**，同时是豆包、元宝、DeepSeek 的主要信源 | 每篇洞察文章发摘要版或改写版，文末写「云端智荐（ChinGEO）」与原文链接；回答知乎上「GEO 是什么」「外贸怎么做 AI 搜索」等问题；测评的聚合数据做成图文 |
+| 官网中文页 | 承接与留资：测评、预约、方案规划 | 保持现状；转化入口（测评、预约）比新增页面更重要 |
+| 官网英文页、LinkedIn、Clutch 等目录 | 在海外 AI 里把 ChinGEO 立成实体，回答 “China GEO agency” 这类问题 | 按 `docs/entity-profiles.md` 开通资料；英文文章同步 LinkedIn |
+| 百度 | 次要，等收录 | 配 `BAIDU_PUSH_TOKEN` 推送；国内访问慢再评估境内 CDN（§8 第 4 条） |
+
+站外同步的顺序：官网先发，1～3 天后再发到其他平台，让搜索引擎先收录原文；转载处保留原文链接。
+
 ### 5.1 统一实体信息
 
 - 全网统一：中文名「云端智荐」、英文名、一句话定位、五项服务、联系方式。官网 `Organization` schema 的 `sameAs` 列出所有官方账号。
@@ -256,7 +280,8 @@ AI 判断一个品牌是否可信，主要看**站外**有多少独立来源一�
 
 ## 6. 第四阶段：监测与迭代
 
-- **自测**：每周用本站测评引擎测一次自己的官网，结果存档成趋势；把「本站测评分数」当作每次上线的回归检查。
+- **自测**（已实现）：Vercel Cron 每天调用 `/api/cron/self-audit`（`vercel.json`），官网和 `MONITOR_TARGETS` 里的目标（如案例客户的官网）每 `MONITOR_INTERVAL_DAYS` 天（默认 7）测一次，每次只发起一个测评，结果写进 `audits` 表，在后台「系统管理 → 测评报告」里按日期查看趋势。需要配置 `CRON_SECRET`（Vercel 调用时自动带上）；Cron 只在生产部署运行。
+- **季度数据**：每季度跑一次 `bun run audit-stats --since <季度初> --until <季度末> --out <文件>`，作为《中国 B2B 出海企业 AI 可见性报告》的素材。
 - **问题监测集**：固定 30 个买家问题（例如「中国有哪些做 GEO 的公司」「外贸企业怎么让 ChatGPT 推荐自己」），每月在 ChatGPT、Perplexity、Gemini、Google AI Overviews、Copilot、DeepSeek、豆包、Kimi、元宝上跑一遍，记录是否提及、排位、引用了哪个 URL。前三个平台可以复用测评引擎自动跑，国内平台先人工抽测。
 - **AI 引荐流量**：在 Vercel Analytics 里按 referrer 单独看 chatgpt.com、perplexity.ai、gemini.google.com、copilot.microsoft.com 等来源。也可以在官网上嵌入自家的 `cw.js`，把官网当作第一个客户，在后台看 PV 与线索。
 - **月度复盘**：哪些页面被收录、被引用；没有被引用的问题补内容；排名下滑的页面更新内容并更新 `dateModified`。
