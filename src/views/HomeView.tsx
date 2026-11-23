@@ -24,8 +24,8 @@ const ALL_SERVICES: ServiceCard[] = [
     key: 'geo',
     title: { zh: '出海 GEO 优化', en: 'Export GEO' },
     desc: {
-      zh: '海外采购商向 ChatGPT、Perplexity、Google AI 概览询问供应商时，提高你的品牌被引用的机会，并每月复测给你看。',
-      en: 'When overseas buyers ask ChatGPT, Perplexity or Google AI Overviews for suppliers, we improve the chance your brand gets cited, and re-test every month so you can see the result.',
+      zh: '海外采购商向 ChatGPT、Perplexity、Google AI 概览询问供应商时，提高你的品牌被引用的机会，并每月复测给你看。可以按线索付费，KPI 双方商定。',
+      en: 'When overseas buyers ask ChatGPT, Perplexity or Google AI Overviews for suppliers, we improve the chance your brand gets cited, and re-test every month so you can see the result. You can pay per lead, with KPIs agreed together.',
     },
     link: { zh: '了解 GEO 信源方案', en: 'See the GEO source plan' },
   },

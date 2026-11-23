@@ -12,7 +12,7 @@ import { AUTHORS } from '../data/authors';
 import { glossaryList } from '../data/glossaryData';
 import { HOME_FAQS } from '../data/homeFaqs';
 import { INSIGHTS } from '../data/insights';
-import { SERVICES } from '../data/servicesData';
+import { SERVICES, type Engagement } from '../data/servicesData';
 import { BILIBILI_VIDEOS, BRAND, COMPANY, DISAMBIGUATION, OFFICIAL_ACCOUNTS, SITE_URL, TAGLINE, absoluteUrl } from '../lib/site';
 import { routeMeta } from './meta';
 import {
@@ -67,6 +67,22 @@ const faqLines = (items: { q: string; a: string }[], lang: Lang) =>
   items.length ? ['', `## ${lang === 'en' ? 'Frequently asked questions' : '常见问题'}`, ...items.flatMap((f) => ['', `### ${f.q}`, '', f.a])] : [];
 
 const bullets = (items: string[]) => items.map((item) => `- ${item}`);
+
+/** 服务的合作与付费方式（只有方式与口径，没有金额），.md 页面与 llms-full.txt 共用 */
+export const engagementLines = (e: Engagement, lang: Lang, h: string) => {
+  const sep = lang === 'en' ? ': ' : '：';
+  return [
+    `${h} ${pick(e.title, lang)}`,
+    '',
+    pick(e.intro, lang),
+    '',
+    ...e.options.map((o) => `- **${pick(o.title, lang)}**${sep}${pick(o.desc, lang)}`),
+    '',
+    `**${pick(e.kpi.title, lang)}**${sep}${pick(e.kpi.desc, lang)}`,
+    '',
+    pick(e.note, lang),
+  ];
+};
 const entry = (title: string, path: string, note: string, lang: Lang) => `- [${title}](${link(path, lang)}): ${note}`;
 
 function body(route: Route, lang: Lang): string[] {
@@ -118,6 +134,7 @@ function body(route: Route, lang: Lang): string[] {
         pick(s.caseName, lang),
         '',
         `> ${pick(s.judgement, lang)}`,
+        ...(s.engagement ? ['', ...engagementLines(s.engagement, lang, '##')] : []),
         ...(s.guide ? ['', absolutizeLinks(pick(s.guide, lang), lang)] : []),
         ...faqLines(s.faqs.map((f) => ({ q: pick(f.q, lang), a: pick(f.a, lang) })), lang),
       ];

@@ -106,6 +106,12 @@ export const ServicesView: React.FC = () => {
                 <dl>
                   <dt className="text-caption text-label-secondary">{t('案例', 'Case')}</dt>
                   <dd className="mt-1 text-body">{tb(svc.caseName)}</dd>
+                  {svc.engagement && (
+                    <>
+                      <dt className="mt-4 text-caption text-label-secondary">{t('合作方式', 'How we work together')}</dt>
+                      <dd className="mt-1 text-body">{tb(svc.engagement.summary)}</dd>
+                    </>
+                  )}
                 </dl>
                 <Link href={path(`/services/${svc.slug}`)} className="btn btn-primary btn-block mt-6">
                   {t('查看服务详情', 'Service details')}

@@ -71,6 +71,39 @@ export const ServiceDetailView: React.FC<{ slug: string; insights?: InsightSumma
           </dl>
         </article>
 
+        {svc.engagement && (
+          <section aria-labelledby="engagement-title" className="tile">
+            <p className="text-caption text-label-secondary">{t('合作方式', 'How we work together')}</p>
+            <h2 id="engagement-title" className="mt-2 text-title-2">
+              {/* 在逗号后断行，避免窄屏把词组拆开 */}
+              {tb(svc.engagement.title)
+                .split(/(?<=，)/)
+                .map((part) => (
+                  <span key={part} className="inline-block">
+                    {part}
+                  </span>
+                ))}
+            </h2>
+            <p className="mt-4 text-body text-label-secondary">{tb(svc.engagement.intro)}</p>
+            <div className="mt-8 grid gap-5 sm:grid-cols-2">
+              {svc.engagement.options.map((option) => (
+                <div key={option.title.zh} className="well">
+                  <h3 className="text-title-3">{tb(option.title)}</h3>
+                  <p className="mt-2 text-body text-label-secondary">{tb(option.desc)}</p>
+                </div>
+              ))}
+            </div>
+            <div className="mt-10 border-t border-separator pt-8">
+              <h3 className="text-title-3">{tb(svc.engagement.kpi.title)}</h3>
+              <p className="mt-2 text-body text-label-secondary">{tb(svc.engagement.kpi.desc)}</p>
+            </div>
+            <p className="mt-6 text-caption text-label-secondary">{tb(svc.engagement.note)}</p>
+            <button type="button" onClick={openBooking} className="btn btn-secondary mt-8">
+              {t('预约诊断会', 'Book a diagnosis call')}
+            </button>
+          </section>
+        )}
+
         {svc.guide && (
           <article className="tile">
             <Markdown source={tb(svc.guide)} />
