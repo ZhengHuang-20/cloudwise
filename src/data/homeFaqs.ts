@@ -10,8 +10,8 @@ export const HOME_FAQS: { q: Bi; a: Bi }[] = [
   {
     q: { zh: `${BRAND.zh}（${BRAND.en}）是做什么的？`, en: `What does ${BRAND.en} (${BRAND.zh}) do?` },
     a: {
-      zh: `${BRAND.zh}（英文名 ${BRAND.en}）是一家面向中国出海制造企业的服务公司，提供${SERVICE_COUNT_CN}项服务：出海 GEO（让 ChatGPT、Perplexity、Gemini 等 AI 引用并推荐你的品牌）、${SHOW_FDE ? 'FDE 驻场工程师、' : ''}海外独立站、外贸 SEO 与 AI 客服。目标是让海外买家找得到、读得懂、信得过，询盘来了有人接。`,
-      en: `${BRAND.en} (${BRAND.zh} in Chinese) is a service company for Chinese manufacturers going global. It offers ${SERVICE_COUNT_EN.toLowerCase()} services: export GEO (getting AI such as ChatGPT, Perplexity and Gemini to cite and recommend your brand), ${SHOW_FDE ? 'FDE on-site engineering, ' : ''}overseas websites, export SEO and AI customer service. The aim is that overseas buyers can find you, understand you and trust you, and that every enquiry gets answered.`,
+      zh: `${BRAND.zh}（英文名 ${BRAND.en}）是一家面向中国出海制造企业的服务公司，提供${SERVICE_COUNT_CN}项核心服务：出海 GEO（让 ChatGPT、Perplexity、Gemini 等 AI 引用并推荐你的品牌）、${SHOW_FDE ? 'FDE 驻场工程师、' : ''}SEO 与建站（海外独立站加外贸 SEO）与 AI 客服。目标是让海外买家找得到、读得懂、信得过，询盘来了有人接。`,
+      en: `${BRAND.en} (${BRAND.zh} in Chinese) is a service company for Chinese manufacturers going global. It offers ${SERVICE_COUNT_EN.toLowerCase()} core services: export GEO (getting AI such as ChatGPT, Perplexity and Gemini to cite and recommend your brand), ${SHOW_FDE ? 'FDE on-site engineering, ' : ''}SEO and website (an overseas site plus export SEO) and AI customer service. The aim is that overseas buyers can find you, understand you and trust you, and that every enquiry gets answered.`,
     },
   },
   {

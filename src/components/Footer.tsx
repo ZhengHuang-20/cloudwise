@@ -29,7 +29,7 @@ export const Footer: React.FC = () => {
               <h2 className="text-caption font-semibold text-label">{tb(group.title)}</h2>
               <ul className="mt-3 space-y-2.5">
                 {group.items.map((item) => (
-                  <li key={item.id}>
+                  <li key={item.href}>
                     <Link
                       href={path(item.href)}
                       className="text-caption text-label-secondary transition-colors hover:text-label"

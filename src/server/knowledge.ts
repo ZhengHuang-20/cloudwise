@@ -14,7 +14,7 @@ const FDE_KNOWLEDGE = `2. FDE 驻场工程师（解决“连不上”）：源�
    每周一轮“观察-原型-试用-沉淀”，从一个高价值场景切入，2 ~ 4 周跑通第一个闭环，按层验收。离场时源码、数据、文档归企业，并培养企业内部 AI 骨干。核心观点：没有标准化的智能化，只是把混乱自动化。`;
 
 /** 对应前端的 SERVICE_COUNT_CN（服务端可用 SHOW_FDE 环境变量覆盖开关，所以按参数计算） */
-export const serviceCountCN = (showFDE: boolean) => (showFDE ? '五' : '四');
+export const serviceCountCN = (showFDE: boolean) => (showFDE ? '四' : '三');
 
 export function systemKnowledge(showFDE: boolean): string {
   const count = serviceCountCN(showFDE);
@@ -29,9 +29,8 @@ export function systemKnowledge(showFDE: boolean): string {
 
 【${count}大核心服务与解决的五个卡点】：
 1. 出海 GEO 优化（解决“不被信”）：生成式引擎优化，提高 ChatGPT、Perplexity、Gemini 等 AI 在回答里引用客户品牌的机会。六步闭环：诊断、建模、内容、信源、口碑、监测。这是我们最核心的服务之一，介绍服务时优先讲。
-${fde}${fde ? '\n' : ''}${fde ? 3 : 2}. 海外独立站建站（解决“读不懂”）：面向海外采购主管、技术总监、合规官三类读者构建，同时让搜索引擎与 AI 读得懂。解决传统画册型官网无人能懂的问题。
-${fde ? 4 : 3}. 外贸 SEO 优化（解决“看不见”）：E-E-A-T 质量框架、关键词集群、让海外买家在 Google 搜索时更容易看到你。
-${fde ? 5 : 4}. AI 智能客服及系统对接（解决“接不住”${lostExtra}）：7×24小时跨时区接住海外询盘，多语种即时答复，结构化抽取需求，直连 CRM、企业微信与邮件。
+${fde}${fde ? '\n' : ''}${fde ? 3 : 2}. SEO 与建站（解决“看不见”“读不懂”）：海外独立站按海外采购主管、技术总监、合规官三类读者构建，同时让搜索引擎与 AI 读得懂；再用 E-E-A-T 质量框架与“一词一页”的关键词集群做外贸 SEO，让海外买家在 Google 搜索时更容易看到你。案例数据（来自客户 Google Search Console 截图）：爱康医疗新建海外官网 ak-medical-global.com，2026-08-15 至 2026-11-13 近 3 个月 272 次点击、8,315 次展示、平均点击率 3.3%、平均排名 8；点击最多的查询是品牌词，所以只说明品牌词能搜到官网，不要说成非品牌采购词已排在前列。
+${fde ? 4 : 3}. AI 智能客服及系统对接（解决“接不住”${lostExtra}）：7×24小时跨时区接住海外询盘，多语种即时答复，结构化抽取需求，直连 CRM、企业微信与邮件。
 
 
 【代表案例】：

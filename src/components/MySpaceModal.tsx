@@ -3,7 +3,7 @@ import { Activity, Award, Check, FileText, GraduationCap, Sliders } from 'lucide
 import { useApp } from '../context/AppContext';
 import { useLang } from '../context/LanguageContext';
 import { courseList } from '../data/coursesData';
-import { SERVICE_COUNT_CN, SERVICE_COUNT_EN } from '../lib/features';
+import { COURSE_COUNT_CN, COURSE_COUNT_EN } from '../lib/features';
 import { UserProfile } from '../lib/types';
 import { Dialog, DialogBody } from './ui/Dialog';
 import { SegmentedControl } from './ui/SegmentedControl';
@@ -127,7 +127,7 @@ export const MySpaceModal: React.FC<MySpaceModalProps> = ({ isOpen, onClose }) =
             </dl>
 
             <h3 className="mt-10 text-title-3">
-              {t(`${SERVICE_COUNT_CN}门课程进度`, `${SERVICE_COUNT_EN} courses: progress`)}
+              {t(`${COURSE_COUNT_CN}门课程进度`, `${COURSE_COUNT_EN} courses: progress`)}
             </h3>
             <ul className="mt-4 space-y-5">
               {courses.map((course) => {

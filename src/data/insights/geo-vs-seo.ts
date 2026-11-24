@@ -10,7 +10,7 @@ export const geoVsSeo: Insight = {
     zh: ['GEO 和 SEO 的区别', 'GEO 是什么', '生成式引擎优化', '外贸企业先做 SEO 还是 GEO'],
     en: ['GEO vs SEO', 'what is generative engine optimization', 'should exporters do SEO or GEO first'],
   },
-  relatedServices: ['geo', 'seo', 'website'],
+  relatedServices: ['geo', 'seo-website'],
   relatedTerms: ['term-geo', 'term-eeat', 'term-aeo'],
   relatedLessons: ['lesson-b-1-3', 'lesson-c-1-2'],
   zh: {

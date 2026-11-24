@@ -16,7 +16,7 @@ export const geoAgencySelection: Insight = {
     zh: ['GEO 服务商怎么选', 'GEO 服务商', 'B2B 出海 GEO', 'AI 搜索收录规则', 'GEO 未来趋势', '选 GEO 公司要问什么'],
     en: ['how to choose a GEO agency', 'GEO agency for B2B exporters', 'future of AI search for B2B', 'AI search inclusion rules', 'questions to ask a GEO agency'],
   },
-  relatedServices: ['geo', 'seo', 'website'],
+  relatedServices: ['geo', 'seo-website'],
   relatedTerms: ['term-geo', 'term-ai-crawlers', 'term-structured-data', 'term-entity'],
   relatedLessons: ['lesson-c-3-1', 'lesson-c-1-2'],
   zh: {

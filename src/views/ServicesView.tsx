@@ -1,10 +1,12 @@
 import React from 'react';
 import Link from 'next/link';
 import { Check, ChevronRight } from 'lucide-react';
+import { ServiceProof } from '../components/ServiceProof';
 import { PageHeader } from '../components/ui/PageHeader';
 import { SERVICE_IDENTITY } from '../components/ui/serviceIdentity';
 import { FdeBuildLayers } from '../components/FdeBuildLayers';
 import { SERVICE_COUNT_CN, SERVICE_COUNT_EN, SHOW_FDE } from '../lib/features';
+import { courseSlug } from '../site/links';
 import { useLang } from '../context/LanguageContext';
 import { SERVICES as SUBSYSTEMS } from '../data/servicesData';
 import { useSite } from '../site/SiteContext';
@@ -24,16 +26,16 @@ export const ServicesView: React.FC = () => {
     <div>
       <PageHeader
         eyebrow={t(`${SERVICE_COUNT_CN}项服务`, `${SERVICE_COUNT_EN} services`)}
-        title={t(`${SERVICE_COUNT_CN}项服务，各解决一个卡点`, `${SERVICE_COUNT_EN} services, each solving one bottleneck`)}
+        title={t(`${SERVICE_COUNT_CN}项核心服务，各解决一类卡点`, `${SERVICE_COUNT_EN} core services, each solving a bottleneck`)}
         intro={
           SHOW_FDE
             ? t(
-                `${SERVICE_COUNT_CN}项服务共用同一套企业资料：AI 推荐（GEO）、FDE 驻场、独立站、搜索、客服和内部系统，各解决一个卡点，内容可以互相复用。`,
-                'The services share one set of company material: AI recommendations (GEO), FDE on-site engineering, websites, search, customer service and internal systems. Each one solves a single bottleneck, and the content is reused across them.'
+                `${SERVICE_COUNT_CN}项核心服务共用同一套企业资料：出海 GEO、FDE 驻场、SEO 与建站、AI 客服，内容可以互相复用。`,
+                'The core services share one set of company material: export GEO, FDE on-site engineering, SEO and website, and AI customer service. Content is reused across them.'
               )
             : t(
-                `${SERVICE_COUNT_CN}项服务共用同一套企业资料：AI 推荐（GEO）、独立站、搜索和客服，各解决一个卡点，内容可以互相复用。`,
-                'The services share one set of company material: AI recommendations (GEO), websites, search and customer service. Each one solves a single bottleneck, and the content is reused across them.'
+                `${SERVICE_COUNT_CN}项核心服务共用同一套企业资料：出海 GEO、SEO 与建站、AI 客服，内容可以互相复用。每项都写明做什么、交什么，以及我们已有的案例数据。`,
+                'The core services share one set of company material: export GEO, SEO and website, and AI customer service. Content is reused across them, and each one states what we do, what you receive and the case data we already have.'
               )
         }
       >
@@ -67,7 +69,7 @@ export const ServicesView: React.FC = () => {
                 <div className="flex items-center gap-3">
                   <Icon className={`h-8 w-8 ${identity.text}`} />
                   <span className="text-caption text-label-secondary">
-                    {t(`服务 ${svc.code} · 对应卡点：${tb(svc.friction)}`, `Service ${svc.code} · Pain point: ${tb(svc.friction)}`)}
+                    {t(`对应卡点：${tb(svc.friction)}`, `Pain point: ${tb(svc.friction)}`)}
                   </span>
                 </div>
                 <h2 id={`service-${svc.code}-title`} className="mt-5 text-title-1">
@@ -99,6 +101,9 @@ export const ServicesView: React.FC = () => {
                 </ul>
               </div>
 
+              {/* 案例数据（Search Console 截图）横跨两栏 */}
+              {svc.proof && <div className="lg:col-span-2"><ServiceProof proof={svc.proof} showImages={false} /></div>}
+
               {/* FDE 需要讲清方法论：三层图横跨两栏，dense 排布让右侧栏回填第一行 */}
               {svc.key === 'fde' && <FdeBuildLayers className="lg:col-span-2" />}
 
@@ -116,7 +121,7 @@ export const ServicesView: React.FC = () => {
                 <Link href={path(`/services/${svc.slug}`)} className="btn btn-primary btn-block mt-6">
                   {t('查看服务详情', 'Service details')}
                 </Link>
-                <Link href={path(`/academy/${svc.slug}`)} className="link mt-4 w-full justify-center text-body">
+                <Link href={path(`/academy/${courseSlug(svc.code)}`)} className="link mt-4 w-full justify-center text-body">
                   {t(`学习课程 ${svc.code}`, `Study course ${svc.code}`)}
                   <ChevronRight />
                 </Link>
@@ -132,8 +137,8 @@ export const ServicesView: React.FC = () => {
           </h2>
           <p className="mx-auto mt-5 max-w-2xl text-intro text-label-secondary">
             {t(
-              '常见的起点是“GEO + 独立站 + SEO”获客组合。组合后可以看到交付周期、阶段排期与交付物清单。',
-              'A common starting point is the "GEO + website + SEO" lead-generation package. Once combined, you can see the delivery timeline, phased schedule and deliverables list.'
+              '常见的起点是“GEO + SEO 与建站”获客组合。组合后可以看到交付周期、阶段排期与交付物清单。',
+              'A common starting point is the "GEO + SEO and website" lead-generation package. Once combined, you can see the delivery timeline, phased schedule and deliverables list.'
             )}
           </p>
           <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">

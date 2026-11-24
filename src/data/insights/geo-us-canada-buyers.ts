@@ -10,7 +10,7 @@ export const geoUsCanadaBuyers: Insight = {
     zh: ['面向美国采购商 GEO', '加拿大采购商', '北美市场 AI 搜索', '出口北美认证', '魁北克法语网站'],
     en: ['GEO for US buyers', 'GEO for Canadian buyers', 'exporting to North America website', 'Quebec French website requirement'],
   },
-  relatedServices: ['geo', 'website', 'seo'],
+  relatedServices: ['geo', 'seo-website'],
   relatedTerms: ['term-geo', 'term-hreflang', 'term-entity'],
   relatedLessons: ['lesson-c-1-1', 'lesson-c-3-1'],
   zh: {

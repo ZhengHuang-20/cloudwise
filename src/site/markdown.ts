@@ -12,7 +12,7 @@ import { AUTHORS } from '../data/authors';
 import { glossaryList } from '../data/glossaryData';
 import { HOME_FAQS } from '../data/homeFaqs';
 import { INSIGHTS } from '../data/insights';
-import { SERVICES, type Engagement } from '../data/servicesData';
+import { SERVICES, type Engagement, type Proof } from '../data/servicesData';
 import { BILIBILI_VIDEOS, BRAND, COMPANY, DISAMBIGUATION, OFFICIAL_ACCOUNTS, SITE_URL, TAGLINE, absoluteUrl } from '../lib/site';
 import { routeMeta } from './meta';
 import {
@@ -67,6 +67,26 @@ const faqLines = (items: { q: string; a: string }[], lang: Lang) =>
   items.length ? ['', `## ${lang === 'en' ? 'Frequently asked questions' : '常见问题'}`, ...items.flatMap((f) => ['', `### ${f.q}`, '', f.a])] : [];
 
 const bullets = (items: string[]) => items.map((item) => `- ${item}`);
+
+/** 服务页的案例数据（来自客户后台截图），.md 页面与 llms-full.txt 共用 */
+export const proofLines = (p: Proof, lang: Lang, h: string) => {
+  const sep = lang === 'en' ? ': ' : '：';
+  return [
+    `${h} ${pick(p.title, lang)}`,
+    '',
+    pick(p.intro, lang),
+    '',
+    pick(p.period, lang),
+    '',
+    ...p.stats.map((x) => `- ${pick(x.label, lang)}${sep}${x.value}`),
+    '',
+    `${pick(p.milestonesTitle, lang)}${sep}${p.milestones.map((m) => `${m.value}（${m.date}）`).join(lang === 'en' ? ', ' : '、')}`,
+    '',
+    ...p.notes.flatMap((n) => [`- ${pick(n, lang)}`]),
+    '',
+    pick(p.source, lang),
+  ];
+};
 
 /** 服务的合作与付费方式（只有方式与口径，没有金额），.md 页面与 llms-full.txt 共用 */
 export const engagementLines = (e: Engagement, lang: Lang, h: string) => {
@@ -135,6 +155,7 @@ function body(route: Route, lang: Lang): string[] {
         '',
         `> ${pick(s.judgement, lang)}`,
         ...(s.engagement ? ['', ...engagementLines(s.engagement, lang, '##')] : []),
+        ...(s.proof ? ['', ...proofLines(s.proof, lang, '##')] : []),
         ...(s.guide ? ['', absolutizeLinks(pick(s.guide, lang), lang)] : []),
         ...faqLines(s.faqs.map((f) => ({ q: pick(f.q, lang), a: pick(f.a, lang) })), lang),
       ];

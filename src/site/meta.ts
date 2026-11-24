@@ -6,7 +6,7 @@ import { pick, type Lang } from '../lib/i18n';
 import { caseList, solutionList } from '../data/caseStudiesData';
 import { courseList } from '../data/coursesData';
 import { glossaryList } from '../data/glossaryData';
-import { SERVICE_COUNT_CN, SERVICE_COUNT_EN, SHOW_FDE } from '../lib/features';
+import { COURSE_COUNT_CN, COURSE_COUNT_EN, SERVICE_COUNT_CN, SERVICE_COUNT_EN, SHOW_FDE } from '../lib/features';
 import { BRAND } from '../lib/site';
 import { findCase, findCourse, findInsight, findLesson, findService, findSolution, findTerm, type Route } from './routes';
 
@@ -39,9 +39,9 @@ const primaryName = (name: string) => name.replace(/\s*\(.*\)$/, '');
 export function routeMeta(route: Route, lang: Lang): PageMeta {
   const t = (zh: string, en: string) => (lang === 'en' ? en : zh);
   const max = lang === 'en' ? 165 : 95;
-  const svcList = SHOW_FDE ? t('独立站、外贸 SEO、出海 GEO、AI 客服与 FDE 驻场', 'websites, SEO, GEO, AI customer service and FDE on-site engineering') : t('独立站、外贸 SEO、出海 GEO 与 AI 客服', 'websites, SEO, GEO and AI customer service');
+  const svcList = SHOW_FDE ? t('出海 GEO、SEO 与建站、AI 客服与 FDE 驻场', 'GEO, SEO and website, AI customer service and FDE on-site engineering') : t('出海 GEO、SEO 与建站、AI 客服', 'GEO, SEO and website, and AI customer service');
   // 英文描述限 160 字符，用短一些的服务列表
-  const svcShort = SHOW_FDE ? t(svcList, 'websites, SEO, GEO, AI customer service and FDE') : svcList;
+  const svcShort = SHOW_FDE ? t(svcList, 'GEO, SEO and website, AI customer service and FDE') : svcList;
 
   switch (route.kind) {
     case 'home':
@@ -62,7 +62,7 @@ export function routeMeta(route: Route, lang: Lang): PageMeta {
         title: t(`${SERVICE_COUNT_CN}项服务：${svcList}`, `Services: ${svcList}`),
         shortTitles: [t(`${SERVICE_COUNT_CN}项出海获客服务：${svcList}`, `Services: ${svcShort}`)],
         description: t(
-          `${SERVICE_COUNT_CN}项服务共用同一套企业资料，各解决一个卡点：看不见、读不懂、不被信、接不住${SHOW_FDE ? '、连不上' : ''}。每项服务写明做什么、交什么、怎样验收。`,
+          `${SERVICE_COUNT_CN}项核心服务共用同一套企业资料，各解决一类卡点：看不见、读不懂、不被信、接不住${SHOW_FDE ? '、连不上' : ''}。每项服务写明做什么、交什么、怎样验收。`,
           `${SERVICE_COUNT_EN} services on one set of company material, each fixing one bottleneck, from being invisible to missed enquiries. Each states what we do and how it is accepted.`
         ),
       };
@@ -101,7 +101,7 @@ export function routeMeta(route: Route, lang: Lang): PageMeta {
     }
     case 'academy':
       return {
-        title: t(`出海学院：${SERVICE_COUNT_CN}门公开课，讲透独立站、SEO 与 GEO`, `Export Academy: ${SERVICE_COUNT_EN.toLowerCase()} open courses on websites, SEO and GEO`),
+        title: t(`出海学院：${COURSE_COUNT_CN}门公开课，讲透独立站、SEO 与 GEO`, `Export Academy: ${COURSE_COUNT_EN.toLowerCase()} open courses on websites, SEO and GEO`),
         shortTitles: [t(`出海学院：独立站、SEO 与 GEO 公开课`, `Export Academy: open courses on websites, SEO and GEO`)],
         description: t(
           '面向出海企业决策者、外贸总监与技术负责人的公开课程，带视频、案例、误区与课后自测，按角色给出学习路径。',

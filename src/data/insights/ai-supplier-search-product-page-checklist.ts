@@ -16,7 +16,7 @@ export const aiSupplierSearchProductPageChecklist: Insight = {
       'get found by buyers using AI search',
     ],
   },
-  relatedServices: ['geo', 'website', 'seo'],
+  relatedServices: ['geo', 'seo-website'],
   relatedTerms: ['term-geo', 'term-eeat', 'term-structured-data'],
   relatedLessons: ['lesson-c-1-1'],
   zh: {
@@ -81,7 +81,7 @@ export const aiSupplierSearchProductPageChecklist: Insight = {
 
 **打分**：每项“写成文字且具体”记 1 分。**我们的建议**：分数低的项先补。
 
-另外还要确认一件事：这些文字要在服务端输出的 HTML 里。如果产品页靠 JavaScript 在浏览器里才渲染出正文，不执行 JS 的 AI 爬虫可能读不到，这属于[独立站建设](/services/website)的技术底座问题。
+另外还要确认一件事：这些文字要在服务端输出的 HTML 里。如果产品页靠 JavaScript 在浏览器里才渲染出正文，不执行 JS 的 AI 爬虫可能读不到，这属于[独立站建设](/services/seo-website)的技术底座问题。
 
 ## 四、改写模板：把一句空话改成一段可核对的事实
 
@@ -224,7 +224,7 @@ Before you start, open the page in a browser and press Ctrl+F (Command+F on a Ma
 
 **Scoring**: give one point for each item that is written as specific text. **Our advice**: fix the lowest-scoring items first.
 
-One more check: this text must be in the HTML the server sends. If the page body only appears after JavaScript runs in the browser, AI crawlers that do not run JavaScript may not see it. That is a technical foundation issue covered by our [website service](/services/website).
+One more check: this text must be in the HTML the server sends. If the page body only appears after JavaScript runs in the browser, AI crawlers that do not run JavaScript may not see it. That is a technical foundation issue covered by our [website service](/services/seo-website).
 
 ## 4. Copy templates: turn a vague claim into checkable facts
 

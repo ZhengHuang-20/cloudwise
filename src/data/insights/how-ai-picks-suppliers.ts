@@ -10,7 +10,7 @@ export const howAiPicksSuppliers: Insight = {
     zh: ['ChatGPT 怎么推荐供应商', 'AI 怎么选供应商', 'Gemini 推荐供应商依据', '工业企业 GEO', 'AI 推荐供应商'],
     en: ['how does ChatGPT recommend suppliers', 'how AI chooses suppliers', 'Gemini supplier recommendations', 'GEO for manufacturers'],
   },
-  relatedServices: ['geo', 'seo', 'website'],
+  relatedServices: ['geo', 'seo-website'],
   relatedTerms: ['term-geo', 'term-ai-crawlers', 'term-entity', 'term-eeat'],
   relatedLessons: ['lesson-c-1-1', 'lesson-c-3-1'],
   zh: {

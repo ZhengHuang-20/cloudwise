@@ -10,7 +10,7 @@ export const geoElectronicsPcb: Insight = {
     zh: ['PCB GEO', '电子制造出海 GEO', 'PCBA 工厂 AI 搜索', 'PCB 工艺能力表怎么写', 'IPC 标准 官网展示', 'RoHS REACH 官网'],
     en: ['GEO for PCB manufacturers', 'PCB assembly supplier AI search', 'EMS provider ChatGPT visibility', 'PCB capability table website', 'IPC class 3 manufacturer China'],
   },
-  relatedServices: ['geo', 'website', 'ai-customer-service'],
+  relatedServices: ['geo', 'seo-website', 'ai-customer-service'],
   relatedTerms: ['term-structured-data', 'term-entity', 'term-eeat'],
   relatedLessons: ['lesson-c-3-1', 'lesson-a-1-2'],
   zh: {

@@ -23,7 +23,13 @@ const nextConfig = {
   typescript: { ignoreBuildErrors: true },
   // 每个内容页的 Markdown 版本（src/site/markdown.ts）：/services/geo.md → app/md-pages/zh/services/geo
   async redirects() {
-    return SHOW_FDE ? [] : FDE_REDIRECTS.map((r) => ({ ...r, permanent: true }));
+    // SEO 与建站合并为一项服务：旧的两个服务页地址永久跳转到合并后的页面
+    const seoWebsite = ['/services/website', '/services/seo', '/en/services/website', '/en/services/seo'].map((source) => ({
+      source,
+      destination: source.startsWith('/en') ? '/en/services/seo-website' : '/services/seo-website',
+      permanent: true,
+    }));
+    return [...seoWebsite, ...(SHOW_FDE ? [] : FDE_REDIRECTS.map((r) => ({ ...r, permanent: true })))];
   },
   async rewrites() {
     return [

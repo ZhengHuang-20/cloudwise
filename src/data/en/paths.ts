@@ -1,4 +1,4 @@
-import { SERVICE_COUNT_EN, SHOW_FDE } from '../../lib/features';
+import { COURSE_COUNT_EN, SHOW_FDE } from '../../lib/features';
 import type { PathEn } from './types';
 
 /** 角色学习路径（英文），按 id 与 src/data/coursesData.ts 中的 ROLE_LEARNING_PATHS 对应 */
@@ -7,7 +7,7 @@ export const pathsEn: Record<string, PathEn> = {
     title: '60 minutes for owners: understand AI export in one hour',
     targetRole: 'Decision-makers (chairman, general manager, export project investors)',
     durationText: 'About 60 minutes',
-    description: `No technical detail. Focus on the decision-maker sections of the ${SERVICE_COUNT_EN.toLowerCase()} courses: the investment mix, delivery timeline, pitfalls to avoid and acceptance criteria.`,
+    description: `No technical detail. Focus on the decision-maker sections of the ${COURSE_COUNT_EN.toLowerCase()} courses: the investment mix, delivery timeline, pitfalls to avoid and acceptance criteria.`,
     endGoal: 'Decide clearly whether to act, which items to do, what to do first, and how to assess the team and the provider',
   },
   'path-acquisition': {

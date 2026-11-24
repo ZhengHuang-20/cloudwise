@@ -3,7 +3,7 @@ import type { ServiceKey } from '../components/ui/serviceIdentity';
 import { SHOW_FDE } from '../lib/features';
 
 /**
- * 五项服务的说明：服务页、服务详情页（/services/<slug>）、llms.txt 与 JSON-LD 共用。
+ * 核心服务的说明（GEO、SEO 与建站、AI 客服）：服务页、服务详情页（/services/<slug>）、llms.txt 与 JSON-LD 共用。
  * 业务事实同时出现在 AI 顾问知识库（src/server/knowledge.ts）与课程数据里，改动时一并更新。站点不写任何价格。
  */
 
@@ -18,6 +18,8 @@ export interface Service {
   desc: Bi;
   deliverables: Bi[];
   courseId: string;
+  /** 同一项服务对应多门课程时，其余课程的字母（SEO 与建站对应课程 A 与 B） */
+  extraCourseCodes?: Service['code'][];
   caseName: Bi;
   judgement: Bi;
   /** 详情页的 <title> 与 description（含核心搜索词） */
@@ -29,8 +31,23 @@ export interface Service {
    * 详情页单独成块，同时进入服务列表页、.md 页面与 llms-full.txt。
    */
   engagement?: Engagement;
+  /** 可选：案例数据（来自客户后台截图），单独成块，也进入 .md 页面与 llms-full.txt。每个数字都要能在截图里核对 */
+  proof?: Proof;
   /** 可选：详情页的完整说明（Markdown 子集，见 src/lib/markdown.ts，从 ## 开始），也进入 .md 页面与 llms-full.txt */
   guide?: Bi;
+}
+
+export interface Proof {
+  title: Bi;
+  intro: Bi;
+  period: Bi;
+  stats: { value: string; label: Bi }[];
+  milestonesTitle: Bi;
+  milestones: { date: string; value: string }[];
+  notes: Bi[];
+  source: Bi;
+  images: { src: string; width: number; height: number; alt: Bi }[];
+  caseHref: string;
 }
 
 export interface Engagement {
@@ -167,7 +184,7 @@ const ALL_SERVICES: Service[] = [
 
 ## 和 SEO、独立站的关系
 
-AI 联网回答时，常常先检索搜索引擎的结果，所以页面要先能被收录、被读懂。官网如果是只在浏览器里渲染的单页应用，或者参数都在 PDF 和图片里，GEO 的第一步就是修这些。属于[海外独立站](/services/website)或[外贸 SEO](/services/seo)范围的修复，我们可以一并完成；两者的区别见[GEO 和 SEO 有什么区别](/insights/geo-vs-seo)。
+AI 联网回答时，常常先检索搜索引擎的结果，所以页面要先能被收录、被读懂。官网如果是只在浏览器里渲染的单页应用，或者参数都在 PDF 和图片里，GEO 的第一步就是修这些。属于[海外独立站](/services/seo-website)或[外贸 SEO](/services/seo-website)范围的修复，我们可以一并完成；两者的区别见[GEO 和 SEO 有什么区别](/insights/geo-vs-seo)。
 
 ## 我们不做什么
 
@@ -211,7 +228,7 @@ Buyers in different industries ask different questions and check different evide
 
 ## How it relates to SEO and your website
 
-When AI answers with live search, it often retrieves search engine results first, so pages must be indexable and readable. If your site is a single-page app that only renders in the browser, or the parameters live in PDFs and images, fixing that is the first step of GEO. Fixes within a [website](/services/website) or [export SEO](/services/seo) project can be done as part of the work; the difference between the two is in [GEO vs SEO](/insights/geo-vs-seo).
+When AI answers with live search, it often retrieves search engine results first, so pages must be indexable and readable. If your site is a single-page app that only renders in the browser, or the parameters live in PDFs and images, fixing that is the first step of GEO. Fixes within a [website](/services/seo-website) or [export SEO](/services/seo-website) project can be done as part of the work; the difference between the two is in [GEO vs SEO](/insights/geo-vs-seo).
 
 ## What we do not do
 
@@ -273,30 +290,92 @@ To see where you stand, [run a free AI visibility audit](/audit). To evaluate an
   },
   {
     key: 'site',
-    slug: 'website',
+    slug: 'seo-website',
     code: 'A',
-    title: { zh: '海外独立站（三读者架构）', en: 'Overseas website (three-reader architecture)' },
-    friction: { zh: '读不懂', en: 'Hard to read' },
+    title: { zh: 'SEO 与建站：让海外买家搜得到、看得懂', en: 'SEO and website: found by overseas buyers, understood on arrival' },
+    friction: { zh: '看不见 · 读不懂', en: 'Invisible · Hard to read' },
     oneLiner: {
-      zh: '为采购主管、技术总监、合规官各自准备他们要找的页面。',
-      en: 'Pages built for procurement managers, technical directors and compliance officers, each finding what they need.',
+      zh: '用海外独立站承接买家，用外贸 SEO 让买家搜得到：先把官网做成能被收录、能被读懂的样子。',
+      en: 'An overseas website that receives buyers, and export SEO that lets buyers find it: first make your site indexable and readable.',
     },
     desc: {
-      zh: '很多企业的英文站是中文画册直译，海外工程师找不到公差、标准编号和可下载的资料，也就无从判断你是否可靠。我们把制造能力整理成参数与公差范围、国际标准合规编号和可下载的工程白皮书，让每类读者一眼找到自己要的。',
-      en: "Many companies' English sites are literal translations of Chinese brochures. Overseas engineers cannot find tolerances, standard numbers or downloadable material, so they cannot judge whether you are reliable. We turn your manufacturing capability into parameters and tolerance ranges, international standard compliance numbers and downloadable engineering white papers, so each type of reader finds what they need at a glance.",
+      zh: '很多企业的英文站是中文画册直译，海外工程师找不到公差、标准编号和可下载的资料，买家搜相关词时也搜不到你。我们把建站与 SEO 放在一起做：先按采购、技术、合规三类读者组织页面，把制造能力整理成参数与公差、国际标准编号和可下载的工程资料；再按信息型、对比型、采购型意图建立核心词库，一个词对应一个页面。官网既是买家的落脚点，也是 Google 与 AI 识别你的来源，所以 SEO 与建站是 GEO 的底座。',
+      en: "Many companies' English sites are literal translations of Chinese brochures. Overseas engineers cannot find tolerances, standard numbers or downloadable material, and buyers searching for related terms never reach you. We do the website and SEO together: pages are organised for procurement, technical and compliance readers, and your manufacturing capability becomes parameters and tolerances, international standard numbers and downloadable engineering material; then we build a keyword library by informational, comparison and procurement intent, with one page per term. The website is both where buyers land and the source Google and AI use to recognise you, which is why SEO and the website are the foundation of GEO.",
     },
     deliverables: [
       { zh: '按采购、技术、合规三类读者分流的页面结构', en: 'Page structure routed by procurement, technical and compliance readers' },
       { zh: 'Core Web Vitals 优化，目标：海外主要地区 LCP ≤ 1.8 秒', en: 'Core Web Vitals tuning, target: LCP ≤ 1.8 seconds in key overseas regions' },
       { zh: 'Schema.org 结构化数据，便于搜索引擎与 AI 读取', en: 'Schema.org structured data for search engines and AI to read' },
+      { zh: '60 组外贸核心采购词，一词一页', en: '60 core procurement keyword groups, one page per term' },
+      { zh: '技术白皮书与工程规格主题内容', en: 'Technical white papers and engineering specification content' },
+      { zh: '行业协会与专业媒体的外部链接（不买卖链接）', en: 'Links from industry associations and trade media (no paid links)' },
+      { zh: '用 Search Console 与 GA4 追踪搜索表现、询盘来源与转化流失的位置', en: 'Search Console and GA4 tracking of search performance, enquiry sources and where conversions drop off' },
       { zh: '访客行为与表单线索同步到企业自己的 CRM', en: 'Visitor behaviour and form leads synced to your own CRM' },
     ],
     courseId: 'A',
+    extraCourseCodes: ['B'],
     seo: {
-      title: { zh: '外贸独立站建设：写给买家、Google 与 AI 的三读者海外官网', en: 'B2B export website development for Chinese manufacturers' },
-      description: { zh: '为中国制造企业建设海外独立站：按采购、技术、合规三类读者组织页面，公差、认证与技术资料可查证，Core Web Vitals 达标，并内置结构化数据。', en: 'Export websites for Chinese manufacturers: pages organised for procurement, technical and compliance readers, verifiable specs and certifications, fast Core Web Vitals and built-in structured data.' },
+      title: { zh: '外贸 SEO 与独立站建设：让海外买家在 Google 搜到并看懂你', en: 'Export SEO and website development for Chinese manufacturers' },
+      description: { zh: '为中国制造企业建设海外独立站并做外贸 SEO：按采购、技术、合规三类读者组织页面，建立一词一页的采购级核心词库，Core Web Vitals 达标，内置结构化数据，附爱康医疗的 Search Console 数据。', en: 'Overseas websites and export SEO for Chinese manufacturers: pages organised for procurement, technical and compliance readers, a one-page-per-term procurement keyword library, fast Core Web Vitals and built-in structured data, with Search Console data from Aikang Medical.' },
+    },
+    proof: {
+      title: { zh: '案例数据：爱康医疗新建海外官网的 Google 搜索表现', en: 'Case data: Google Search performance of the new Aikang Medical overseas site' },
+      intro: {
+        zh: '爱康医疗（港股上市的骨科植入物企业）的国内官网英文内容是中文画册机翻，我们为其新建了英文海外官网 ak-medical-global.com。下面是该站在 Google Search Console 里的真实数据。',
+        en: 'Aikang Medical (a Hong Kong-listed orthopaedic implant maker) had a domestic site whose English content was machine-translated from a Chinese brochure, so we built a new English overseas site, ak-medical-global.com. Below is that site’s real data from Google Search Console.',
+      },
+      period: {
+        zh: '统计区间：2026-08-15 至 2026-11-13（Search Console「近 3 个月」），搜索类型：网页（文本）',
+        en: 'Period: 2026-08-15 to 2026-11-13 (Search Console, last 3 months), search type: web (text)',
+      },
+      stats: [
+        { value: '272', label: { zh: 'Google 搜索总点击次数', en: 'Total clicks from Google Search' } },
+        { value: '8,315', label: { zh: '总展示次数', en: 'Total impressions' } },
+        { value: '3.3%', label: { zh: '平均点击率', en: 'Average click-through rate' } },
+        { value: '8', label: { zh: '平均排名（所有查询的平均值）', en: 'Average position (across all queries)' } },
+      ],
+      milestonesTitle: { zh: 'Google「搜索影响力成就」：28 天内的点击次数达到', en: 'Google “search impact” achievements: clicks within 28 days reached' },
+      milestones: [
+        { date: '2026-09-17', value: '60' },
+        { date: '2026-09-20', value: '70' },
+        { date: '2026-09-30', value: '90' },
+        { date: '2026-11-04', value: '100' },
+      ],
+      notes: [
+        {
+          zh: '需要说明的口径：点击最多的两个查询是品牌词，“ak medical”（60 次点击、1,882 次展示）与“ak medical china”（12 次点击、126 次展示），所以这组数据主要说明品牌词在 Google 上能搜到官网，不代表非品牌的采购词都已排在前列。',
+          en: 'A note on scope: the two queries with the most clicks are brand terms, “ak medical” (60 clicks, 1,882 impressions) and “ak medical china” (12 clicks, 126 impressions). So this data mainly shows that the brand can be found on Google, not that non-brand procurement terms already rank near the top.',
+        },
+        {
+          zh: '这是一个客户站点、一个统计区间的数据，不代表其他企业会得到同样结果。我们会按你的站点与行业，在同一口径下定期复盘。',
+          en: 'This is one client site over one period and does not mean other companies will get the same result. We review your own site and industry on the same basis at regular intervals.',
+        },
+      ],
+      source: {
+        zh: '来源：ak-medical-global.com 的 Google Search Console「效果」与「成就」页面截图。',
+        en: 'Source: screenshots of the Google Search Console “Performance” and “Achievements” pages for ak-medical-global.com.',
+      },
+      images: [
+        {
+          src: '/cases/ak-medical/gsc-performance-2026-11-13.jpg',
+          width: 1600,
+          height: 716,
+          alt: { zh: 'Google Search Console 效果报告截图：近 3 个月 272 次点击、8,315 次展示、平均点击率 3.3%、平均排名 8', en: 'Google Search Console performance report: 272 clicks, 8,315 impressions, 3.3% average CTR and average position 8 over the last 3 months' },
+        },
+        {
+          src: '/cases/ak-medical/gsc-achievements.jpg',
+          width: 1000,
+          height: 1088,
+          alt: { zh: 'Google Search Console 成就页面截图：28 天点击次数达到 60、70、90、100 的日期', en: 'Google Search Console achievements page: the dates when 28-day clicks reached 60, 70, 90 and 100' },
+        },
+      ],
+      caseHref: '/cases/ak-medical',
     },
     faqs: [
+      {
+        q: { zh: 'SEO 和建站为什么放在一起做？', en: 'Why are SEO and the website done together?' },
+        a: { zh: '官网的页面结构决定了搜索引擎能不能收录、读懂它。先建好站再补 SEO，往往要返工页面；一起做，可以在建站时就按“一词一页”规划页面与内链，上线后直接接入 Search Console 追踪表现。', en: 'The structure of your pages decides whether search engines can index and understand them. Adding SEO after the site is built often means reworking pages. Done together, pages and internal links are planned around “one page per term” from the start, and Search Console tracking is connected at launch.' },
+      },
       {
         q: { zh: '独立站和阿里巴巴国际站等平台店铺有什么区别？', en: 'How is an independent export website different from a marketplace store such as Alibaba.com?' },
         a: { zh: '平台店铺借平台流量，规则由平台决定，客户数据也留在平台；独立站是企业自己的海外主阵地，访客与询盘数据归企业所有，也是 Google 和 AI 识别品牌实体的权威来源。两者可以并存，但独立站不能缺。', en: 'A marketplace store borrows the platform’s traffic: the platform sets the rules and keeps the customer data. An independent website is your own base overseas: visitor and enquiry data belong to you, and it is the authoritative source Google and AI use to recognise your brand. The two can coexist, but you cannot do without the website.' },
@@ -306,65 +385,29 @@ To see where you stand, [run a free AI visibility audit](/audit). To evaluate an
         a: { zh: '一个外贸网站同时写给三类读者：海外买家（采购、技术、合规负责人）、Google 搜索引擎和 AI 大模型。买家要能找到参数与资质，搜索引擎要能读懂页面结构，AI 要能引用可查证的事实。', en: 'An export website is written for three readers at once: overseas buyers (procurement, technical and compliance leads), the Google search engine, and AI models. Buyers need to find specs and credentials, search engines need to understand the page structure, and AI needs verifiable facts it can cite.' },
       },
       {
-        q: { zh: '网站上线后怎么验收？', en: 'How is the website accepted after launch?' },
-        a: { zh: '按交付标准逐项验收：三类读者的页面结构、海外主要地区的 Core Web Vitals、Schema 结构化数据校验、表单线索进入企业自己的 CRM。上线后还会接入访问与线索数据看板。', en: 'Item by item against the deliverables: page structure for the three readers, Core Web Vitals in key overseas regions, Schema validation, and form leads reaching your own CRM. After launch, a visit and lead dashboard is connected as well.' },
+        q: { zh: '为什么要“一个词对应一个页面”？', en: 'Why “one page per keyword”?' },
+        a: { zh: '多个页面抢同一个词，会互相稀释排名，搜索引擎也难判断该展示哪一页。按信息型、对比型、采购型意图把词分配到具体页面，每个页面才有明确的排名目标。', en: 'When several pages compete for the same term they dilute each other, and search engines struggle to decide which to show. Assigning terms to specific pages by informational, comparison and procurement intent gives every page a clear ranking target.' },
       },
-    ],
-    caseName: {
-      zh: '爱康医疗：新建海外官网 GEO / SEO 评分 95 分（国内官网为 47 分，是两个不同站点）',
-      en: 'Aikang Medical: the new overseas site scores 95 on GEO / SEO (the domestic site scored 47; these are two different sites)',
-    },
-    judgement: {
-      zh: '工程师核对不了的参数，不会被当作依据。所以先把能核对的东西摆出来：公差、标准编号、检测报告。',
-      en: 'Parameters an engineer cannot verify will not be used as evidence. So we publish what can be checked first: tolerances, standard numbers and test reports.',
-    },
-  },
-  {
-    key: 'seo',
-    slug: 'seo',
-    code: 'B',
-    title: { zh: '外贸 SEO：采购级核心词库', en: 'Export SEO: a procurement-grade keyword library' },
-    friction: { zh: '看不见', en: 'Invisible' },
-    oneLiner: {
-      zh: '买家搜什么词，你的页面就出现在那个词下面。',
-      en: 'Whatever words buyers search for, your page appears under those words.',
-    },
-    desc: {
-      zh: '不堆泛词，不买流量。遵循 Google Search Essentials 与 E-E-A-T，建立信息型、对比型、采购型共 60 组核心词，一个词对应一个页面，让欧美买家在采购搜索中有机会看到你。',
-      en: 'No generic keywords, no bought traffic. Following Google Search Essentials and E-E-A-T, we build 60 core keyword groups across informational, comparison and procurement intent, with one page per term, so buyers in Europe and the US have a chance to find you in procurement searches.',
-    },
-    deliverables: [
-      { zh: '60 组外贸核心采购词，一词一页', en: '60 core procurement keyword groups, one page per term' },
-      { zh: '技术白皮书与工程规格主题内容', en: 'Technical white papers and engineering specification content' },
-      { zh: '行业协会与专业媒体的外部链接（不买卖链接）', en: 'Links from industry associations and trade media (no paid links)' },
-      { zh: '用 GA4 追踪询盘来源与转化流失的位置', en: 'GA4 tracking of enquiry sources and where conversions drop off' },
-    ],
-    courseId: 'B',
-    seo: {
-      title: { zh: '外贸 SEO 优化：采购级核心词库，让海外买家在 Google 搜到你', en: 'Export SEO for B2B manufacturers: procurement keywords' },
-      description: { zh: '遵循 Google Search Essentials 与 E-E-A-T，为出海企业建立信息型、对比型、采购型核心词库，一个词对应一个页面，不买链接、不堆泛词。', en: 'Export SEO that follows Google Search Essentials and E-E-A-T: informational, comparison and procurement keyword groups, one page per term, no paid links and no generic keyword stuffing.' },
-    },
-    faqs: [
       {
         q: { zh: '外贸 SEO 和 Google 付费广告有什么区别？', en: 'How is export SEO different from Google Ads?' },
         a: { zh: '付费广告按点击付费，预算一停流量就没了；SEO 积累的是网站自身的自然排名，被收录的技术内容会长期带来访问。两者可以配合：广告测试关键词，SEO 沉淀长期资产。', en: 'Ads charge per click, and the traffic stops when the budget stops. SEO builds your site’s own organic rankings, and indexed technical content keeps bringing visits over time. They work together: ads test keywords, and SEO builds the long-term asset.' },
       },
       {
-        q: { zh: '为什么要“一个词对应一个页面”？', en: 'Why “one page per keyword”?' },
-        a: { zh: '多个页面抢同一个词，会互相稀释排名，搜索引擎也难判断该展示哪一页。按信息型、对比型、采购型意图把词分配到具体页面，每个页面才有明确的排名目标。', en: 'When several pages compete for the same term they dilute each other, and search engines struggle to decide which to show. Assigning terms to specific pages by informational, comparison and procurement intent gives every page a clear ranking target.' },
+        q: { zh: 'SEO 和 GEO 是什么关系？', en: 'How do SEO and GEO relate?' },
+        a: { zh: 'AI 联网回答问题时，检索的往往就是搜索引擎的结果。页面先被搜索引擎收录、排得上，AI 才更容易找到并引用它，所以 SEO 与建站是 GEO 的底座。', en: 'When AI answers with live search, it often retrieves search engine results. A page that is indexed and ranks well is easier for AI to find and cite, so SEO and the website are the foundation of GEO.' },
       },
       {
-        q: { zh: 'SEO 和 GEO 是什么关系？', en: 'How do SEO and GEO relate?' },
-        a: { zh: 'AI 联网回答问题时，检索的往往就是搜索引擎的结果。页面先被搜索引擎收录、排得上，AI 才更容易找到并引用它，所以 SEO 是 GEO 的底座。', en: 'When AI answers with live search, it often retrieves search engine results. A page that is indexed and ranks well is easier for AI to find and cite, so SEO is the foundation of GEO.' },
+        q: { zh: '网站上线后怎么验收？', en: 'How is the website accepted after launch?' },
+        a: { zh: '按交付标准逐项验收：三类读者的页面结构、海外主要地区的 Core Web Vitals、Schema 结构化数据校验、表单线索进入企业自己的 CRM。上线后接入 Search Console 与访问、线索数据看板。', en: 'Item by item against the deliverables: page structure for the three readers, Core Web Vitals in key overseas regions, Schema validation, and form leads reaching your own CRM. After launch, Search Console and a visit and lead dashboard are connected.' },
       },
     ],
     caseName: {
-      zh: '泰宁科创：60 组英文核心词在 Google 欧美主要地区排名前两页',
-      en: 'Taining Tech: 60 English core keyword groups reach the first two pages of Google in key US and European markets',
+      zh: '爱康医疗：新建海外官网，Google 搜索近 3 个月 272 次点击、8,315 次展示（2026-08-15 至 2026-11-13，Search Console）',
+      en: 'Aikang Medical: the new overseas site had 272 clicks and 8,315 impressions on Google Search in 3 months (15 Aug to 13 Nov 2026, Search Console)',
     },
     judgement: {
-      zh: '买家搜不到你，就不会知道你。所以先弄清他们搜什么词，再让页面对得上。',
-      en: 'Buyers who cannot find you will never know you exist. So first work out what they search for, then make your pages match.',
+      zh: '买家搜不到你就不会知道你，工程师核对不了的参数不会被当作依据。所以先把能核对的东西摆出来，再让页面对得上买家搜的词。',
+      en: 'Buyers who cannot find you will never know you exist, and parameters an engineer cannot verify will not be used as evidence. So publish what can be checked first, then make your pages match what buyers search for.',
     },
   },
   {

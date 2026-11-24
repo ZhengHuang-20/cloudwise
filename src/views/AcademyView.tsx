@@ -7,7 +7,7 @@ import { useLang } from '../context/LanguageContext';
 import { LessonModal } from '../components/LessonModal';
 import { PageHeader } from '../components/ui/PageHeader';
 import { SegmentedControl } from '../components/ui/SegmentedControl';
-import { SERVICE_COUNT_CN, SERVICE_COUNT_EN } from '../lib/features';
+import { COURSE_COUNT_CN, COURSE_COUNT_EN } from '../lib/features';
 import { courseSlug, lessonPath } from '../site/links';
 import { useSite } from '../site/SiteContext';
 
@@ -180,7 +180,7 @@ export const AcademyView: React.FC = () => {
     <div>
       <PageHeader
         eyebrow={t('出海学院', 'Export Academy')}
-        title={t(`${SERVICE_COUNT_CN}门专业课，全部公开`, `${SERVICE_COUNT_EN} expert courses, all open to read`)}
+        title={t(`${COURSE_COUNT_CN}门专业课，全部公开`, `${COURSE_COUNT_EN} expert courses, all open to read`)}
         intro={t(
           '海外采购标准里的工程细节，这里都写明白。先自己学懂，见面沟通时就不必从头解释基础。',
           'The engineering detail behind overseas procurement standards, written out in full. Learn it yourself first, and you will not need to explain the basics from scratch when you meet.'

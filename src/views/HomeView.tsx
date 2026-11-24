@@ -40,21 +40,12 @@ const ALL_SERVICES: ServiceCard[] = [
   },
   {
     key: 'site',
-    title: { zh: '海外独立站建站', en: 'Overseas websites' },
+    title: { zh: 'SEO 与建站', en: 'SEO and website' },
     desc: {
-      zh: '为海外采购主管、技术总监、合规官三类读者设计的独立站：公差、认证编号、技术资料都能在页面上找到，海外访问打开快。',
-      en: 'Websites built for three readers: overseas procurement managers, technical directors and compliance officers. Tolerances, certification numbers and technical files are on the page, and the site loads fast overseas.',
+      zh: '海外独立站按采购、技术、合规三类读者设计，再用一词一页的核心词库做外贸 SEO。爱康医疗新建海外官网，Google 搜索近 3 个月有 272 次点击（Search Console 数据）。',
+      en: 'An overseas website designed for procurement, technical and compliance readers, plus export SEO with a one-page-per-term keyword library. The new Aikang Medical overseas site had 272 clicks from Google Search in 3 months (Search Console data).',
     },
-    link: { zh: '了解建站方案', en: 'See the website plan' },
-  },
-  {
-    key: 'seo',
-    title: { zh: '外贸 SEO 优化', en: 'Export SEO' },
-    desc: {
-      zh: '按买家的真实搜索词，建 60 组采购相关的核心词库，一个词对应一个页面；目标是让买家搜索时能看到你。',
-      en: 'Built from the search terms real buyers use: 60 procurement-related core keyword groups, one page per term, so buyers can find you when they search.',
-    },
-    link: { zh: '了解 SEO 词库策略', en: 'See the SEO keyword strategy' },
+    link: { zh: '查看 SEO 与建站及案例数据', en: 'See SEO and website, with case data' },
   },
   {
     key: 'chat',
@@ -91,8 +82,8 @@ const TOOLS: {
     icon: ListChecks,
     title: { zh: '方案组合与交付规划', en: 'Package planning and delivery' },
     desc: {
-      zh: `自由组合 GEO${SHOW_FDE ? '、FDE 驻场、' : '、'}独立站、SEO 与 AI 客服，实时得到交付周期、阶段排期与交付物清单。`,
-      en: `Combine GEO${SHOW_FDE ? ', FDE on-site engineering, ' : ', '}websites, SEO and AI customer service, and get delivery timelines, phased schedules and deliverables instantly.`,
+      zh: `自由组合 GEO${SHOW_FDE ? '、FDE 驻场、' : '、'}SEO 与建站、AI 客服，实时得到交付周期、阶段排期与交付物清单。`,
+      en: `Combine GEO${SHOW_FDE ? ', FDE on-site engineering, ' : ', '}SEO and website, and AI customer service, and get delivery timelines, phased schedules and deliverables instantly.`,
     },
     link: { zh: '规划方案', en: 'Plan a project' },
   },
@@ -216,13 +207,8 @@ export const HomeView: React.FC = () => {
           {SERVICES.map((service, index) => {
             const identity = SERVICE_IDENTITY[service.key];
             const Icon = identity.icon;
-            // 五张：前两张各占 3 列、后三张各占 2 列；四张：2 × 2
-            const span =
-              index < 2 || SERVICES.length === 4
-                ? 'lg:col-span-3'
-                : index === 4
-                  ? 'md:col-span-2 lg:col-span-2'
-                  : 'lg:col-span-2';
+            // 三张：各占 2 列；四张（开启 FDE）：2 × 2
+            const span = SERVICES.length === 4 ? 'lg:col-span-3' : index === 2 ? 'md:col-span-2 lg:col-span-2' : 'lg:col-span-2';
             return (
               <Link
                 key={service.key}
