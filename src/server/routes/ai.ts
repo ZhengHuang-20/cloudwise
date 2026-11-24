@@ -132,7 +132,7 @@ function chatFallback(r: ChatRequest) {
     next = '建议打开站内“方案规划”查看交付周期与交付物，再预约 30 分钟诊断会获取定制方案。';
   } else if (has('geo', 'chatgpt', 'ai推荐', '可见性')) {
     answer =
-      'GEO（生成式引擎优化）是我们最具差异化的旗舰服务。不同于传统 SEO 仅在搜索结果列表排位，GEO 的核心是提高 ChatGPT、Perplexity、Gemini 等主流 AI 在向海外采购商推荐供应商时提到并引用您的品牌的机会；AI 的回答没有人能保证，所以我们每月用固定问题复测并汇报。\n\n我们通过六步闭环（诊断、建模、内容、信源、口碑、监测）建立权威证据链。以爱康医疗为例，其现有国内官网的 GEO / SEO 评分仅 47 分，我们新建的海外官网达到 95 分，ChatGPT 连续数月带来引荐访问（来自客户的 Google Analytics 4 记录）。\n\n如果希望费用和效果挂钩，GEO 可以选择按线索付费，KPI 也由双方商定。';
+      'GEO（生成式引擎优化）是我们最具差异化的旗舰服务。不同于传统 SEO 仅在搜索结果列表排位，GEO 的核心是提高 ChatGPT、Perplexity、Gemini 等主流 AI 在向海外采购商推荐供应商时提到并引用您的品牌的机会；AI 的回答没有人能保证，所以我们每月用固定问题复测并汇报。\n\n我们通过六步闭环（诊断、建模、内容、信源、口碑、监测）建立权威证据链。以爱康医疗为例，我们新建的海外官网在 Google 搜索近 3 个月有 272 次点击（Search Console 数据），ChatGPT 连续数月带来引荐访问（来自客户的 Google Analytics 4 记录）。\n\n如果希望费用和效果挂钩，GEO 可以选择按线索付费，KPI 也由双方商定。';
     intent = 'HIGH';
     intentReason = '主动咨询最新 GEO 旗舰技术，具备强烈获客升级意向';
     services.push('出海 GEO 优化', '外贸 SEO 优化');
@@ -205,7 +205,7 @@ function chatFallbackEn(r: ChatRequest) {
     next = 'Open the Project planner to review timelines and deliverables, then book a 30-minute diagnosis call for a tailored plan.';
   } else if (has('geo', 'chatgpt', 'perplexity', 'gemini', 'visibility', 'recommend')) {
     answer =
-      'GEO (generative engine optimisation) is our most distinctive flagship service. Unlike traditional SEO, which only competes for positions in a results list, GEO raises the chance that ChatGPT, Perplexity, Gemini and other leading AI tools mention and cite your brand when they recommend suppliers to overseas buyers. Nobody can guarantee what an AI will answer, so we re-test a fixed set of questions every month and report the change.\n\nWe build the evidence chain through a six-step closed loop: diagnosis, modelling, content, sources, reputation and monitoring. Aikang Medical is an example: its domestic site scored 47 on GEO / SEO, while the new overseas site scored 95, and ChatGPT has sent referral visits for several months (from the client’s Google Analytics 4 records).\n\nIf you want the fee tied to results, GEO can be paid for per lead, with the KPIs agreed between us.';
+      'GEO (generative engine optimisation) is our most distinctive flagship service. Unlike traditional SEO, which only competes for positions in a results list, GEO raises the chance that ChatGPT, Perplexity, Gemini and other leading AI tools mention and cite your brand when they recommend suppliers to overseas buyers. Nobody can guarantee what an AI will answer, so we re-test a fixed set of questions every month and report the change.\n\nWe build the evidence chain through a six-step closed loop: diagnosis, modelling, content, sources, reputation and monitoring. Aikang Medical is an example: the new overseas site had 272 clicks from Google Search in 3 months (Search Console data), and ChatGPT has sent referral visits for several months (from the client’s Google Analytics 4 records).\n\nIf you want the fee tied to results, GEO can be paid for per lead, with the KPIs agreed between us.';
     intent = 'HIGH';
     intentReason = 'Asked about the flagship GEO service, with a strong intent to upgrade lead generation';
     services.push('Export GEO', 'Export SEO');

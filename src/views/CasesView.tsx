@@ -51,17 +51,29 @@ export const CasesView: React.FC = () => {
                       <span className="ml-3 text-title-3 font-normal text-label-secondary">{name.secondary}</span>
                     )}
                   </h3>
-                  <p className="mt-8 flex items-center gap-3 text-headline tabular-nums">
-                    <span className="text-label-secondary">{c.startingScore}</span>
-                    <ArrowRight className="h-6 w-6 text-label-tertiary" aria-hidden="true" />
-                    <span className="text-success">{c.results.finalScore}</span>
-                    <span className="text-title-3 text-label-secondary">{t('分', 'pts')}</span>
-                  </p>
-                  <p className="mt-1 text-caption text-label-secondary">
-                    {comparison
-                      ? `${comparison.metric} · ${comparison.beforeLabel} → ${comparison.afterLabel}`
-                      : t('改造前 → 改造后', 'Before → after')}
-                  </p>
+                  {c.headline ? (
+                    <>
+                      <p className="mt-8 text-headline tabular-nums text-success">
+                        {lang === 'en' ? c.headline.en.value : c.headline.value}
+                        <span className="ml-1 text-title-3 text-label-secondary">{lang === 'en' ? c.headline.en.unit : c.headline.unit}</span>
+                      </p>
+                      <p className="mt-1 text-caption text-label-secondary">{lang === 'en' ? c.headline.en.label : c.headline.label}</p>
+                    </>
+                  ) : (
+                    <>
+                      <p className="mt-8 flex items-center gap-3 text-headline tabular-nums">
+                        <span className="text-label-secondary">{c.startingScore}</span>
+                        <ArrowRight className="h-6 w-6 text-label-tertiary" aria-hidden="true" />
+                        <span className="text-success">{c.results.finalScore}</span>
+                        <span className="text-title-3 text-label-secondary">{t('分', 'pts')}</span>
+                      </p>
+                      <p className="mt-1 text-caption text-label-secondary">
+                        {comparison
+                          ? `${comparison.metric} · ${comparison.beforeLabel} → ${comparison.afterLabel}`
+                          : t('改造前 → 改造后', 'Before → after')}
+                      </p>
+                    </>
+                  )}
                   <p className="mt-6 flex-1 text-body text-label-secondary">{c.results.directOutcome}</p>
                   <span className="link mt-6 text-body">
                     {t('阅读完整案例', 'Read the full case')}

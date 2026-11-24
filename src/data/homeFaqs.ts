@@ -38,8 +38,8 @@ export const HOME_FAQS: { q: Bi; a: Bi }[] = [
   {
     q: { zh: '有可以核实的案例吗？', en: 'Are there cases we can verify?' },
     a: {
-      zh: '有两个公开案例，都写明了数据口径。爱康医疗：新建海外官网的 GEO / SEO 评分为 95 分，现有国内官网为 47 分，这是两个站点按同一口径的对比。泰宁科创：围绕英国 SuDS 规范建立 60 组英文核心词，并进入中东某新城雨水调蓄项目的供应商短名单。详情见案例页。',
-      en: 'There are two public cases, each with the basis of its data stated. Aikang Medical: the new overseas website scored 95 on GEO / SEO against 47 for the existing domestic site, a comparison of two sites on the same basis. Taining Tech: 60 English core keyword groups built around the UK SuDS standard, and a place on the supplier shortlist for a stormwater storage project in a new Middle East city. Details are on the case pages.',
+      zh: '有两个公开案例，都写明了数据口径。爱康医疗：新建海外官网在 Google 搜索近 3 个月（2026-08-15 至 2026-11-13）有 272 次点击、8,315 次展示（Search Console 数据，点击最多的是品牌词）。泰宁科创：围绕英国 SuDS 规范建立 60 组英文核心词，并进入中东某新城雨水调蓄项目的供应商短名单。详情见案例页。',
+      en: 'There are two public cases, each with the basis of its data stated. Aikang Medical: the new overseas website had 272 clicks and 8,315 impressions on Google Search in 3 months, 15 Aug to 13 Nov 2026 (Search Console data; the top query is a brand term). Taining Tech: 60 English core keyword groups built around the UK SuDS standard, and a place on the supplier shortlist for a stormwater storage project in a new Middle East city. Details are on the case pages.',
     },
   },
   {

@@ -40,12 +40,7 @@ export const CASE_STUDIES_EN: Record<string, CaseStudyEn> = {
       'National health registration review engineers',
     ],
     startingPointFriction:
-      'The English content on the domestic site (ak-medical.net) was a machine translation of a Chinese brochure, with no three-reader technical architecture and no structured knowledge. Its GEO / SEO score was only 47, and overseas awareness was held back.',
-    scoreComparison: {
-      metric: 'GEO / SEO score comparison',
-      beforeLabel: 'Current domestic site',
-      afterLabel: 'New overseas site',
-    },
+      'The English content on the domestic site (ak-medical.net) was a machine translation of a Chinese brochure, with no three-reader technical architecture and no structured knowledge. and overseas awareness was held back.',
     whatWeDid: [
       'Built a new English overseas site (ak-medical-global.com) as the main overseas front, meeting Core Web Vitals and multilingual standards',
       'Ran in-depth intent modelling for four types of overseas medical decision-makers, and mapped 91 high-authority English technical content items for the year',
@@ -54,7 +49,7 @@ export const CASE_STUDIES_EN: Record<string, CaseStudyEn> = {
     ],
     results: {
       metrics: [
-        'GEO / SEO score of 95 for the new overseas site, against 47 for the current domestic site',
+        'The new overseas site had 272 clicks and 8,315 impressions on Google Search in 3 months (Search Console, 15 Aug to 13 Nov 2026; the top query by clicks is a brand term)',
         'chatgpt.com and perplexity.ai have sent referral visits consistently for several months (average stay 4 minutes 35 seconds)',
         'Organic enquiries to the overseas site up 320% month on month',
       ],
@@ -62,11 +57,10 @@ export const CASE_STUDIES_EN: Record<string, CaseStudyEn> = {
         'In research questions about international hospital tenders in Europe and Latin America, ChatGPT and Perplexity listed the company among the top three recommended suppliers in the Asia-Pacific region.',
     },
     dataScopeStatement:
-      'Note: 47 is the GEO / SEO score of the current domestic site (ak-medical.net), and 95 is the score of the new overseas site (ak-medical-global.com). This compares two sites, not a before-and-after on the same site. Both were measured by the third-party tool arobis.ai on the same basis (site-wide signals, Schema definition completeness and source weighting). Referral traffic and enquiry sources come from real Google Analytics 4 and CRM tracking.',
+      'Note: search data comes from Google Search Console for ak-medical-global.com (15 Aug to 13 Nov 2026, web search type), and the top query by clicks is a brand term. Referral traffic and enquiry sources come from real Google Analytics 4 and CRM tracking.',
     evidenceLinks: [
       { label: 'New overseas site: ak-medical-global.com', url: 'https://ak-medical-global.com' },
       { label: 'Current domestic site: ak-medical.net', url: 'https://ak-medical.net' },
-      { label: 'Third-party scoring tool: arobis.ai', url: 'https://arobis.ai' },
     ],
     reusableExperience: [
       'Find out what overseas buyers ask AI before writing content',

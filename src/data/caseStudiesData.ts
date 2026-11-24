@@ -8,7 +8,10 @@ export interface CaseStudy {
   targetMarket: string;
   buyerRoles: string[];
   startingPointFriction: string;
-  startingScore: number;
+  /** 评分对比（仅在有可核实的评分时填写）。没有时用 headline 展示一个主数据 */
+  startingScore?: number;
+  /** 可选：案例的主数据，写明口径；没有评分对比时代替评分展示 */
+  headline?: { value: string; unit: string; label: string; en: { value: string; unit: string; label: string } };
   // 评分对比的口径：两个分数分别测的是哪个站点。缺省时页面显示「改造前 / 改造后」
   scoreComparison?: {
     metric: string;
@@ -17,7 +20,7 @@ export interface CaseStudy {
   };
   whatWeDid: string[];
   results: {
-    finalScore: number;
+    finalScore?: number;
     metrics: string[];
     directOutcome: string;
   };
@@ -75,12 +78,12 @@ export const CASE_STUDIES: CaseStudy[] = [
     status: '港股上市公司 · 中国骨科关节龙头',
     targetMarket: '西欧、北美、拉美、东南亚主要公立与专科医疗机构',
     buyerRoles: ['骨科专科主刀医生', '医院医疗器械采购委员会主任', '海外区域医药器械分销商', '国家卫生注册审核工程师'],
-    startingPointFriction: '现有国内官网 (ak-medical.net) 的英文内容为中文画册机翻，未配置三读者技术架构与结构化知识，GEO / SEO 评分仅 47 分，海外知名度受阻。',
-    startingScore: 47,
-    scoreComparison: {
-      metric: 'GEO / SEO 评分对比',
-      beforeLabel: '现有国内官网',
-      afterLabel: '新建海外官网',
+    startingPointFriction: '现有国内官网 (ak-medical.net) 的英文内容为中文画册机翻，未配置三读者技术架构与结构化知识，海外知名度受阻。',
+    headline: {
+      value: '272',
+      unit: '次点击',
+      label: '新建海外官网的 Google 搜索点击 · 近 3 个月（2026-08-15 至 2026-11-13，Search Console）',
+      en: { value: '272', unit: 'clicks', label: 'Google Search clicks to the new overseas site · last 3 months (15 Aug to 13 Nov 2026, Search Console)' },
     },
     whatWeDid: [
       '新建英文海外官网 (ak-medical-global.com)，搭建满足 Core Web Vitals 与多语种标准的海外主阵地',
@@ -89,19 +92,17 @@ export const CASE_STUDIES: CaseStudy[] = [
       '多平台信源权威铺设（学术索引、LinkedIn、行业展会官方目录）与月度探针监测'
     ],
     results: {
-      finalScore: 95,
       metrics: [
-        '新建海外官网 GEO / SEO 评分 95 分，现有国内官网为 47 分',
+        '新建海外官网 Google 搜索近 3 个月 272 次点击、8,315 次展示（Search Console，2026-08-15 至 2026-11-13；点击最多的查询是品牌词）',
         'chatgpt.com、perplexity.ai 数月持续产生引荐访问（平均停留 4 分 35 秒）',
         '海外官网自然询盘量环比增长 320%'
       ],
       directOutcome: '在欧洲与拉美多次医院国际招投标的调研提问中，ChatGPT 与 Perplexity 将其列为亚太地区推荐供应商的前三位。'
     },
-    dataScopeStatement: '注：47 分是现有国内官网 (ak-medical.net)、95 分是新建海外官网 (ak-medical-global.com) 的 GEO / SEO 评分，是两个站点的对比，而非同一站点改造前后的变化；两者均由第三方评测工具 arobis.ai 按同一口径（全网站点信号、Schema 定义完整度与信源权重）测得；引荐流量与询盘来源于 Google Analytics 4 与 CRM 真实埋点。',
+    dataScopeStatement: '注：搜索数据来自 ak-medical-global.com 的 Google Search Console（2026-08-15 至 2026-11-13，搜索类型为网页），点击最多的查询是品牌词；引荐流量与询盘来源于 Google Analytics 4 与 CRM 真实埋点。',
     evidenceLinks: [
       { label: '新建海外官网 ak-medical-global.com', url: 'https://ak-medical-global.com' },
       { label: '现有国内官网 ak-medical.net', url: 'https://ak-medical.net' },
-      { label: '第三方评测工具 arobis.ai', url: 'https://arobis.ai' },
     ],
     relatedLessons: ['lesson-a-1-2', 'lesson-a-7-4', 'lesson-c-1-1', 'lesson-c-10-2'],
     reusableExperience: [

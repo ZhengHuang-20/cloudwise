@@ -114,9 +114,9 @@ const CASES: {
     slug: 'ak-medical',
     meta: { zh: '港股上市 · 骨科植入物头部企业', en: 'Hong Kong-listed · leading orthopaedic implant maker' },
     name: { zh: '爱康医疗', en: 'Aikang Medical' },
-    stat: '47 → 95',
-    statUnit: { zh: '分', en: 'pts' },
-    statLabel: { zh: 'GEO / SEO 评分 · 国内官网 → 新建海外官网', en: 'GEO / SEO score · domestic site → new overseas site' },
+    stat: '272',
+    statUnit: { zh: '次点击', en: 'clicks' },
+    statLabel: { zh: 'Google 搜索点击 · 新建海外官网近 3 个月（Search Console）', en: 'Google Search clicks · new overseas site, last 3 months (Search Console)' },
     desc: {
       zh: '新建英文海外官网，按 4 类海外医疗决策者的提问组织内容，规划 91 项年度技术内容。数月内，ChatGPT 与 Perplexity 持续带来引荐访问。',
       en: 'Built a new English overseas site and organised content around the questions of four types of overseas medical decision-makers, with 91 technical content items planned for the year. Within months, ChatGPT and Perplexity were sending referral traffic consistently.',
