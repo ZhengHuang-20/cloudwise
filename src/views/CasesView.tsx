@@ -1,7 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { ArrowRight, ChevronRight } from 'lucide-react';
-import { caseList, solutionList } from '../data/caseStudiesData';
+import { caseList, ENGAGED_COMPANIES, ENGAGED_COMPANIES_NOTE, solutionList } from '../data/caseStudiesData';
 import { useLang } from '../context/LanguageContext';
 import { PageHeader } from '../components/ui/PageHeader';
 import { caseSlug, solutionSlug } from '../site/links';
@@ -83,6 +83,22 @@ export const CasesView: React.FC = () => {
               );
             })}
           </div>
+        </section>
+
+        <section aria-labelledby="engaged-title" className="mt-[clamp(4rem,2.5rem+4vw,6rem)]">
+          <h2 id="engaged-title" className="text-title-2">
+            {lang === 'en' ? ENGAGED_COMPANIES_NOTE.title.en : ENGAGED_COMPANIES_NOTE.title.zh}
+          </h2>
+          <p className="mt-3 max-w-3xl text-body text-label-secondary">
+            {lang === 'en' ? ENGAGED_COMPANIES_NOTE.body.en : ENGAGED_COMPANIES_NOTE.body.zh}
+          </p>
+          <ul className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {ENGAGED_COMPANIES.map((name) => (
+              <li key={name} className="well text-body font-semibold">
+                {name}
+              </li>
+            ))}
+          </ul>
         </section>
 
         <section aria-labelledby="solutions-title" className="mt-[clamp(4rem,2.5rem+4vw,6rem)]">

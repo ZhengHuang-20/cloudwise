@@ -70,6 +70,20 @@ export interface IndustrySolution {
   relatedCaseId: string;
 }
 
+/**
+ * 已对接并出具过出海报告的企业（用户 2026-11-24 确认可以列名，合作细节不公开）。
+ * 只写「出具出海报告、给出分析与建议」这一件事，不写行业、结果、数据或评价；新增前先登记 docs/fact-check.md。
+ */
+export const ENGAGED_COMPANIES: string[] = ['东胜物联', '南京凯利德', '江苏卡拿翰机电', '北京智芯原动'];
+
+export const ENGAGED_COMPANIES_NOTE = {
+  title: { zh: '其他已对接的企业', en: 'Other companies we have worked with' },
+  body: {
+    zh: '我们还为下列企业出具了出海报告，做了分析并给出建议。合作细节不公开，所以这里不写数据与结果，只列企业名称。',
+    en: 'We have also delivered export reports, with analysis and recommendations, to the companies below. Details of the work are not public, so no data or results are given here, only the company names.',
+  },
+};
+
 export const CASE_STUDIES: CaseStudy[] = [
   {
     id: 'case-ak-medical',

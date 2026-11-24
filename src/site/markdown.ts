@@ -5,7 +5,7 @@
  * canonical（见 markdownResponse），搜索引擎只收录 HTML 页。路由在 app/md-pages，地址改写在 next.config.mjs。
  */
 import { pick, type Lang } from '../lib/i18n';
-import { caseList, solutionList } from '../data/caseStudiesData';
+import { caseList, ENGAGED_COMPANIES, ENGAGED_COMPANIES_NOTE, solutionList } from '../data/caseStudiesData';
 import { CONTACTS } from '../data/contactsData';
 import { courseList } from '../data/coursesData';
 import { AUTHORS } from '../data/authors';
@@ -174,6 +174,12 @@ function body(route: Route, lang: Lang): string[] {
       return [
         `## ${t('案例', 'Case studies')}`,
         ...caseList(lang).map((c) => entry(c.clientName, `/cases/${caseSlug(c.id)}`, `${c.industry} — ${c.results.directOutcome}`, lang)),
+        '',
+        `## ${pick(ENGAGED_COMPANIES_NOTE.title, lang)}`,
+        '',
+        pick(ENGAGED_COMPANIES_NOTE.body, lang),
+        '',
+        ...ENGAGED_COMPANIES.map((n) => `- ${n}`),
         '',
         `## ${t('行业方案', 'Industry solutions')}`,
         ...solutionList(lang).map((s) => entry(s.name, `/solutions/${solutionSlug(s.id)}`, s.description, lang)),
