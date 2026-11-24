@@ -18,6 +18,9 @@ const isPreview = process.env.VERCEL_ENV === 'preview';
 const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
+  // 测评报告 PDF（pdfkit）在运行时读取自带的字体数据，不能被打进服务端包里；字体文件要随函数一起部署
+  serverExternalPackages: ['pdfkit'],
+  outputFileTracingIncludes: { '/api/admin/audits/[id]/download': ['./assets/og/*.ttf'] },
   // 仓库用 TypeScript 7（原生编译器，没有 Next 构建期类型检查需要的 JS API）。
   // 类型检查改由 `bun run lint`（tsc --noEmit）负责。
   typescript: { ignoreBuildErrors: true },
