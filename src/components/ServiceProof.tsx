@@ -35,6 +35,33 @@ export const ServiceProof: React.FC<{ proof: Proof; showImages?: boolean }> = ({
         ))}
       </ul>
 
+      {proof.pagespeed && (
+        <div className="mt-8">
+          <h3 className="text-title-3">{tb(proof.pagespeed.title)}</h3>
+          <div className="mt-3 overflow-x-auto">
+            <table className="w-full text-left text-body">
+              <thead>
+                <tr className="text-caption text-label-secondary">
+                  <th scope="col" className="py-2 pr-4 font-normal"><span className="sr-only">{t('项目', 'Item')}</span></th>
+                  <th scope="col" className="px-4 py-2 font-normal">{tb(proof.pagespeed.columns.mobile)}</th>
+                  <th scope="col" className="px-4 py-2 font-normal">{tb(proof.pagespeed.columns.desktop)}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {proof.pagespeed.rows.map((row) => (
+                  <tr key={row.label.zh} className="border-t border-separator">
+                    <th scope="row" className="py-2.5 pr-4 font-normal">{tb(row.label)}</th>
+                    <td className="px-4 py-2.5 font-semibold tabular-nums">{row.mobile}</td>
+                    <td className="px-4 py-2.5 font-semibold tabular-nums">{row.desktop}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <p className="mt-3 text-caption text-label-secondary">{tb(proof.pagespeed.note)}</p>
+        </div>
+      )}
+
       <ul className="mt-6 space-y-2 text-body text-label-secondary">
         {proof.notes.map((note) => (
           <li key={note.zh}>{tb(note)}</li>

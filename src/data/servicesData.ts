@@ -48,6 +48,13 @@ export interface Proof {
   source: Bi;
   images: { src: string; width: number; height: number; alt: Bi }[];
   caseHref: string;
+  /** 可选：PageSpeed Insights（Lighthouse）的实验室测试分数，单次测试 */
+  pagespeed?: {
+    title: Bi;
+    columns: { mobile: Bi; desktop: Bi };
+    rows: { label: Bi; mobile: string; desktop: string }[];
+    note: Bi;
+  };
 }
 
 export interface Engagement {
@@ -370,6 +377,20 @@ To see where you stand, [run a free AI visibility audit](/audit). To evaluate an
         },
       ],
       caseHref: '/cases/ak-medical',
+      pagespeed: {
+        title: { zh: '官网首页的 PageSpeed Insights 测试（2026-11-24）', en: 'PageSpeed Insights test of the home page (24 Nov 2026)' },
+        columns: { mobile: { zh: '手机端', en: 'Mobile' }, desktop: { zh: '桌面端', en: 'Desktop' } },
+        rows: [
+          { label: { zh: '性能', en: 'Performance' }, mobile: '100', desktop: '100' },
+          { label: { zh: '无障碍', en: 'Accessibility' }, mobile: '100', desktop: '100' },
+          { label: { zh: '最佳实践', en: 'Best practices' }, mobile: '96', desktop: '96' },
+          { label: { zh: 'SEO', en: 'SEO' }, mobile: '100', desktop: '100' },
+        ],
+        note: {
+          zh: '来源：Google PageSpeed Insights（Lighthouse）对 www.ak-medical-global.com 首页的单次实验室测试，2026-11-24 手机端与桌面端各测一次。分数会随网络与测试时间波动，不代表真实访客的体验数据；我们会定期复测。',
+          en: 'Source: one lab test each of mobile and desktop on the home page of www.ak-medical-global.com with Google PageSpeed Insights (Lighthouse), 24 Nov 2026. Scores vary with network and test time and are not field data from real visitors; we re-test regularly.',
+        },
+      },
     },
     faqs: [
       {

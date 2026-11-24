@@ -85,6 +85,16 @@ export const proofLines = (p: Proof, lang: Lang, h: string) => {
     ...p.notes.flatMap((n) => [`- ${pick(n, lang)}`]),
     '',
     pick(p.source, lang),
+    ...(p.pagespeed
+      ? [
+          '',
+          `**${pick(p.pagespeed.title, lang)}**`,
+          '',
+          ...p.pagespeed.rows.map((r) => `- ${pick(r.label, lang)}${sep}${pick(p.pagespeed!.columns.mobile, lang)} ${r.mobile}${lang === 'en' ? ', ' : '，'}${pick(p.pagespeed!.columns.desktop, lang)} ${r.desktop}`),
+          '',
+          pick(p.pagespeed.note, lang),
+        ]
+      : []),
   ];
 };
 
