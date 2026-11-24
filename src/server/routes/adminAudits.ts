@@ -5,6 +5,7 @@ import { apiError, json } from '../http';
 import { auditStore, withStale } from '../auditStore';
 import { jobJSON } from './audits';
 import type { AuditReport } from '../audit';
+import { auditPdfName, renderAuditPdf } from '../auditPdf';
 
 const AUDIT_ID_RE = /^[0-9a-f]{32}$/;
 
@@ -80,14 +81,18 @@ export const downloadAudit = authed(adminOnly, async (req, _u, params) => {
   if (!AUDIT_ID_RE.test(params.id ?? '')) return apiError(404, 'not_found', '测评不存在');
   const job = await auditStore().get(params.id);
   if (!job?.report) return apiError(404, 'not_found', '这份测评没有可下载的报告');
-  const format = new URL(req.url).searchParams.get('format') === 'json' ? 'json' : 'md';
+  const f = new URL(req.url).searchParams.get('format');
+  const format = f === 'json' ? 'json' : f === 'md' ? 'md' : 'pdf';
+  const headers = (type: string, name: string) => ({
+    'Content-Type': type,
+    'Content-Disposition': `attachment; filename="${name}"`,
+    'Cache-Control': 'no-store',
+  });
+  if (format === 'pdf') {
+    const pdf = await renderAuditPdf(job.report);
+    return new Response(new Uint8Array(pdf), { headers: headers('application/pdf', auditPdfName(job.report, params.id)) });
+  }
   const name = `audit-${(job.report.domain || job.key).replace(/[^\w.-]+/g, '_').slice(0, 60)}-${params.id.slice(0, 8)}.${format}`;
   const body = format === 'json' ? JSON.stringify(job.report, null, 2) : toMarkdown(job.report);
-  return new Response(body, {
-    headers: {
-      'Content-Type': format === 'json' ? 'application/json; charset=utf-8' : 'text/markdown; charset=utf-8',
-      'Content-Disposition': `attachment; filename="${name}"`,
-      'Cache-Control': 'no-store',
-    },
-  });
+  return new Response(body, { headers: headers(format === 'json' ? 'application/json; charset=utf-8' : 'text/markdown; charset=utf-8', name) });
 });

@@ -89,7 +89,7 @@ export const AuditsPanel: React.FC = () => {
 
   return (
     <>
-      <PageTitle title="测评报告" description="全部 AI 可见性测评项目。可查看每份报告，并下载为 Markdown 或 JSON。" />
+      <PageTitle title="测评报告" description="全部 AI 可见性测评项目。可查看每份报告，并下载为 PDF（完整报告）、Markdown 或 JSON。" />
       <Card variant="borderless" styles={{ body: { padding: 0 } }}>
         <div className="border-b border-separator p-4">
           <div className="w-full sm:w-72">
@@ -153,7 +153,8 @@ export const AuditsPanel: React.FC = () => {
                     disabled={r.status !== 'done'}
                     menu={{
                       items: [
-                        { key: 'md', label: <a href={`/api/admin/audits/${r.id}/download`}>Markdown</a> },
+                        { key: 'pdf', label: <a href={`/api/admin/audits/${r.id}/download`}>PDF（完整报告）</a> },
+                        { key: 'md', label: <a href={`/api/admin/audits/${r.id}/download?format=md`}>Markdown</a> },
                         { key: 'json', label: <a href={`/api/admin/audits/${r.id}/download?format=json`}>JSON</a> },
                       ],
                     }}
