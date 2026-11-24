@@ -17,6 +17,7 @@ import { geoVsSeo } from './geo-vs-seo';
 import { googleAiOverviewsB2b } from './google-ai-overviews-b2b';
 import { howAiPicksSuppliers } from './how-ai-picks-suppliers';
 import { howToMeasureGeoResults } from './how-to-measure-geo-results';
+import { inquiryAiAutoReply } from './inquiry-ai-auto-reply';
 import { llmsTxtGuide } from './llms-txt-guide';
 
 export type { Insight, InsightContent, InsightTopic } from './types';
@@ -43,6 +44,7 @@ const ALL_INSIGHTS: Insight[] = [
   googleAiOverviewsB2b,
   howAiPicksSuppliers,
   howToMeasureGeoResults,
+  inquiryAiAutoReply,
   llmsTxtGuide,
 ];
 
