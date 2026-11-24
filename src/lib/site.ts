@@ -112,9 +112,9 @@ export const BILIBILI_VIDEOS: Record<string, string> = {
  */
 export const PAGE_UPDATED = {
   /** 首页 */
-  home: '2026-11-22',
+  home: '2026-11-23',
   /** 服务列表与服务详情页 */
-  services: '2026-11-22',
+  services: '2026-11-23',
   /** 案例列表、案例详情与行业方案页 */
   cases: '2026-11-22',
   /** 学院、课程与课时页 */

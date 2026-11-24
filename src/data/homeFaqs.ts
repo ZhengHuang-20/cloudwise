@@ -45,8 +45,8 @@ export const HOME_FAQS: { q: Bi; a: Bi }[] = [
   {
     q: { zh: '服务怎么收费？', en: 'How are the services charged?' },
     a: {
-      zh: '网站不公开价格。投入取决于产品规模、目标市场、语种和需要打通的系统。可以先用方案规划工具查看周期与交付物，再预约 30 分钟诊断会，会后给出书面的改进清单与定制方案。',
-      en: 'The website does not publish prices. The investment depends on the size of your product range, target markets, languages and the systems that need connecting. Use the project planner to see timelines and deliverables, then book a 30-minute diagnosis call. A written improvement list and a tailored plan follow the call.',
+      zh: '网站不公开价格。GEO 服务有两种付费方式，任选其一：按服务周期和交付内容付费，或按官网收到的有效线索付费；衡量效果的 KPI 由双方商定。投入取决于产品规模、目标市场、语种和需要打通的系统。可以先用方案规划工具查看周期与交付物，再预约 30 分钟诊断会，会后给出书面的改进清单与定制方案。',
+      en: 'The website does not publish prices. GEO can be paid for in either of two ways: for an agreed service period and deliverables, or per valid lead received by your website, with the KPIs agreed between us. The investment depends on the size of your product range, target markets, languages and the systems that need connecting. Use the project planner to see timelines and deliverables, then book a 30-minute diagnosis call. A written improvement list and a tailored plan follow the call.',
     },
   },
 ];

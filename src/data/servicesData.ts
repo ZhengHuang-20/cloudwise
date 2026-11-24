@@ -24,8 +24,24 @@ export interface Service {
   seo: { title: Bi; description: Bi };
   /** 详情页的常见问题，同时输出为 FAQPage 结构化数据 */
   faqs: { q: Bi; a: Bi }[];
+  /**
+   * 可选：合作与付费方式。只写方式与口径，不写任何金额、区间或比例（站点不展示价格）。
+   * 详情页单独成块，同时进入服务列表页、.md 页面与 llms-full.txt。
+   */
+  engagement?: Engagement;
   /** 可选：详情页的完整说明（Markdown 子集，见 src/lib/markdown.ts，从 ## 开始），也进入 .md 页面与 llms-full.txt */
   guide?: Bi;
+}
+
+export interface Engagement {
+  /** 一句话概括，服务列表页的侧栏使用 */
+  summary: Bi;
+  title: Bi;
+  intro: Bi;
+  /** 可以任选其一的付费方式 */
+  options: { title: Bi; desc: Bi }[];
+  kpi: { title: Bi; desc: Bi };
+  note: Bi;
 }
 
 /** 顺序即展示顺序：GEO 与 FDE 是主推服务，排在最前（code 与课程字母保持不变） */
@@ -58,7 +74,11 @@ const ALL_SERVICES: Service[] = [
     faqs: [
       {
         q: { zh: 'GEO 能保证 AI 一定推荐我们吗？', en: 'Can GEO guarantee that AI will recommend us?' },
-        a: { zh: '不能。AI 的回答取决于它能查到的公开来源，任何人都无法保证结果。我们能做的是建设可查证的证据链、提高被引用的机会，并每月用同一组问题在主流 AI 平台复测，把变化如实汇报给你。', en: 'No. AI answers depend on the public sources it can find, and nobody can guarantee the outcome. What we do is build a verifiable evidence chain that raises the chance of being cited, then re-test every month with the same question set on the major AI platforms and report the changes honestly.' },
+        a: { zh: '不能。AI 的回答取决于它能查到的公开来源，任何人都无法保证结果。我们能做的是建设可查证的证据链、提高被引用的机会，并每月用同一组问题在主流 AI 平台复测，把变化如实汇报给你。如果希望费用和效果挂钩，可以选择按线索付费，KPI 也由双方商定。', en: 'No. AI answers depend on the public sources it can find, and nobody can guarantee the outcome. What we do is build a verifiable evidence chain that raises the chance of being cited, then re-test every month with the same question set on the major AI platforms and report the changes honestly. If you want the fee tied to results, you can choose to pay per lead, and the KPIs are agreed between us.' },
+      },
+      {
+        q: { zh: 'GEO 可以按线索付费吗？', en: 'Can we pay for GEO per lead?' },
+        a: { zh: '可以。GEO 有两种付费方式，任选其一：按服务周期和交付内容付费，或按官网收到的有效线索付费。按线索付费时，线索按全站统计，什么算有效线索在合作开始前双方约定。无论选哪种，KPI 都由双方商定，每月复测汇报。按线索付费不代表保证线索数量。', en: 'Yes. GEO can be paid for in either of two ways: for an agreed service period and deliverables, or per valid lead received by your website. With pay per lead, leads are counted across the whole site, and what counts as a valid lead is agreed before the work starts. Either way, the KPIs are agreed between us and re-tested monthly. Paying per lead is not a guarantee of a number of leads.' },
       },
       {
         q: { zh: '做 GEO 需要企业提供哪些资料？', en: 'What material does a company need to provide for GEO?' },
@@ -69,6 +89,41 @@ const ALL_SERVICES: Service[] = [
         a: { zh: '用固定的买家问题集，定期在 ChatGPT、Perplexity、Gemini 等平台提问，统计品牌被提及的比例、排位与引用的来源，并与竞品对比；同时看来自 AI 平台的引荐访问与询盘。', en: 'With a fixed set of buyer questions asked regularly on ChatGPT, Perplexity, Gemini and other platforms, we track how often the brand is mentioned, where it ranks and which sources are cited, compared with competitors. Referral visits and enquiries from AI platforms are tracked too.' },
       },
     ],
+    engagement: {
+      summary: { zh: '可以按线索付费，KPI 双方商定', en: 'Pay per lead if you prefer, with KPIs agreed together' },
+      title: { zh: '可以按线索付费，KPI 一起商定', en: 'Pay per lead if you prefer, and agree the KPIs together' },
+      intro: {
+        zh: '签约前，你可以在下面两种付费方式中选一种。无论选哪种，衡量效果的 KPI 都由双方根据你的行业和目标市场一起商定。',
+        en: 'Before signing, you choose one of the two payment models below. Whichever you choose, the KPIs used to judge results are agreed between us based on your industry and target markets.',
+      },
+      options: [
+        {
+          title: { zh: '按服务付费', en: 'Pay for the service' },
+          desc: {
+            zh: '按约定的服务周期和交付内容付费，交付标准与六步闭环见本页。',
+            en: 'Pay for an agreed service period and set of deliverables. The deliverables and the six-step loop are on this page.',
+          },
+        },
+        {
+          title: { zh: '按线索付费', en: 'Pay per lead' },
+          desc: {
+            zh: '按官网收到的有效线索计费，线索按全站统计，不只算来自 AI 平台的。很多买家看完 AI 的回答后会直接搜索品牌名或输入网址进站，这类访问通常带不上来源信息，只按 AI 渠道统计会漏算。什么算有效线索，在合作开始前双方约定。',
+            en: 'You pay for valid leads received by your website, counted across the whole site rather than only those from AI platforms. Many buyers read an AI answer and then search your brand name or type your address, and these visits usually carry no source information, so counting only the AI channel would miss them. What counts as a valid lead is agreed before the work starts.',
+          },
+        },
+      ],
+      kpi: {
+        title: { zh: 'KPI 怎么商定', en: 'How the KPIs are agreed' },
+        desc: {
+          zh: '先用 AI 可见性测评做出基线，再一起选定要看的指标，例如品牌在 AI 回答里被提及的比例与排位、AI 对品牌信息回答的准确率、来自 AI 平台的访问、官网线索数量。之后每月用同一组问题复测，按约定的指标汇报，没有达到的也如实写。',
+          en: 'We first set a baseline with the AI visibility audit, then choose the metrics together, for example how often and how high the brand is mentioned in AI answers, how accurately AI answers questions about the brand, visits from AI platforms, and website leads. After that we re-test monthly with the same question set and report against the agreed metrics, including any that fall short.',
+        },
+      },
+      note: {
+        zh: '两种方式都不代表保证 AI 推荐或保证线索数量。网站不公开价格，具体方案在诊断会后给出。',
+        en: 'Neither model is a guarantee of AI recommendations or of a number of leads. Prices are not published on this site; a tailored plan follows the diagnosis call.',
+      },
+    },
     caseName: {
       zh: '爱康医疗：ChatGPT、Perplexity 数月持续带来引荐访问',
       en: 'Aikang Medical: ChatGPT and Perplexity have sent referral traffic consistently for several months',
