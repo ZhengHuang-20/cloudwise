@@ -10,7 +10,7 @@ export const llmsTxtGuide: Insight = {
     zh: ['llms.txt 是什么', 'llms.txt 怎么写', 'llms.txt 有用吗', 'GEO 技术优化'],
     en: ['what is llms.txt', 'how to write llms.txt', 'does llms.txt help GEO'],
   },
-  relatedServices: ['website', 'geo'],
+  relatedServices: ['seo-website', 'geo'],
   relatedTerms: ['term-geo', 'term-ai-crawlers'],
   relatedLessons: ['lesson-a-1-2'],
   zh: {

@@ -1,4 +1,4 @@
-import { SERVICE_COUNT_CN, SHOW_FDE } from '../lib/features';
+import { COURSE_COUNT_CN, SHOW_FDE } from '../lib/features';
 import { courseA } from './en/courseA';
 import { courseB } from './en/courseB';
 import { courseC } from './en/courseC';
@@ -660,7 +660,7 @@ const ALL_ROLE_LEARNING_PATHS: RoleLearningPath[] = [
     title: '老板 60 分钟看懂 AI 出海',
     targetRole: '决策者（董事长、总经理、出海项目投资人）',
     durationText: '约 60 分钟',
-    description: `无需技术细节，聚焦${SERVICE_COUNT_CN}门课的“决策者篇”，摸清投入构成、交付周期、避坑防雷与验收标准。`,
+    description: `无需技术细节，聚焦${COURSE_COUNT_CN}门课的“决策者篇”，摸清投入构成、交付周期、避坑防雷与验收标准。`,
     endGoal: '清晰判断要不要做、做哪几项、先做哪项、如何考核团队与服务商',
     featuredLessonIds: ['lesson-a-1-4', 'lesson-b-1-3', 'lesson-c-10-2', 'lesson-d-9-2', 'lesson-e-8-1'],
     recommendedToolId: 'tool-frictions',

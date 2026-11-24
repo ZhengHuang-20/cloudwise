@@ -10,7 +10,7 @@ export const aiVisibilityAuditMethodology: Insight = {
     zh: ['AI 可见性测评', 'GEO 检测', '品牌在 ChatGPT 中的排名', 'AI 搜索可见性怎么测'],
     en: ['AI visibility audit', 'GEO audit methodology', 'how to measure brand visibility in ChatGPT'],
   },
-  relatedServices: ['geo', 'website'],
+  relatedServices: ['geo', 'seo-website'],
   relatedTerms: ['term-geo', 'term-ai-crawlers'],
   relatedLessons: ['lesson-c-10-2', 'lesson-c-3-1'],
   zh: {

@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Menu, User, X } from 'lucide-react';
+import { usePathname } from 'next/navigation';
+import { ChevronDown, ChevronRight, Menu, User, X } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useLang } from '../context/LanguageContext';
-import { NAV_GROUPS, NAV_ITEMS } from './navigation';
+import { FOOTER_EXTRA, NAV_GROUPS, NAV_MORE, NAV_PRIMARY, NAV_SERVICES, type NavItem } from './navigation';
 import { LanguageSwitch } from './LanguageSwitch';
 
 interface HeaderProps {
@@ -13,10 +14,36 @@ interface HeaderProps {
   openMySpaceModal: () => void;
 }
 
+/** 点击导航后让链接失焦，否则 focus-within 会让展开的面板一直开着 */
+const blurTarget = (e: React.MouseEvent<HTMLElement>) => e.currentTarget.blur();
+
+const TopLink: React.FC<{ item: NavItem; active: boolean; href: string; label: string; onNavigate: (e: React.MouseEvent<HTMLElement>) => void }> = ({
+  active,
+  href,
+  label,
+  onNavigate,
+}) => (
+  <Link
+    href={href}
+    onClick={onNavigate}
+    aria-current={active ? 'page' : undefined}
+    className={`relative flex items-center px-3 text-caption whitespace-nowrap transition-colors duration-200 after:absolute after:inset-x-3 after:bottom-0 after:h-0.5 after:rounded-full after:transition-colors ${
+      active ? 'text-link after:bg-accent' : 'text-label-secondary after:bg-transparent hover:text-label'
+    }`}
+  >
+    {label}
+  </Link>
+);
+
 export const Header: React.FC<HeaderProps> = ({ currentTab, openBookingModal, openMySpaceModal }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { user } = useAuth();
   const { t, tb, path } = useLang();
+  // 服务入口共用同一个 tab（services），要按完整地址判断哪一项是当前页
+  const pathname = (usePathname() ?? '/').replace(/^\/en(?=\/|$)/, '') || '/';
+  const isHere = (item: NavItem) =>
+    item.id === 'services' ? pathname === item.href || pathname.startsWith(`${item.href}/`) : currentTab === item.id;
+  const moreActive = NAV_MORE.some(isHere) || currentTab === 'about';
 
   useEffect(() => {
     if (!isMenuOpen) return;
@@ -55,25 +82,76 @@ export const Header: React.FC<HeaderProps> = ({ currentTab, openBookingModal, op
             <span className="text-body font-semibold">{t('云端智荐', 'ChinGEO')}</span>
           </Link>
 
-          {/* 桌面导航 */}
+          {/* 桌面导航：三项核心服务直接列出，悬停或聚焦时展开简介；学习与规划类入口收进「更多」 */}
           <nav aria-label={t('主导航', 'Main navigation')} className="hidden flex-1 items-stretch justify-center self-stretch lg:flex">
-            {NAV_ITEMS.map((item) => {
-              const isActive = currentTab === item.id;
-              return (
-                <Link
-                  key={item.id}
-                  href={path(item.href)}
-                  aria-current={isActive ? 'page' : undefined}
-                  className={`relative flex items-center px-3 text-caption whitespace-nowrap transition-colors duration-200 after:absolute after:inset-x-3 after:bottom-0 after:h-0.5 after:rounded-full after:transition-colors ${
-                    isActive
-                      ? 'text-link after:bg-accent'
-                      : 'text-label-secondary after:bg-transparent hover:text-label'
-                  }`}
-                >
-                  {tb(item.label)}
-                </Link>
-              );
-            })}
+            <div className="group flex items-stretch">
+              {NAV_SERVICES.map((item) => (
+                <TopLink key={item.href} item={item} active={isHere(item)} href={path(item.href)} label={tb(item.label)} onNavigate={blurTarget} />
+              ))}
+              <div className="invisible absolute inset-x-0 top-full border-b border-hairline bg-surface opacity-0 transition-opacity duration-200 group-focus-within:visible group-focus-within:opacity-100 group-hover:visible group-hover:opacity-100">
+                <div className="layout-wide py-6">
+                  <ul className="grid gap-4 xl:grid-cols-3 lg:grid-cols-3">
+                    {NAV_SERVICES.map((item) => (
+                      <li key={item.href}>
+                        <Link
+                          href={path(item.href)}
+                          onClick={blurTarget}
+                          className="block h-full rounded-card p-4 transition-colors hover:bg-canvas"
+                        >
+                          <span className="block text-title-3">{tb(item.fullLabel)}</span>
+                          <span className="mt-2 block text-caption text-label-secondary">{tb(item.intro)}</span>
+                          <ul className="mt-3 space-y-1.5">
+                            {item.points.map((point) => (
+                              <li key={point.zh} className="flex gap-2 text-caption text-label-secondary">
+                                <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-brand" aria-hidden="true" />
+                                {tb(point)}
+                              </li>
+                            ))}
+                          </ul>
+                          <span className="link mt-3 text-caption">
+                            {t('了解详情', 'Learn more')}
+                            <ChevronRight />
+                          </span>
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                  <p className="mt-2 px-4 text-caption">
+                    <Link href={path('/services')} onClick={blurTarget} className="link">
+                      {t('查看全部服务与案例数据', 'All services and case data')}
+                      <ChevronRight />
+                    </Link>
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {NAV_PRIMARY.map((item) => (
+              <TopLink key={item.href} item={item} active={isHere(item)} href={path(item.href)} label={tb(item.label)} onNavigate={blurTarget} />
+            ))}
+
+            <div className="group relative flex items-stretch">
+              <button
+                type="button"
+                aria-haspopup="true"
+                className={`flex items-center gap-1 px-3 text-caption whitespace-nowrap transition-colors duration-200 ${
+                  moreActive ? 'text-link' : 'text-label-secondary hover:text-label'
+                }`}
+              >
+                {t('更多', 'More')}
+                <ChevronDown className="h-4 w-4" aria-hidden="true" />
+              </button>
+              <ul className="invisible absolute left-1/2 top-full w-72 -translate-x-1/2 rounded-card border border-hairline bg-surface p-2 opacity-0 transition-opacity duration-200 group-focus-within:visible group-focus-within:opacity-100 group-hover:visible group-hover:opacity-100">
+                {[...NAV_MORE, ...FOOTER_EXTRA.map((x) => ({ id: 'about', href: x.href, label: x.label, fullLabel: x.label, desc: { zh: '公司主体与团队', en: 'Company and team' } }))].map((item) => (
+                  <li key={item.href}>
+                    <Link href={path(item.href)} onClick={blurTarget} className="block rounded-control px-3 py-2 hover:bg-canvas">
+                      <span className="block text-body">{tb(item.fullLabel)}</span>
+                      <span className="block text-caption text-label-secondary">{tb(item.desc)}</span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </nav>
 
           {/* 右侧操作 */}
@@ -133,9 +211,9 @@ export const Header: React.FC<HeaderProps> = ({ currentTab, openBookingModal, op
                 <p className="text-caption text-label-secondary">{tb(group.title)}</p>
                 <ul className="mt-2">
                   {group.items.map((item) => {
-                    const isActive = currentTab === item.id;
+                    const isActive = isHere(item);
                     return (
-                      <li key={item.id}>
+                      <li key={item.href}>
                         <Link
                           href={path(item.href)}
                           onClick={closeMenu}

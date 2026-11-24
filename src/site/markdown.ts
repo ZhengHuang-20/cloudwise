@@ -5,14 +5,14 @@
  * canonical（见 markdownResponse），搜索引擎只收录 HTML 页。路由在 app/md-pages，地址改写在 next.config.mjs。
  */
 import { pick, type Lang } from '../lib/i18n';
-import { caseList, solutionList } from '../data/caseStudiesData';
+import { caseList, ENGAGED_COMPANIES, ENGAGED_COMPANIES_NOTE, solutionList } from '../data/caseStudiesData';
 import { CONTACTS } from '../data/contactsData';
 import { courseList } from '../data/coursesData';
 import { AUTHORS } from '../data/authors';
 import { glossaryList } from '../data/glossaryData';
 import { HOME_FAQS } from '../data/homeFaqs';
 import { INSIGHTS } from '../data/insights';
-import { SERVICES } from '../data/servicesData';
+import { SERVICES, type Engagement, type Proof } from '../data/servicesData';
 import { BILIBILI_VIDEOS, BRAND, COMPANY, DISAMBIGUATION, OFFICIAL_ACCOUNTS, SITE_URL, TAGLINE, absoluteUrl } from '../lib/site';
 import { routeMeta } from './meta';
 import {
@@ -67,6 +67,52 @@ const faqLines = (items: { q: string; a: string }[], lang: Lang) =>
   items.length ? ['', `## ${lang === 'en' ? 'Frequently asked questions' : '常见问题'}`, ...items.flatMap((f) => ['', `### ${f.q}`, '', f.a])] : [];
 
 const bullets = (items: string[]) => items.map((item) => `- ${item}`);
+
+/** 服务页的案例数据（来自客户后台截图），.md 页面与 llms-full.txt 共用 */
+export const proofLines = (p: Proof, lang: Lang, h: string) => {
+  const sep = lang === 'en' ? ': ' : '：';
+  return [
+    `${h} ${pick(p.title, lang)}`,
+    '',
+    pick(p.intro, lang),
+    '',
+    pick(p.period, lang),
+    '',
+    ...p.stats.map((x) => `- ${pick(x.label, lang)}${sep}${x.value}`),
+    '',
+    `${pick(p.milestonesTitle, lang)}${sep}${p.milestones.map((m) => `${m.value}（${m.date}）`).join(lang === 'en' ? ', ' : '、')}`,
+    '',
+    ...p.notes.flatMap((n) => [`- ${pick(n, lang)}`]),
+    '',
+    pick(p.source, lang),
+    ...(p.pagespeed
+      ? [
+          '',
+          `**${pick(p.pagespeed.title, lang)}**`,
+          '',
+          ...p.pagespeed.rows.map((r) => `- ${pick(r.label, lang)}${sep}${pick(p.pagespeed!.columns.mobile, lang)} ${r.mobile}${lang === 'en' ? ', ' : '，'}${pick(p.pagespeed!.columns.desktop, lang)} ${r.desktop}`),
+          '',
+          pick(p.pagespeed.note, lang),
+        ]
+      : []),
+  ];
+};
+
+/** 服务的合作与付费方式（只有方式与口径，没有金额），.md 页面与 llms-full.txt 共用 */
+export const engagementLines = (e: Engagement, lang: Lang, h: string) => {
+  const sep = lang === 'en' ? ': ' : '：';
+  return [
+    `${h} ${pick(e.title, lang)}`,
+    '',
+    pick(e.intro, lang),
+    '',
+    ...e.options.map((o) => `- **${pick(o.title, lang)}**${sep}${pick(o.desc, lang)}`),
+    '',
+    `**${pick(e.kpi.title, lang)}**${sep}${pick(e.kpi.desc, lang)}`,
+    '',
+    pick(e.note, lang),
+  ];
+};
 const entry = (title: string, path: string, note: string, lang: Lang) => `- [${title}](${link(path, lang)}): ${note}`;
 
 function body(route: Route, lang: Lang): string[] {
@@ -118,6 +164,8 @@ function body(route: Route, lang: Lang): string[] {
         pick(s.caseName, lang),
         '',
         `> ${pick(s.judgement, lang)}`,
+        ...(s.engagement ? ['', ...engagementLines(s.engagement, lang, '##')] : []),
+        ...(s.proof ? ['', ...proofLines(s.proof, lang, '##')] : []),
         ...(s.guide ? ['', absolutizeLinks(pick(s.guide, lang), lang)] : []),
         ...faqLines(s.faqs.map((f) => ({ q: pick(f.q, lang), a: pick(f.a, lang) })), lang),
       ];
@@ -126,6 +174,12 @@ function body(route: Route, lang: Lang): string[] {
       return [
         `## ${t('案例', 'Case studies')}`,
         ...caseList(lang).map((c) => entry(c.clientName, `/cases/${caseSlug(c.id)}`, `${c.industry} — ${c.results.directOutcome}`, lang)),
+        '',
+        `## ${pick(ENGAGED_COMPANIES_NOTE.title, lang)}`,
+        '',
+        pick(ENGAGED_COMPANIES_NOTE.body, lang),
+        '',
+        ...ENGAGED_COMPANIES.map((n) => `- ${n}`),
         '',
         `## ${t('行业方案', 'Industry solutions')}`,
         ...solutionList(lang).map((s) => entry(s.name, `/solutions/${solutionSlug(s.id)}`, s.description, lang)),

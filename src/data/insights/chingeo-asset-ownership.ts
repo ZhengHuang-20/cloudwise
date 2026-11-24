@@ -10,7 +10,7 @@ export const chingeoAssetOwnership: Insight = {
     zh: ['和云端智荐合作网站归谁', 'GEO 服务资产归属', '网站源码归谁', 'GEO 白帽', '合作结束交接'],
     en: ['who owns the website and content with ChinGEO', 'GEO service asset ownership', 'website source code ownership', 'white-hat GEO'],
   },
-  relatedServices: ['geo', 'website', 'seo'],
+  relatedServices: ['geo', 'seo-website'],
   relatedTerms: ['term-geo'],
   relatedLessons: ['lesson-c-3-1'],
   zh: {
@@ -74,7 +74,7 @@ GEO 做的是让 AI 找到真实、可查证的资料，所以我们不做这些
 - **开源与第三方组件**：网站中使用的开源组件与第三方服务，遵循各自的许可或服务条款；
 - **合同为准**：以上是我们的合作原则，具体条款以双方签订的合同为准。
 
-想先了解自己的现状，可以[做一次免费测评](/audit)；我们的[出海 GEO 服务](/services/geo)与[独立站服务](/services/website)都按这个原则交付。试点阶段怎么验收，见[90 天 GEO 试点交付什么](/insights/geo-90-day-pilot)。`,
+想先了解自己的现状，可以[做一次免费测评](/audit)；我们的[出海 GEO 服务](/services/geo)与[独立站服务](/services/seo-website)都按这个原则交付。试点阶段怎么验收，见[90 天 GEO 试点交付什么](/insights/geo-90-day-pilot)。`,
     faqs: [
       {
         q: '合作结束后，网站还能继续运行吗？',
@@ -155,7 +155,7 @@ Google’s [spam policies](https://developers.google.com/search/docs/essentials/
 - **Open-source and third-party components**: open-source components and third-party services used in the site follow their own licences or terms.
 - **The contract governs**: the above are our working principles; the exact terms are those of the contract we sign together.
 
-To see where you stand first, [run a free audit](/audit). Our [export GEO service](/services/geo) and [website service](/services/website) are both delivered on these principles. For how a pilot is accepted, see [what a 90-day GEO pilot delivers](/insights/geo-90-day-pilot).`,
+To see where you stand first, [run a free audit](/audit). Our [export GEO service](/services/geo) and [website service](/services/seo-website) are both delivered on these principles. For how a pilot is accepted, see [what a 90-day GEO pilot delivers](/insights/geo-90-day-pilot).`,
     faqs: [
       {
         q: 'Can the website keep running after the engagement ends?',

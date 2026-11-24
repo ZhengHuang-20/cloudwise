@@ -5,12 +5,13 @@ import { PageHeader } from '../components/ui/PageHeader';
 import { SERVICE_IDENTITY } from '../components/ui/serviceIdentity';
 import { FdeBuildLayers } from '../components/FdeBuildLayers';
 import { FdeWhyUs } from '../components/FdeWhyUs';
+import { ServiceProof } from '../components/ServiceProof';
 import { FaqList } from '../components/FaqList';
 import { Markdown } from '../components/Markdown';
 import { useLang } from '../context/LanguageContext';
 import { courseList } from '../data/coursesData';
 import { glossaryList } from '../data/glossaryData';
-import { findService, termSlug } from '../site/links';
+import { courseSlug, findService, termSlug } from '../site/links';
 import type { InsightSummary } from '../site/pageData';
 import { useSite } from '../site/SiteContext';
 import { InsightCard } from './InsightsView';
@@ -22,16 +23,17 @@ export const ServiceDetailView: React.FC<{ slug: string; insights?: InsightSumma
   const svc = findService(slug)!;
   const identity = SERVICE_IDENTITY[svc.key];
   const Icon = identity.icon;
-  const course = courseList(lang).find((c) => c.code === svc.code);
+  const codes: string[] = [svc.code, ...(svc.extraCourseCodes ?? [])];
+  const courses = courseList(lang).filter((c) => codes.includes(c.code));
   // 术语按「相关课时」归到课程，课程与服务一一对应（课程 C ↔ 服务 C）
-  const terms = glossaryList(lang).filter((term) => term.relatedLessonId?.split('-')[1]?.toUpperCase() === svc.code);
+  const terms = glossaryList(lang).filter((term) => codes.includes(term.relatedLessonId?.split('-')[1]?.toUpperCase() ?? ''));
   const name = t(identity.name, identity.nameEn);
 
   return (
     <div>
       <PageHeader
         breadcrumbs={[{ label: t('服务', 'Services'), href: '/services' }, { label: name }]}
-        eyebrow={t(`服务 ${svc.code} · 对应卡点：${tb(svc.friction)}`, `Service ${svc.code} · Pain point: ${tb(svc.friction)}`)}
+        eyebrow={t(`对应卡点：${tb(svc.friction)}`, `Pain point: ${tb(svc.friction)}`)}
         title={tb(svc.title)}
         intro={tb(svc.oneLiner)}
       >
@@ -71,6 +73,41 @@ export const ServiceDetailView: React.FC<{ slug: string; insights?: InsightSumma
           </dl>
         </article>
 
+        {svc.engagement && (
+          <section aria-labelledby="engagement-title" className="tile">
+            <p className="text-caption text-label-secondary">{t('合作方式', 'How we work together')}</p>
+            <h2 id="engagement-title" className="mt-2 text-title-2">
+              {/* 在逗号后断行，避免窄屏把词组拆开 */}
+              {tb(svc.engagement.title)
+                .split(/(?<=，)/)
+                .map((part) => (
+                  <span key={part} className="inline-block">
+                    {part}
+                  </span>
+                ))}
+            </h2>
+            <p className="mt-4 text-body text-label-secondary">{tb(svc.engagement.intro)}</p>
+            <div className="mt-8 grid gap-5 sm:grid-cols-2">
+              {svc.engagement.options.map((option) => (
+                <div key={option.title.zh} className="well">
+                  <h3 className="text-title-3">{tb(option.title)}</h3>
+                  <p className="mt-2 text-body text-label-secondary">{tb(option.desc)}</p>
+                </div>
+              ))}
+            </div>
+            <div className="mt-10 border-t border-separator pt-8">
+              <h3 className="text-title-3">{tb(svc.engagement.kpi.title)}</h3>
+              <p className="mt-2 text-body text-label-secondary">{tb(svc.engagement.kpi.desc)}</p>
+            </div>
+            <p className="mt-6 text-caption text-label-secondary">{tb(svc.engagement.note)}</p>
+            <button type="button" onClick={openBooking} className="btn btn-secondary mt-8">
+              {t('预约诊断会', 'Book a diagnosis call')}
+            </button>
+          </section>
+        )}
+
+        {svc.proof && <ServiceProof proof={svc.proof} />}
+
         {svc.guide && (
           <article className="tile">
             <Markdown source={tb(svc.guide)} />
@@ -84,9 +121,9 @@ export const ServiceDetailView: React.FC<{ slug: string; insights?: InsightSumma
           <FaqList items={svc.faqs.map((f) => ({ q: tb(f.q), a: tb(f.a) }))} />
         </div>
 
-        <div className="grid gap-5 md:grid-cols-2">
-          {course && (
-            <Link href={path(`/academy/${svc.slug}`)} className="tile interactive group flex flex-col items-start">
+        <div className="grid gap-5 md:grid-cols-3">
+          {courses.map((course) => (
+            <Link key={course.code} href={path(`/academy/${courseSlug(course.code)}`)} className="tile interactive group flex flex-col items-start">
               <p className="text-caption text-label-secondary">{t(`配套课程 ${course.code}`, `Related course ${course.code}`)}</p>
               <h2 className="mt-2 text-title-3">{course.title.split('——')[0]}</h2>
               <p className="mt-2 flex-1 text-body text-label-secondary">{course.subtitle}</p>
@@ -95,14 +132,14 @@ export const ServiceDetailView: React.FC<{ slug: string; insights?: InsightSumma
                 <ChevronRight className="transition-transform duration-200 group-hover:translate-x-0.5" />
               </span>
             </Link>
-          )}
+          ))}
           <div className="tile flex flex-col items-start">
             <p className="text-caption text-label-secondary">{t('下一步', 'Next step')}</p>
             <h2 className="mt-2 text-title-3">{t('组合服务，查看周期与交付物', 'Combine services and see timelines and deliverables')}</h2>
             <p className="mt-2 flex-1 text-body text-label-secondary">
               {t(
-                '常见的起点是“独立站 + SEO + GEO”获客组合。方案规划会按规模给出阶段排期与交付物清单。',
-                'A common starting point is the "website + SEO + GEO" lead package. The planner gives a phased schedule and deliverables list for your scale.'
+                '常见的起点是“SEO 与建站 + GEO”获客组合。方案规划会按规模给出阶段排期与交付物清单。',
+                'A common starting point is the "SEO and website + GEO" lead package. The planner gives a phased schedule and deliverables list for your scale.'
               )}
             </p>
             <button

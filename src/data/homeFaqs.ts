@@ -10,8 +10,8 @@ export const HOME_FAQS: { q: Bi; a: Bi }[] = [
   {
     q: { zh: `${BRAND.zh}（${BRAND.en}）是做什么的？`, en: `What does ${BRAND.en} (${BRAND.zh}) do?` },
     a: {
-      zh: `${BRAND.zh}（英文名 ${BRAND.en}）是一家面向中国出海制造企业的服务公司，提供${SERVICE_COUNT_CN}项服务：出海 GEO（让 ChatGPT、Perplexity、Gemini 等 AI 引用并推荐你的品牌）、${SHOW_FDE ? 'FDE 驻场工程师、' : ''}海外独立站、外贸 SEO 与 AI 客服。目标是让海外买家找得到、读得懂、信得过，询盘来了有人接。`,
-      en: `${BRAND.en} (${BRAND.zh} in Chinese) is a service company for Chinese manufacturers going global. It offers ${SERVICE_COUNT_EN.toLowerCase()} services: export GEO (getting AI such as ChatGPT, Perplexity and Gemini to cite and recommend your brand), ${SHOW_FDE ? 'FDE on-site engineering, ' : ''}overseas websites, export SEO and AI customer service. The aim is that overseas buyers can find you, understand you and trust you, and that every enquiry gets answered.`,
+      zh: `${BRAND.zh}（英文名 ${BRAND.en}）是一家面向中国出海制造企业的服务公司，提供${SERVICE_COUNT_CN}项核心服务：出海 GEO（让 ChatGPT、Perplexity、Gemini 等 AI 引用并推荐你的品牌）、${SHOW_FDE ? 'FDE 驻场工程师、' : ''}SEO 与建站（海外独立站加外贸 SEO）与 AI 客服。目标是让海外买家找得到、读得懂、信得过，询盘来了有人接。`,
+      en: `${BRAND.en} (${BRAND.zh} in Chinese) is a service company for Chinese manufacturers going global. It offers ${SERVICE_COUNT_EN.toLowerCase()} core services: export GEO (getting AI such as ChatGPT, Perplexity and Gemini to cite and recommend your brand), ${SHOW_FDE ? 'FDE on-site engineering, ' : ''}SEO and website (an overseas site plus export SEO) and AI customer service. The aim is that overseas buyers can find you, understand you and trust you, and that every enquiry gets answered.`,
     },
   },
   {
@@ -38,15 +38,15 @@ export const HOME_FAQS: { q: Bi; a: Bi }[] = [
   {
     q: { zh: '有可以核实的案例吗？', en: 'Are there cases we can verify?' },
     a: {
-      zh: '有两个公开案例，都写明了数据口径。爱康医疗：新建海外官网的 GEO / SEO 评分为 95 分，现有国内官网为 47 分，这是两个站点按同一口径的对比。泰宁科创：围绕英国 SuDS 规范建立 60 组英文核心词，并进入中东某新城雨水调蓄项目的供应商短名单。详情见案例页。',
-      en: 'There are two public cases, each with the basis of its data stated. Aikang Medical: the new overseas website scored 95 on GEO / SEO against 47 for the existing domestic site, a comparison of two sites on the same basis. Taining Tech: 60 English core keyword groups built around the UK SuDS standard, and a place on the supplier shortlist for a stormwater storage project in a new Middle East city. Details are on the case pages.',
+      zh: '有两个公开案例，都写明了数据口径。爱康医疗：新建海外官网在 Google 搜索近 3 个月（2026-08-15 至 2026-11-13）有 272 次点击、8,315 次展示（Search Console 数据，点击最多的是品牌词）。泰宁科创：围绕英国 SuDS 规范建立 60 组英文核心词，并进入中东某新城雨水调蓄项目的供应商短名单。详情见案例页。',
+      en: 'There are two public cases, each with the basis of its data stated. Aikang Medical: the new overseas website had 272 clicks and 8,315 impressions on Google Search in 3 months, 15 Aug to 13 Nov 2026 (Search Console data; the top query is a brand term). Taining Tech: 60 English core keyword groups built around the UK SuDS standard, and a place on the supplier shortlist for a stormwater storage project in a new Middle East city. Details are on the case pages.',
     },
   },
   {
     q: { zh: '服务怎么收费？', en: 'How are the services charged?' },
     a: {
-      zh: '网站不公开价格。投入取决于产品规模、目标市场、语种和需要打通的系统。可以先用方案规划工具查看周期与交付物，再预约 30 分钟诊断会，会后给出书面的改进清单与定制方案。',
-      en: 'The website does not publish prices. The investment depends on the size of your product range, target markets, languages and the systems that need connecting. Use the project planner to see timelines and deliverables, then book a 30-minute diagnosis call. A written improvement list and a tailored plan follow the call.',
+      zh: '网站不公开价格。GEO 服务有两种付费方式，任选其一：按服务周期和交付内容付费，或按官网收到的有效线索付费；衡量效果的 KPI 由双方商定。投入取决于产品规模、目标市场、语种和需要打通的系统。可以先用方案规划工具查看周期与交付物，再预约 30 分钟诊断会，会后给出书面的改进清单与定制方案。',
+      en: 'The website does not publish prices. GEO can be paid for in either of two ways: for an agreed service period and deliverables, or per valid lead received by your website, with the KPIs agreed between us. The investment depends on the size of your product range, target markets, languages and the systems that need connecting. Use the project planner to see timelines and deliverables, then book a 30-minute diagnosis call. A written improvement list and a tailored plan follow the call.',
     },
   },
 ];

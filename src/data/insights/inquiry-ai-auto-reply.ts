@@ -15,7 +15,7 @@ export const inquiryAiAutoReply: Insight = {
       'when should AI hand off inquiries to sales',
     ],
   },
-  relatedServices: ['ai-customer-service', 'website'],
+  relatedServices: ['ai-customer-service', 'seo-website'],
   relatedTerms: ['term-structured-data'],
   relatedLessons: ['lesson-d-1-2', 'lesson-d-9-2'],
   zh: {

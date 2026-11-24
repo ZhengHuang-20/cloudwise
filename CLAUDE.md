@@ -67,7 +67,7 @@ bun run audit-stats [--since YYYY-MM-DD --until YYYY-MM-DD --min 5 --out 文件]
 - **每个 AI 接口都有确定性 fallback**：文本模型与 Gemini 的 key 都缺失（或仍为占位值 `MY_GEMINI_API_KEY`）、调用报错或 JSON 解析失败时，返回关键词匹配（chat）的结果。因此不配 key 应用也能完整运行。
 - 修改 chat 响应字段时需同步三处：`src/server/routes/ai.ts` 里提示词的 JSON 模板、`chatFallback`、前端消费方（`src/components/AiConsultantModal.tsx` 的 `ChatMessage`）。
 - `src/server/knowledge.ts` 的 `systemKnowledge` 是 AI 顾问的「知识库」（服务、案例、报价规则、话术规则）。同样的业务事实还散落在 fallback 文案、`src/data/servicePackages.ts`、`src/data/caseStudiesData.ts` 和各 view 的文案中——改服务或案例时要一并更新。
-- **站点不展示任何价格**：服务、套餐、方案空间、课程与 AI 顾问都不出现金额、预算区间、折扣或付款比例；知识库要求模型不报价，问到费用时引导到方案规划与诊断会。新增内容也不要写价格。
+- **站点不展示任何价格**：服务、套餐、方案空间、课程与 AI 顾问都不出现金额、预算区间、折扣或付款比例；知识库要求模型不报价，问到费用时引导到方案规划与诊断会。新增内容也不要写价格。可以写的是付费方式：GEO 有「按服务付费」与「按线索付费」两种，客户任选其一，线索按全站统计、有效线索口径与 KPI 都在合作前与客户商定（`servicesData.ts` 里 GEO 的 `engagement`，同步到首页 FAQ、知识库与 chat fallback）；不写单价、比例和未达成 KPI 的处理办法，也不把按线索付费写成保证线索数量。
 
 ### 账号与客户后台
 

@@ -123,9 +123,16 @@ function chatFallback(r: ChatRequest) {
     intent = 'HIGH';
     intentReason = '主动索要联系方式，希望与人工售前沟通';
     next = '直接致电上方联系人，或预约 30 分钟线上诊断会。';
+  } else if (has('多少钱', '价格', '费用', '预算', '报价', '收费', '付费', '按效果', 'kpi')) {
+    const fdeWord = show ? '、FDE 驻场' : '';
+    answer = `我们不在线上提供统一报价。GEO${fdeWord}、独立站、SEO、AI 客服的投入取决于产品 SKU 规模、目标市场与语种数量、年度内容量以及需要打通的企业系统，每家企业差异很大。\n\nGEO 服务有两种付费方式，任选其一：按服务周期和交付内容付费，或按官网收到的有效线索付费（线索按全站统计，什么算有效线索在合作开始前双方约定）。无论选哪种，衡量效果的 KPI 都由双方商定，先用测评做基线，之后每月复测汇报。按线索付费不代表保证线索数量。\n\n建议分两步：先用站内“方案规划”组合服务，查看交付周期、阶段排期与交付物清单；再预约 30 分钟诊断会，由架构师结合实测结果出具定制方案。`;
+    intent = 'HIGH';
+    intentReason = '询问合作费用，进入高意向商务评估阶段';
+    services.push(`整体服务组合（${count}项全做）`);
+    next = '建议打开站内“方案规划”查看交付周期与交付物，再预约 30 分钟诊断会获取定制方案。';
   } else if (has('geo', 'chatgpt', 'ai推荐', '可见性')) {
     answer =
-      'GEO（生成式引擎优化）是我们最具差异化的旗舰服务。不同于传统 SEO 仅在搜索结果列表排位，GEO 的核心是提高 ChatGPT、Perplexity、Gemini 等主流 AI 在向海外采购商推荐供应商时提到并引用您的品牌的机会；AI 的回答没有人能保证，所以我们每月用固定问题复测并汇报。\n\n我们通过六步闭环（诊断、建模、内容、信源、口碑、监测）建立权威证据链。以爱康医疗为例，其现有国内官网的 GEO / SEO 评分仅 47 分，我们新建的海外官网达到 95 分，ChatGPT 连续数月带来引荐访问（来自客户的 Google Analytics 4 记录）。';
+      'GEO（生成式引擎优化）是我们最具差异化的旗舰服务。不同于传统 SEO 仅在搜索结果列表排位，GEO 的核心是提高 ChatGPT、Perplexity、Gemini 等主流 AI 在向海外采购商推荐供应商时提到并引用您的品牌的机会；AI 的回答没有人能保证，所以我们每月用固定问题复测并汇报。\n\n我们通过六步闭环（诊断、建模、内容、信源、口碑、监测）建立权威证据链。以爱康医疗为例，我们新建的海外官网在 Google 搜索近 3 个月有 272 次点击（Search Console 数据），ChatGPT 连续数月带来引荐访问（来自客户的 Google Analytics 4 记录）。\n\n如果希望费用和效果挂钩，GEO 可以选择按线索付费，KPI 也由双方商定。';
     intent = 'HIGH';
     intentReason = '主动咨询最新 GEO 旗舰技术，具备强烈获客升级意向';
     services.push('出海 GEO 优化', '外贸 SEO 优化');
@@ -139,13 +146,6 @@ function chatFallback(r: ChatRequest) {
     services.push('AI 智能客服及系统对接');
     next = '建议用“方案规划”查看 AI 客服的交付周期与交付物，或预约 30 分钟诊断会演示凌晨询盘的接待流程。';
     citations.push('AI 智能客服（chingeo.com/services/ai-customer-service）');
-  } else if (has('多少钱', '价格', '费用', '预算', '报价')) {
-    const fdeWord = show ? '、FDE 驻场' : '';
-    answer = `我们不在线上提供统一报价。GEO${fdeWord}、独立站、SEO、AI 客服的投入取决于产品 SKU 规模、目标市场与语种数量、年度内容量以及需要打通的企业系统，每家企业差异很大。\n\n建议分两步：先用站内“方案规划”组合服务，查看交付周期、阶段排期与交付物清单；再预约 30 分钟诊断会，由架构师结合实测结果出具定制方案。`;
-    intent = 'HIGH';
-    intentReason = '询问合作费用，进入高意向商务评估阶段';
-    services.push(`整体服务组合（${count}项全做）`);
-    next = '建议打开站内“方案规划”查看交付周期与交付物，再预约 30 分钟诊断会获取定制方案。';
   } else if (show && has('fde', '驻场', '工程师')) {
     answer =
       'FDE（Forward Deployed Engineer，前线部署工程师）源自 Palantir，如今 OpenAI、Anthropic 等 AI 公司也在用它推动企业 AI 落地。咨询给的是建议，外包给的是代码，SaaS 给的是账号，而 FDE 带着 AI 驻场您的业务一线，对业务结果负责。\n\nFDE 的工作自下而上分三层：\n- 标准化：把老业务员的报价、询盘分级等经验写成规则\n- 信息化：把规则装进系统，打通独立站、邮件、WhatsApp、CRM 与 ERP\n- 智能化：在干净的数据上让 AI 客服、报价助手等场景真正干活\n\n每周一轮“观察-原型-试用-沉淀”，离场时源码、数据、文档和会用的人都留给企业。';
@@ -196,9 +196,16 @@ function chatFallbackEn(r: ChatRequest) {
     intent = 'HIGH';
     intentReason = 'Asked for contact details and wants to speak to a person';
     next = 'Call the contacts above directly, or book a 30-minute online diagnosis call.';
+  } else if (has('price', 'cost', 'budget', 'quote', 'how much', 'fee', 'pricing', 'pay per', 'per lead', 'kpi')) {
+    const fdeWord = show ? ', FDE on-site engineering' : '';
+    answer = `We do not publish a standard price online. The investment for GEO${fdeWord}, websites, SEO and AI customer service depends on the number of products, target markets and languages, the annual content volume and the company systems to be integrated, and it varies widely from company to company.\n\nGEO can be paid for in either of two ways: for an agreed service period and deliverables, or per valid lead received by your website (leads are counted across the whole site, and what counts as a valid lead is agreed before the work starts). Either way, the KPIs are agreed between us: we set a baseline with the audit and re-test monthly. Paying per lead is not a guarantee of a number of leads.\n\nTwo steps: use the Project planner on this site to combine services and review timelines and deliverables, then book a 30-minute diagnosis call so an architect can prepare a tailored plan based on real test results.`;
+    intent = 'HIGH';
+    intentReason = 'Asked about cost, so the conversation has moved into a high-intent commercial assessment';
+    services.push(`Full package (all ${countEn} services)`);
+    next = 'Open the Project planner to review timelines and deliverables, then book a 30-minute diagnosis call for a tailored plan.';
   } else if (has('geo', 'chatgpt', 'perplexity', 'gemini', 'visibility', 'recommend')) {
     answer =
-      'GEO (generative engine optimisation) is our most distinctive flagship service. Unlike traditional SEO, which only competes for positions in a results list, GEO raises the chance that ChatGPT, Perplexity, Gemini and other leading AI tools mention and cite your brand when they recommend suppliers to overseas buyers. Nobody can guarantee what an AI will answer, so we re-test a fixed set of questions every month and report the change.\n\nWe build the evidence chain through a six-step closed loop: diagnosis, modelling, content, sources, reputation and monitoring. Aikang Medical is an example: its domestic site scored 47 on GEO / SEO, while the new overseas site scored 95, and ChatGPT has sent referral visits for several months (from the client’s Google Analytics 4 records).';
+      'GEO (generative engine optimisation) is our most distinctive flagship service. Unlike traditional SEO, which only competes for positions in a results list, GEO raises the chance that ChatGPT, Perplexity, Gemini and other leading AI tools mention and cite your brand when they recommend suppliers to overseas buyers. Nobody can guarantee what an AI will answer, so we re-test a fixed set of questions every month and report the change.\n\nWe build the evidence chain through a six-step closed loop: diagnosis, modelling, content, sources, reputation and monitoring. Aikang Medical is an example: the new overseas site had 272 clicks from Google Search in 3 months (Search Console data), and ChatGPT has sent referral visits for several months (from the client’s Google Analytics 4 records).\n\nIf you want the fee tied to results, GEO can be paid for per lead, with the KPIs agreed between us.';
     intent = 'HIGH';
     intentReason = 'Asked about the flagship GEO service, with a strong intent to upgrade lead generation';
     services.push('Export GEO', 'Export SEO');
@@ -212,13 +219,6 @@ function chatFallbackEn(r: ChatRequest) {
     services.push('AI customer service and system integration');
     next = 'Use the Project planner to see the AI customer service timeline and deliverables, or book a 30-minute diagnosis call to see how an overnight enquiry is handled.';
     citations.push('AI customer service (chingeo.com/en/services/ai-customer-service)');
-  } else if (has('price', 'cost', 'budget', 'quote', 'how much', 'fee')) {
-    const fdeWord = show ? ', FDE on-site engineering' : '';
-    answer = `We do not publish a standard price online. The investment for GEO${fdeWord}, websites, SEO and AI customer service depends on the number of products, target markets and languages, the annual content volume and the company systems to be integrated, and it varies widely from company to company.\n\nTwo steps: use the Project planner on this site to combine services and review timelines and deliverables, then book a 30-minute diagnosis call so an architect can prepare a tailored plan based on real test results.`;
-    intent = 'HIGH';
-    intentReason = 'Asked about cost, so the conversation has moved into a high-intent commercial assessment';
-    services.push(`Full package (all ${countEn} services)`);
-    next = 'Open the Project planner to review timelines and deliverables, then book a 30-minute diagnosis call for a tailored plan.';
   } else if (show && has('fde', 'on-site', 'onsite', 'forward deployed', 'engineer')) {
     answer =
       'An FDE (forward deployed engineer) originated at Palantir, and OpenAI and Anthropic now use the role to bring AI into real businesses. Consulting gives advice, outsourcing gives code, SaaS gives an account, while an FDE works alongside your front line and is accountable for business results.\n\nThe FDE builds in three layers from the bottom up:\n- Standardisation: write veteran salespeople’s experience, such as quoting and enquiry grading, as rules\n- Digitisation: load the rules into systems and connect your website, email, WhatsApp, CRM and ERP\n- Intelligence: let AI customer service, quoting assistants and other scenarios do real work on clean data\n\nEach week goes through one observe–prototype–trial–consolidate cycle. When the FDE leaves, the source code, data, documents and trained people stay with your company.';

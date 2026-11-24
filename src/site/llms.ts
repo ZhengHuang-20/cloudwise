@@ -11,7 +11,7 @@ import { SERVICES } from '../data/servicesData';
 import { CONTACTS } from '../data/contactsData';
 import { SERVICE_COUNT_CN, SERVICE_COUNT_EN } from '../lib/features';
 import { BRAND, COMPANY, DISAMBIGUATION, SAME_AS, SITE_URL, TAGLINE, absoluteUrl } from '../lib/site';
-import { absolutizeLinks } from './markdown';
+import { absolutizeLinks, engagementLines, proofLines } from './markdown';
 import { routeMeta } from './meta';
 import { caseSlug, courseSlug, lessonPath, localizePath, solutionSlug, termSlug, type Route } from './routes';
 
@@ -118,6 +118,8 @@ export function llmsFullTxt(lang: Lang): string {
       '',
       `${t('案例：', 'Case: ')}${pick(s.caseName, lang)}`,
       '',
+      ...(s.engagement ? [...engagementLines(s.engagement, lang, '####'), ''] : []),
+      ...(s.proof ? [...proofLines(s.proof, lang, '####'), ''] : []),
       ...(s.guide ? [absolutizeLinks(pick(s.guide, lang), lang).replace(/^## /gm, '#### ').replace(/^### /gm, '##### '), ''] : []),
       ...s.faqs.flatMap((f) => [`**${pick(f.q, lang)}**`, pick(f.a, lang), ''])
     );

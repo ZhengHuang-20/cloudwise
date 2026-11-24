@@ -39,6 +39,16 @@ export const CaseDetailView: React.FC<{ slug: string }> = ({ slug }) => {
               {currentCase.status} · {t('目标市场：', 'Target market: ')}
               {currentCase.targetMarket}
             </p>
+            {currentCase.headline && (
+              <div className="shrink-0">
+                <p className="text-headline tabular-nums text-success">
+                  {lang === 'en' ? currentCase.headline.en.value : currentCase.headline.value}
+                  <span className="ml-1 text-title-3 text-label-secondary">{lang === 'en' ? currentCase.headline.en.unit : currentCase.headline.unit}</span>
+                </p>
+                <p className="mt-1 max-w-xs text-caption text-label-secondary">{lang === 'en' ? currentCase.headline.en.label : currentCase.headline.label}</p>
+              </div>
+            )}
+            {!currentCase.headline && currentCase.startingScore !== undefined && (
             <div className="shrink-0">
               {comparison && <p className="mb-3 text-caption font-semibold">{comparison.metric}</p>}
               <dl className="flex items-end gap-5">
@@ -56,6 +66,7 @@ export const CaseDetailView: React.FC<{ slug: string }> = ({ slug }) => {
                 </div>
               </dl>
             </div>
+            )}
           </div>
 
           {/* 起点 */}

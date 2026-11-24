@@ -10,7 +10,7 @@ export const geoIndustrialMachinery: Insight = {
     zh: ['机械设备 GEO', '机床出海 GEO', '工业设备 AI 搜索', '机械出口官网怎么写', '欧盟机械法规 2023/1230', '机床精度 ISO 230-2'],
     en: ['GEO for machinery manufacturers', 'CNC machine supplier AI search', 'industrial equipment manufacturer ChatGPT', 'EU Machinery Regulation 2023/1230 website', 'machine tool accuracy ISO 230-2'],
   },
-  relatedServices: ['geo', 'website', 'ai-customer-service'],
+  relatedServices: ['geo', 'seo-website', 'ai-customer-service'],
   relatedTerms: ['term-structured-data', 'term-entity', 'term-eeat'],
   relatedLessons: ['lesson-c-3-1', 'lesson-a-1-2'],
   zh: {

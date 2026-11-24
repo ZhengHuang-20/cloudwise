@@ -1,7 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { ArrowRight, ChevronRight } from 'lucide-react';
-import { caseList, solutionList } from '../data/caseStudiesData';
+import { caseList, ENGAGED_COMPANIES, ENGAGED_COMPANIES_NOTE, solutionList } from '../data/caseStudiesData';
 import { useLang } from '../context/LanguageContext';
 import { PageHeader } from '../components/ui/PageHeader';
 import { caseSlug, solutionSlug } from '../site/links';
@@ -51,17 +51,29 @@ export const CasesView: React.FC = () => {
                       <span className="ml-3 text-title-3 font-normal text-label-secondary">{name.secondary}</span>
                     )}
                   </h3>
-                  <p className="mt-8 flex items-center gap-3 text-headline tabular-nums">
-                    <span className="text-label-secondary">{c.startingScore}</span>
-                    <ArrowRight className="h-6 w-6 text-label-tertiary" aria-hidden="true" />
-                    <span className="text-success">{c.results.finalScore}</span>
-                    <span className="text-title-3 text-label-secondary">{t('分', 'pts')}</span>
-                  </p>
-                  <p className="mt-1 text-caption text-label-secondary">
-                    {comparison
-                      ? `${comparison.metric} · ${comparison.beforeLabel} → ${comparison.afterLabel}`
-                      : t('改造前 → 改造后', 'Before → after')}
-                  </p>
+                  {c.headline ? (
+                    <>
+                      <p className="mt-8 text-headline tabular-nums text-success">
+                        {lang === 'en' ? c.headline.en.value : c.headline.value}
+                        <span className="ml-1 text-title-3 text-label-secondary">{lang === 'en' ? c.headline.en.unit : c.headline.unit}</span>
+                      </p>
+                      <p className="mt-1 text-caption text-label-secondary">{lang === 'en' ? c.headline.en.label : c.headline.label}</p>
+                    </>
+                  ) : (
+                    <>
+                      <p className="mt-8 flex items-center gap-3 text-headline tabular-nums">
+                        <span className="text-label-secondary">{c.startingScore}</span>
+                        <ArrowRight className="h-6 w-6 text-label-tertiary" aria-hidden="true" />
+                        <span className="text-success">{c.results.finalScore}</span>
+                        <span className="text-title-3 text-label-secondary">{t('分', 'pts')}</span>
+                      </p>
+                      <p className="mt-1 text-caption text-label-secondary">
+                        {comparison
+                          ? `${comparison.metric} · ${comparison.beforeLabel} → ${comparison.afterLabel}`
+                          : t('改造前 → 改造后', 'Before → after')}
+                      </p>
+                    </>
+                  )}
                   <p className="mt-6 flex-1 text-body text-label-secondary">{c.results.directOutcome}</p>
                   <span className="link mt-6 text-body">
                     {t('阅读完整案例', 'Read the full case')}
@@ -71,6 +83,22 @@ export const CasesView: React.FC = () => {
               );
             })}
           </div>
+        </section>
+
+        <section aria-labelledby="engaged-title" className="mt-[clamp(4rem,2.5rem+4vw,6rem)]">
+          <h2 id="engaged-title" className="text-title-2">
+            {lang === 'en' ? ENGAGED_COMPANIES_NOTE.title.en : ENGAGED_COMPANIES_NOTE.title.zh}
+          </h2>
+          <p className="mt-3 max-w-3xl text-body text-label-secondary">
+            {lang === 'en' ? ENGAGED_COMPANIES_NOTE.body.en : ENGAGED_COMPANIES_NOTE.body.zh}
+          </p>
+          <ul className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {ENGAGED_COMPANIES.map((name) => (
+              <li key={name} className="well text-body font-semibold">
+                {name}
+              </li>
+            ))}
+          </ul>
         </section>
 
         <section aria-labelledby="solutions-title" className="mt-[clamp(4rem,2.5rem+4vw,6rem)]">

@@ -10,7 +10,7 @@ export const googleAiOverviewsB2b: Insight = {
     zh: ['AI Overviews 优化', 'AI Overviews B2B', 'Google AI 概览', 'AI 概览会引用哪些网页', 'AI 概览 点击下降'],
     en: ['AI Overviews B2B', 'AI Overviews manufacturers', 'which pages do AI Overviews cite', 'AI Overviews optimization', 'AI Overviews organic clicks'],
   },
-  relatedServices: ['seo', 'geo', 'website'],
+  relatedServices: ['seo-website', 'geo'],
   relatedTerms: ['term-ai-overviews', 'term-zero-click', 'term-aeo', 'term-eeat', 'term-structured-data'],
   relatedLessons: ['lesson-b-1-3', 'lesson-c-1-1'],
   zh: {
@@ -152,7 +152,7 @@ AI 概览靠 Google 的索引；ChatGPT、Perplexity 等助手的检索来源不
 
 ## 从哪里开始
 
-先弄清现状：关键页面有没有被收录、Googlebot 能否读到正文、买家的核心问题在你的网站上有没有一段直接的答案。可以先用 [AI 可见性测评](/audit)检查官网的技术底座和各 AI 平台的回答，再决定先改哪几页。需要系统做这件事的，可以看我们的[出海 SEO 服务](/services/seo)。`,
+先弄清现状：关键页面有没有被收录、Googlebot 能否读到正文、买家的核心问题在你的网站上有没有一段直接的答案。可以先用 [AI 可见性测评](/audit)检查官网的技术底座和各 AI 平台的回答，再决定先改哪几页。需要系统做这件事的，可以看我们的[出海 SEO 服务](/services/seo-website)。`,
     faqs: [
       {
         q: '想进入 Google AI 概览，需要做专门的优化吗？',
@@ -317,7 +317,7 @@ These moves either have no basis or make things worse:
 
 ## Where to start
 
-Start with the basics: are key pages indexed, can Googlebot read the main text, and does your site give a direct answer to each of your buyers' core questions? An [AI visibility audit](/audit) checks your site's technical foundation and how AI platforms answer about you, which helps decide which pages to fix first. If you want this done as a programme, see our [export SEO service](/services/seo).`,
+Start with the basics: are key pages indexed, can Googlebot read the main text, and does your site give a direct answer to each of your buyers' core questions? An [AI visibility audit](/audit) checks your site's technical foundation and how AI platforms answer about you, which helps decide which pages to fix first. If you want this done as a programme, see our [export SEO service](/services/seo-website).`,
     faqs: [
       {
         q: 'Do I need special optimisation to appear in Google AI Overviews?',

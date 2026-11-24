@@ -10,7 +10,7 @@ export const geoSolarPv: Insight = {
     zh: ['光伏 GEO', '光伏组件出海', '逆变器出海 AI 搜索', '光伏企业官网怎么写', '光伏 PAN 文件', '光伏供应链追溯'],
     en: ['GEO for solar manufacturers', 'solar module supplier AI search', 'inverter manufacturer ChatGPT visibility', 'PV module datasheet website', 'solar supply chain traceability'],
   },
-  relatedServices: ['geo', 'website', 'seo'],
+  relatedServices: ['geo', 'seo-website'],
   relatedTerms: ['term-structured-data', 'term-entity', 'term-hreflang'],
   relatedLessons: ['lesson-c-3-1', 'lesson-c-1-2'],
   zh: {

@@ -10,7 +10,7 @@ export const geo90DayPilot: Insight = {
     zh: ['GEO 试点', '90 天 GEO', 'GEO 交付物', 'GEO 怎么验收', 'GEO 项目周期'],
     en: ['GEO pilot', '90-day GEO', 'GEO deliverables', 'how to accept a GEO project', 'GEO project timeline'],
   },
-  relatedServices: ['geo', 'seo', 'website'],
+  relatedServices: ['geo', 'seo-website'],
   relatedTerms: ['term-geo', 'term-ai-crawlers'],
   relatedLessons: ['lesson-c-3-1', 'lesson-c-10-2'],
   zh: {

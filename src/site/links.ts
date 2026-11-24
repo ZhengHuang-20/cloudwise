@@ -38,8 +38,9 @@ export const caseSlug = (id: string) => id.replace(/^case-/, '');
 export const solutionSlug = (id: string) => id.replace(/^solution-/, '');
 export const termSlug = (id: string) => id.replace(/^term-/, '');
 export const lessonSlug = (id: string) => id.replace(/^lesson-/, '');
-/** 课程与服务一一对应（课程 C ↔ 服务 C），共用同一个 slug */
-export const courseSlug = (code: string) => SERVICES.find((s) => s.code === code)?.slug ?? code.toLowerCase();
+/** 课程地址固定（/academy/website、/academy/seo 等），与服务页地址分开：SEO 与建站合并为一项服务，但课程仍按 A、B 分开 */
+const COURSE_SLUGS: Record<string, string> = { A: 'website', B: 'seo', C: 'geo', D: 'ai-customer-service', E: 'fde' };
+export const courseSlug = (code: string) => COURSE_SLUGS[code] ?? code.toLowerCase();
 
 export const findService = (slug: string) => SERVICES.find((s) => s.slug === slug);
 export const findCase = (slug: string) => CASE_STUDIES.find((c) => caseSlug(c.id) === slug);

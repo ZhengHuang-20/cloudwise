@@ -8,8 +8,15 @@
  */
 export const SHOW_FDE = false;
 
-/** 对外展示的服务数（每项服务对应一门学院课程），用于“五项服务”“五门课”这类文案 */
-export const SERVICE_COUNT_CN = SHOW_FDE ? '五' : '四';
+/**
+ * 对外展示的核心服务数：GEO、SEO 与建站、AI 客服（开启 FDE 时再加一项）。
+ * 注意：学院课程仍是按 A–D（E）分开的，课程数见 COURSE_COUNT_*。
+ */
+export const SERVICE_COUNT_CN = SHOW_FDE ? '四' : '三';
 
-/** 英文文案里的服务数：Five / Four（句中用 toLowerCase()） */
-export const SERVICE_COUNT_EN = SHOW_FDE ? 'Five' : 'Four';
+/** 英文文案里的服务数：Four / Three（句中用 toLowerCase()） */
+export const SERVICE_COUNT_EN = SHOW_FDE ? 'Four' : 'Three';
+
+/** 学院课程数：独立站、SEO、GEO、AI 客服各一门（开启 FDE 时加课程 E） */
+export const COURSE_COUNT_CN = SHOW_FDE ? '五' : '四';
+export const COURSE_COUNT_EN = SHOW_FDE ? 'Five' : 'Four';

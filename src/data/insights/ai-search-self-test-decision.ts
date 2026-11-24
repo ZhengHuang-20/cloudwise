@@ -16,7 +16,7 @@ export const aiSearchSelfTestDecision: Insight = {
       'how AI recommends suppliers',
     ],
   },
-  relatedServices: ['geo', 'website'],
+  relatedServices: ['geo', 'seo-website'],
   relatedTerms: ['term-geo', 'term-zero-click'],
   relatedLessons: ['lesson-c-1-1'],
   zh: {

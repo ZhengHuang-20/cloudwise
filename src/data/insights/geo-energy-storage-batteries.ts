@@ -10,7 +10,7 @@ export const geoEnergyStorageBatteries: Insight = {
     zh: ['储能 GEO', '锂电池出海 GEO', '储能企业 AI 搜索', '储能官网怎么写', 'UL 9540A 官网展示', '欧盟电池法规 电池护照'],
     en: ['GEO for energy storage manufacturers', 'battery manufacturer AI search visibility', 'BESS supplier ChatGPT', 'UL 9540A website', 'EU Battery Regulation battery passport'],
   },
-  relatedServices: ['geo', 'website', 'seo'],
+  relatedServices: ['geo', 'seo-website'],
   relatedTerms: ['term-structured-data', 'term-entity', 'term-ai-crawlers'],
   relatedLessons: ['lesson-c-3-1', 'lesson-c-1-2'],
   zh: {

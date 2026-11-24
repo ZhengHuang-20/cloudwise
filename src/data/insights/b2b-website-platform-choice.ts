@@ -10,7 +10,7 @@ export const b2bWebsitePlatformChoice: Insight = {
     zh: ['外贸独立站 Next.js', '外贸独立站什么时候需要定制', 'AI 驱动独立站', '独立站平台对比'],
     en: ['custom Next.js B2B website', 'when to build a custom B2B website', 'AI-ready B2B website', 'Shopify vs WordPress vs custom Next.js'],
   },
-  relatedServices: ['website', 'ai-customer-service', 'seo'],
+  relatedServices: ['seo-website', 'ai-customer-service'],
   relatedTerms: ['term-core-web-vitals', 'term-structured-data', 'term-hreflang', 'term-ai-crawlers'],
   relatedLessons: ['lesson-a-1-1', 'lesson-a-1-2', 'lesson-d-1-2'],
   zh: {
@@ -146,7 +146,7 @@ Next.js 的页面默认是服务端组件，可以在服务端取数据、渲染
 
 1. 先做一次 [AI 可见性测评](/audit)，看现有网站在抓取、正文、结构化数据和 AI 回答里的表现。
 2. 对照上面六个问题，确认自己是否真的需要定制。
-3. 需要的话，看 [外贸独立站服务](/services/website) 的交付内容与验收方式；还在比较不同建站形式的，可以先读课程 [独立站、平台店铺和电子画册官网的区别](/academy/website/a-1-1)。`,
+3. 需要的话，看 [外贸独立站服务](/services/seo-website) 的交付内容与验收方式；还在比较不同建站形式的，可以先读课程 [独立站、平台店铺和电子画册官网的区别](/academy/website/a-1-1)。`,
     faqs: [
       {
         q: '外贸独立站一定要用 Next.js 吗？',
@@ -289,7 +289,7 @@ Case in point: for [Aikang Medical](/cases/ak-medical) we built a new English ov
 
 1. Run the [AI visibility audit](/audit) to see how your current site does on crawling, readable text, structured data and AI answers.
 2. Go through the six questions above and decide whether you really need a custom build.
-3. If you do, see what the [export website service](/services/website) delivers and how it's accepted. If you're still comparing site types, start with the lesson on [independent sites vs platform stores vs e-brochure sites](/academy/website/a-1-1).`,
+3. If you do, see what the [export website service](/services/seo-website) delivers and how it's accepted. If you're still comparing site types, start with the lesson on [independent sites vs platform stores vs e-brochure sites](/academy/website/a-1-1).`,
     faqs: [
       {
         q: 'Does a B2B export website have to be built with Next.js?',

@@ -5,7 +5,7 @@ import { Bot, Globe, Search, Sparkles, Users } from 'lucide-react';
  * 识别色只用于图标和小色点，不用于正文、按钮或大面积背景。
  */
 export const SERVICE_IDENTITY = {
-  site: { code: 'A', name: '海外独立站', nameEn: 'Overseas website', icon: Globe, text: 'text-svc-site', dot: 'bg-svc-site' },
+  site: { code: 'A', name: 'SEO 与建站', nameEn: 'SEO and website', icon: Globe, text: 'text-svc-site', dot: 'bg-svc-site' },
   seo: { code: 'B', name: '外贸 SEO', nameEn: 'Export SEO', icon: Search, text: 'text-svc-seo', dot: 'bg-svc-seo' },
   geo: { code: 'C', name: '出海 GEO', nameEn: 'Export GEO', icon: Sparkles, text: 'text-svc-geo', dot: 'bg-svc-geo' },
   chat: { code: 'D', name: 'AI 智能客服', nameEn: 'AI customer service', icon: Bot, text: 'text-svc-chat', dot: 'bg-svc-chat' },

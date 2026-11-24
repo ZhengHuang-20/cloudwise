@@ -10,7 +10,7 @@ export const howToMeasureGeoResults: Insight = {
     zh: ['GEO 效果怎么衡量', 'GEO 指标', 'AI 提及率', 'AI 引用率', 'AI 询盘怎么统计'],
     en: ['how to measure GEO results', 'GEO metrics', 'AI mention rate', 'AI citation rate', 'track AI referral enquiries'],
   },
-  relatedServices: ['geo', 'website'],
+  relatedServices: ['geo', 'seo-website'],
   relatedTerms: ['term-geo', 'term-ai-crawlers'],
   relatedLessons: ['lesson-c-3-1', 'lesson-c-10-2'],
   zh: {

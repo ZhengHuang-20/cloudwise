@@ -10,7 +10,7 @@ export const geoAutoParts: Insight = {
     zh: ['汽车零部件 GEO', '汽配出海 GEO', '汽配官网怎么写', 'OE 号对照', 'ACES PIES TecDoc', 'IATF 16949 官网展示'],
     en: ['GEO for auto parts manufacturers', 'auto parts supplier AI search', 'aftermarket parts ChatGPT visibility', 'OE number cross reference website', 'ACES PIES TecDoc data'],
   },
-  relatedServices: ['geo', 'website', 'seo'],
+  relatedServices: ['geo', 'seo-website'],
   relatedTerms: ['term-structured-data', 'term-entity', 'term-ai-crawlers'],
   relatedLessons: ['lesson-c-3-1', 'lesson-b-1-3'],
   zh: {
@@ -83,7 +83,7 @@ IATF 16949 证书可以在 IATF 的全球监督数据库中查询，证书编号
 - IATF 16949、E-mark 等资质写清编号与范围
 - 公司名与零件号写法在官网、展会名录和渠道商目录一致
 
-先[做一次免费测评](/audit)，看看 AI 能不能读到你的零件数据。我们的[出海 GEO 服务](/services/geo)会按零件品类与目标市场整理问题集；关键词与页面规划可以配合 [外贸 SEO](/services/seo)。`,
+先[做一次免费测评](/audit)，看看 AI 能不能读到你的零件数据。我们的[出海 GEO 服务](/services/geo)会按零件品类与目标市场整理问题集；关键词与页面规划可以配合 [外贸 SEO](/services/seo-website)。`,
     faqs: [
       {
         q: '汽配企业做 GEO，最重要的数据是什么？',
@@ -173,7 +173,7 @@ Trade-fair exhibitor pages (such as Automechanika or AAPEX), distributors' catal
 - IATF 16949, E-mark and other approvals with numbers and scope
 - Consistent company name and part number format on the website, trade-fair listings and distributor catalogues
 
-[Run a free audit](/audit) to see whether AI can read your parts data. Our [export GEO service](/services/geo) builds the question set by part category and market; keyword and page planning pairs with [export SEO](/services/seo).`,
+[Run a free audit](/audit) to see whether AI can read your parts data. Our [export GEO service](/services/geo) builds the question set by part category and market; keyword and page planning pairs with [export SEO](/services/seo-website).`,
     faqs: [
       {
         q: 'What data matters most for auto parts GEO?',
