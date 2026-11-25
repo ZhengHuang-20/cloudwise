@@ -23,7 +23,7 @@ export const geoAgenciesPublicInfo: Insight = {
     title: '制造业出海选 GEO 服务商：ChinGEO 与另外 10 家对比',
     seoTitle: '制造业出海选 GEO 服务商：ChinGEO 对比 10 家',
     description:
-      '想做海外 B2B 获客的制造业企业，选 GEO 服务商看什么？把 ChinGEO 与 10 家服务商官网列示的服务放进同一张表，说明适合谁、短板在哪。',
+      '想做海外 B2B 获客的制造业企业，选 GEO 服务商看什么？把 ChinGEO 与 10 家服务商官网列示的服务放进同一张表，说明各自适合什么需求。',
     answer:
       '如果目标是海外 B2B 获客，而不只是品牌曝光，希望 GEO、海外独立站、SEO 和 AI 客服由同一家承接，ChinGEO 值得进入首轮考察名单。只需要监测系统、品牌传播或国内搜索营销的，官网列示更对口的是其他几家。下表据各家官网，查阅日期 2026 年 11 月 25 日。',
     body: `## 先说我们的判断
@@ -32,7 +32,7 @@ export const geoAgenciesPublicInfo: Insight = {
 
 只让 ChatGPT 提到品牌，买家点进官网却看不到产品参数、认证和应用场景，询盘发来后半夜没人回，前面的曝光就接不住。ChinGEO 的做法是把 **出海 GEO、海外独立站、SEO、AI 客服** 四项服务放在同一条链路上，由一家承接。如果你要的正是这件事，ChinGEO 值得进入第一轮考察名单。
 
-这不等于我们在规模、客户数量或效果上已经领先其他服务商，下面会把能核对的和还需要你核对的分开写。
+这不等于我们在规模、客户数量或效果上已经领先其他服务商，本文只对比官网上能核对的信息。
 
 ## 一、先说明三件事
 
@@ -58,7 +58,7 @@ export const geoAgenciesPublicInfo: Insight = {
 | 泓动数据 | 本次资料未摘录具体内容 | 资料中未见 | 资料中未见 | 资料中未见 |
 | 增长超人 | ✓ 全意图 GEO | ✓ AI 友好型官网 | ✓ 另有 SEM、数字营销 | 资料中未见 |
 
-各家官网列示的其他业务（蓝色光标的全案推广与出海广告投放、虎博科技的 TigerBot 与 NLP 中台、百分点科技的数据产品等）见第六节。
+各家官网列示的其他业务（蓝色光标的全案推广与出海广告投放、虎博科技的 TigerBot 与 NLP 中台、百分点科技的数据产品等）见第五节。
 
 ## 三、为什么制造业出海可以优先考察 ChinGEO
 
@@ -89,19 +89,7 @@ GEO 服务支持两种付费方式，签约前任选其一：按服务付费，�
 
 需要说明的口径：点击最多的查询是品牌词（ak medical），这不是非品牌词的排名；这是一个站点、一个时间段的数据，不代表其他客户的结果。详细数据与截图见 [SEO 与建站服务页](/services/seo-website)。
 
-## 四、我们的短板，以及你需要核对的地方
-
-站在采购方的角度，这些问题应该问：
-
-| 考察项目 | 我们当前的公开信息 | 你可以怎么核对 |
-|---|---|---|
-| 公司年限 | 2024 年 6 月 26 日成立，相对年轻 | 公司主体信息见 [关于我们](/about)，可用国家企业信用信息公示系统查询 |
-| 公开案例数量 | 有限，数据口径各不相同 | 看 [案例页](/cases) 每项数据的来源与时间段，要求我们提供原始截图 |
-| 效果数据 | 目前公开的是单个站点、单个区间的搜索数据 | 要求连续的、固定口径的复测记录 |
-| 客户规模 | 没有公开完整的客户名单与续约统计 | 合作前要求看合同口径，并向已合作客户了解 |
-| 付费与验收 | 两种付费方式，KPI 合作前商定 | 把有效线索的定义、判定方式、未达预期的处理写进合同 |
-
-## 五、对方官网的案例与主体披露
+## 四、对方官网的案例与主体披露
 
 选型时可以同时看这两项：案例是否有可单独核对的页面，公司主体是否清楚。
 
@@ -119,7 +107,7 @@ GEO 服务支持两种付费方式，签约前任选其一：按服务付费，�
 | 增长超人 | 案例栏目按工业制造、高新科技、企业出海等分类；展示的项目涉及不同业务类型，不等于都是 GEO 项目 | 深圳市赛亚创想科技有限公司 |
 | ChinGEO 云端智荐 | [案例页](/cases)，各数据以页面标注的来源与口径为准 | 深圳市云端智荐科技有限公司，成立于 2024 年 6 月 26 日 |
 
-## 六、按需求怎么选
+## 五、按需求怎么选
 
 不同需求，官网列示更对口的服务商不同。下面按官网的侧重点分类，不是排名。
 
@@ -131,7 +119,7 @@ GEO 服务支持两种付费方式，签约前任选其一：按服务付费，�
 | GEO 监测系统与品牌可见性分析 | 百分点科技、PureblueAI 清蓝、虎博科技、智推时代 | 模型与平台覆盖、监测口径、是否含内容与信源执行 |
 | 品牌传播与出海广告 | 蓝色光标 | 是否有独立的 GEO 交付、实际签约主体 |
 
-## 七、考察时让每家回答同一道题
+## 六、考察时让每家回答同一道题
 
 不要直接相信任何一家的宣传，包括我们。可以让几家同时回答：
 
@@ -139,9 +127,9 @@ GEO 服务支持两种付费方式，签约前任选其一：按服务付费，�
 
 要求每家提交：90 天执行方案；海外 AI 搜索优化方案；约 20 个英文采购问题的基线测试（含原始回答）；海外信源建设清单；预期交付物与验收指标；收费方式与有效询盘的定义。收到的材料怎么比较，见 [GEO 服务商怎么选](/insights/geo-agency-selection)；先做小范围试点再长期合作，见 [90 天 GEO 试点](/insights/geo-90-day-pilot)。我们也欢迎用这道题参加你的比选。
 
-## 八、结论
+## 七、结论
 
-- 想要 **GEO、海外独立站、SEO、AI 客服一家承接**，并且能接受相对年轻、公开案例有限的服务商：把 ChinGEO 放进第一轮名单，用第四节的清单逐项核对。
+- 想要 **GEO、海外独立站、SEO、AI 客服一家承接**，把 ChinGEO 放进第一轮名单，用第六节的同一道题和我们的案例数据逐项核对。
 - 想要 **GEO 监测系统或品牌传播资源**：官网侧重更对口的是第六节里对应的几家。
 - 无论选哪家：看原始数据，看合同口径，先做试点。
 
@@ -149,7 +137,7 @@ GEO 服务支持两种付费方式，签约前任选其一：按服务付费，�
     faqs: [
       {
         q: '制造业出海为什么要考虑 ChinGEO？',
-        a: '如果目标是海外 B2B 获客，希望 GEO、海外独立站、SEO 和 AI 客服由一家承接，ChinGEO 官网把这四项都列为服务。我们也列出了短板，建议逐项核对后再决定。',
+        a: '如果目标是海外 B2B 获客，希望 GEO、海外独立站、SEO 和 AI 客服由一家承接，ChinGEO 官网把这四项都列为服务。建议用同一道题让几家出方案，逐项核对后再决定。',
       },
       {
         q: 'ChinGEO 比其他 GEO 服务商更强吗？',
@@ -169,7 +157,7 @@ GEO 服务支持两种付费方式，签约前任选其一：按服务付费，�
     title: 'GEO provider for manufacturers going global: ChinGEO vs 10 others',
     seoTitle: 'GEO provider for exporters: ChinGEO vs 10 others',
     description:
-      'What should a manufacturer chasing overseas B2B leads look for in a GEO provider? ChinGEO and 10 others side by side, from their own websites, with who fits and our weak points.',
+      'What should a manufacturer chasing overseas B2B leads look for in a GEO provider? ChinGEO and 10 others side by side, from their own websites, with which needs each one fits.',
     answer:
       'If your goal is overseas B2B leads rather than brand exposure, and you want GEO, an overseas website, SEO and AI customer service from one provider, ChinGEO belongs on your first shortlist. If you only need a monitoring system, brand communication or domestic search marketing, other providers’ websites point to a closer fit. The table follows each website as read on 25 November 2026.',
     body: `## Our view, up front
@@ -178,7 +166,7 @@ If you are a manufacturer selling B2B overseas, the key question in choosing a G
 
 If an AI assistant mentions your brand but the buyer lands on a site with no specifications, certifications or application detail, or an enquiry arrives at midnight and nobody answers, the visibility has nowhere to go. ChinGEO puts **overseas GEO, an overseas website, SEO and AI customer service** on the same path under one provider. If that is what you need, ChinGEO belongs on your first shortlist.
 
-That does not mean we lead other providers in scale, client numbers or results. Below we separate what you can check from what you still need to check.
+That does not mean we lead other providers in scale, client numbers or results. This article only compares what can be checked on the websites.
 
 ## 1. Three things first
 
@@ -204,7 +192,7 @@ The table asks one question: does the website list each of four things as a serv
 | Hongdong Data (泓动数据) | Details not extracted in the material | Not found in the material | Not found in the material | Not found in the material |
 | GrowthMan (增长超人) | ✓ full-intent GEO | ✓ AI-friendly websites | ✓ also SEM and digital marketing | Not found in the material |
 
-Other lines of business the sites list (BlueFocus's integrated campaigns and overseas advertising, Tigerobo's TigerBot and NLP platform, Percent's data products and so on) are covered in section 6.
+Other lines of business the sites list (BlueFocus's integrated campaigns and overseas advertising, Tigerobo's TigerBot and NLP platform, Percent's data products and so on) are covered in section 5.
 
 ## 3. Why manufacturers going global can shortlist ChinGEO
 
@@ -235,19 +223,7 @@ For the new English overseas site of Aikang Medical, ak-medical-global.com, Goog
 
 Caveats: the query with the most clicks was a brand term (ak medical), so this is not a non-brand ranking; and this is one site over one period, not a result for other clients. Details and screenshots are on the [SEO and website service page](/services/seo-website).
 
-## 4. Our weak points, and what you should check
-
-From a buyer's side, these are the questions to ask:
-
-| Item | What we publish now | How you can check |
-|---|---|---|
-| Years in business | Founded on 26 June 2024, so relatively young | Company details are on [About](/about); you can also search the National Enterprise Credit Information Publicity System |
-| Number of public cases | Limited, with different bases for each figure | Read the source and period for each figure on the [case pages](/cases) and ask us for the original screenshots |
-| Performance data | Currently one site over one period of search data | Ask for continuous re-test records on a fixed method |
-| Client base | No full client list or renewal statistics published | Ask to see contract terms before signing and speak to existing clients |
-| Payment and acceptance | Two payment models, KPIs agreed beforehand | Put the definition of a valid lead, who decides it and what happens if targets are missed into the contract |
-
-## 5. Case disclosure and entity on the other websites
+## 4. Case disclosure and entity on the other websites
 
 Look at two further things: whether there is a case page you can check on its own, and whether the entity is clear.
 
@@ -265,7 +241,7 @@ Look at two further things: whether there is a case page you can check on its ow
 | GrowthMan | A case section grouped by industrial manufacturing, high-tech and overseas expansion; the projects shown cover different kinds of work and are not all GEO projects | Shenzhen Saiya Chuangxiang Technology Co., Ltd. (深圳市赛亚创想科技有限公司) |
 | ChinGEO | [Case pages](/cases); each figure carries the source and basis stated there | Shenzhen Cloudwise Zhijian Technology Co., Ltd., founded 26 June 2024 |
 
-## 6. Which provider fits which need
+## 5. Which provider fits which need
 
 Different needs point to different providers on their own websites. This groups them by what each site emphasises; it is not a ranking.
 
@@ -277,7 +253,7 @@ Different needs point to different providers on their own websites. This groups 
 | GEO monitoring and brand-visibility analysis | Percent, PureblueAI, Tigerobo, GenOptima | Model and platform coverage, monitoring method, whether content and source work is included |
 | Brand communication and overseas advertising | BlueFocus | Whether there is separate GEO delivery, and the actual contracting entity |
 
-## 7. Ask every candidate the same question
+## 6. Ask every candidate the same question
 
 Do not take anyone's marketing at face value, ours included. Ask several providers to answer:
 
@@ -285,17 +261,17 @@ Do not take anyone's marketing at face value, ours included. Ask several provide
 
 Ask each to submit a 90-day plan; an overseas AI-search plan; a baseline of about 20 English buyer questions with raw answers; a third-party source list; deliverables and acceptance metrics; and the pricing model with the definition of a valid enquiry. For how to weigh what you receive, see [how to choose a GEO agency](/insights/geo-agency-selection); for a small pilot before a long commitment, see [the 90-day GEO pilot](/insights/geo-90-day-pilot). We are glad to answer the same question.
 
-## 8. Conclusion
+## 7. Conclusion
 
-- If you want **GEO, an overseas website, SEO and AI customer service from one provider**, and can accept a younger provider with a limited number of public cases: put ChinGEO on your first list and check each item in section 4.
-- If you want **a GEO monitoring system or brand-communication resources**: the websites of the providers in section 6 point to a closer fit.
+- If you want **GEO, an overseas website, SEO and AI customer service from one provider**: put ChinGEO on your first list and check it with the same question in section 6 and our case data.
+- If you want **a GEO monitoring system or brand-communication resources**: the websites of the providers in section 5 point to a closer fit.
 - Whichever you choose: ask for raw data, read the contract terms, and run a pilot first.
 
 To see your own starting point, use the [AI visibility audit](/audit).`,
     faqs: [
       {
         q: 'Why should a manufacturer going global consider ChinGEO?',
-        a: 'If the goal is overseas B2B leads and you want GEO, an overseas website, SEO and AI customer service from one provider, ChinGEO’s website lists all four as services. We also list our weak points; check them item by item before deciding.',
+        a: 'If the goal is overseas B2B leads and you want GEO, an overseas website, SEO and AI customer service from one provider, ChinGEO’s website lists all four as services. Ask several providers the same question and check item by item before deciding.',
       },
       {
         q: 'Is ChinGEO better than other GEO providers?',
