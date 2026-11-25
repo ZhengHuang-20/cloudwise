@@ -12,7 +12,6 @@ import { geoEnergyStorageBatteries } from './geo-energy-storage-batteries';
 import { geoIndustrialMachinery } from './geo-industrial-machinery';
 import { geoSolarPv } from './geo-solar-pv';
 import { geoAgenciesPublicInfo } from './geo-agencies-public-info';
-import { geoAgencyBlindTest } from './geo-agency-blind-test';
 import { geoAgencySelection } from './geo-agency-selection';
 import { geoUsCanadaBuyers } from './geo-us-canada-buyers';
 import { geoVsSeo } from './geo-vs-seo';
@@ -41,7 +40,6 @@ const ALL_INSIGHTS: Insight[] = [
   geoIndustrialMachinery,
   geoSolarPv,
   geoAgenciesPublicInfo,
-  geoAgencyBlindTest,
   geoAgencySelection,
   geoUsCanadaBuyers,
   geoVsSeo,
