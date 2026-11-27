@@ -2,10 +2,11 @@ import React from 'react';
 import Link from 'next/link';
 import { CheckCircle2, ChevronRight, PlayCircle } from 'lucide-react';
 import { courseList, FRICTION_EN } from '../data/coursesData';
+import { glossaryList } from '../data/glossaryData';
 import { useApp } from '../context/AppContext';
 import { useLang } from '../context/LanguageContext';
 import { PageHeader } from '../components/ui/PageHeader';
-import { findCourse, lessonPath, servicesForCourse } from '../site/links';
+import { findCourse, lessonPath, servicesForCourse, termSlug } from '../site/links';
 import { splitTitle } from './AcademyView';
 
 /** 课程主页 /academy/<slug>：课程简介与全部课时的链接 */
@@ -18,6 +19,10 @@ export const CourseView: React.FC<{ slug: string }> = ({ slug }) => {
   const friction = lang === 'en' ? FRICTION_EN[course.frictionPoint] : course.frictionPoint;
   // 课程 ↔ 服务一一对应（见 ServiceDetailView 的 codes 计算）
   const relatedServices = servicesForCourse(course.code);
+  // 术语按 relatedLessonId 归到课程字母，与服务页「相关术语」同一口径
+  const relatedTerms = glossaryList(lang).filter(
+    (term) => term.relatedLessonId?.split('-')[1]?.toUpperCase() === course.code
+  );
 
   return (
     <div>
@@ -40,6 +45,21 @@ export const CourseView: React.FC<{ slug: string }> = ({ slug }) => {
           {course.executiveModuleSummary}
         </blockquote>
 
+        {/* 事实型数据：课时数、时长、模块数都来自 coursesData，不写主观评价 */}
+        <dl className="well grid grid-cols-2 gap-4 text-center sm:grid-cols-4">
+          {[
+            { label: t('课时', 'Lessons'), value: `${course.totalLessons}` },
+            { label: t('模块', 'Modules'), value: `${course.totalModules}` },
+            { label: t('总时长', 'Total time'), value: t(`${course.durationHours} 小时`, `${course.durationHours} h`) },
+            { label: t('价格', 'Price'), value: t('免费', 'Free') },
+          ].map((item) => (
+            <div key={item.label}>
+              <dt className="text-caption text-label-secondary">{item.label}</dt>
+              <dd className="mt-1 text-title-3 tabular-nums text-label">{item.value}</dd>
+            </div>
+          ))}
+        </dl>
+
         {relatedServices.length > 0 && (
           <p className="text-body text-label-secondary">
             {t('这门课对应的服务：', 'Service for this course: ')}
@@ -52,6 +72,21 @@ export const CourseView: React.FC<{ slug: string }> = ({ slug }) => {
               </React.Fragment>
             ))}
           </p>
+        )}
+
+        {relatedTerms.length > 0 && (
+          <div>
+            <p className="text-caption text-label-secondary">{t('这门课讲到的术语', 'Terms covered in this course')}</p>
+            <ul className="mt-3 flex flex-wrap gap-2">
+              {relatedTerms.map((term) => (
+                <li key={term.id}>
+                  <Link href={path(`/glossary/${termSlug(term.id)}`)} className="chip">
+                    {term.term}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
         )}
 
         {course.modules.map((mod) => (

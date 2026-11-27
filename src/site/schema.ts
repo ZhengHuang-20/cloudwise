@@ -295,6 +295,14 @@ function mainEntities(route: Route, lang: Lang, pageUrl: string): Json[] {
           isAccessibleForFree: true,
           // Google 课程富结果的必填项：免费 / 付费（不带金额）与授课方式
           offers: { '@type': 'Offer', category: 'Free' },
+          // 事实型字段：总时长与课程大纲都来自数据文件，供搜索引擎与 AI 判断课程范围
+          timeRequired: `PT${c.durationHours}H`,
+          syllabusSections: c.modules.map((mod) => ({
+            '@type': 'Syllabus',
+            name: mod.name,
+            description: mod.description,
+            position: mod.index,
+          })),
           hasCourseInstance: {
             '@type': 'CourseInstance',
             courseMode: 'Online',
