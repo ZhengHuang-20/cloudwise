@@ -10,7 +10,11 @@
     "lint": "tsc --noEmit",
     "db:migrate": "tsx scripts/migrate.ts",
     "create-admin": "tsx scripts/create-admin.ts",
-    "audit-stats": "tsx scripts/audit-stats.ts"
+    "audit-stats": "tsx scripts/audit-stats.ts",
+    "seo:audit": "tsx scripts/seo-audit.ts",
+    "seo:audit:live": "tsx scripts/seo-audit.ts --live",
+    "seo:audit:gsc": "tsx scripts/seo-audit.ts --gsc",
+    "seo:audit:full": "tsx scripts/seo-audit.ts --live --gsc"
   },
   "dependencies": {
     "@node-rs/argon2": "^2.0.2",

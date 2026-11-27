@@ -355,6 +355,10 @@ function mainEntities(route: Route, lang: Lang, pageUrl: string): Json[] {
     case 'insight': {
       const item = findInsight(route.slug)!;
       const content = item[lang];
+      // 把文章挂到它真正讲的服务与术语上：AI 检索时更容易把「这篇文章」和「这项能力」连起来，
+      // 也是站内 article → service / term 链接在结构化数据里的对应物。
+      const aboutService = SERVICES.find((svc) => item.relatedServices.includes(svc.slug));
+      const mentionedTerms = glossaryList(lang).filter((term) => item.relatedTerms.includes(term.id)).slice(0, 4);
       return [
         {
           '@type': 'Article',
@@ -372,6 +376,26 @@ function mainEntities(route: Route, lang: Lang, pageUrl: string): Json[] {
           wordCount: wordCount(`${content.answer} ${content.body}`, lang),
           mainEntityOfPage: pageUrl,
           image: absoluteUrl(ogImagePath(route, lang)),
+          ...(aboutService
+            ? {
+                about: {
+                  '@type': 'Service',
+                  name: pick(aboutService.title, lang),
+                  description: pick(aboutService.oneLiner, lang),
+                  url: url(`/services/${aboutService.slug}`, lang),
+                  provider: orgRef,
+                },
+              }
+            : {}),
+          ...(mentionedTerms.length > 0
+            ? {
+                mentions: mentionedTerms.map((term) => ({
+                  '@type': 'DefinedTerm',
+                  name: term.term,
+                  url: url(`/glossary/${termSlug(term.id)}`, lang),
+                })),
+              }
+            : {}),
         },
         person(item.author, lang),
         faqPage(pageUrl, content.faqs),

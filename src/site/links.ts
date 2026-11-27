@@ -100,6 +100,16 @@ export const isIndexable = (route: Route) => !['deal-room', 'login', 'console'].
 /** 后台只有中文 */
 export const hasEnglish = (route: Route) => !['login', 'console'].includes(route.kind);
 
+/** 课程代码对应的服务（含 extraCourseCodes）：课程页、课时页据此链回服务页 */
+export const servicesForCourse = (code: string) =>
+  SERVICES.filter((svc) => svc.code === code || (svc.extraCourseCodes ?? []).some((extra) => extra === code));
+
+/** 课时 id（如 c-1-1）→ 服务；术语的 relatedLessonId 也走这条链路 */
+export const serviceForLesson = (lessonId: string) => {
+  const code = lessonId.split('-')[1]?.toUpperCase();
+  return code ? servicesForCourse(code)[0] : undefined;
+};
+
 /** Header 高亮用：路由属于哪个导航项 */
 export const navSection = (route: Route): string => {
   switch (route.kind) {

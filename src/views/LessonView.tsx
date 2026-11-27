@@ -1,13 +1,14 @@
 import React from 'react';
 import Link from 'next/link';
-import { CheckCircle2 } from 'lucide-react';
+import { CheckCircle2, ChevronRight } from 'lucide-react';
 import { courseList } from '../data/coursesData';
+import { glossaryList } from '../data/glossaryData';
 import { useApp } from '../context/AppContext';
 import { useLang } from '../context/LanguageContext';
 import { PageHeader } from '../components/ui/PageHeader';
 import { LessonArticle } from '../components/LessonArticle';
 import { BILIBILI_VIDEOS } from '../lib/site';
-import { courseSlug, findLesson, lessonPath } from '../site/links';
+import { courseSlug, findLesson, lessonPath, serviceForLesson, termSlug } from '../site/links';
 import { useSite } from '../site/SiteContext';
 import { splitTitle } from './AcademyView';
 
@@ -26,6 +27,8 @@ export const LessonView: React.FC<{ course: string; slug: string }> = ({ course:
   const completed = isLessonCompleted(lesson.id);
   const bvid = BILIBILI_VIDEOS[lesson.id];
   const short = splitTitle(course.title).short;
+  const relatedService = serviceForLesson(lesson.id);
+  const relatedTerms = glossaryList(lang).filter((term) => term.relatedLessonId === lesson.id);
 
   return (
     <div>
@@ -49,6 +52,31 @@ export const LessonView: React.FC<{ course: string; slug: string }> = ({ course:
               {bvid}
             </a>
           </p>
+        )}
+
+        {(relatedService || relatedTerms.length > 0) && (
+          <section aria-labelledby="lesson-related" className="mt-16 border-t border-separator pt-10">
+            <h2 id="lesson-related" className="text-title-2">
+              {t('相关服务与术语', 'Related service and terms')}
+            </h2>
+            {relatedService && (
+              <Link href={path(`/services/${relatedService.slug}`)} className="link mt-5 inline-flex items-center gap-1 text-body">
+                {t(relatedService.title.zh, relatedService.title.en)}
+                <ChevronRight className="h-4 w-4" />
+              </Link>
+            )}
+            {relatedTerms.length > 0 && (
+              <ul className="mt-5 flex flex-wrap gap-2">
+                {relatedTerms.map((term) => (
+                  <li key={term.id}>
+                    <Link href={path(`/glossary/${termSlug(term.id)}`)} className="chip">
+                      {term.term}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
         )}
 
         <div className="mt-12 flex flex-col gap-4 border-t border-separator pt-8 sm:flex-row sm:items-center sm:justify-between">

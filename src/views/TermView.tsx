@@ -4,7 +4,7 @@ import { ChevronRight, X } from 'lucide-react';
 import { PageHeader } from '../components/ui/PageHeader';
 import { glossaryList, GLOSSARY_CATEGORY_EN } from '../data/glossaryData';
 import { useLang } from '../context/LanguageContext';
-import { findTerm, lessonPath, termSlug } from '../site/links';
+import { findTerm, lessonPath, serviceForLesson, termSlug } from '../site/links';
 import type { InsightSummary } from '../site/pageData';
 import { InsightCard } from './InsightsView';
 
@@ -17,6 +17,8 @@ export const TermView: React.FC<{ slug: string; insights?: InsightSummary[] }> =
   const id = findTerm(slug)!.id;
   const terms = glossaryList(lang);
   const term = terms.find((item) => item.id === id)!;
+  // 术语按 relatedLessonId 归到课程，课程与服务一一对应（与 ServiceDetailView 同一口径）
+  const relatedService = term.relatedLessonId ? serviceForLesson(term.relatedLessonId) : undefined;
   const linkFor = (name: string) =>
     terms.find(
       (item) =>
@@ -82,6 +84,12 @@ export const TermView: React.FC<{ slug: string; insights?: InsightSummary[] }> =
           {term.relatedLessonId && (
             <Link href={path(lessonPath(term.relatedLessonId))} className="link mt-8 text-body">
               {t('在出海学院中深入学习', 'Study this in the Export Academy')}
+              <ChevronRight />
+            </Link>
+          )}
+          {relatedService && (
+            <Link href={path(`/services/${relatedService.slug}`)} className="link mt-4 block text-body">
+              {t('了解相关服务', 'See the related service')}：{t(relatedService.title.zh, relatedService.title.en)}
               <ChevronRight />
             </Link>
           )}

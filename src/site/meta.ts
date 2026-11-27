@@ -8,7 +8,24 @@ import { courseList } from '../data/coursesData';
 import { glossaryList } from '../data/glossaryData';
 import { COURSE_COUNT_CN, COURSE_COUNT_EN, SERVICE_COUNT_CN, SERVICE_COUNT_EN, SHOW_FDE } from '../lib/features';
 import { BRAND } from '../lib/site';
-import { findCase, findCourse, findInsight, findLesson, findService, findSolution, findTerm, type Route } from './routes';
+import { findCase, findCourse, findInsight, findLesson, findService, findSolution, findTerm, routePath, type Route } from './routes';
+
+/**
+ * 英文 <title> 的手动短标题（按路由路径登记）。
+ * 只在英文页、且完整标题加上「 - ChinGEO」（12 字符）后放不下 60 字符时才会被 fitTitle 选用；
+ * 不影响 H1、描述、JSON-LD 与 llms.txt。新增页面时若完整标题超长，在这里补一条。
+ */
+const EN_SHORT_TITLES: Record<string, string> = {
+  '/solutions/environmental': 'Environmental tech export plan',
+  '/academy/ai-customer-service': 'Export Academy: AI customer service course',
+  '/academy/website/a-1-1': 'Independent site vs platform store',
+  '/academy/website/a-7-4': 'Aikang case: one week of dashboard data',
+  '/academy/seo/b-3-5': 'How Taining built 60 English keyword groups',
+  '/academy/geo/c-1-1': 'Buyers now ask AI for a shortlist',
+  '/academy/geo/c-3-1': 'The six-step GEO loop, step by step',
+  '/academy/geo/c-10-2': "How Aikang's 47 and 95 scores were measured",
+  '/academy/ai-customer-service/d-9-2': 'Cost of a missed enquiry',
+};
 
 export interface PageMeta {
   title: string;
@@ -36,7 +53,7 @@ const courseLabel = (short: string, lang: Lang) => (lang === 'en' ? `${short} co
 /** 客户名形如「爱康医疗 (AK Medical)」，取主名 */
 const primaryName = (name: string) => name.replace(/\s*\(.*\)$/, '');
 
-export function routeMeta(route: Route, lang: Lang): PageMeta {
+function baseMeta(route: Route, lang: Lang): PageMeta {
   const t = (zh: string, en: string) => (lang === 'en' ? en : zh);
   const max = lang === 'en' ? 165 : 95;
   const svcList = SHOW_FDE ? t('出海 GEO、SEO 与建站、AI 客服与 FDE 驻场', 'GEO, SEO and website, AI customer service and FDE on-site engineering') : t('出海 GEO、SEO 与建站、AI 客服', 'GEO, SEO and website, and AI customer service');
@@ -199,4 +216,13 @@ export function routeMeta(route: Route, lang: Lang): PageMeta {
     case 'console':
       return { title: '客户后台', description: '云端智荐客户后台。' };
   }
+}
+
+/** 页面的标题与描述；英文页命中手动短标题时把它排在候选第一位 */
+export function routeMeta(route: Route, lang: Lang): PageMeta {
+  const meta = baseMeta(route, lang);
+  if (lang !== 'en') return meta;
+  const short = EN_SHORT_TITLES[routePath(route)];
+  if (!short) return meta;
+  return { ...meta, shortTitles: [short, ...(meta.shortTitles ?? [])] };
 }

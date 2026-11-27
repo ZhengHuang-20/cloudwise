@@ -5,7 +5,7 @@ import { courseList, FRICTION_EN } from '../data/coursesData';
 import { useApp } from '../context/AppContext';
 import { useLang } from '../context/LanguageContext';
 import { PageHeader } from '../components/ui/PageHeader';
-import { findCourse, lessonPath } from '../site/links';
+import { findCourse, lessonPath, servicesForCourse } from '../site/links';
 import { splitTitle } from './AcademyView';
 
 /** 课程主页 /academy/<slug>：课程简介与全部课时的链接 */
@@ -16,6 +16,8 @@ export const CourseView: React.FC<{ slug: string }> = ({ slug }) => {
   const course = courseList(lang).find((c) => c.id === id)!;
   const title = splitTitle(course.title);
   const friction = lang === 'en' ? FRICTION_EN[course.frictionPoint] : course.frictionPoint;
+  // 课程 ↔ 服务一一对应（见 ServiceDetailView 的 codes 计算）
+  const relatedServices = servicesForCourse(course.code);
 
   return (
     <div>
@@ -37,6 +39,20 @@ export const CourseView: React.FC<{ slug: string }> = ({ slug }) => {
           <span className="font-semibold text-label">{t('决策者视点　', 'Executive view: ')}</span>
           {course.executiveModuleSummary}
         </blockquote>
+
+        {relatedServices.length > 0 && (
+          <p className="text-body text-label-secondary">
+            {t('这门课对应的服务：', 'Service for this course: ')}
+            {relatedServices.map((svc, i) => (
+              <React.Fragment key={svc.slug}>
+                {i > 0 && '、'}
+                <Link href={path(`/services/${svc.slug}`)} className="link">
+                  {t(svc.title.zh, svc.title.en)}
+                </Link>
+              </React.Fragment>
+            ))}
+          </p>
+        )}
 
         {course.modules.map((mod) => (
           <section key={mod.index} className="card overflow-hidden p-0" aria-labelledby={`module-${mod.index}`}>
