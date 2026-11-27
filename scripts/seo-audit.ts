@@ -847,25 +847,36 @@ async function checkGsc() {
     );
   }
 
-  // 3) 抽查索引状态：逐个 URL 调 URL Inspection API
+  // 3) 抽查索引状态：URL Inspection API 偶发超时，重试一次、两路并发，避免整轮检查被拖到几分钟
   const samples = gscSample();
   note(`· GSC 抽查 ${samples.length} 个页面的索引状态`);
-  for (const page of samples) {
-    const data = await fetch('https://searchconsole.googleapis.com/v1/urlInspection/index:inspect', {
-      method: 'POST',
-      headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json' },
-      body: JSON.stringify({ inspectionUrl: page.url, siteUrl: property }),
-      signal: AbortSignal.timeout(FETCH_TIMEOUT),
-    })
-      .then(async (res) => {
-        if (!res.ok) throw new Error(`${res.status}：${(await res.text()).slice(0, 160)}`);
-        return (await res.json()) as { inspectionResult?: { indexStatusResult?: GscIndexStatus } };
-      })
-      .catch((cause: Error) => {
-        warn('gsc/inspect-unavailable', `${page.url} 查询失败：${cause.message}`);
-        return null;
+
+  const inspectOne = async (page: Page, attempt = 1): Promise<{ page: Page; data: unknown } | null> => {
+    try {
+      const res = await fetch('https://searchconsole.googleapis.com/v1/urlInspection/index:inspect', {
+        method: 'POST',
+        headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json' },
+        body: JSON.stringify({ inspectionUrl: page.url, siteUrl: property }),
+        signal: AbortSignal.timeout(12_000),
       });
-    if (!data) continue;
+      if (!res.ok) throw new Error(`${res.status}：${(await res.text()).slice(0, 160)}`);
+      return { page, data: await res.json() };
+    } catch (cause) {
+      if (attempt < 2) return inspectOne(page, attempt + 1);
+      warn('gsc/inspect-unavailable', `${page.url} 查询失败（已重试）：${(cause as Error).message}`);
+      return null;
+    }
+  };
+
+  const inspected: (({ page: Page; data: unknown }) | null)[] = [];
+  for (let i = 0; i < samples.length; i += 2) {
+    inspected.push(...(await Promise.all(samples.slice(i, i + 2).map((page) => inspectOne(page)))));
+  }
+
+  for (const item of inspected) {
+    if (!item) continue;
+    const { page } = item;
+    const data = item.data as { inspectionResult?: { indexStatusResult?: GscIndexStatus } };
 
     const result = data.inspectionResult?.indexStatusResult;
     if (!result) {
