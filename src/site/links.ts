@@ -104,8 +104,14 @@ export const hasEnglish = (route: Route) => !['login', 'console'].includes(route
 export const servicesForCourse = (code: string) =>
   SERVICES.filter((svc) => svc.code === code || (svc.extraCourseCodes ?? []).some((extra) => extra === code));
 
-/** 课时 id（如 c-1-1）→ 课程字母 C；术语的 relatedLessonId 也走这条链路 */
-export const courseCodeForLesson = (lessonId: string) => lessonId.split('-')[1]?.toUpperCase() ?? '';
+/**
+ * 课时 id（真实格式 lesson-c-1-1，也容忍裸写 c-1-1）→ 课程字母 C；术语的 relatedLessonId 走同一条链路。
+ * 认不出的 id 返回空串，宁可少一条链接也不要挂到错误的服务上。
+ */
+export const courseCodeForLesson = (lessonId: string) => {
+  const [code] = lessonId.replace(/^lesson-/, '').split('-');
+  return code && /^[a-e]$/i.test(code) ? code.toUpperCase() : '';
+};
 
 /** 课时 id → 服务（一门课只对应一项服务） */
 export const serviceForLesson = (lessonId: string) => {

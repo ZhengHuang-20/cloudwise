@@ -35,6 +35,7 @@ import { BRAND, INDEXNOW_KEY, SITE_URL, absoluteUrl } from '../src/lib/site';
 import { llmsFullTxt, llmsTxt } from '../src/site/llms';
 import { hasMarkdown, markdownPath, pageMarkdown } from '../src/site/markdown';
 import { routeMeta } from '../src/site/meta';
+import { TITLE_LIMIT, resolveTitleText, titleWidth } from '../src/site/title';
 import { pageSchema } from '../src/site/schema';
 import {
   allRoutes,
@@ -127,40 +128,6 @@ const collectUrls = (value: unknown, out: string[] = [], key = ''): string[] => 
   if (typeof value === 'string' && URL_KEYS.has(key) && /^https?:\/\//.test(value)) out.push(value);
   return out;
 };
-
-// ---------------------------------------------------------------------------
-// 标题宽度：与 src/site/page.tsx 的 fitTitle 保持一致（那边在 React 组件里，无法直接 import）
-// ---------------------------------------------------------------------------
-
-const TITLE_LIMIT: Record<Lang, number> = { zh: 30, en: 60 };
-const titleWidth = (text: string, lang: Lang) =>
-  lang === 'en' ? text.length : [...text].reduce((n, ch) => n + (/[\u2e80-\u9fff\uff00-\uffef]/.test(ch) ? 1 : 0.5), 0);
-
-/** 与 src/site/page.tsx 的 shortenEnglish 一致：英文放不下时按词截断，不出现半截词 */
-const TRAILING_WORDS = /\s+(a|an|the|and|or|of|to|for|from|with|on|in|at|by|how|what|when|is|are|vs)$/i;
-function shortenEnglish(text: string, limit: number) {
-  if (text.length <= limit) return text;
-  let cut = text.slice(0, limit + 1).replace(/\s+\S*$/, '').replace(/[,;:\s]+$/, '');
-  while (TRAILING_WORDS.test(cut)) cut = cut.replace(TRAILING_WORDS, '');
-  return cut;
-}
-
-/** 返回最终会写进 <title> 的文本，以及它是不是「放得下」的候选（false 表示被截断兜底） */
-function resolveTitle(meta: { title: string; shortTitles?: string[]; absoluteTitle?: boolean }, lang: Lang) {
-  const candidates = [meta.title, ...asArray(meta.shortTitles)];
-  const suffix = ` - ${lang === 'en' ? BRAND.en : BRAND.zh}`;
-
-  if (meta.absoluteTitle) {
-    const chosen = candidates.find((text) => titleWidth(text, lang) <= TITLE_LIMIT[lang]);
-    return { text: chosen ?? candidates[candidates.length - 1], fitted: chosen !== undefined };
-  }
-  for (const text of candidates) {
-    if (titleWidth(`${text}${suffix}`, lang) <= TITLE_LIMIT[lang]) return { text: `${text}${suffix}`, fitted: true };
-    if (titleWidth(text, lang) <= TITLE_LIMIT[lang]) return { text, fitted: true };
-  }
-  const shortest = candidates.reduce((a, b) => (titleWidth(b, lang) < titleWidth(a, lang) ? b : a));
-  return { text: lang === 'en' ? shortenEnglish(shortest, TITLE_LIMIT.en) : shortest, fitted: false };
-}
 
 // ---------------------------------------------------------------------------
 // 期望的结构化数据类型（按页面 kind）
@@ -275,7 +242,7 @@ function checkMeta() {
     if (!meta.description?.trim()) error('meta/description-missing', `${label} 没有描述`);
 
     if (meta.title) {
-      const { text, fitted } = resolveTitle(meta, page.lang);
+      const { text, fitted } = resolveTitleText(meta, page.lang);
       if (!fitted) {
         overflow.add(label);
         warn('meta/title-overflow', `${label} 的所有标题候选都超出 ${TITLE_LIMIT[page.lang]} 宽度，最终会被截断：「${text}」`);
@@ -585,26 +552,40 @@ function checkIndexNow() {
 
 const FETCH_TIMEOUT = 15_000;
 
-async function fetchText(url: string): Promise<{ ok: boolean; status: number; text: string; type: string } | null> {
-  try {
-    const res = await fetch(url, { signal: AbortSignal.timeout(FETCH_TIMEOUT), redirect: 'follow' });
-    return { ok: res.ok, status: res.status, text: await res.text(), type: res.headers.get('content-type') ?? '' };
-  } catch (cause) {
-    error('live/network', `${url} 请求失败：${(cause as Error).message}`);
-    return null;
+type FetchResult = { ok: boolean; status: number; text: string; type: string };
+
+async function fetchOnce(url: string): Promise<FetchResult> {
+  const res = await fetch(url, { signal: AbortSignal.timeout(FETCH_TIMEOUT), redirect: 'follow' });
+  return { ok: res.ok, status: res.status, text: await res.text(), type: res.headers.get('content-type') ?? '' };
+}
+
+/** 网络抖动会让整轮检查失败，所以对网络错误与 5xx 重试一次；4xx 是确定性结果，不重试 */
+async function fetchText(url: string): Promise<FetchResult | null> {
+  for (let attempt = 1; ; attempt += 1) {
+    try {
+      const result = await fetchOnce(url);
+      if (attempt === 1 && result.status >= 500) continue;
+      return result;
+    } catch (cause) {
+      if (attempt === 1) continue;
+      error('live/network', `${url} 请求失败（已重试）：${(cause as Error).message}`);
+      return null;
+    }
   }
 }
 
-/** 抽样页面：每种页面类型取一个，覆盖中英、可索引与 noindex */
+/** 抽样页面：每种页面类型取中文与英文各一个，另保留 noindex 页，覆盖面比只取中文广 */
 function samplePages(): Page[] {
   const picked: Page[] = [];
-  const kinds = new Set<Route['kind']>();
+  const seen = new Set<string>();
   for (const page of pages) {
-    if (kinds.has(page.kind)) continue;
-    kinds.add(page.kind);
+    if (page.kind === 'console') continue;
+    const key = `${page.kind}:${page.lang}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
     picked.push(page);
   }
-  return picked.filter((page) => page.kind !== 'console');
+  return picked;
 }
 
 async function checkLive(base: string) {
@@ -641,7 +622,8 @@ async function checkLive(base: string) {
 
   for (const page of samples) {
     const label = `${page.path}${page.lang === 'en' ? ' (en)' : ''}`;
-    const res = await fetchText(page.url);
+    // 内容抓 base（本地/预览也能验），canonical 与 hreflang 仍按生产地址断言
+    const res = await fetchText(`${base}${localizePath(page.path, page.lang)}`);
     if (!res) continue;
     if (!res.ok) {
       error('live/page-status', `${label} 返回 ${res.status}`);
@@ -650,7 +632,9 @@ async function checkLive(base: string) {
 
     const title = /<title>([^<]*)<\/title>/.exec(res.text)?.[1]?.trim() ?? '';
     if (!title) error('live/title', `${label} 没有 <title>`);
-    else if (title.length > 70) warn('live/title-long', `${label} 的 <title> 长 ${title.length} 字符`);
+    else if (titleWidth(title, page.lang) > TITLE_LIMIT[page.lang]) {
+      warn('live/title-long', `${label} 的 <title> 占据宽度 ${titleWidth(title, page.lang)}，超过 ${TITLE_LIMIT[page.lang]}：「${title}」`);
+    }
 
     const canonical = /<link[^>]+rel="canonical"[^>]+href="([^"]+)"/.exec(res.text)?.[1] ?? '';
     if (canonical !== page.url) error('live/canonical', `${label} 的 canonical 为 ${canonical || '(缺失)'}，应为 ${page.url}`);

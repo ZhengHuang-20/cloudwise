@@ -283,6 +283,7 @@ function mainEntities(route: Route, lang: Lang, pageUrl: string): Json[] {
     case 'course': {
       const id = findCourse(route.slug)!.id;
       const c = courseList(lang).find((item) => item.id === id)!;
+      const courseMinutes = c.modules.flatMap((m) => m.lessons).reduce((n, l) => n + l.durationMinutes, 0);
       return [
         {
           '@type': 'Course',
@@ -295,8 +296,8 @@ function mainEntities(route: Route, lang: Lang, pageUrl: string): Json[] {
           isAccessibleForFree: true,
           // Google 课程富结果的必填项：免费 / 付费（不带金额）与授课方式
           offers: { '@type': 'Offer', category: 'Free' },
-          // 事实型字段：总时长与课程大纲都来自数据文件，供搜索引擎与 AI 判断课程范围
-          timeRequired: `PT${c.durationHours}H`,
+          // 只声明「已上线」的部分：时长、大纲、课时三者同口径，避免与 courseWorkload 自相矛盾
+          timeRequired: `PT${courseMinutes}M`,
           syllabusSections: c.modules.map((mod) => ({
             '@type': 'Syllabus',
             name: mod.name,
@@ -306,7 +307,7 @@ function mainEntities(route: Route, lang: Lang, pageUrl: string): Json[] {
           hasCourseInstance: {
             '@type': 'CourseInstance',
             courseMode: 'Online',
-            courseWorkload: `PT${c.modules.flatMap((m) => m.lessons).reduce((n, l) => n + l.durationMinutes, 0)}M`,
+            courseWorkload: `PT${courseMinutes}M`,
           },
           hasPart: c.modules.flatMap((m) =>
             m.lessons.map((l) => ({ '@type': 'LearningResource', name: l.title, url: url(lessonPath(l.id), lang) }))
@@ -365,8 +366,20 @@ function mainEntities(route: Route, lang: Lang, pageUrl: string): Json[] {
       const content = item[lang];
       // 把文章挂到它真正讲的服务与术语上：AI 检索时更容易把「这篇文章」和「这项能力」连起来，
       // 也是站内 article → service / term 链接在结构化数据里的对应物。
-      const aboutService = SERVICES.find((svc) => item.relatedServices.includes(svc.slug));
-      const mentionedTerms = glossaryList(lang).filter((term) => item.relatedTerms.includes(term.id)).slice(0, 4);
+      const aboutServices = item.relatedServices
+        .map((slug) => SERVICES.find((svc) => svc.slug === slug))
+        .filter((svc) => svc !== undefined)
+        .map((svc) => ({
+          '@type': 'Service',
+          name: pick(svc.title, lang),
+          description: pick(svc.oneLiner, lang),
+          url: url(`/services/${svc.slug}`, lang),
+          provider: orgRef,
+        }));
+      const mentionedTerms = item.relatedTerms
+        .map((termId) => glossaryList(lang).find((term) => term.id === termId))
+        .filter((term) => term !== undefined)
+        .slice(0, 4);
       return [
         {
           '@type': 'Article',
@@ -384,17 +397,7 @@ function mainEntities(route: Route, lang: Lang, pageUrl: string): Json[] {
           wordCount: wordCount(`${content.answer} ${content.body}`, lang),
           mainEntityOfPage: pageUrl,
           image: absoluteUrl(ogImagePath(route, lang)),
-          ...(aboutService
-            ? {
-                about: {
-                  '@type': 'Service',
-                  name: pick(aboutService.title, lang),
-                  description: pick(aboutService.oneLiner, lang),
-                  url: url(`/services/${aboutService.slug}`, lang),
-                  provider: orgRef,
-                },
-              }
-            : {}),
+          ...(aboutServices.length === 1 ? { about: aboutServices[0] } : aboutServices.length > 1 ? { about: aboutServices } : {}),
           ...(mentionedTerms.length > 0
             ? {
                 mentions: mentionedTerms.map((term) => ({

@@ -27,8 +27,9 @@ bun run seo:audit --json       # 机器可读，供 CI 或后续处理
 bun run seo:audit --strict     # warn 也算失败
 ```
 
-没有 bun 时用 `npx tsx scripts/seo-audit.ts`（参数相同）。注意脚本按 `NEXT_PUBLIC_SITE_URL`、缺省
-`https://chingeo.com` 判断绝对地址，验本地时两边要一致。
+没有 bun 时用 `npx tsx scripts/seo-audit.ts`（参数相同）。`--live=<base>` 时页面内容抓 `base`、canonical 与
+hreflang 仍按 `NEXT_PUBLIC_SITE_URL`（缺省 `https://chingeo.com`）断言，所以本地验新版本要先按生产域名构建
+（`NEXT_PUBLIC_SITE_URL=https://chingeo.com npm run build`），否则 canonical 会「正确地对不上」。
 
 ## 怎么读结果
 

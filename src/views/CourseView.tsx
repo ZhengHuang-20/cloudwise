@@ -6,7 +6,7 @@ import { glossaryList } from '../data/glossaryData';
 import { useApp } from '../context/AppContext';
 import { useLang } from '../context/LanguageContext';
 import { PageHeader } from '../components/ui/PageHeader';
-import { findCourse, lessonPath, servicesForCourse, termSlug } from '../site/links';
+import { courseCodeForLesson, findCourse, lessonPath, servicesForCourse, termSlug } from '../site/links';
 import { splitTitle } from './AcademyView';
 
 /** 课程主页 /academy/<slug>：课程简介与全部课时的链接 */
@@ -21,8 +21,17 @@ export const CourseView: React.FC<{ slug: string }> = ({ slug }) => {
   const relatedServices = servicesForCourse(course.code);
   // 术语按 relatedLessonId 归到课程字母，与服务页「相关术语」同一口径
   const relatedTerms = glossaryList(lang).filter(
-    (term) => term.relatedLessonId?.split('-')[1]?.toUpperCase() === course.code
+    (term) => term.relatedLessonId !== undefined && courseCodeForLesson(term.relatedLessonId) === course.code
   );
+  const publishedLessons = course.modules.flatMap((mod) => mod.lessons);
+  const publishedMinutes = publishedLessons.reduce((total, lesson) => total + lesson.durationMinutes, 0);
+  const durationText =
+    publishedMinutes >= 60
+      ? t(
+          `${Math.floor(publishedMinutes / 60)} 小时${publishedMinutes % 60 ? ` ${publishedMinutes % 60} 分钟` : ''}`,
+          `${Math.floor(publishedMinutes / 60)}h${publishedMinutes % 60 ? ` ${publishedMinutes % 60}m` : ''}`
+        )
+      : t(`${publishedMinutes} 分钟`, `${publishedMinutes} min`);
 
   return (
     <div>
@@ -45,12 +54,12 @@ export const CourseView: React.FC<{ slug: string }> = ({ slug }) => {
           {course.executiveModuleSummary}
         </blockquote>
 
-        {/* 事实型数据：课时数、时长、模块数都来自 coursesData，不写主观评价 */}
+        {/* 事实型数据：只报「已上线」的量，与下面的模块列表、Course 结构化数据同口径 */}
         <dl className="well grid grid-cols-2 gap-4 text-center sm:grid-cols-4">
           {[
-            { label: t('课时', 'Lessons'), value: `${course.totalLessons}` },
-            { label: t('模块', 'Modules'), value: `${course.totalModules}` },
-            { label: t('总时长', 'Total time'), value: t(`${course.durationHours} 小时`, `${course.durationHours} h`) },
+            { label: t('已上线课时', 'Published lessons'), value: `${publishedLessons.length}` },
+            { label: t('已上线模块', 'Published modules'), value: `${course.modules.length}` },
+            { label: t('视频时长', 'Video time'), value: durationText },
             { label: t('价格', 'Price'), value: t('免费', 'Free') },
           ].map((item) => (
             <div key={item.label}>
@@ -75,8 +84,10 @@ export const CourseView: React.FC<{ slug: string }> = ({ slug }) => {
         )}
 
         {relatedTerms.length > 0 && (
-          <div>
-            <p className="text-caption text-label-secondary">{t('这门课讲到的术语', 'Terms covered in this course')}</p>
+          <section aria-labelledby="course-terms">
+            <h2 id="course-terms" className="text-title-3">
+              {t('这门课讲到的术语', 'Terms covered in this course')}
+            </h2>
             <ul className="mt-3 flex flex-wrap gap-2">
               {relatedTerms.map((term) => (
                 <li key={term.id}>
@@ -86,7 +97,7 @@ export const CourseView: React.FC<{ slug: string }> = ({ slug }) => {
                 </li>
               ))}
             </ul>
-          </div>
+          </section>
         )}
 
         {course.modules.map((mod) => (
@@ -128,7 +139,7 @@ export const CourseView: React.FC<{ slug: string }> = ({ slug }) => {
         ))}
 
         <div className="flex flex-col items-center justify-center gap-3 pt-10 sm:flex-row">
-          <Link href={path(`/services/${slug}`)} className="btn btn-secondary btn-lg">
+          <Link href={path(`/services/${relatedServices[0]?.slug ?? slug}`)} className="btn btn-secondary btn-lg">
             {t('查看对应服务', 'See the matching service')}
           </Link>
           <Link href={path('/academy')} className="btn btn-neutral btn-lg">

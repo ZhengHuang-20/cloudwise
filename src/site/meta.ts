@@ -12,7 +12,7 @@ import { findCase, findCourse, findInsight, findLesson, findService, findSolutio
 
 /**
  * 英文 <title> 的手动短标题（按路由路径登记）。
- * 只在英文页、且完整标题加上「 - ChinGEO」（12 字符）后放不下 60 字符时才会被 fitTitle 选用；
+ * 只在英文页生效：登记后会排在候选第一位，只要「短标题 + " - ChinGEO"」放得下 60 字符就直接采用；
  * 不影响 H1、描述、JSON-LD 与 llms.txt。新增页面时若完整标题超长，在这里补一条。
  */
 const EN_SHORT_TITLES: Record<string, string> = {
@@ -32,7 +32,7 @@ export interface PageMeta {
   description: string;
   /** 首页用完整标题，其他页面在标题后加「 - 品牌名」 */
   absoluteTitle?: boolean;
-  /** <title> 放不下时依次换用的短标题（JSON-LD、llms.txt 仍用完整的 title），见 page.tsx 的 fitTitle */
+  /** <title> 放不下时依次换用的短标题（JSON-LD、llms.txt 仍用完整的 title），见 src/site/title.ts 的 fitTitle */
   shortTitles?: string[];
   /** 文章类页面（Open Graph type=article） */
   article?: { publishedTime: string; modifiedTime: string };

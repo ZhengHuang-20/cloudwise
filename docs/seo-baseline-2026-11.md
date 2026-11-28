@@ -27,7 +27,7 @@
 | `/en/glossary/ai-crawlers` | 同上 |
 | 抽查的课时页 `/academy/website/a-1-1` | `Discovered - currently not indexed`（已知地址，尚未抓取） |
 
-注意：Search Console 的 sitemap 接口里那个 126 是**提交条数**，不是已收录数（`contents[].indexed` 只在部分属性下有值）。真实收录情况要看 URL Inspection，目前抽查 5 页里 4 页已收录、1 页还在队列里。
+注意：Search Console 的 sitemap 接口里那个 126 是**提交条数**，不是已收录数（`contents[].indexed` 只在部分属性下有值）。真实收录情况要看 URL Inspection：当时手工抽查 16 条 URL，14 条已收录、2 条还在队列里（`/academy/geo` 与 `/academy/website/a-1-1`）；`seo:audit --gsc` 现在固定抽查首页 / 服务 / 文章 / 术语 / 课时各一个中文页，英文页靠 `--live` 的抽样覆盖。
 
 ## 3. 查询（90 天，全部可见数据只有 10 条）
 

@@ -63,7 +63,7 @@ export const TermView: React.FC<{ slug: string; insights?: InsightSummary[] }> =
 
         <section aria-labelledby="related-title" className="mt-16 border-t border-separator pt-10">
           <h2 id="related-title" className="text-title-2">
-            {t('相关术语', 'Related terms')}
+            {t('相关术语与服务', 'Related terms and services')}
           </h2>
           <ul className="mt-5 flex flex-wrap gap-2">
             {term.relatedTerms.map((name) => {
@@ -90,7 +90,7 @@ export const TermView: React.FC<{ slug: string; insights?: InsightSummary[] }> =
           {relatedService && (
             <Link href={path(`/services/${relatedService.slug}`)} className="link mt-4 block text-body">
               {t('了解相关服务：', 'See the related service: ')}{t(relatedService.title.zh, relatedService.title.en)}
-              <ChevronRight />
+              <ChevronRight aria-hidden="true" />
             </Link>
           )}
         </section>

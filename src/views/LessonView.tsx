@@ -56,13 +56,13 @@ export const LessonView: React.FC<{ course: string; slug: string }> = ({ course:
 
         {(relatedService || relatedTerms.length > 0) && (
           <section aria-labelledby="lesson-related" className="mt-16 border-t border-separator pt-10">
-            <h2 id="lesson-related" className="text-title-2">
+            <h2 id="lesson-related" className="text-title-3">
               {t('相关服务与术语', 'Related service and terms')}
             </h2>
             {relatedService && (
               <Link href={path(`/services/${relatedService.slug}`)} className="link mt-5 inline-flex items-center gap-1 text-body">
                 {t(relatedService.title.zh, relatedService.title.en)}
-                <ChevronRight className="h-4 w-4" />
+                <ChevronRight className="h-4 w-4" aria-hidden="true" />
               </Link>
             )}
             {relatedTerms.length > 0 && (
