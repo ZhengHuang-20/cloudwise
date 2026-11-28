@@ -74,6 +74,9 @@ const strict = argv.includes('--strict');
 const liveArg = argv.find((arg) => arg === '--live' || arg.startsWith('--live='));
 const liveBase = liveArg ? (liveArg.includes('=') ? liveArg.slice('--live='.length) : SITE_URL).replace(/\/+$/, '') : null;
 const gscEnabled = argv.includes('--gsc');
+/** CI 里要能区分「GSC 已验证」和「根本没跑」，所以单独记录状态（用对象存，避免函数里赋值被 TS 收窄） */
+const requireGsc = argv.includes('--require-gsc');
+const gscState: { status: 'off' | 'skipped' | 'failed' | 'ok' } = { status: 'off' };
 
 /** 进度行：--json 时静默，避免污染 JSON 输出 */
 const note = (message: string) => {
@@ -762,6 +765,7 @@ function gscSample(): Page[] {
 
 async function checkGsc() {
   if (!existsSync(GSC_KEY)) {
+    gscState.status = 'skipped';
     warn('gsc/skipped', `找不到服务账号 ${GSC_KEY}，跳过 GSC 检查（可用 GSC_SERVICE_ACCOUNT 指定路径）`);
     return;
   }
@@ -770,6 +774,7 @@ async function checkGsc() {
   try {
     token = await gscToken(GSC_KEY);
   } catch (cause) {
+    gscState.status = 'failed';
     warn('gsc/auth', `服务账号认证失败：${(cause as Error).message}`);
     return;
   }
@@ -830,6 +835,8 @@ async function checkGsc() {
       `· GSC sitemap：提交 ${submitted || '未知'} 条 / 期望 ${expectedCount}，错误 ${errorCount}、警告 ${warnCount}，最近下载 ${ours.lastDownloaded ?? '未知'}`
     );
   }
+
+  gscState.status = 'ok';
 
   // 3) 抽查索引状态：URL Inspection API 偶发超时，重试一次、两路并发，避免整轮检查被拖到几分钟
   const samples = gscSample();
@@ -899,11 +906,29 @@ checkIndexNow();
 if (liveBase) await checkLive(liveBase);
 if (gscEnabled) await checkGsc();
 
+if (requireGsc && gscState.status !== 'ok') {
+  error('gsc/required', `--require-gsc 要求 GSC 检查通过，实际状态：${gscState.status}`);
+}
+
 const errors = issues.filter((issue) => issue.level === 'error');
 const warnings = issues.filter((issue) => issue.level === 'warn');
 
 if (jsonOutput) {
-  console.log(JSON.stringify({ base: SITE_URL, pages: pages.length, indexablePages: indexable.length, issues, errors: errors.length, warnings: warnings.length }, null, 2));
+  console.log(
+    JSON.stringify(
+      {
+        base: SITE_URL,
+        pages: pages.length,
+        indexablePages: indexable.length,
+        gsc: gscState.status,
+        issues,
+        errors: errors.length,
+        warnings: warnings.length,
+      },
+      null,
+      2
+    )
+  );
 } else {
   const grouped = new Map<string, Issue[]>();
   for (const issue of issues) grouped.set(issue.rule, [...(grouped.get(issue.rule) ?? []), issue]);
@@ -924,6 +949,7 @@ if (jsonOutput) {
   console.log(
     `\n${errors.length ? '✗' : '✓'} ${errors.length} 个错误、${warnings.length} 个提醒；检查了 ${pages.length} 个页面（可索引 ${indexable.length}），用时 ${seconds}s`
   );
+  if (gscEnabled) console.log(`  GSC：${gscState.status === 'ok' ? '已验证' : gscState.status === 'skipped' ? '未运行（缺服务账号）' : '认证失败'}`);
   if (errors.length) console.log('  错误会直接影响收录 / 富结果 / AI 引用，请修复后再发布。');
 }
 

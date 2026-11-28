@@ -25,6 +25,7 @@ bun run seo:audit --gsc        # 再加 Search Console 的真实收录数据（�
 bun run seo:audit:full         # = --live --gsc，发布后跑这个
 bun run seo:audit --json       # 机器可读，供 CI 或后续处理
 bun run seo:audit --strict     # warn 也算失败
+bun run seo:audit --gsc --require-gsc   # CI 用：GSC 没真正跑起来（缺 key/认证失败）就当失败
 ```
 
 没有 bun 时用 `npx tsx scripts/seo-audit.ts`（参数相同）。`--live=<base>` 时页面内容抓 `base`、canonical 与
@@ -59,6 +60,7 @@ hreflang 仍按 `NEXT_PUBLIC_SITE_URL`（缺省 `https://chingeo.com`）断言�
 | `llms/noindex-leak` | llms.txt 收录了 noindex 页面 | `llms.ts` |
 | `indexnow/key-file`、`indexnow/key-mismatch` | `public/<INDEXNOW_KEY>.txt` 缺失或内容与 `src/lib/site.ts` 不一致 | 补文件，或同步 `INDEXNOW_KEY` |
 | `live/*` | 线上实际输出与生成逻辑不一致（常见于线上还是旧部署） | 先确认部署完成；确实不一致再查代码 |
+| `gsc/required` | 加了 `--require-gsc` 但 GSC 检查没跑成（缺 key 或认证失败） | 配好 `GSC_SERVICE_ACCOUNT`，或去掉 `--require-gsc` |
 | `gsc/property` | 服务账号看不到 Search Console 属性 | 把服务账号邮箱加进 GSC 用户（权限「完整」） |
 | `gsc/sitemap-missing`、`gsc/sitemap-errors` | sitemap 没提交或有错误 | Search Console 重新提交；错误先看抓取报告 |
 | `gsc/sitemap-count` | sitemap 提交条数与代码侧可索引页数不一致 | 线上还是旧部署，或 sitemap 缓存未更新 |
