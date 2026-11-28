@@ -89,7 +89,7 @@ export const TermView: React.FC<{ slug: string; insights?: InsightSummary[] }> =
           )}
           {relatedService && (
             <Link href={path(`/services/${relatedService.slug}`)} className="link mt-4 block text-body">
-              {t('了解相关服务', 'See the related service')}：{t(relatedService.title.zh, relatedService.title.en)}
+              {t('了解相关服务：', 'See the related service: ')}{t(relatedService.title.zh, relatedService.title.en)}
               <ChevronRight />
             </Link>
           )}

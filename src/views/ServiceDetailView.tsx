@@ -11,7 +11,7 @@ import { Markdown } from '../components/Markdown';
 import { useLang } from '../context/LanguageContext';
 import { courseList } from '../data/coursesData';
 import { glossaryList } from '../data/glossaryData';
-import { courseSlug, findService, termSlug } from '../site/links';
+import { courseCodeForLesson, courseSlug, findService, termSlug } from '../site/links';
 import type { InsightSummary } from '../site/pageData';
 import { useSite } from '../site/SiteContext';
 import { InsightCard } from './InsightsView';
@@ -26,7 +26,9 @@ export const ServiceDetailView: React.FC<{ slug: string; insights?: InsightSumma
   const codes: string[] = [svc.code, ...(svc.extraCourseCodes ?? [])];
   const courses = courseList(lang).filter((c) => codes.includes(c.code));
   // 术语按「相关课时」归到课程，课程与服务一一对应（课程 C ↔ 服务 C）
-  const terms = glossaryList(lang).filter((term) => codes.includes(term.relatedLessonId?.split('-')[1]?.toUpperCase() ?? ''));
+  const terms = glossaryList(lang).filter((term) =>
+    term.relatedLessonId ? codes.includes(courseCodeForLesson(term.relatedLessonId)) : false
+  );
   const name = t(identity.name, identity.nameEn);
 
   return (

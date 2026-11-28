@@ -65,7 +65,7 @@ export const CourseView: React.FC<{ slug: string }> = ({ slug }) => {
             {t('这门课对应的服务：', 'Service for this course: ')}
             {relatedServices.map((svc, i) => (
               <React.Fragment key={svc.slug}>
-                {i > 0 && '、'}
+                {i > 0 && (lang === 'en' ? ', ' : '、')}
                 <Link href={path(`/services/${svc.slug}`)} className="link">
                   {t(svc.title.zh, svc.title.en)}
                 </Link>
