@@ -11,7 +11,12 @@ import { COURSE_COUNT_CN, COURSE_COUNT_EN } from '../lib/features';
 import { courseSlug, lessonPath } from '../site/links';
 import { useSite } from '../site/SiteContext';
 
-const TOTAL_LESSONS = COURSES.reduce((sum, course) => sum + course.totalLessons, 0);
+// 进度分母只算「已上线」的课时：totalLessons 是课程规划总量，站点上真正能学完的只有 modules 里的课时，
+// 用规划总量会让进度条永远停在个位数（见 docs/seo-baseline-2026-11.md 的口径说明）
+const TOTAL_LESSONS = COURSES.reduce(
+  (sum, course) => sum + course.modules.reduce((n, mod) => n + mod.lessons.length, 0),
+  0
+);
 
 // 课程标题形如「GEO——让 AI 在答案里说出你的名字」
 export const splitTitle = (title: string) => {
